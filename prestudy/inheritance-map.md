@@ -504,7 +504,18 @@ found mostly an integration project with a hard UI problem attached. Verificatio
    existing is a starting point.
 2. **Difficulty separated from required context** (W4) — fused in every existing implementation.
 3. **Operator control as a measurable property** (W5, W8) — pause, redirect, take-over, replay.
-   No repo has it and no eval measures it.
+   ~~No repo has it and no eval measures it.~~ ⚠ **Corrected 2026-08-08 against Claudette's code at
+   `fc1ea22`, when W8 chose it as its stand-in subject.** *"No eval measures it"* stands and is still
+   the open piece. *"No repo has it"* is **wrong for redirect and undo**: Claudette's permission gate
+   prompt is literally `Allow? [y/N · or type a redirect]`, and any non-y/n text denies the tool
+   **and forwards the instruction to the model** as an error `tool_result`
+   (`run/cli_prompter.rs:84`, `gate_line_decision` `:118-135`, pure and already unit-tested without a
+   TTY). `/undo` plus `transcript::undo_last_turn()` is trash-backed rollback, and `--resume` is
+   session continuation. **What genuinely does not exist anywhere is *pause*** — the gate is the only
+   synchronous interception point, so it stops the agent only when a tool happens to need permission;
+   there is no SIGINT handler for a running turn. So the honest shape of this open piece: 2.0 must
+   build **arbitrary pause** and **the measurement**, and can inherit intervention, redirect, undo and
+   resume. See brief §11 W8's stand-in table.
 4. ~~**Gate independence in single-player**~~ (W6, W11) — **no longer open in the "does it matter"
    sense, as of 2026-08-07.** StealthForge measured it: median **+3.65** points of self-scoring
    inflation across 34 missions, **0 of 34** where the independent reviewer scored higher. BCF's

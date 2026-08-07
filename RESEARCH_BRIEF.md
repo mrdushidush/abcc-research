@@ -845,6 +845,40 @@ The workstream that makes everything else measurable. Do not defer it.
 > ABCC's suite in place. See §14 item 1 for the reasoning and the accepted cost. The corpus
 > inventory below still applies; what changed is that the harness is not any one corpus's
 > successor.
+>
+> **Stand-in subject decided by David, 2026-08-08: Claudette.** The harness needs something to drive
+> before 2.0 exists, and Claudette is the engine 2.0 copies, so its numbers are a baseline rather
+> than a proxy - the same harness produces the before and the after, which is what makes "is 2.0
+> better" answerable at all.
+
+**What the stand-in can and cannot baseline — verified against the code at `fc1ea22`, 2026-08-08.**
+This determines the metric set, so it was checked rather than assumed:
+
+| Operator-control axis | In Claudette today | Harness mechanics |
+|---|---|---|
+| **Intervene / deny** | ✅ the `[y/N]` permission gate | Scriptable over a **pipe** |
+| **Redirect** | ✅ **already implemented** — the gate prompt is literally `Allow? [y/N · or type a redirect]`; any non-y/n text denies the tool *and* forwards the instruction to the model as an error `tool_result` (`run/cli_prompter.rs:84`, `gate_line_decision` `:118-135`) | Scriptable over a pipe; `gate_line_decision` is pure and already unit-tested without a TTY |
+| **Undo / rollback** | ✅ `/undo` plus `transcript::undo_last()` / `undo_last_turn()`, trash-backed | REPL slash command, one of **15** |
+| **Resume** | ✅ `--resume` / `-r`, both single-shot and REPL (`main.rs:110`, `:696`) | Process-level flag |
+| **Pause mid-run** | ❌ **does not exist.** The gate is the only synchronous interception point, so it pauses only when a tool happens to need permission. No SIGINT handler for a running turn; `ctrl_c` only cancels an input line (`run/line_editor.rs:663`) | Nothing to drive |
+| **Take-over** | ~ partial — deny-plus-redirect is take-over at *tool* granularity; there is no "give me the wheel" mode | As redirect |
+
+Three consequences for the harness design:
+
+1. **No PTY needed.** `cli_prompter.rs:89-96` documents the fall-through: the single-keypress path is
+   a TTY optimisation and it "falls through to the line reader below when stdin isn't a TTY (piped /
+   scripted / spawned agent)". **A harness that pipes stdin gets a deliberate, documented code
+   path**, not an accident. That removes the biggest mechanical risk from the stand-in choice.
+2. **The permission configuration is part of the corpus definition, not the runner.** Interventions
+   can only be measured if something actually prompts, and what prompts depends on the mode and the
+   per-tool tier. So each task must pin its permission configuration explicitly. ⚠ **And the mode to
+   avoid is `Prompt`:** `PermissionMode { ReadOnly, WorkspaceWrite, DangerFullAccess, Prompt, Allow }`
+   still derives `Ord` at `fc1ea22`, so `Prompt` outranks `DangerFullAccess` and a `Prompt` session
+   auto-approves everything (map §0 item 3). Pin the tier deliberately and assert that the gate fired.
+3. **Pause is measured by its absence, and that is a result worth having.** Three of the four axes
+   get a real baseline number; pause gets a documented "n/a - not implemented in the subject". Design
+   the metric so `n/a` is a first-class value rather than a zero, because that column is precisely
+   where 2.0's differentiator has to show up.
 
 - ~~Start from what exists: ABCC's 40-task scored corpus and Claudette's eval loop. Characterize
   both, then decide what the 2.0 harness inherits.~~ → **Start from ABCC's 100-task suite, not the
