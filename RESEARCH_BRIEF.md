@@ -964,30 +964,50 @@ pipeline. Everything else is a milestone on the way.
 ## 17. Open questions for David
 
 Answer during or shortly after Phase 0. These change the shape of Phase 1.
+**Answers given 2026-08-07 are recorded inline.**
 
-1. **BattleCommandForge:** confirm what it actually is, whether the description in 3.3 is
-   close, whether it is public or private, and whether any of it is under terms that
-   complicate an MIT release. Section 3.3 is the least reliable part of this document.
-2. **Target workload.** V1 demonstrated self-contained algorithm tasks. Is 2.0 for real
-   repository work such as refactors and bug fixes, for greenfield feature building, for
-   legacy documentation and review, or general purpose? W8 cannot start without this and
-   every tier mapping depends on it.
+1. ~~**BattleCommandForge:** confirm what it actually is...~~
+   **ANSWERED.** `github.com/mrdushidush/battle-command-forge`. Public, Apache-2.0, sole-authored
+   with no outside contributors, so relicensing is available. A greenfield POC, never a daily
+   driver. See the rewritten 3.3.
+2. **Target workload.** ~~V1 demonstrated self-contained algorithm tasks...~~
+   **ANSWERED: repository work plus legacy review plus general-purpose coding.** In David's
+   words, "like aider and opencode but way more fun and engaging." W8 builds its task set
+   against this. Note this is a **different workload from every existing corpus**: ABCC's 40
+   tasks are self-contained algorithms, BCF's missions are greenfield generation, and only
+   Q56's I-series (bigrepo) and J-series (git) touch real repository work. That gap is W8's
+   first job.
 3. **Repo and naming.** New repo or new major version of ABCC? Still called Agent Battle
-   Command Center? This gates W12 entirely.
-4. **Claudette's relationship.** Shared crate, shared model server, or fully separate
-   processes that never run simultaneously?
-5. **Console shape.** Do you have an instinct on web console versus Tauri desktop app versus
-   Ratatui TUI? Your taste here is worth more than any amount of research, and W5 should start
-   from it rather than pretend to be neutral.
-6. **Single player as primary.** With a 35B-A3B base agent, is local-only now the mode you
-   actually intend to live in, with co-op as an occasional assist? That reframes the whole
-   priority order.
-7. **Monthly frontier API spend ceiling** to optimize routing against.
-8. **RTS framing depth.** Presentation layer only, or into the Rust domain model? Rust enums
-   make this stickier than it was in a loosely typed stack, so it is worth deciding before any
-   code exists.
-9. **The 32GB ceiling.** Fixed for the duration, or is the AM4 upgrade (Ryzen 7 5700X plus
-   B550M, more RAM headroom, PCIe 4.0) on the table? A move to 64GB would materially change
-   the concurrency findings, so it is worth knowing before benchmarking starts.
+   Command Center? This gates W12 entirely. **STILL OPEN.**
+4. ~~**Claudette's relationship.**~~ **PARTIALLY ANSWERED.** The three checkouts are working
+   roles (canonical, self-edit sandbox, Q56 runner). Whether 2.0 and Claudette share code as a
+   crate remains open and is now sharper: 2.0 reuses most of Claudette's engine. See W3.
+5. ~~**Console shape.**~~ **ANSWERED: a full isometric web UI in the style of the original
+   Command and Conquer** - what ABCC v1 gestured at, done properly. Not a TUI, not Tauri.
+   W5 starts from ABCC's existing `components/isometric/` rather than from a blank page or
+   from the React Three Fiber battlefield. BCF's and Claudette's Ratatui work drops to
+   reference-only, except as a possible headless fallback.
+6. ~~**Single player as primary.**~~ **ANSWERED: yes.** Local-only on 32GB RAM plus 16GB VRAM
+   is the mode to design for. Cloud is a future convenience (renting an H100 if ever needed),
+   not a design assumption. This reframes the priority order: co-op and multiplayer are
+   later, and the single-player evaluation baseline is the one that matters.
+7. **Monthly frontier API spend ceiling** to optimize routing against. **STILL OPEN**, and
+   lower priority now that single player is primary.
+8. **RTS framing depth.** Presentation layer only, or into the Rust domain model?
+   **STILL OPEN.** Sharper than when written: Claudette's `forge/types.rs` already states a
+   *functional* naming principle - "role naming is about what the model is doing, not about
+   which weights are loaded" - which military naming would replace.
+9. ~~**The 32GB ceiling.**~~ **ANSWERED: fixed.** 32GB RAM plus 16GB VRAM, no second machine,
+   no AM4 upgrade. But see the correction in 3.4: on the crowned configuration the model is
+   fully VRAM-resident and system RAM is barely involved, so this ceiling may not be the
+   binding constraint the brief assumes.
 10. **Existing users.** Willing to ship a clean break with a good migration story, or does
-    something have to keep working for the people already running V1?
+    something have to keep working for the people already running V1? **STILL OPEN.**
+
+**Added by Phase 0** - see `prestudy/questions.md` section 2 for the full list:
+
+11. **`BMORE.md`** is a full commercial product specification sitting in the public
+    battle-command-forge repo. Demo mission input, or a real business document that should
+    come out?
+12. **Licensing for 2.0.** MIT like ABCC, MIT-OR-Apache like Claudette, or Apache-2.0 like
+    BCF? Sole authorship makes all three available. Gates W12 with question 3.
