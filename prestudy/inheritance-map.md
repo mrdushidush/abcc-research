@@ -10,6 +10,13 @@ reason. Per brief 4.3, this is the bridge from Phase 0 to Phase 1.
 (`independencev1`, StealthForge/`stealthsambaV2`). See `archive-repos.md`. §0 items 5–8 were added
 at the same time and change rows in §6 and §9.
 
+**Verified 2026-08-07 in two passes** (`verification.md`). The first pass moved two rows into
+REWRITE — things recorded as existing that do not exist. The second pass covered ABCC's §2 and §7
+PORT rows and moved nothing, but rewrote six reasons and added §0 item 10; it also ran ABCC's
+lifecycle test suites, the first time anything in ABCC was executed for this study. Rows carrying a
+⚠ have been corrected against executed or traced code and the original text is struck rather than
+deleted.
+
 **Verdicts:**
 
 | Verdict | Meaning |
@@ -150,6 +157,35 @@ Added 2026-08-07 by the verification pass (`verification.md`):
      the gap: the *evaluation* never exceeds 32k while the *daily driver* runs at 60k. W8's corpus
      problem is bigger than the map records.
 
+Added 2026-08-07 by the second verification pass (`verification.md` §3.4):
+
+10. **ABCC's per-step token columns are unreachable by every write path it has, and that kills
+    three things downstream.** `execution_logs.input_tokens` / `.output_tokens` /
+    `.model_used` exist in the schema. The Python producer sends all three
+    (`execution_logger.py:136-138`), the API route validates them
+    (`routes/execution-logs.ts:25-27`) and spreads them onward — and
+    `ExecutionLogService.createLog` writes an explicit `data` list that omits them
+    (`executionLogService.ts:24-34`). TypeScript misses it because excess-property checking does
+    not apply to spread properties. The only other writer, a raw `INSERT` in
+    `mcp-gateway/adapters/postgres.py:239-249`, never sends them either, and
+    `captureTrainingData` drops them a third time (`taskExecutor.ts:637-647`).
+
+    What that takes with it:
+
+    - **`budgetService`** — its one production call site is gated on those fields, so
+      `recordUsage` has never fired. Same for `costAggregator`, whose `hydrate()` at boot rebuilds
+      totals from the null columns. §5's row is annotated.
+    - **`TokenBurnLog`** — filters on the same predicate, so the panel is structurally empty and
+      its only non-empty state is an opt-in `Math.random()` demo. §8's row is annotated.
+    - **`data-assets.md`'s "0% populated"** — now explained. An unreachable column, not neglect.
+      This is the mechanism behind brief §11.0's W4 row, and it means no amount of running ABCC
+      longer would have produced the data.
+
+    **The generalisable lesson, which is why this is an item and not just a row edit:** every
+    component in this chain is individually well built. The schema is right, the producer is right,
+    the validation is right, the consumers are right, the UI guards its demo mode carefully. The
+    system still cannot record a token. Reading any one file would have found nothing wrong.
+
 Also worth flagging: `docs/decisions.md` opens with a warning that AD-1 through AD-7 describe
 `claudettes-forge` and are "fiction relative to the shipped product". It is still valuable, but
 only as a record of *measurements and reasoning*, never as a description of Claudette.
@@ -184,7 +220,7 @@ first.**
 
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
-| `ConversationRuntime<C,T>` + `ApiClient` / `ToolExecutor` traits (`conversation.rs:141`, `:145`, `:237`) | Claudette `runtime/conversation.rs` | **REUSE** | The two-trait seam is why **1,145 tests run in 3.8 s** without a model. Best structural idea in the family. (Executed 2026-08-07: 1,145 pass / 0 fail in the default-feature lib binary, 3.76 s; 1,274 across all binaries at `--all-features`. The brief's 14.76 s is the *edit-to-green* cycle, not test execution — see `verification.md` §1.3.) |
+| `ConversationRuntime<C,T>` + `ApiClient` / `ToolExecutor` traits (`conversation.rs:141`, `:145`, `:237`) | Claudette `runtime/conversation.rs` | **REUSE** | The two-trait seam is why **1,145 tests run in 3.8 s** without a model. Best structural idea in the family. (Executed 2026-08-07: 1,145 pass / 0 fail in the default-feature lib binary, 3.76 s; 1,274 across all binaries at `--all-features`. The brief's 14.76 s is the *edit-to-green* cycle, not test execution — see `verification.md` §1.3.) **Now measured on both sides:** ABCC's six lifecycle suites are **81 tests in 32.4 s** — 0.40 s per test against Claudette's 0.0033 s, a **~120× gap** — because the suite sleeps through real rest delays. The seam is not a style preference; it is the difference between a suite you run on every keystroke and one you avoid. |
 | Differentiated loop breakers (**12 purpose-written interventions**) | Claudette `conversation.rs:57-1470` | **REUSE** | Strictly better than ABCC's single exception. Iteration-budget warning, graceful cap landing + its tool refusal + its empty-reply fallback, empty-turn continuation, unknown-tool near-miss, over-search nudge, duplicate nav / duplicate edit / duplicate-denied suppression, unchanged-read pointer-up, no-progress nudge. |
 | Auto-compaction + context eviction | Claudette `runtime/compact.rs`, `context_evict.rs`, `run/compaction_policy.rs` | **REUSE** | Solves the handoff-bloat problem W11 raises, already tuned. |
 | Empty-turn detection and retry ceiling | Claudette `conversation.rs:1033-1123` | **REUSE** | Found in the wild (`runs/empty-stream-flake-2026-07-17`) and fixed with evidence. |
@@ -192,9 +228,9 @@ first.**
 | stdout redirection to recover execution logs | ABCC `main.py:367-396` | **DROP** | Log fidelity coupled to a third party's print formatting. The anti-pattern. |
 | `execution_state` / `/execute/abort` | ABCC `main.py:36,592` | **DROP** | Never populated; the endpoint aborts nothing. See W3's pause/resume requirement. |
 | Parse-failure-defaults-to-success | ABCC `main.py:436-447` | **DROP** | Cite in W6 as the thing being designed against. |
-| Task lifecycle, queue, resource pool, file locks | ABCC `packages/api/src/services/*` | **PORT** | The right set of concerns; wrong language and no crash durability. |
-| Stuck-task watchdog (5 min, releases agent + locks + slots) | ABCC `stuckTaskRecovery.ts` | **PORT** | Cleanup is complete, which is the part usually done wrong. |
-| Rest delays / periodic context reset between tasks | ABCC `taskQueue.ts` | **REFERENCE** | A 7B-era workaround for context pollution. Re-test before assuming a 35B-A3B needs it. |
+| Task lifecycle, queue, resource pool, file locks | ABCC `taskExecutor.ts` (700 lines) + `taskAssigner.ts` (233) | **PORT** | The right set of concerns; wrong language and no crash durability. ⚠ **Executed and traced 2026-08-07** (`verification.md` §3.4). **Citation moved:** `taskQueue.ts` is now a 275-line facade of `@deprecated` one-line delegations — the lifecycle left it. **Durability splits three ways:** file locks *are* durable (Postgres, `filePath` unique); resource-pool slots are a **process-singleton `Map`** (`resourcePool.ts:88`) and rest counters a module-level `Map` (`ollamaOptimizer.ts:22`); and **nothing reconciles at boot** — `index.ts:101` builds an empty pool, `:214` starts the watchdog, and the only state rehydrated from the DB is `costAggregator.hydrate()` (`:108`), which reads the three columns nothing writes. Restart with one coder agent leaves it `busy`; with two, the empty pool over-admits to a 1-slot GPU. **And the lifecycle has no type:** `Task.status` is `String @db.VarChar(20)`, 11 states, **no status union type anywhere in the package** and **≥48 bare `Task`-status literal sites** (143 across all entities in `services/` + `routes/`), so no state machine — only conventions. That is Q8's "RTS framing into the domain model" and the durability fix being the same job — a Rust enum with typed transitions makes the watchdog hole below unrepresentable. |
+| Stuck-task watchdog (5 min, releases agent + locks + slots) | ABCC `stuckTaskRecovery.ts` | **PORT** | ⚠ **Half of this row's reason reversed 2026-08-07.** *Cleanup of what it finds is complete* and that part is real — eight steps at `:256-334`: locks, slot, task→`aborted` with `errorCategory: 'timeout'`, open `TaskExecution`→`failed`, agent→`idle` + stats, two socket events, an operator alert, an MCP publish. Better than most. **But the found-set is `status: 'in_progress'` only** (`:192-202`). A task stuck in **`assigned`** is invisible forever — it holds the agent, the slot and its locks until a human presses reset. Not inference: the author's own comment at `taskExecutor.ts:244-249` (the pin's HEAD commit) says *"Nothing polls 'assigned'… held the agent, the resource-pool slot and the file locks until a human hit reset"*. `needs_human` is invisible too, and `forceRecoverAll`'s orphan sweep only catches `busy` agents, not the `stuck` status `requestHumanInput` sets. **And the clock is `assignedAt`, not last progress** — no heartbeat field exists, so a healthy long task is aborted for being slow; `ExecutionLog.timestamp` is written per step and would serve. **For 2.0: watch `max(execution_log.timestamp)`, cover every non-terminal state.** The recovery path has **no test** (8 tests, none reach `recoverStuckTask`). Doc drift: header says 10 minutes, constant is 5. |
+| Rest delays / periodic context reset between tasks | ABCC **`ollamaOptimizer.ts`** | **REFERENCE** | A 7B-era workaround for context pollution. Re-test before assuming a 35B-A3B needs it. ⚠ **Citation corrected 2026-08-07** — this is not in `taskQueue.ts`. Measured: **3 s** after each task, **8 s** every **5th**, per agent, coder-agents-only (`:16-18`, `:85`). Two defects to not inherit: it runs *after* the shared 1-slot resource is released (`taskExecutor.ts:141` vs `:408`), so it protects the agent's turnaround and not the model context it exists for; and it awaits a bare `setTimeout` with no injectable clock, which is why ABCC's 81 lifecycle tests take 32.4 s. |
 | tokio async runtime | BCF | **REFERENCE** | See section 1. A decision for W3, not an inheritance. |
 | `swarm.rs` | BCF | **DROP** | Aspirational; the pipeline runs single-task. |
 
@@ -215,7 +251,7 @@ first.**
 | litellm provider strings | ABCC | **DROP** | Replaced by the HTTP surface. |
 | Silent Claude-to-Ollama fallback on missing key | ABCC `main.py:163-178` | **DROP** | Discards the routing decision without an error. |
 | `ProviderKind { Ollama, AnthropicClaude }` | Claudette `forge/types.rs` | **REWRITE** | Two variants, one feature-gated. W10 needs local + cloud + remote rig behind one trait; nothing here is a real starting point. |
-| Remote Ollama routing + per-complexity model map | ABCC `resourcePool.ts` | **REFERENCE** | The only multiplayer precedent in the family. Read it in W10; do not port a `REMOTE_OLLAMA_MODEL_MAP` string format. |
+| Remote Ollama routing + per-complexity model map | ABCC `resourcePool.ts` | **REFERENCE** | The only multiplayer precedent in the family. Read it in W10; do not port a `REMOTE_OLLAMA_MODEL_MAP` string format. **Read properly 2026-08-07:** four resource types — `ollama` (1 slot), `remote_ollama` (env-gated, N slots), `claude` (2), and **`grok`** (2, gated on `XAI_API_KEY`) — so ABCC had *four* provider paths, not two, which is worth knowing when W10 designs the one trait. `getResourceForComplexity` (`:240`) is an independent second confirmation of the real ladder: C10→claude, C7-9→remote if enabled, else local. It also validates remote model availability at startup, non-blocking, with a `ollama pull` hint (`:124-152`) — good operator manners worth keeping. What not to keep: a counting semaphore with **no queue and no waiters** (`acquire` just returns `false`), a process-global singleton, and no durability. |
 
 ---
 
@@ -251,7 +287,7 @@ first.**
 | Post-hoc "actual complexity" + error categorization | ABCC `complexityCalculator.ts` | **PORT** | Computed but never fed back. Closing that loop is free calibration data. |
 | Skipping the AI pass when rules score > 8 | ABCC `taskRouter.ts:297` | **DROP** | Means the two assessments were never compared on the hardest tasks. |
 | Agent-type-as-model-tier binding (`qa` = the Claude agent) | ABCC | **DROP** | Roles wearing model names. Claudette's forge states the correct principle. |
-| Budget service, daily ceiling, force-to-local | ABCC `budgetService.ts` | **PORT** | Co-op mode needs exactly this. |
+| Budget service, daily ceiling, force-to-local | ABCC `budgetService.ts` | **PORT** | Co-op mode needs exactly this. ⚠ **But it has never run.** Traced 2026-08-07: `recordUsage` has **exactly one production caller**, `routes/execution-logs.ts:55`, gated on `if (log.inputTokens || log.outputTokens)` — and those are always null, because the write path drops them (§0 item 10). Its other 14 call sites are its own test file. So the logic is well tested in isolation and has **never seen a real token**; read the row as "a design worth porting", not "a mechanism proven in use". Same applies to `costAggregator`. Q7's zero-spend ruling makes this small either way. |
 | Cost calculator + per-tier rates | ABCC `costCalculator.ts`, `main.py:218` | **PORT** | Rates are stale; the structure is right. |
 | Fine-tuning / LoRA | Claudette `CHAMPION-DOSSIER.md` §8 | **REFERENCE** | Already researched to a NO with four structural reasons and written trigger conditions. W4 should cite it, not redo it. |
 
@@ -290,10 +326,10 @@ first.**
 | `recall.sqlite` cross-session memory, 50k-row FIFO, tool calls not indexed | Claudette `recall.rs` | **REUSE** | Also the SQLite precedent W5 needs. |
 | Files-under-`~/.claudette/` storage model | Claudette | **REUSE** | Proof that a serious agent needs no database server. Answers W5's Postgres question by example. |
 | Prisma schema (13 models: Task, ExecutionLog, CodeReview, Mission, TrainingDataset, TaskMemory…) | ABCC | **REFERENCE** | The right *entities* for a console, discovered over months. Read as a domain model; do not carry Postgres. |
-| `ExecutionLog` per-tool-call shape (thought/action/input/observation/timing/tokens/isLoop) | ABCC | **PORT** | This is the console's data. Best-designed table in the family. |
+| `ExecutionLog` per-tool-call shape (thought/action/input/observation/timing/~~tokens~~/isLoop) | ABCC | **PORT** | This is the console's data. Best-designed table in the family — **on six of its seven fields.** ⚠ **Traced 2026-08-07: `tokens` is struck.** `input_tokens` / `output_tokens` / `model_used` exist in the schema, the Python producer sends them (`execution_logger.py:136-138`), the route's zod schema validates them (`routes/execution-logs.ts:25-27`) and forwards them — and then `ExecutionLogService.createLog` drops all three, because `CreateExecutionLogInput` (`executionLogService.ts:3-14`) has no such fields and `createLog` writes an explicit `data` list (`:24-34`) that omits them. TypeScript cannot see it: excess-property checking does not apply to **spread** properties. Two further drop points confirm there is no way in — `captureTrainingData` omits them from its log mapping and passes `tokens: undefined` (`taskExecutor.ts:637-647`), and the second write path, a raw `INSERT` in `mcp-gateway/adapters/postgres.py:239-249`, sends `model_used` but neither token column. **`data-assets.md`'s "0% populated" was an unreachable column, not neglect.** Port the shape; wire the fields; and note the table mixes conventions (`task_id` and `actionInput` side by side) — pick one in 2.0. |
 | The Feb 2026 complexity-field collapse | ABCC migration | **REFERENCE** | Cautionary. BCF's typed `RoutingResult` is the fix. |
 | JSON mission records | BCF `db.rs` | **DROP** | Superseded by Claudette's storage model. |
-| `FileLock` per-path locks | ABCC | **PORT** | Parallel builders need this; W6's worktree question may replace it. |
+| `FileLock` per-path locks | ABCC `file_locks` table + `taskAssigner.ts` | **PORT** | Parallel builders need this; W6's worktree question may replace it. ⚠ **Read properly 2026-08-07 — port the table, not the code path.** The **table** is sound: `filePath` unique, `lockedByAgent` / `lockedByTask`, `expiresAt`, `onDelete: Cascade` from the task. It is also the one durable piece of ABCC's lifecycle. **The careful service is dead code:** `FileLockService` (`fileLock.ts`, 144 lines) respects ownership, takes over only expired locks, alerts on conflict and offers `cleanupExpiredLocks` — and its only references in the repo are its own definition and its own 16 tests. **What actually runs** is `TaskAssigner.lockFiles` (`:164-184`): a bare `upsert` per path with **no ownership check**, which silently overwrites another agent's live lock. The only guard is a read-then-assign pre-check in `assignNextTask` (`:45`, `:68`) — TOCTOU, and bypassed entirely by `routes/queue.ts:111` and `:314`, which call `assignTask` directly. `cleanupExpiredLocks` is never called from anywhere, so the effective GC is the task cascade. And the 30-minute lock TTL is only survivable because the 5-minute watchdog fires first — the TTL is not the safety net it looks like. |
 
 ---
 
@@ -309,7 +345,7 @@ Everything here is the pillar Claudette deliberately omitted, so ABCC dominates.
 | **96 Bark TTS voice lines** (6.7 MB, 3 packs) | ABCC `packages/ui/public/audio/` | **REUSE** | Irreplaceable and expensive to regenerate. Copy the files. Verified: `field-command` 32 + `mission-control` 32 + `tactical` 32. (Path corrected — it is under `packages/ui/`, and `packages/ui/dist/audio/` is a build-artifact duplicate, not a fourth pack.) |
 | `audioManager.ts` playback queue + `voicePacks.ts` | ABCC | **PORT** | Small, and the queueing behaviour is the non-obvious part. |
 | `bark-generate-all.py` regeneration script | ABCC `scripts/` | **REUSE** | Needed to extend the voice set. |
-| ToolLog terminal feed, TokenBurnLog, CodeWindow | ABCC | **PORT** | The no-dead-air surfaces. |
+| ToolLog terminal feed, TokenBurnLog, CodeWindow | ABCC | **PORT** | The no-dead-air surfaces. ⚠ **TokenBurnLog read 2026-08-07: the layout is proven and the data path never was.** 322 lines, and it filters the live store on the same dead predicate as the API — `.filter(log => log.inputTokens \|\| log.outputTokens)` (`:93`) — so its real-data list is **always empty** (§0 item 10). Its only non-empty state is an opt-in demo that generates entries from `Math.random()` (`:63-75`, `:121-134`). The component is *not* the problem: mock mode defaults off, auto-disables when real data arrives, and is labelled *"a demo cosmetic, not a polling fallback"*. **But no human has ever seen this panel render a real number**, so W5 inherits a design with zero observed behaviour under real volume, and W8 inherits the reason cost was never measurable. ToolLog and CodeWindow are still inventory-only. |
 | Three minimaps (Minimap, FlowMinimap, TimelineMinimap) | ABCC | **REFERENCE** | Three attempts at one problem. Pick one deliberately in W5. |
 | Dashboards (CostDashboard, SuccessRateChart, ComplexityDistribution, AgentComparison) | ABCC | **PORT** | Legibility over completeness: port selectively, not all four. |
 | Theme system (`classic.ts`, `battleclaw.ts`) | ABCC | **REUSE** | Personality-with-an-off-switch already has a mechanism. |
@@ -420,6 +456,8 @@ then write 2.0's version from the design. No file from either is copied into 2.0
 ## 12. Summary by verdict
 
 Counts updated 2026-08-07 to include §11a (14 rows: +2 PORT, +6 REFERENCE, +1 REUSE, +5 DROP).
+**The second verification pass (evening) changed no counts** — all six ABCC rows it examined stayed
+PORT or REFERENCE. Six reasons were rewritten; see `verification.md` §4.2.
 
 | Verdict | Count | Where it concentrates |
 |---|---|---|
@@ -470,12 +508,25 @@ it was narrowed to REFERENCE: SVG-per-sprite on a 17×17 board, with the frame-b
 open. **The rest of §8 is still inventory-only** — ToolLog, TokenBurnLog, CodeWindow, the three
 minimaps, the four dashboards, `useSocket.ts`, the theme system, and `audioManager.ts`'s queueing.
 
-**Still Medium, and now explicit:** ABCC's §2 PORT rows (task lifecycle, queue, resource pool,
-stuck-task watchdog) and §7's `ExecutionLog` / `FileLock`. These carry build decisions and were not
-reached. First thing to verify next.
+**~~Still Medium, and now explicit~~ → resolved 2026-08-07 (second pass).** ABCC's §2 PORT rows
+(task lifecycle, queue, resource pool, stuck-task watchdog) and §7's `ExecutionLog` / `FileLock`
+were traced and their test suites **run** — 81 tests, 32.4 s, all passing. **No verdict changed.**
+Six *reasons* did, and one of them reversed: "cleanup is complete" was the sentence telling 2.0 it
+could carry the watchdog across as-is, and the cleanup is complete only of a found-set that omits
+two of the states a task can hang in. Full ledger in `verification.md` §3.4 and §4.2.
+
+**Still Medium:** the rest of §8 — ToolLog, CodeWindow, the three minimaps, the four dashboards,
+`useSocket.ts`, the theme system, and `audioManager.ts`'s queueing. Inventory-only, and the UI has
+still never been run, so the frame-budget question stays open for W5.
 
 **High** on every verdict sourced from code read at a pinned commit, which is most of the table,
 and now higher on the rows that were re-measured or executed rather than read.
+
+**One caveat that applies to the whole table, learned from the second pass.** A row saying a
+component is well built is not a claim that it ever ran. Four things this pass looked at are
+well built and connected to nothing: `FileLockService`, `budgetService`, the three token columns,
+and `TokenBurnLog`'s real-data path. Where a row's value depends on the component having been
+*exercised*, that is now said explicitly in the row. Where it is not said, assume it was read.
 
 **Low, and marked as such in the rows:** anything about how well a component *works* as opposed to
 what it *is*. Executed this pass: Claudette's suite (**1,145 pass / 0 fail**, 3.8 s), BCF's

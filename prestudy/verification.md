@@ -337,26 +337,269 @@ something to re-derive if 2.0's board grows.
 So: **REUSE the projection module, treat the renderer as an open W5 question.** That is a narrower
 and more useful verdict than "W5 starts here".
 
-### 3.3 Not verified this pass
+### 3.3 Not verified in the first pass
 
 Stated plainly rather than left to look checked:
 
 - The remaining §8 presentation rows (ToolLog, TokenBurnLog, CodeWindow, the three minimaps, the
   four dashboards, `useSocket.ts`, the theme system). Component inventory only, as before.
+  **TokenBurnLog is now partly covered — see §3.4(i).**
 - `audioManager.ts` queueing behaviour — the map calls the queueing "the non-obvious part" and it
-  was not executed.
-- §2's PORT rows (task lifecycle, queue, resource pool, stuck-task watchdog) and §7's
-  `ExecutionLog` shape / `FileLock`. These carry build decisions and are the **first thing to pick
-  up next session**.
-- Nothing was run. Docker was available but ABCC's stack was not up, and standing it up is a
-  bigger operation than this pass had room for. The frame-budget question (§4 item 7) still needs
-  the UI actually running.
+  was not executed. **Still not executed.**
+- ~~§2's PORT rows (task lifecycle, queue, resource pool, stuck-task watchdog) and §7's
+  `ExecutionLog` shape / `FileLock`.~~ → **done, see §3.4.**
+- The UI has still never been run. The frame-budget question (§4 item 7) needs it. §3.4 ran
+  ABCC's API test suites, which is the first time anything in ABCC was executed for this study,
+  but that is Node and mocked Prisma — not the stack, and not the browser.
+
+### 3.4 The §2 and §7 PORT rows — executed, second pass (2026-08-07, evening)
+
+These four concerns — task lifecycle, queue, resource pool, file locks — plus the watchdog and
+`ExecutionLog` carry build decisions, so they get the full treatment: the suites were **run**, and
+the token path was **traced end to end** rather than read at one site.
+
+**Headline: no verdict flips.** All six rows stay where they were. But one row's stated *reason*
+reverses outright, one citation has gone stale, and the trace found the mechanism behind a hole the
+data-assets pass could only observe.
+
+#### (a) The citation has moved out from under §2
+
+`taskQueue.ts` is no longer the queue. It is a **275-line facade**: eleven methods, most marked
+`@deprecated`, each a one-line delegation. The lifecycle now lives in **`taskExecutor.ts` (700
+lines)** and **`taskAssigner.ts` (233)**, both split out of it. §2 cites `taskQueue.ts` for "rest
+delays / periodic context reset"; those moved to **`ollamaOptimizer.ts`** and are not in
+`taskQueue.ts` at all. Only `requestHumanInput` / `provideHumanInput` / `returnToPool` still have
+bodies there.
+
+#### (b) Executed: 81 tests pass in 32.4 s
+
+First execution of anything in ABCC for this study. `jest` with `jest-mock-extended` mocking
+Prisma; no Postgres, no Docker.
+
+| Suite | Tests |
+|---|---|
+| `resourcePool.test.ts` | 19 |
+| `taskAssigner.test.ts` | 19 |
+| `taskQueue.test.ts` | 18 |
+| `fileLock.test.ts` | 16 |
+| `stuckTaskRecovery.test.ts` | 8 |
+| `taskExecutor.test.ts` | **1** |
+| **Total** | **81 passed / 0 failed, 32.359 s** |
+
+**0.40 s per test, against Claudette's 0.0033 s (1,145 in 3.76 s) — a ~120× gap**, and the reason
+is visible in the run log: the suite sleeps through the **real** rest delays. Timestamps from the
+run: `20:19:56.416` "resting, restSeconds: 3" → next line `20:19:59.431`; then "restSeconds: 8" at
+`20:19:59.437` → `20:20:07.449`. `OllamaOptimizer.applyRestDelay` awaits a bare
+`setTimeout` (`ollamaOptimizer.ts:25`, `:105`) with no injected clock, so ~14 s of the 32 is the
+test suite waiting in wall-clock time. **This is the §2 `ConversationRuntime` REUSE row's argument,
+measured on both sides of the family** — and a concrete instruction for the port: the delay must be
+injectable.
+
+#### (c) The coverage is inverted relative to the risk
+
+- **`taskExecutor.test.ts` has one test, and it is `'should exist and be importable'`.** The
+  700-line lifecycle core — completion, failure, retry, abort, resource release, rest delay,
+  training capture, auto-assign — has **no behavioural coverage**. It is also the file that took
+  the pin's HEAD commit (#229, a retry bug, 2026-08-06).
+- **`stuckTaskRecovery.test.ts`'s 8 tests never reach `recoverStuckTask`.** They cover the
+  constructor, start/stop, `getStatus`, `updateConfig`, and one `checkAndRecoverStuckTasks` case:
+  *"should return empty array when no stuck tasks"*. The recovery path the map calls "the part
+  usually done wrong" is **untested**, and so is `forceRecoverAll`.
+- **`fileLock.test.ts`'s 16 tests cover a class nothing calls** — see (d).
+
+Not an indictment: this is the natural coverage pattern of a project where the easy-to-test parts
+got tested. It is the strongest possible argument for Claudette's two-trait seam, which is what
+makes the *hard* path testable without a model or a database.
+
+#### (d) `FileLockService` is dead code, and the live lock path ignores ownership
+
+`FileLockService` (`fileLock.ts`, 144 lines) is the careful implementation: it respects ownership,
+takes over only expired locks, emits a `file_conflict` alert and returns `null` on a real conflict,
+and offers `isFileLocked` / `cleanupExpiredLocks`. **Its only references in the repo are its own
+definition and its own test file.** Nothing in production constructs it.
+
+What actually runs is `TaskAssigner`:
+
+- `lockFiles()` (`taskAssigner.ts:164-184`) — a bare `prisma.fileLock.upsert` per path with **no
+  ownership check at all**. It overwrites a live lock held by another agent, unconditionally and
+  silently.
+- `getLockedFiles()` (`:148`) — its own duplicate of the query, not the service's.
+- `releaseFileLocks()` (`:189`) — `deleteMany` by `lockedByTask`.
+
+The only guard is a **pre-check in `assignNextTask`** (`:45`, `:68`): read the locked-file list,
+then assign. Classic TOCTOU, and it is bypassed entirely on the two routes that call `assignTask`
+directly — `routes/queue.ts:111` (manual assign) and `:314`. And **`cleanupExpiredLocks` is never
+called from anywhere**, so expired rows are never collected; they are merely filtered out by the
+`expiresAt > now()` predicate and sit in the table until the task is deleted (the `FileLock.task`
+relation is `onDelete: Cascade`, so that is the actual GC).
+
+One interaction worth carrying: the lock TTL is **30 minutes** (`taskAssigner.ts:165`,
+`fileLock.ts:15`) while the watchdog fires at **5**. The watchdog is what keeps the 30-minute TTL
+from mattering — which means the TTL is not the safety net it looks like.
+
+#### (e) The watchdog: complete cleanup of an incomplete found-set
+
+**What the map says — "cleanup is complete, which is the part usually done wrong" — is true of what
+it finds, and the finding is the part done wrong.** Both halves matter, so both go in the row.
+
+Cleanup, confirmed complete (`stuckTaskRecovery.ts:256-334`): locks released, resource slot
+released, task → `aborted` with `errorCategory: 'timeout'`, the open `TaskExecution` row → `failed`
+with `completedAt`, agent → `idle` + `currentTaskId: null` + failure stats, WebSocket task and
+agent updates, an operator-visible `alert`, and an MCP publish. Eight steps, nothing left dangling.
+That is genuinely better than most.
+
+The found-set (`:192-202`):
+
+```
+status: 'in_progress',  assignedAt: { lt: timeoutThreshold }
+```
+
+- **A task stuck in `assigned` is invisible to it, forever.** It holds the agent (`busy`), the
+  resource slot and its file locks until a human presses reset (`forceRecoverAll`, the only path
+  that covers `assigned`). This is not inference — the author documents the same class of bug in
+  the commit at the pin's HEAD, `taskExecutor.ts:244-249`: *"Nothing polls 'assigned' —
+  autoAssignNextTask selects on status 'pending' — so leaving the task assigned held the agent, the
+  resource-pool slot and the file locks until a human hit reset, and the retry never actually
+  happened."* He fixed the retry path. The watchdog still cannot see the state.
+- **`needs_human` is invisible too**, and so is the `stuck` agent status that
+  `requestHumanInput` sets (`taskQueue.ts:111-121`). `forceRecoverAll`'s orphan sweep only resets
+  agents whose status is `busy` (`:158-160`), so the reset button leaves a `needs_human` task
+  holding its locks and slot. Defensible by design — a human *is* the recovery path — but it means
+  "reset" does not reset everything.
+- **The clock is `assignedAt`, not last progress.** There is no heartbeat: `Task` has
+  `assignedAt` / `needsHumanAt` / `completedAt` / `createdAt` / `updatedAt` and no started-at or
+  liveness field. So the 5 minutes is *total elapsed since assignment*, and a healthy long task is
+  aborted for being slow. The signal it needs already exists — `ExecutionLog.timestamp`, written
+  per step — and is not used. **For 2.0 this is the cheap fix: watchdog on
+  `max(execution_log.timestamp)`, not on assignment time.** A local 35B doing multi-file work will
+  exceed 5 minutes of wall clock routinely.
+- Doc drift, minor but worth not inheriting: the module header and the config comment both say
+  *"default: 10 minutes"* (`:5`, `:31`); the constant is **5** (`:40`), check interval **30 s**
+  (`:41`), both env-overridable.
+
+#### (f) "No crash durability" — precisely which half
+
+The map's blanket phrase is right in effect and imprecise in mechanism. The locks *are* durable.
+
+| State | Where it lives | Survives restart |
+|---|---|---|
+| Task status, assignment, iteration, error | Postgres `tasks` | ✅ |
+| **File locks** | Postgres `file_locks` (`filePath` unique) | ✅ |
+| Execution logs, task executions | Postgres | ✅ |
+| **Resource-pool slots** | `Map<ResourceType, Set<string>>`, process singleton (`resourcePool.ts:88`) | ❌ |
+| Ollama rest counters | module-level `Map`, process-global (`ollamaOptimizer.ts:22`) | ❌ |
+| Watchdog recovery history, `lastCheckTime` | in-memory, capped at 100 | ❌ |
+
+**And nothing reconciles at boot.** `index.ts` constructs an empty pool (`:101-102`) and starts the
+watchdog (`:214`); no sweep rebuilds slot state from the tasks table. The *one* piece of in-memory
+state that is rehydrated at boot is `costAggregator.hydrate()` (`:108`) — which rebuilds from the
+three columns nothing writes (see (h)). The state that needs rehydration does not get it; the state
+that gets it has no source.
+
+Two restart branches, both worth stating because they are different bugs:
+
+- **One coder agent** (the shipped default): the agent is left `busy` in Postgres. Recovered ≤5 min
+  later *if* the task was `in_progress`; **never** if it was `assigned`.
+- **Two or more coder agents:** the empty pool admits a second task to the 1-slot `ollama`
+  resource while the first is still believed in progress. Over-admission on a single GPU, for up to
+  the watchdog interval.
+
+#### (g) The lifecycle has no type
+
+`Task.status` is `String @db.VarChar(20) @default("pending")` — no enum, no check constraint, and
+**no status union type anywhere in `packages/api`** (`grep` for `TaskStatus` or any `'pending' | …`
+union returns nothing). Counted across `services/` + `routes/`, excluding tests: **143 bare
+status-literal comparison and assignment sites** for all entities, of which **at least 48 are
+unambiguously `Task`** — a floor, because `'completed'` and `'failed'` are shared with
+`TaskExecution` and were excluded from that count. The eleven `Task` states in use: `pending`,
+`assigned`, `in_progress`, `completed`, `failed`, `aborted`, `needs_human`, `decomposing`,
+`awaiting_approval`, `reviewing`, `approved`.
+
+There is no state machine — only conventions, which is exactly how (e)'s "nothing polls
+`assigned`" survived. **This is the concrete first job for Q8's "RTS framing into the Rust domain
+model" ruling**: the vocabulary decision and the durability fix are the same piece of work, and a
+Rust enum with typed transitions makes the entire class of bug in (e) unrepresentable.
+
+#### (h) `ExecutionLog`: the shape is as good as claimed, and three of its fields were never writable
+
+The map calls it "the best-designed table in the family" and lists
+`thought/action/input/observation/timing/**tokens**/isLoop`. Six of those seven are real. The
+tokens are not, and this pass found why. Traced in order:
+
+1. **Schema has them.** `input_tokens Int?`, `output_tokens Int?`, `model_used VarChar(50)`.
+2. **The producer sends them.** `packages/agents/src/monitoring/execution_logger.py:136-138` puts
+   `inputTokens` / `outputTokens` / `modelUsed` in the POST body.
+3. **The route accepts them.** `createLogSchema` validates all three
+   (`routes/execution-logs.ts:25-27`).
+4. **The route forwards them.** `logService.createLog({ ...input, actionInput })` (`:48-51`).
+5. **The service drops them.** `CreateExecutionLogInput` (`executionLogService.ts:3-14`) has no
+   token fields, and `createLog` writes an **explicit `data` list** (`:24-34`) that omits all
+   three. TypeScript cannot catch this: excess-property checking does not apply to **spread**
+   properties, only to written ones. The one blind spot in the type system, landed on exactly.
+
+The downstream damage is larger than three null columns, because two consumers are gated on them:
+
+```ts
+if (log.inputTokens || log.outputTokens) {   // always false
+  budgetService.recordUsage(...)             // :55
+  costAggregator.addLog(log);                // :70
+  emitCostUpdate(io, costAggregator.snapshot());
+}
+```
+
+`budgetService.recordUsage` has **exactly one production caller** — that line — and **14 call sites
+in its own test file**. It is thoroughly tested and has never once run on real data. Same for
+`costAggregator`.
+
+Two more independent drop points confirm there is no way in:
+
+- **`captureTrainingData` drops them twice** (`taskExecutor.ts:637-647`): its log mapping omits the
+  three fields, and it passes `tokens: undefined` with the comment *"Could be tracked in future"*.
+  So the `TrainingDataset` rows have no token data either.
+- **The second write path never sends them.** `packages/mcp-gateway/src/adapters/postgres.py:239-249`
+  is a raw `INSERT INTO execution_logs` listing `id, task_id, agent_id, step, action, "actionInput",
+  observation, model_used` — `model_used` yes, the two token columns no.
+
+**Net: no write path in the system can populate `input_tokens` or `output_tokens`.**
+`data-assets.md`'s "0% populated" was an accurate observation of an unreachable column, not of
+neglect.
+
+One detail for whoever ports the shape: the table **mixes naming conventions**. `task_id`,
+`duration_ms`, `is_loop`, `input_tokens` are `@map`ped to snake_case; `step`, `timestamp`,
+`thought`, `action`, `actionInput`, `observation` are not, so `actionInput` is a camelCase column
+in a snake_case table — which is why the raw SQL above has to quote `"actionInput"`.
+
+#### (i) The console consequence: TokenBurnLog has never rendered a real number
+
+`packages/ui/src/components/main-view/TokenBurnLog.tsx` (322 lines) filters the live log store on
+the same dead predicate — `.filter((log) => log.inputTokens || log.outputTokens)` (`:93`) — so
+`realEntries` is **always empty**. The only way the panel shows anything is `useMockData`, which
+generates 25 entries from `Math.random()` and appends another every 8 s (`:63-75`, `:121-134`).
+
+To be fair to the code: mock mode defaults to **off** (`:85`), auto-disables the moment real data
+arrives (`:107-111`), and carries the comment *"this is a demo cosmetic, not a polling fallback"*
+(`:113-114`). Someone was careful here. The emptiness is entirely upstream in (h).
+
+**So: the layout is proven and the data path never was.** §8's `TokenBurnLog` **PORT** stands on
+the design; nothing about its behaviour under real volume has been observed, by anyone, ever.
+
+#### (j) The rest delay runs after the slot is freed
+
+`handleTaskCompletion` releases the resource slot at `taskExecutor.ts:141`, then reaches the rest
+delay at `:171` → `updateAgentOnCompletion` → `:408`. So the shared 1-slot `ollama` resource is
+**available for the whole 3-8 s "rest"**. The delay protects the agent's turnaround, not the model
+context it was built to protect — the Feb 2026 stress-test finding in `ollamaOptimizer.ts:4-7`.
+It only bites with two or more coder agents, since `isOllamaTask` requires
+`agentTypeName === 'coder'` (`:85`), which is likely why it was never noticed. Constants:
+**3 s** normal, **8 s** every **5th** task, per agent.
 
 ---
 
 ## 4. Where this leaves the map
 
 Corrections applied to `inheritance-map.md` in the same pass:
+
+### 4.1 First pass (morning)
 
 | § | Row | Change |
 |---|---|---|
@@ -376,3 +619,32 @@ Corrections applied to `inheritance-map.md` in the same pass:
 column into "nobody built this" — peak-RAM/VRAM reporting, and the config-driven gate threshold.
 §12's headline ("only five REWRITE rows") is now **seven**, and both additions land in W1/W2 and
 W6 respectively. The overall shape — integration project, not research project — still holds.
+
+### 4.2 Second pass (evening) — ABCC's §2 and §7 rows
+
+| § | Row | Change |
+|---|---|---|
+| §0 | **new item 10** | The token columns are unreachable by every write path in ABCC. The mechanism, and what it kills downstream |
+| §2 | Task lifecycle / queue / pool / locks | Citation moved to `taskExecutor.ts` + `taskAssigner.ts` (`taskQueue.ts` is now a facade). Durability split: **locks are durable, slots are not, nothing reconciles at boot**. `status` is an untyped string across 72 sites |
+| §2 | **Stuck-task watchdog** | **"Cleanup is complete" reversed in half.** Cleanup of what it finds *is* complete (8 steps); the found-set is `in_progress` only — `assigned` and `needs_human` are invisible — and the clock is `assignedAt`, not last progress. Recovery path untested |
+| §2 | Rest delays | Citation corrected `taskQueue.ts` → **`ollamaOptimizer.ts`**; constants recorded; applied *after* the slot is released; unmockable `setTimeout` |
+| §2 | `ConversationRuntime` (Claudette) | Strengthened with the other side of the comparison: ABCC is **81 tests / 32.4 s**, ~120× slower per test, because it sleeps for real |
+| §3 | `resourcePool.ts` | Four resource types including **`grok`**; env-gated pools; C10→claude / C7-9→remote confirmed a second time; in-memory semaphore, no waiters, no durability |
+| §5 | `budgetService.ts` | **Never called in production.** Its one live call site is gated on the dead token fields; 14 of its 15 call sites are its own tests |
+| §7 | `ExecutionLog` | Shape confirmed good on six of seven fields; **"tokens" struck** — three independent drop points, no write path can populate them. Column-naming inconsistency flagged for the port |
+| §7 | `FileLock` | `FileLockService` is **dead code**; the live path is an ownership-blind `upsert` reachable from `routes/queue.ts:111`; `cleanupExpiredLocks` never called; 30-min TTL vs 5-min watchdog |
+| §8 | ToolLog / **TokenBurnLog** / CodeWindow | TokenBurnLog's real-data path is structurally empty; its only non-empty state is an opt-in `Math.random()` demo. Layout proven, behaviour never observed |
+| §13 | Confidence | The "still Medium, first thing to verify next" paragraph is now resolved |
+
+**Net effect on the verdict counts: none. No row moved.** All six targeted rows stay PORT or
+REFERENCE, and the counts in §12 are unchanged. What changed is six *reasons* — and one of them,
+"cleanup is complete", was half wrong in the direction that matters, because it was the sentence
+telling 2.0 it could carry the watchdog design across as-is.
+
+**The pattern across both passes.** The first pass found things recorded as existing that do not
+exist. The second found things that exist, are well built, and **are not connected to anything** —
+a lock service nothing constructs, a budget service nothing calls, three columns nothing writes, a
+console panel with no reachable data. Neither failure mode is visible from reading a file; both are
+visible from tracing a path or running the thing. Same lesson as
+`verify-claims-against-code-not-docs`, one level up: **a component being good is not evidence that
+it ran.**

@@ -582,6 +582,35 @@ Sources are `prestudy/inheritance-map.md`, `prestudy/questions.md` and `prestudy
 **One thing this table does not change:** the base model, Rust, and llama.cpp decisions stay
 closed per §15. Nothing above is new evidence against them.
 
+**Second verification pass, 2026-08-07 evening.** ABCC's orchestration and persistence rows were
+traced and their test suites run (`verification.md` §3.4). **No premise in the table above is
+overturned.** Three are sharpened, and one workstream gains a job it did not have:
+
+- **W4's dead data-mining half now has a mechanism.** The token, cost and model columns were not
+  merely unwritten — they are **unreachable**. The producer sends them, the API validates them, and
+  `ExecutionLogService.createLog` drops them by writing an explicit field list that omits all three;
+  TypeScript misses it because excess-property checking does not apply to spread properties. The
+  same dead gate silently disables `budgetService.recordUsage`, `costAggregator`, and the
+  `TokenBurnLog` console panel. **Consequence for W4:** running ABCC longer would never have
+  produced this data, so there is nothing to recover and no reason to revisit the decision to delete
+  that half. **Consequence for W8:** cost-per-task has never been measurable in this family, so it
+  is new instrumentation, not a ported metric.
+- **W5 inherits a console panel with zero observed behaviour.** `TokenBurnLog`'s real-data list is
+  structurally always empty; its only non-empty state is an opt-in demo fed by `Math.random()`. The
+  layout is proven, the data path never ran. Treat "ABCC already has this surface" as a claim about
+  *design*, not about *behaviour under load*, for this panel and by extension for the rest of §8
+  that is still inventory-only.
+- **W3 gains the durability work as a first-class item, not a port.** ABCC's task lifecycle is
+  eleven states held as **untyped strings** — no status union type anywhere in the package, ≥48
+  bare literal sites for `Task` alone — with no state machine; file locks are
+  durable in Postgres but resource-pool slots are a process-local `Map` with **no boot
+  reconciliation**; and the stuck-task watchdog only looks at `in_progress`, so a task hung in
+  `assigned` or `needs_human` holds its agent, slot and locks until a human presses reset. Its clock
+  is time-since-assignment, not time-since-progress, and no liveness field exists to fix that with.
+  **This is where Q8's "RTS framing into the Rust domain model" earns its cost:** the vocabulary
+  decision and the durability fix are the same piece of work, and a typed enum with typed
+  transitions makes that whole class of hang unrepresentable. See §14 item 4.
+
 ### W1 - Model tiering around the base agent
 
 The base agent is decided. This workstream is not an open survey; it is about what surrounds
@@ -1013,11 +1042,25 @@ best weeks of the schedule re-confirming settled facts.**
    who plays the reviewer, whether it always runs, and whether `critic_inflation` ships as a
    console metric.
 
+   **Added after the second verification pass:** W3's first deliverable is the **typed lifecycle**,
+   before any durability mechanism is chosen. ABCC's four services are the right set of concerns and
+   none of them is the hard part — the hard part is that the lifecycle exists only as string
+   literals, which is how a task hung in `assigned` came to be invisible to both the assigner and
+   the watchdog. Three specific things to carry as requirements rather than as ports: every
+   non-terminal state must be recoverable (not just the one the watchdog currently queries); the
+   liveness clock must be **time since last progress**, not time since assignment, which means the
+   domain model needs a heartbeat ABCC never had; and in-memory admission state must be
+   **reconciled at startup** against the durable store, which ABCC never does. Sequencing note:
+   settle the Q8 vocabulary in the same step — the enum is the fix, so naming it twice is waste.
+
 5. **W4 after W8**, and without its data-mining half. It needs an eval to calibrate routing
    against and a spend ceiling to optimize toward; it has neither until items 0 and 1 land.
 
-6. **W7, W12, W13** after the core shape is settled. W12 stays blocked on item 0 until Q3 and Q12
-   are answered — it cannot start at all without them.
+6. **W7, W12, W13** after the core shape is settled. ~~W12 stays blocked on item 0 until Q3 and Q12
+   are answered — it cannot start at all without them.~~ **Both were answered 2026-08-07** (new
+   repo keeping the ABCC name; dual MIT/Apache-2.0), so W12 is unblocked and this item carries no
+   entry condition. Note that §17's body still marks items 3, 7 and 8 "STILL OPEN" — the banner at
+   the top of §17 supersedes them.
 
 7. **W10 late**, unchanged. Single player has to be solid before co-op means anything, and co-op
    has to be solid before multiplayer is more than a distributed way to fail.
