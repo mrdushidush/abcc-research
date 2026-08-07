@@ -561,6 +561,27 @@ Research questions across the stages:
 
 Each ends with a written finding. Do not merge them.
 
+### 11.0 Premises this section was written on that Phase 0 changed
+
+**Added 2026-08-07, after Phase 0 and the verification pass.** Six workstreams were scoped against
+facts that are no longer true. This is the Phase 0 → Phase 1 handoff: read it before W-anything.
+Sources are `prestudy/inheritance-map.md`, `prestudy/questions.md` and `prestudy/verification.md`.
+
+| W | The premise below assumes | What is actually true | Consequence |
+|---|---|---|---|
+| **W1** | RAM headroom "is what actually determines concurrency"; the card runs an expert-offload setup | The crowned config is **fully VRAM-resident, zero offload**. `--cpu-moe` measured 1.16x, verdict "don't use"; "residency is ~90% of the win". This is now **code-sourced**: `hw.rs:103-109` ships the string *"fully VRAM-resident in 13.6 GB, zero RAM spill"* to every user | The binding constraint is **VRAM + KV cache**, not system RAM. Reframe from "survive offload into 32 GB" to "stay resident in 16 GB". Different question, different answer |
+| **W1** | Model choice is settled and Q56 ranks candidates | Q56 crowned `gemma-4-26b-a4b-qat` (median 55/56) over `qwen3.6-35b-a3b-mtp` (48-52). **David's ruling: gemma wins single-shot and falls apart on agentic multi-file context; qwen stays the foundation brain.** The corpus agrees about its own limits — every fixture is small, ctx 32768 is never stressed, and the crown rule discards a measured **3.4x** wall-clock gap | **Never cite the Q56 score column as an agentic ranking.** W1 evaluates candidates on multi-file work *at context pressure*. The base choice stands; the instrument that would defend it cannot see the axis that decides it |
+| **W1, W2** | `hw.rs` already reports peak RAM per configuration | It does not. 208 lines, `nvidia-smi` VRAM only — **no temperature probe, no system-RAM probe**, and it reads *installed* VRAM, never *peak* anything | "Report a hard limit, not a tuning suggestion" has **no existing implementation**. New work, now a REWRITE row |
+| **W2** | The Rust↔llama.cpp boundary is the central open question | **Answered.** HTTP, two dialects (Ollama-native + OpenAI-compat), no FFI, proven across 131 configs. Re-verified live 2026-08-07: `--doctor` reaches LM Studio, `/v1/models` HTTP 200 | W2 shrinks to a confirmation run plus the parts that *are* open: concurrency under residency, prefix caching, constrained decoding, swap cost, shared-server-or-not |
+| **W4** | ABCC's Postgres holds "months" of per-tool-call timing, token and cost data | **9 days**, and `token`/`cost`/`model_used` were never written (0% populated). One finding survives: a 10.5% tool-call malformation rate. `complexity_reasoning` is 18% populated; 137 of 182 scored tasks carry the default 5.0 | **Delete the data-mining half of W4.** It is done and it is empty. The "highest-evidence work available" is not there |
+| **W4** | The escalation ladder runs through Haiku | Haiku was **never** an execution tier. The real ladder is C1-C6 local 16K, C7-C9 remote-or-local 32K, C10 Sonnet — confirmed at `taskRouter.ts:382` | W4's baseline is wrong in the text below. Start from the real ladder |
+| **W6** | Gate independence in single player is an open question, and BCF's numbers are a calibration baseline | **Measured.** StealthForge ran an independent reviewer over 34 missions: median **+3.65** points of self-scoring inflation, **0 of 34** where the reviewer scored higher. Separately: BCF's verifier — the 60%-weighted deterministic half of the gate — does not parse any language, docks Python ~2.5 points on every platform, and on Windows scores a correct and a syntactically broken Python file identically at 5.80 | "Does it matter" is closed; **implementation** is open. And BCF's all-local 7.5 average was produced by a miscalibrated instrument — **the verifier must be fixed before the thresholds are recalibrated**, or W6 tunes a number against a broken measurement |
+| **W8** | Q56 is the starting corpus and an eval harness question is open | Q56 exists, has 56 tasks, per-task shell verifiers, no LLM judge — but it is **not on Claudette's `main`**, only on unmerged `battery/q50-quality-corpus`. `main` carries a different, older A-K battery, and `hw.rs:108` cites *that* one. They are separate instruments. Also unknown to this brief: ABCC ships a **100-task suite with 7 recorded runs** across 10 categories, closer to 2.0's target workload than the 40-task set | W8 does not start from zero and does not start from Q56 alone. Start from the 100-task suite, and **the frozen core stays frozen** — C8-C9 and anything new land as a K-series-style extension |
+| **W8** | Q56's shape is representative | Every Q56 task is one `claudette "<prompt>"` invocation against a small fixture, and ctx 32768 is never stressed — while David's **live daily driver runs `CLAUDETTE_NUM_CTX=61440`** | The evaluation gap is wider than "Q56 is one-shot". The eval never exceeds 32k; the tool runs at 60k. W8's first job is a corpus that can see agentic multi-file work under context pressure |
+
+**One thing this table does not change:** the base model, Rust, and llama.cpp decisions stay
+closed per §15. Nothing above is new evidence against them.
+
 ### W1 - Model tiering around the base agent
 
 The base agent is decided. This workstream is not an open survey; it is about what surrounds
@@ -571,8 +592,16 @@ Qwen 3.6 35B-A3B.
 - What partners it in each tier: a small fast model for triage and recon, something for
   adversarial gating that is not the builder, and which frontier models are worth calling.
 - Measure prefill and decode throughput for each candidate on this hardware, plus quality
-  degradation per quantization level, plus **RAM headroom remaining**, which is what actually
-  determines concurrency.
+  degradation per quantization level, plus ~~**RAM headroom remaining**, which is what actually
+  determines concurrency~~ → **VRAM headroom and KV-cache growth remaining**, which is what
+  actually determines concurrency on a fully-resident config (see 11.0). Report peak VRAM *and*
+  peak system RAM as a hard limit — **nothing in the family measures either today**, so budget
+  building the probe as part of this workstream.
+- **Quantizer lineage is a first-class variable**, not a footnote: byteshape ShapeLearn at
+  3.06 bpw tied unsloth's 4-bit on quality using 4.1 GB less. On a residency-bound config that is
+  a bigger lever than model choice, and this brief did not mention it.
+- Evaluate on **agentic multi-file work under context pressure**, not on Q56's score column.
+  Q56 is single-shot against small fixtures and never stresses 32k; the daily driver runs at 60k.
 - Tool calling and structured output reliability per candidate. More important than raw
   coding benchmark scores for an agentic system, and the specific thing V1's 7B failed at.
   Compare against what Claudette already achieves.
@@ -595,8 +624,15 @@ you have 24GB or more" variants, since users are not on this exact box.
   serving both, two separate processes, or a hard rule that only one runs at a time. This
   decision has larger consequences than it appears.
 - Concurrency: N parallel builder requests with batching, and the effect on per-request
-  latency and on system RAM under expert offload. Find the point where the machine becomes
-  unstable and report it as a hard limit, not a tuning suggestion.
+  latency and on ~~system RAM under expert offload~~ → **VRAM and KV cache on a fully-resident
+  model** (see 11.0 — nothing spills, so the bound is a different formula entirely). Find the
+  point where the machine becomes unstable and report it as a hard limit, not a tuning
+  suggestion.
+- **Note the direct conflict with prefix caching below.** Claudette's `ToolRegistry` is *mutable
+  per turn* — a changed `tools` array invalidates the prefix. Four builders sharing a system
+  prompt is the best case for prefix caching and the worst case for on-demand tool groups. The
+  measured workload is **27.8:1 prefill:decode** (117.6M prompt vs 4.2M output tokens over 3,150
+  runs), so this is not a tuning detail; quantify both sides before choosing.
 - KV cache reuse and prefix caching. The system prompt is largely identical across tasks in a
   factory pattern. Quantify the savings.
 - Grammar or schema constrained decoding for guaranteed-parseable output. Potentially a
@@ -633,9 +669,23 @@ Deliverable: `research/W3-orchestration.md` with a recommendation and rejected o
 
 ### W4 - Routing, escalation and the complexity model
 
-**Start with data you already own.** ABCC's PostgreSQL holds months of real per-tool-call
+~~**Start with data you already own.** ABCC's PostgreSQL holds months of real per-tool-call
 timing, token and cost data, plus a 40-task scored corpus and a documented complexity model.
-Mine all of it before proposing anything.
+Mine all of it before proposing anything.~~
+
+**Superseded 2026-08-07. The mining is done and the well is dry.** ABCC's Postgres holds **9
+days**, not months; `token`, `cost` and `model_used` were never written (0% populated);
+`complexity_reasoning` is 18% populated and 137 of 182 scored tasks carry the default complexity
+of 5.0. It yielded exactly one usable finding — **10.5% of tool calls fell outside the tool
+vocabulary** — which belongs to W6 more than W4. Do not schedule this. See
+`prestudy/data-assets.md` §5.
+
+**What W4 actually starts from:** the complexity model as *code*. `taskRouter.ts:105-239` is the
+Campbell rule-based scorer (port the structure, fix the unanchored `text.includes()` matching —
+`'api'` fires inside "rapid", `'add'` inside "address"); `complexityAssessor.ts:117-161` is the
+asymmetric dual-assessment weighting; BCF's `router.rs:60` already has the typed `RoutingResult`
+that fixes ABCC's Feb 2026 field collapse. The real escalation ladder is **C1-C6 local 16K,
+C7-C9 remote-or-local 32K, C10 Sonnet** — Haiku was never a tier.
 
 - How well did V1's dual assessment actually work? Judge the rule-based plus Haiku weighting
   retrospectively against downstream retry and escalation rates. The 88 percent local routing
@@ -894,21 +944,87 @@ first because it holds the data assets and the design language. Claudette second
 harness is the thing being ported. BCF last because by then you will know what to look for.
 Then the inheritance map, then the corrections to this brief.
 
+~~**Phase 1**, after the Phase 0 gate:~~
+
+~~1. W1 and W2 first. Everything depends on what the hardware can actually do and how Rust talks
+to llama.cpp. 2. W4's data-mining half runs in parallel, since it needs only the existing
+database. 3. W8 early, gated on open question 2. 4. W3, W6 and W11 as a block. 5. W5 next, and
+give it room. 6. W7, W12, W13 after the core shape is settled. 7. W10 late. 8. W9 runs
+continuously.~~
+
+**Resequenced 2026-08-07, after Phase 0 and the verification pass.**
+
+The original order put W1 and W2 first because "everything depends on what the hardware can
+actually do and how Rust talks to llama.cpp". Phase 0 found most of that already measured: the
+Rust↔llama.cpp boundary is settled (HTTP, two dialects, live-verified), the base model is ruled,
+the crowned config is fully VRAM-resident, and NVFP4/MXFP4 is closed. W1 and W2 shrink to a
+confirmation run plus a short list of genuinely open questions. Meanwhile W4's "highest-evidence
+work available" turned out to be 9 days of empty columns. **Leading with hardware would spend the
+best weeks of the schedule re-confirming settled facts.**
+
 **Phase 1**, after the Phase 0 gate:
 
-1. W1 and W2 first. Everything depends on what the hardware can actually do and how Rust
-   talks to llama.cpp.
-2. W4's data-mining half runs in parallel, since it needs only the existing database. It is
-   cheap and it is the highest-evidence work available.
-3. W8 early, gated on open question 2. Without the harness the rest is opinion.
-4. W3, W6 and W11 as a block. They interlock, and the stage pipeline is the shape the
-   orchestrator must be able to express.
-5. W5 next, and give it room. It is the identity of the project and it deserves more than a
-   week.
-6. W7, W12, W13 after the core shape is settled.
-7. W10 late. Single player has to be solid before co-op means anything, and co-op has to be
-   solid before multiplayer is more than a distributed way to fail.
-8. W9 runs continuously throughout.
+**0. ~~David's six open decisions~~ — ANSWERED 2026-08-07. Nothing here blocks any more.** All of
+§17 and `questions.md` §2 are closed. What the answers do to the sequence below:
+
+- **W12 is unblocked** — new repo, keeps the name, dual MIT/Apache-2.0.
+- **W3 is unblocked** — 2.0 copies Claudette's engine and both stay live, so the tokio decision is
+  genuinely 2.0's to make. But **W3 must settle the RTS vocabulary before it ports a single type**:
+  the framing goes *into* the domain model, which deliberately reverses Claudette's functional
+  naming principle, and Rust enums make it sticky. W3, W5 and W11 all inherit that choice.
+- **W4 shrinks substantially** — spend is effectively zero. The escalation ladder is local, C10
+  becomes a manual act rather than a routed tier, and W4 optimises latency and rework instead of
+  allocating a budget. Combined with the dead data-mining half, W4 is now a small workstream.
+- **W6 grows** — the independence check ships **always on**, so a second review pass per artifact
+  is a design constraint, not an option. With zero spend on one GPU, "what plays the reviewer" is
+  hard-constrained: same model with no history (cheapest, most correlated with what it is checking)
+  or a second local model (less correlated, costs a swap or co-residency alongside 13.6 GB).
+  **That interacts directly with W2's residency and concurrency work.**
+- **W7 gets easier** — with cloud escalation manual and rare, §3.6 item 20's structural air-gap
+  (`default = []`) can largely survive rather than degrading to a feature flag.
+
+1. **W8 first, and give it the room W5 was promised.** This is the change with the most
+   consequence. Phase 0 assumed W8 was mostly done because Q56 exists; it is not. Q56 is
+   single-shot against small fixtures, never stresses 32k while the daily driver runs at 60k,
+   lives only on an unmerged branch, and measures none of the operator-control axis that is 2.0's
+   actual differentiator. Every later claim about whether 2.0 is *better* is measured by this
+   harness. Building it late means grading the whole project with the wrong instrument. Start from
+   ABCC's 100-task suite, keep the frozen core frozen, add the K-series extension.
+
+2. **W1 and W2 in parallel, scoped down.** Confirmation run plus the open parts only: concurrency
+   and KV-cache growth under full residency, prefix caching against the 27.8:1 prefill:decode
+   workload (and its conflict with a mutable tool registry), constrained decoding, model-swap cost,
+   shared-server-or-not, quantizer lineage. Build the peak VRAM/RAM probe here — nothing in the
+   family has one.
+
+3. **W5 next, and it keeps its extra room.** The residency reframing freed the schedule; spend it
+   here, as the brief itself argues. It carries the project's identity and the success test.
+   Phase 0 narrowed the starting point usefully: `isoProjection.ts` is a good foundation (181
+   lines of dependency-free 2:1 projection math), but the renderer around it is SVG-per-sprite on
+   a 17×17 board and the frame-budget question is still open. W5 also owns the four
+   operator-control questions nothing in the family answers.
+
+4. **W3, W6 and W11 as a block**, unchanged — they interlock and the stage pipeline is the shape
+   the orchestrator must express. Two entry conditions: W3 needs the Claudette code-sharing answer
+   from item 0; and **W6 must fix BCF's verifier before recalibrating any threshold**, because the
+   all-local 7.5 average it would calibrate against was produced by an instrument that scores a
+   correct and a broken Python file identically. W6 also inherits a closed question — gate
+   independence *matters*, measured at +3.65 median inflation over 34 missions — and an open one:
+   who plays the reviewer, whether it always runs, and whether `critic_inflation` ships as a
+   console metric.
+
+5. **W4 after W8**, and without its data-mining half. It needs an eval to calibrate routing
+   against and a spend ceiling to optimize toward; it has neither until items 0 and 1 land.
+
+6. **W7, W12, W13** after the core shape is settled. W12 stays blocked on item 0 until Q3 and Q12
+   are answered — it cannot start at all without them.
+
+7. **W10 late**, unchanged. Single player has to be solid before co-op means anything, and co-op
+   has to be solid before multiplayer is more than a distributed way to fail.
+
+8. **W9 runs continuously**, and Phase 0 raised its value: "this already exists, use it" is now
+   the likely finding for several workstreams, which makes the prior-art scan the highest-value
+   pure-research item left.
 
 **Phase 2** starts only when SUMMARY.md exists and David has signed off.
 
@@ -965,6 +1081,18 @@ pipeline. Everything else is a milestone on the way.
 
 Answer during or shortly after Phase 0. These change the shape of Phase 1.
 **Answers given 2026-08-07 are recorded inline.**
+
+> **Second round, 2026-08-07 — section 17 is now fully answered, and so is `questions.md` §2.**
+> Full consequences in `prestudy/questions.md` §2.
+>
+> - **Q3 repo and naming:** new repo, **keeps the name "Agent Battle Command Center"**. *W12 unblocked.*
+> - **Q12 licensing:** **MIT OR Apache-2.0 dual**, matching Claudette. *W12 unblocked.*
+> - **Claudette engine sharing:** **copy into 2.0; both stay live.** *W3 unblocked* — free to reopen the tokio decision without negotiating against a shipping product. Accepted cost: fixes stop propagating, the test suite splits.
+> - **Q7 frontier spend:** **effectively zero, local only**; cloud escalation is manual and rare. **W4 shrinks substantially** — the ladder is local, C10-Sonnet is a manual act rather than a routed tier, and W4 optimises latency and rework instead of allocating a budget. Also rescues the structural air-gap in §3.6 item 20.
+> - **Q8 RTS framing:** **into the Rust domain model.** This *deliberately overrides* Claudette's `forge/types.rs` principle ("role naming is about what the model is doing, not which weights are loaded"). **The vocabulary must be settled before W3 ports any type** — Rust enums make it sticky, and W3, W5 and W11 all inherit it.
+> - **Q10 existing V1 users:** **clean break, documented.** No migration code; W12 writes the succession story.
+> - **Q11 `BMORE.md`:** a **real business document — take it out** of the public BCF repo. Action on David's repo; already DROP in the map.
+> - **Independence check:** **always on.** W6 budgets a second review pass per artifact — and with spend at zero on one GPU, "what plays the reviewer" is now a hard-constrained W6 question, not a menu.
 
 1. ~~**BattleCommandForge:** confirm what it actually is...~~
    **ANSWERED.** `github.com/mrdushidush/battle-command-forge`. Public, Apache-2.0, sole-authored

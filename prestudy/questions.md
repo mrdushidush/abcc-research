@@ -73,6 +73,35 @@ question stands regardless of the outcome.
 
 ## 2. Questions for David
 
+**ANSWERED 2026-08-07. All of section 2 is now closed.** David's decisions and what each one
+does to Phase 1:
+
+| # | Decision | Answer | Consequence |
+|---|---|---|---|
+| 3 | Repo and naming | **New repo, keeps the name "Agent Battle Command Center"** | **W12 unblocked.** Clean Rust history; the C&C identity the whole design leans on is retained. V1's repo is not the host |
+| 2 | Licensing | **MIT OR Apache-2.0 dual** | **W12 unblocked.** Matches Claudette, the largest donor, so the engine copy carries zero relicensing friction. Rust-ecosystem default |
+| 7 | Claudette engine sharing | **Copy into 2.0; both stay live** | **W3 unblocked.** 2.0 is free to reshape the runtime for parallel builders and to reopen the tokio decision without negotiating against a shipping product. Accepted cost: fixes stop propagating and the 1,145-test suite splits in two |
+| 4 | Frontier spend ceiling | **Effectively zero — local only; cloud escalation manual and rare** | **W4 shrinks substantially.** The escalation ladder is local; C10-Sonnet becomes a manual act, not a routed tier. W4's objective is minimising local latency and rework, not allocating a budget. Also makes §3.6 item 20 much easier: the `default = []` structural air-gap can largely survive co-op |
+| 5 | RTS framing depth | **Into the Rust domain model** | **Overrides an inherited convention — deliberately.** Claudette's `forge/types.rs` states "role naming is about what the model is doing, not which weights are loaded". 2.0 reverses that. The vocabulary must be settled **before** W3 ports any type, because Rust enums make it sticky; W3, W5 and W11 all inherit it |
+| 6 | Existing V1 users | **Clean break, documented** | W12 writes the succession story; no migration code, no compatibility surface. V1 stays public with a pointer to the successor |
+| 1 | `BMORE.md` | **A real business document — take it out of the public BCF repo** | Action on David's repo, not a 2.0 workstream. Already DROP in the inheritance map, so nothing depends on it |
+| 10 | Independence check | **Always on** | **W6 must budget a second review pass per artifact.** With spend at zero the reviewer is local, on one GPU — so item 11 below is now a hard constraint, not a menu |
+
+**What item 10's answer does to item 11.** "Always on" plus "local only" plus one GPU leaves a
+narrow field: the reviewer is either the same model with a different prompt and no history
+(cheapest, and the *most* correlated with what it is checking) or a second smaller local model
+(less correlated, costs a swap or co-residency in 16 GB). That is the exact tension item 11 named,
+now with both escape hatches removed. **This is a real W6 research question with a hard
+constraint**, and it interacts directly with W2's concurrency and residency work — the second pass
+has to fit alongside a 13.6 GB resident model.
+
+**Item 12 (`critic_inflation` as a first-class console metric) is still open** and is now more
+attractive: with the check always on, the metric is produced on every run for free.
+
+The original text follows for the record.
+
+---
+
 Decisions only he can make. Several gate specific workstreams.
 
 1. **`BMORE.md`** in the public battle-command-forge repo is a full commercial product
