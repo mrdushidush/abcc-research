@@ -36,10 +36,17 @@ written. All three are now stated correctly here.
 1. **Claudette's forge is a working five-phase pipeline, not just types and personas.** The
    Claudette dossier said `forge/` is "roles, personas and a model map, not a pipeline". The
    `forge/` *directory* is, but `run_forge_mission` in `run.rs` (driven by
-   `run/forge_run.rs`, 1,687 lines) orchestrates: **Planner → Coder round 0 → Verifier →
-   Fix-loop → Submitter**, with `MAX_FIX_ROUNDS = 3` and a Verifier that emits one-line JSON
+   `run/forge_run.rs`, **1,803 lines**) orchestrates: **Planner → Coder round 0 → Verifier →
+   Fix-loop → Submitter**, and a Verifier that emits one-line JSON
    `{"score": 1-10, "pass": bool, "feedback": string}`. That materially raises what Claudette
    contributes to W6 and W11.
+
+   *Verified 2026-08-07 (see `verification.md` §1).* The phase banners are at `forge_run.rs:592`
+   (Planner), `:621` (Coder ↔ Verifier fix-loop, phases 2-4) and `:943` (Submitter). Two
+   corrections: the file is 1,803 lines at the pinned commit, not 1,687; and the fix-round cap is
+   **`DEFAULT_MAX_FIX_ROUNDS = 3`** (`:29`), overridable by `CLAUDETTE_MAX_FIX_ROUNDS` and clamped
+   to `FIX_ROUNDS_HARD_CAP = 10` (`:35`). **Claudette already separates algorithm from policy the
+   way §6 recommends BCF's threshold should** — 2.0 inherits the pattern, not just the number.
 2. **BCF's 9.2 / 8.5 / 8.0 gate thresholds are empirically unreachable with all-local models.**
    The BCF dossier praised them without this context. `decisions.md` AD-7 records the measurement:
    BCF's own 10-mission stress test averaged **7.5** all-local, and the design that followed made
@@ -122,6 +129,27 @@ Added 2026-08-07, from the data-asset extraction and the archive repos:
    inflation, **0 of 34** where the independent reviewer scored higher. See §11a and
    `archive-repos.md` §2.
 
+Added 2026-08-07 by the verification pass (`verification.md`):
+
+9. **The residency reframing is now sourced from shipped code, not from a dossier.**
+   `questions.md` §1 — the single most load-bearing correction Phase 0 made — rested on
+   `CHAMPION-DOSSIER.md`, a document, which is exactly the contamination vector David warned
+   about. It no longer has to. `hw.rs:103-109` ships the VRAM→brain recommendation as *code*, and
+   the recommendation string reads: *"50/50 + K 8/8 on the 50-task battery (49/50 at 64k ctx) at
+   ~70-76 tok/s — **fully VRAM-resident in 13.6 GB, zero RAM spill**."* Claudette's own installer
+   tells every user the crowned config does not spill. **W1 and W2 should be reframed to
+   "stay resident in 16 GB" without waiting for a reproduction run.**
+
+   Two riders, both from the same live probe (`claudette --doctor`, 2026-08-07):
+
+   - `hw.rs:108` cites the **50-task + K1-K8** battery, not Q56. That is a third independent
+     source for §0 item 5: the instrument Claudette ships against lives on `main`, and Q56 is a
+     different battery on an unmerged branch. The §9 row conflating them is confirmed wrong.
+   - David's live daily-driver environment runs **`CLAUDETTE_NUM_CTX=61440`** on
+     `qwen3.6-35b-a3b-mtp@iq3_s`. So `T2.md` axis 4's "ctx 32768 is never stressed" understates
+     the gap: the *evaluation* never exceeds 32k while the *daily driver* runs at 60k. W8's corpus
+     problem is bigger than the map records.
+
 Also worth flagging: `docs/decisions.md` opens with a warning that AD-1 through AD-7 describe
 `claudettes-forge` and are "fiction relative to the shipped product". It is still valuable, but
 only as a record of *measurements and reasoning*, never as a description of Claudette.
@@ -156,8 +184,8 @@ first.**
 
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
-| `ConversationRuntime<C,T>` + `ApiClient` / `ToolExecutor` traits | Claudette `runtime/conversation.rs` | **REUSE** | The two-trait seam is why 1,145 tests run in 14.76 s without a model. Best structural idea in the family. |
-| Differentiated loop breakers (9 situations, 9 purpose-written nudges) | Claudette `conversation.rs:1210-1443` | **REUSE** | Strictly better than ABCC's single exception. Includes unknown-tool near-miss, duplicate-edit, unchanged-read, and graceful iteration-cap landing. |
+| `ConversationRuntime<C,T>` + `ApiClient` / `ToolExecutor` traits (`conversation.rs:141`, `:145`, `:237`) | Claudette `runtime/conversation.rs` | **REUSE** | The two-trait seam is why **1,145 tests run in 3.8 s** without a model. Best structural idea in the family. (Executed 2026-08-07: 1,145 pass / 0 fail in the default-feature lib binary, 3.76 s; 1,274 across all binaries at `--all-features`. The brief's 14.76 s is the *edit-to-green* cycle, not test execution — see `verification.md` §1.3.) |
+| Differentiated loop breakers (**12 purpose-written interventions**) | Claudette `conversation.rs:57-1470` | **REUSE** | Strictly better than ABCC's single exception. Iteration-budget warning, graceful cap landing + its tool refusal + its empty-reply fallback, empty-turn continuation, unknown-tool near-miss, over-search nudge, duplicate nav / duplicate edit / duplicate-denied suppression, unchanged-read pointer-up, no-progress nudge. |
 | Auto-compaction + context eviction | Claudette `runtime/compact.rs`, `context_evict.rs`, `run/compaction_policy.rs` | **REUSE** | Solves the handoff-bloat problem W11 raises, already tuned. |
 | Empty-turn detection and retry ceiling | Claudette `conversation.rs:1033-1123` | **REUSE** | Found in the wild (`runs/empty-stream-flake-2026-07-17`) and fixed with evidence. |
 | CrewAI agent construction | ABCC `packages/agents` | **DROP** | The dependency 2.0 exists to remove. |
@@ -176,12 +204,13 @@ first.**
 
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
-| HTTP client with Ollama-native + OpenAI-compat dialects | Claudette `api.rs` | **REUSE** | Answers W2's central question. Reached LM Studio, `llama-server` and Ollama across 131 configs; `--jinja` parity proven. |
-| Context budgeting (`truncate_to_budget`, `CHARS_PER_TOKEN`, `SAFETY_CHARS`) | Claudette `api.rs:1554-1671` | **REUSE** | Unglamorous and load-bearing. |
+| HTTP client with Ollama-native + OpenAI-compat dialects | Claudette `api.rs` | **REUSE** | Answers W2's central question. Reached LM Studio, `llama-server` and Ollama across 131 configs; `--jinja` parity proven. **Exercised live 2026-08-07** against David's running LM Studio: `--doctor` reports `backend: openai-compat` → `/v1/models` HTTP 200, 24 models, brain loaded. Dialect selection is `CLAUDETTE_OPENAI_COMPAT` (`api.rs:368`) over `OLLAMA_HOST` (`:296`). |
+| Context budgeting (`truncate_to_budget` `api.rs:1554`; `CHARS_PER_TOKEN = 4` `:151`; `SAFETY_CHARS = 1024` `:154`) | Claudette `api.rs` | **REUSE** | Unglamorous and load-bearing. (The constants live at the top of the file, not inside the earlier-cited `1554-1671` range.) |
 | Model-reload transient retry | Claudette `api.rs:647-668` | **REUSE** | Handles LM Studio JIT loads. Needed the moment model swapping enters the design. |
 | `brain_selector.rs` tiered fallback + stuck diagnostics | Claudette | **REUSE** | Direct input to W4's escalation ladder. |
 | Per-role model config with presets | BCF `model_config.rs` (8 roles, fast/balanced/premium) + Claudette `models.toml` | **PORT** | BCF's shape is right; merge with Claudette's TOML overlay and role-map. |
-| `hw.rs` GPU/VRAM/temperature probes | Claudette | **REUSE** | W1 and W2 need this to report peak RAM per configuration. |
+| `hw.rs` GPU **VRAM** probe + VRAM→brain recommendation | Claudette `hw.rs` (208 lines, 4 public fns) | **REUSE** | Live-verified 2026-08-07: `detect_vram_gb` shells out to `nvidia-smi` and reported 15.9 GiB correctly. `recommend_brain` (`:103`) is the VRAM→certified-model table. |
+| **Peak RAM / VRAM reporting per configuration** (W1, W2) | nowhere | **REWRITE** | ⚠ **Correction 2026-08-07.** This row previously read "GPU/VRAM/**temperature** probes … W1 and W2 need this to report peak **RAM** per configuration" and was wrong twice. `hw.rs` has **no temperature probe and no system-RAM probe at all** — it is `nvidia-smi` VRAM only, and its own module doc says "no NVML/sysinfo bindings". It reads *installed* VRAM, never *peak* anything. W1/W2's "report a hard limit, not a tuning suggestion" (`questions.md` §4 item 1) has **no existing implementation**. Budget for it. |
 | `hardware.rs` | BCF | **DROP** | Duplicate of the above; Claudette's is live. |
 | litellm provider strings | ABCC | **DROP** | Replaced by the HTTP surface. |
 | Silent Claude-to-Ollama fallback on missing key | ABCC `main.py:163-178` | **DROP** | Discards the routing decision without an error. |
@@ -195,12 +224,12 @@ first.**
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
 | Native tool calling (`tools` array out, `message.tool_calls` in) | Claudette `api.rs` | **REUSE** | Categorically better than ReAct text parsing. The single biggest gap in ABCC. |
-| `ToolRegistry` + 20 on-demand groups | Claudette `tool_groups.rs` | **REUSE** | ~210 tokens core versus ~34 KB fully loaded. |
-| Workspace-gated pre-enable of the lean coding core | Claudette `ToolGroup::coding_core()` | **REUSE** | The fix for the 415-error `enable_tools` spiral. Carry the fix with the mechanism, never the mechanism alone. |
+| `ToolRegistry` + 20 on-demand groups | Claudette `tool_groups.rs` (`all() -> [ToolGroup; 20]` at `:144`) | **REUSE** | **Measured 2026-08-07, not read off a doc:** base schema **827 chars**, all 20 groups loaded **33,251 chars**. At Claudette's own `CHARS_PER_TOKEN = 4` that is **~207 tokens core versus ~33 KB fully loaded** — `docs/architecture.md:97`'s "~210 tokens / ~34 KB" checks out. Exactly 20 groups. |
+| Workspace-gated pre-enable of the lean coding core | Claudette `ToolGroup::coding_core()` `tool_groups.rs:183` | **REUSE** | The fix for the 415-error `enable_tools` spiral. Carry the fix with the mechanism, never the mechanism alone. Four groups: Files, Search, Advanced, Quality. ⚠ **Measured at 12,161 chars ≈ 3,040 tokens, not the "~2.2k tokens" its own doc comment (`:175`) claims.** `questions.md` §3.3 item 10 inherits that understatement — the indirection's remaining payer is being asked to justify ~38% more schema than the number in the question suggests. |
 | Forgiving `enable_tools` (empty group → coding core) | Claudette `executor::run_enable_tools` | **REUSE** | Same. |
 | Schema-economy tests (`..._has_no_enum`, `coding_core_schema_stays_lean`) | Claudette `tool_groups.rs` tests | **REUSE** | Encodes *why* the schema is shaped this way so the reason survives refactoring. Copy the practice, not just the tests. |
 | `every_advertised_tool_is_classified` regression test | Claudette | **REUSE** | Catches silently-dropped tools. Cheap, high value. |
-| `WorkspaceRoots` + `validate_read_path` + F5 fallback | Claudette `tools.rs:571-646` | **REUSE** | Multi-root, `PATH`-style, with the anti-hallucination probe. |
+| `WorkspaceRoots` (`tools.rs:589`) + `validate_read_path` (`:733`) + F5 fallback (`:646`) | Claudette `tools.rs` | **REUSE** | Multi-root, `PATH`-style, with the anti-hallucination probe. Also carries `startup_diagnostics` — the wrapper-forgot-`CLAUDETTE_WORKSPACE` warning, which fired for real during this verification pass. |
 | `startswith` prefix containment | ABCC `file_ops.py` | **DROP** | Wrong primitive. |
 | `fuzzy_apply.rs` tolerant patching | Claudette | **REUSE** | What makes `apply_diff` survive whitespace drift from a local model. |
 | `post_edit_check.rs` | Claudette | **REUSE** | Verify after edit rather than trust. |
@@ -234,14 +263,14 @@ first.**
 |---|---|---|---|
 | **Gate formula `critique*0.4 + verifier*0.6`** | BCF `mission.rs:1139` | **REUSE** | The most portable artifact in the three repos. Outvotes the judge instead of trusting it, and generalizes to arbitrary tasks in a way Q56's per-task verifiers cannot. |
 | Complexity-scaled thresholds 9.2 / 8.5 / 8.0 | BCF `mission.rs:61` | **REFERENCE** | Inverted scaling is a real insight; the numbers are cloud-assisted calibration (all-local average was 7.5). Recalibrate, do not inherit. |
-| Config-driven threshold, default 8.0, `aspirational` preset | `decisions.md` AD-7 | **PORT** | Separates algorithm from policy. The right resolution of the row above. |
+| Config-driven threshold, default 8.0, `aspirational` preset | `decisions.md` AD-7 — **and nowhere else** | **REWRITE** | ⚠ **Reclassified 2026-08-07.** Separating algorithm from policy is still the right resolution of the row above, but **this was never built.** Not in BCF (`grep -i aspirational src/` is empty; it ships the hardcoded ladder). Not in Claudette (no `gate_threshold`, no `--gate-threshold`, no `models.toml::pipeline` key — its forge gate is `VERIFIER_PASS_SCORE: u8 = 8`, hardcoded at `forge_run.rs:1310`, fail-closed). AD-7 is in the document that declares itself *"fiction relative to the shipped product"*. **The shape to copy is `max_fix_rounds()` (`forge_run.rs:41-61`)** — env override, clamped to a hard cap, warns on garbage, documented default — applied to the gate threshold. New work; budget it. |
 | Surgical fix loop with best-round restore + decline detection | BCF `mission.rs` | **REUSE** | Family-wide convergent learning. |
 | Refusing to restore a round the security stage rejected | Claudette `run/forge_run.rs` | **REUSE** | The improvement BCF's version lacks. |
 | Five-phase forge pipeline (Planner → Coder → Verifier → Fix → Submit) | Claudette `run_forge_mission` | **REUSE** | The only stage pipeline in the family that runs daily against real repos. |
 | Verifier JSON contract `{score, pass, feedback}`, fence-tolerant | Claudette | **REUSE** | Small, typed, already survives real model output. |
-| Deterministic project verifier (lint + tests, per language) | BCF `verifier.rs` | **PORT** | Python deep, Rust/Go/TS-JS shallow, six static-check categories. The scoring model generalizes; env construction is Python-specific. |
+| Deterministic project verifier (lint + tests, per language) | BCF `verifier.rs` | **PORT** | ⚠ **Executed 2026-08-07 — "Python deep" is struck.** The *scoring model* (weighted static categories feeding the gate) generalizes and is worth porting. **No language branch is.** Rust/Go/TS-JS `syntax_valid` is substring presence, not parsing: the string `"this is not rust but it says fn  here"` scores **7.5**. `verify_python` `return`s early on a successful spawn, before its `has_tests` / `has_docstring` / `has_error_handling` assignments — so on *every* platform Python is docked ~2.5 points against other languages. On Windows it hardcodes `python3`, which resolves to the Store alias, spawns fine and exits 49 — **a correct Python file and a syntactically broken one both score 5.80**. See `verification.md` §2.2; this contaminates BCF's own all-local 7.5 average. |
 | `check_secrets` + `check_todos` in scoring | BCF `verifier.rs:633-673` | **REUSE** | Cheap, language-independent, connects to W7. |
-| `security_review.rs` deterministic added-lines scan | Claudette | **REUSE** | Deterministic, not an LLM. Correct shape for a gate input. |
+| `security_review.rs` deterministic added-lines scan | Claudette | **REUSE** | Deterministic, not an LLM. Correct shape for a gate input. ⚠ **But it is opt-in and off by default** — `enabled()` reads `CLAUDETTE_FORGE_SECURITY_REVIEW` (`:67`), and the module doc calls itself "a high-signal heuristic, **not** a full SAST" over a curated pattern set, added lines only. HIGH flips the round to not-passing; MEDIUM/LOW are advisory. **2.0 must decide whether this runs by default** — the row below only has teeth when it does. |
 | Tiered LLM review every 5th / 10th task | ABCC | **REFERENCE** | Cadence-based review is a cost hack for a co-op-only world. The gate formula replaces it. |
 | Validation-command + `"PASS" in stdout` | ABCC `main.py:571` | **REFERENCE** | Magic-string contract. Q56's per-task verifiers are the better pattern. |
 | BCF 9-stage sequence (Router…Gate) | BCF | **REFERENCE** | Nine stages collapsed to five in the successor and stayed there. W11 should reconcile toward the five, not away from it. |
@@ -274,9 +303,10 @@ Everything here is the pillar Claudette deliberately omitted, so ABCC dominates.
 
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
-| **2D isometric renderer** (`isoProjection.ts`, grid, tank, target, projectile, explosion, label) | ABCC `components/isometric/` | **REUSE** | Closest existing asset to the stated C&C isometric target. W5 starts here. |
+| **2D isometric projection math** (`isoProjection.ts`, 181 lines, zero deps) | ABCC `packages/ui/src/components/isometric/` | **REUSE** | ✅ **Read properly 2026-08-07 — upgraded from "exists" to "good".** Classic 2:1 diamond grid in pure screen-space math (`sx=(x−z)·64`, `sy=(x+z)·32`), explicitly no CSS 3D transforms. Ships `isoZIndex` depth sorting, a `Z_LAYER` table, and `isoCubeFaces` (SVG polygons for a block's three visible faces). Cleanly separated from the components that consume it, which is what makes it portable. |
+| The isometric **renderer** (7 components: grid, tank, target, projectile, explosion, label, battlefield) | ABCC `components/isometric/` | **REFERENCE** | ⚠ **Narrowed from REUSE.** Renders one SVG node per sprite with DOM `z-index`, on a `GRID_RANGE = 8` (17×17) board. `questions.md` §4 item 7's frame-budget question was asked of the R3F battlefield; **it applies to this path too and is not answered by it.** Keep the projection, treat the renderer as open W5 work. |
 | React Three Fiber 3D battlefield (11 components) | ABCC `components/battlefield/` | **REFERENCE** | Real work, but the decision is isometric. Keep as a source of motifs. |
-| **96 Bark TTS voice lines** (6.4 MB, 3 packs) | ABCC `public/audio/` | **REUSE** | Irreplaceable and expensive to regenerate. Copy the files. |
+| **96 Bark TTS voice lines** (6.7 MB, 3 packs) | ABCC `packages/ui/public/audio/` | **REUSE** | Irreplaceable and expensive to regenerate. Copy the files. Verified: `field-command` 32 + `mission-control` 32 + `tactical` 32. (Path corrected — it is under `packages/ui/`, and `packages/ui/dist/audio/` is a build-artifact duplicate, not a fourth pack.) |
 | `audioManager.ts` playback queue + `voicePacks.ts` | ABCC | **PORT** | Small, and the queueing behaviour is the non-obvious part. |
 | `bark-generate-all.py` regeneration script | ABCC `scripts/` | **REUSE** | Needed to extend the voice set. |
 | ToolLog terminal feed, TokenBurnLog, CodeWindow | ABCC | **PORT** | The no-dead-air surfaces. |
@@ -334,8 +364,8 @@ Everything here is the pillar Claudette deliberately omitted, so ABCC dominates.
 
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
-| `doctor.rs` — ten diagnostic probes with copy-paste fixes | Claudette | **REUSE** | "It has to run on other people's machines" is a stated constraint; this is the mechanism. |
-| `setup.rs` five-step wizard + `firstrun.rs` failure classifier | Claudette | **REUSE** | Same. |
+| `doctor.rs` — ten diagnostic probes with copy-paste fixes | Claudette `doctor.rs` (1,045 lines) | **REUSE** | "It has to run on other people's machines" is a stated constraint; this is the mechanism. Verified: exactly ten — env, safety-overrides, brain, pick-brain, toolchains, recall, egress, google-oauth, voice, secrets. `probe_google_oauth` is `#[cfg(feature = "integrations")]`, so **the default air-gapped build ships nine**. Ran green end-to-end against live LM Studio 2026-08-07. |
+| `setup.rs` five-step wizard + `firstrun.rs` failure classifier | Claudette `setup.rs` (233 lines) | **REUSE** | Same. Verified: `[1/5]` backend → `[2/5]` hardware → `[3/5]` brain + pull offer → `[4/5]` integrations → `[5/5]` doctor pass. Adds no probe logic of its own; it sequences `firstrun`, `hw` and `doctor` interactively — which is why it is cheap to carry. |
 | Comment discipline (measurement + regression that motivated it) | Claudette | **REUSE** | A practice, not code. It is why the Claudette dossier was fast to write, and W13 should mandate it. |
 | ADR practice | Claudette `docs/decisions.md`, BCF | **PORT** | Both wrote ADRs. Claudette's went stale and needed a warning banner. W13 should require a supersession marker, not just a file. |
 | `plans/` per-sprint task specs written before the work | Claudette (119 files) | **REUSE** | Direct precedent for W13's co-development conventions. |
@@ -397,12 +427,14 @@ Counts updated 2026-08-07 to include §11a (14 rows: +2 PORT, +6 REFERENCE, +1 R
 | **PORT** | 20 | Mostly ABCC — the complexity model and the console surfaces — plus the two gate-independence mechanisms from the archive repos. |
 | **REFERENCE** | 28 | Spread evenly. Mostly negative results and superseded attempts. |
 | **DROP** | 26 | Mostly ABCC infrastructure, BCF's commercial scaffolding, and StealthForge's self-scored gate. |
-| **REWRITE** | 5 | The genuinely new work: provider abstraction, difficulty/context separation, TTFT, operator metrics, one security test. |
+| **REWRITE** | **7** | The genuinely new work: provider abstraction, difficulty/context separation, TTFT, operator metrics, one security test — **plus two added by the 2026-08-07 verification pass: peak VRAM/RAM reporting (W1, W2) and the config-driven gate threshold (W6)**, both of which the map had recorded as existing assets and neither of which is implemented anywhere. |
 
 **The shape this implies:** 2.0 is Claudette's engine with ABCC's console bolted onto it, BCF's
 gate arithmetic inserted at the verification boundary, and about five things that nobody has built
-yet. Only five REWRITE rows is the headline: the brief expected a research project and Phase 0
-found mostly an integration project with a hard UI problem attached.
+yet. Only seven REWRITE rows is the headline: the brief expected a research project and Phase 0
+found mostly an integration project with a hard UI problem attached. Verification moved two rows
+*into* that column rather than out of it — a reminder that the risk in this map is rows recorded as
+"already exists, carry it" that turn out not to exist.
 
 **The five genuinely open pieces**, which is where Phase 1 effort should concentrate:
 
@@ -425,13 +457,29 @@ found mostly an integration project with a hard UI problem attached.
 
 **High** on every verdict sourced from code read at a pinned commit, which is most of the table.
 
-**Medium** on the presentation-layer rows. I inventoried ABCC's components by file and read their
-names and imports, not their rendering logic. Whether `isoProjection.ts` is a good foundation or
-merely an existing one is a W5 judgment that needs someone to actually run it.
+**Updated 2026-08-07 by the verification pass.** See `verification.md` for the full ledger.
 
-**Medium** on the BCF verifier's language-generality claim. I read the dispatch branches for
-Python, Rust, Go and TS/JS but did not execute any of them.
+**~~Medium~~ → resolved on the BCF verifier's language-generality claim.** It was executed against
+fixtures per language. The claim did not survive: no language branch parses anything, Python is
+docked ~2.5 points on every platform by an early `return`, and on Windows a correct and a broken
+Python file both score 5.80. §6's row is rewritten and `verification.md` §2.2 has the table.
+
+**~~Medium~~ → partly resolved on the presentation layer.** `isoProjection.ts` was read properly
+and is a good foundation — 181 lines of dependency-free 2:1 projection math. The *renderer* around
+it was narrowed to REFERENCE: SVG-per-sprite on a 17×17 board, with the frame-budget question still
+open. **The rest of §8 is still inventory-only** — ToolLog, TokenBurnLog, CodeWindow, the three
+minimaps, the four dashboards, `useSocket.ts`, the theme system, and `audioManager.ts`'s queueing.
+
+**Still Medium, and now explicit:** ABCC's §2 PORT rows (task lifecycle, queue, resource pool,
+stuck-task watchdog) and §7's `ExecutionLog` / `FileLock`. These carry build decisions and were not
+reached. First thing to verify next.
+
+**High** on every verdict sourced from code read at a pinned commit, which is most of the table,
+and now higher on the rows that were re-measured or executed rather than read.
 
 **Low, and marked as such in the rows:** anything about how well a component *works* as opposed to
-what it *is*. Only Claudette's test suite (1145 pass) and BCF's (96 pass, 2 fail) were executed.
-No model was loaded, no mission was run, no battery was reproduced.
+what it *is*. Executed this pass: Claudette's suite (**1,145 pass / 0 fail**, 3.8 s), BCF's
+(**98 pass / 0 fail** — the two previously-failing tests are shell-dependent, see
+`verification.md` §2.4), BCF's per-language verifier against fixtures, Claudette's tool-schema
+sizes, and `claudette --doctor` end-to-end against live LM Studio. **Still true: no model was
+prompted, no mission was run, no battery was reproduced, and ABCC's UI was never started.**
