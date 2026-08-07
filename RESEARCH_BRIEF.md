@@ -82,87 +82,203 @@ question. Do not write a line of ABCC 2.0. Read the code, write down what is the
 
 ## 3. The three source repos
 
-Everything in this section is provisional until Phase 0 confirms it.
+**Corrected against the code, 2026-08-07.** Every repo is pinned: ABCC v1 `d5528ea`,
+Claudette `fc1ea22` (v0.17.0), battle-command-forge `d6c1601` (v0.2.0). Full detail and file
+references live in the three dossiers under `prestudy/`. Corrections are listed at the end of
+this section.
 
 ### 3.1 ABCC v1 - the soul and the data
 
-Public, MIT, `github.com/mrdushidush/agent-battle-command-center`. Released around February
-2026 at v0.7.0, with Docker Hub images, open good-first-issues, merged community PRs and an
-active Discussions tab.
+Public, MIT, `github.com/mrdushidush/agent-battle-command-center`. Still receiving commits
+(last: 2026-08-06), 318 commits. Roughly 38k lines of source across three languages, plus a
+24k-line `scripts/` tree of benchmark and ops tooling that outgrew the application.
+
+Built as a learning project for local AI. Fun was the goal; architecture and correctness
+deliberately were not. It succeeded at what it set out to do, and the defects below should be
+read in that light.
 
 Stack as shipped:
 
 ```
 UI (React:5173) -> API (Express:3001) -> Agents (FastAPI:8000) -> Ollama / Claude / Grok
-                          |
-                    PostgreSQL:5432
+                          |                       |
+                    PostgreSQL:5432    <----------+  (execution-log writeback over HTTP)
 ```
+
+The back-edge matters: the agents service calls the API to persist logs while the API is
+synchronously waiting on the agents service. The two are mutually dependent, not layered.
 
 Behaviour as shipped:
 
-- Local worker is `qwen2.5-coder:7b` with custom Modelfiles at 8K, 16K and 32K context.
+- Local worker is `qwen2.5-coder:7b` with Modelfiles at 8K, 16K, 32K (and 64K, Mac-only).
+  8K is deprecated. **Tuned throughout for an RTX 3060 Ti 8GB** - no model-sizing conclusion
+  transfers to the 5060 Ti without re-measurement.
 - **Dual complexity assessment on a 1 to 10 scale:** a rule-based pass over keywords and
-  structure, plus a Haiku semantic pass at roughly $0.001 per call, with smart weighting that
-  trusts Haiku when it scores 2 or more points higher than the rule-based estimate.
-- Routing ladder: C1-6 to local Ollama, C7-8 to Haiku, C9-10 to Sonnet, Opus for
-  decomposition and review only and never for writing code.
-- The complexity model is grounded in Campbell's Task Complexity Theory, adapted to code:
-  component complexity (steps, files, functions), coordinative complexity (dependencies), and
-  dynamic complexity (ambiguity and decision-making). This is real intellectual property and
-  should survive into 2.0 in some form.
-- Measured results: roughly 88 percent of tasks routed to the free local model, about $0.002
-  average cost per task against roughly $0.04 for an all-frontier baseline.
-- **A 40-task evaluation set** scored C1 through C9 with per-band success rates. This is not
-  a smoke test, it is a real starting corpus.
-- Three agent types: Coder, QA, CTO, all visible and controllable in the sidebar.
-- Auto-retry pipeline catching syntax errors and re-running with error context.
-- Stuck-task detection at 10 minutes with recovery, plus loop detection.
-- Parallel execution when tasks use different resources, claimed 40 to 60 percent speedup on
-  mixed batches.
+  structure, plus a Haiku semantic pass, with asymmetric weighting - when Haiku scores 2 or
+  more points *higher* it is taken outright; when 2 or more points lower the scores are
+  blended 60/40 toward the rules. The asymmetry is the insight.
+- Routing ladder: **C1-C6 local Ollama 16K, C7-C9 remote Ollama if configured otherwise local
+  Ollama 32K, C10 Sonnet.** Haiku is *not* an execution tier: it does complexity assessment,
+  periodic review, auto-retry phase 3, and fix attempt 1. Opus never writes code.
+- The complexity model is grounded in Campbell's Task Complexity Theory, adapted to code.
+  This is real intellectual property and it has already survived two ports into Rust
+  (`battle-command-forge/src/router.rs` and Claudette's `Role::Planner`).
+- **Measured results: 88 percent is a pass rate** (35/40, 2026-02-05), later 98 percent
+  (39/40, 2026-02-20). It is *not* a routing rate. On a C1-C9 corpus the local routing rate is
+  ~100 percent by construction. The cost-per-task figures are estimates, not measurements.
+- **A 40-task evaluation set** scored C1 through C9. Superseded by Claudette's Q56; the C1-C4
+  entries embed the reference implementation in the task description and are transcription
+  exercises. The C8-C9 entries are worth salvaging.
+- Three agent types: Coder, QA, CTO. In practice these are **model-tier bindings wearing role
+  names** - routing to Sonnet selects the agent typed `qa`, and CTO is forced onto Claude.
+- Auto-retry pipeline; its effect on pass rate is **unmeasured** and `CLAUDE.md` says so.
+- Stuck-task detection at **5 minutes** (source comment: "was 10 - tightened").
+- Loop detection: 50-call cap, per-path limits, similarity detection, reported back to the
+  model as tool output. Good design, but its state is a **process-global singleton**, so it
+  is mutually exclusive with the parallel execution listed below.
+- Parallel execution, claimed 40 to 60 percent speedup on mixed batches, no cited measurement.
 - Cost dashboard with daily budget limits and burn rate.
-- Presentation layer: Red Alert styling, 96 Bark TTS voice lines, React Three Fiber 3D
-  battlefield, agent minimap, bounty board, terminal-style tool log, warning klaxon on loops.
-- Target languages: Python, JS, TS, Go, PHP.
-- One durable prompting finding: the "CodeX-7" elite operator persona plus three worked
-  examples of ideal three-step execution stopped the model looping write-read-rewrite and
-  pushed it into write-verify-report.
+- Presentation layer: Red Alert styling, 96 Bark TTS voice lines (6.4 MB), a React Three Fiber
+  3D battlefield, **a separate 2D isometric renderer with its own projection maths**, three
+  minimaps, a terminal-style tool log, a token burn log, a theme system. No bounty board
+  exists.
+- Also present and undocumented in this brief: a Mission orchestrator, a Battle Claw external
+  API, xAI/Grok support, a cross-task memory system, and a training-data export pipeline.
+- Target languages: Python, JS, TS, Go, PHP, with per-language validation and test templates.
+- One durable prompting finding: the "CodeX-7" elite operator persona plus **seven** worked
+  examples pushed the model from write-read-rewrite into write-verify-report. The persona has
+  since travelled into Claudette, where it is baked into the binary as `personas/codex7.md`.
+  Note the ABCC copy is **textually corrupted** - a numbered list beginning at item 2 - so the
+  measured results were achieved with a damaged prompt.
 
-**What 2.0 inherits from ABCC:** the console concept and its entire visual and audio
-language, the unit and stage metaphor, the complexity model, the 40-task corpus, the routing
-telemetry in PostgreSQL, and the CodeX-7 persona finding.
+**Known defects worth carrying into design, not criticism:** a parse failure is reported as
+success (`main.py:436-447`, `success=True  # Assume success unless proven otherwise`); the
+`/execute/abort` endpoint aborts nothing because its state map is never populated; execution
+logs are recovered by scraping CrewAI's stdout.
 
-**What 2.0 does not inherit:** the codebase. React plus Express plus FastAPI plus CrewAI plus
-Ollama is not the foundation for a Rust tool. V1 is a donor, not an ancestor.
+**What 2.0 inherits from ABCC:** the console concept and its entire visual and audio language,
+the isometric renderer, the unit and stage metaphor, the complexity model, the `ExecutionLog`
+shape, the C8-C9 corpus entries, and the CodeX-7 persona finding.
+
+**What 2.0 does not inherit:** the codebase. V1 is a donor, not an ancestor.
 
 ### 3.2 Claudette - the harness
 
-Private, at `D:\dev\claudette`. Rust. The owner's personal AI assistant, currently running
-Qwen 3.6 35B-A3B as its daily driver under llama.cpp with `--n-cpu-moe` expert offload and
-mmap disabled deliberately to keep RAM pressure survivable on 32GB.
+**Public**, MIT OR Apache-2.0, `github.com/mrdushidush/claudette`, published on crates.io.
+Rust, v0.17.0, 470 commits, ~60k lines in a single crate. `cargo test --lib`: **1,145 passing
+in 14.76 seconds.**
 
-**What 2.0 inherits from Claudette:** the tool-calling implementation, which is the thing
-V1's 7B could never do reliably. The eval loop. The quality gates. The llama.cpp integration
-and the tuning that makes a 35B-A3B usable on this box. Real harness data from actual daily
-use, which is worth more than any synthetic benchmark.
+Built after significant local-AI expertise had accumulated, focused on precision, correctness
+and usability, with the fun layer omitted entirely. The owner's most complete shipped product.
+
+Daily driver is **LM Studio** (which runs llama.cpp underneath), reached over HTTP. `api.rs`
+speaks two dialects: Ollama-native `/api/chat` and OpenAI-compatible under
+`CLAUDETTE_OPENAI_COMPAT=1`. There are no in-process bindings and no FFI. The same surface has
+driven LM Studio, `llama-server` and Ollama.
+
+Three checkouts exist and all are working roles: `claudette` is canonical, `claudette-forge`
+is the clone Claudette edits when working on her own code, `claudette-research-control` runs
+the Q56 battery.
+
+**What 2.0 inherits from Claudette:** far more than the brief originally assumed.
+
+- **Native tool calling** (`tools` array out, `message.tool_calls` in) - the thing V1's 7B
+  could never do.
+- The **`ConversationRuntime<C,T>` seam**: two traits, `ApiClient` and `ToolExecutor`, which
+  is why the loop is testable without a model.
+- A **20-group on-demand tool registry** keeping the base schema at ~210 tokens, plus the
+  hard-won fix for its failure mode (see below).
+- **Nine differentiated loop breakers**, auto-compaction, context eviction, empty-turn retry.
+- A **transcript with trash-backed undo**, secret redaction before write, and bounded restore
+  targets - a working answer to the human-in-the-loop requirement.
+- **Structural air-gapping**: `default = []` means no cloud code is compiled into the default
+  binary, plus `egress.rs` guarding both the HTTP and subprocess paths.
+- A **five-phase forge pipeline** (Planner, Coder, Verifier, Fix-loop, Submitter) that runs
+  daily against real repos.
+- **Q56**: 56 tasks across 11 surfaces and 12 task types, a shell verifier per task, no LLM
+  judge anywhere, run across 131 model configurations with negative results retained. This is
+  the project's evaluation baseline.
+- The **champion campaign** and its measurements. See the correction to section 5 below.
+
+**One transferable failure worth stating explicitly.** The tool-group indirection saves tokens
+but the model dropped the required `group` argument 415 times in one baseline capture, then
+spiralled to timeout. The fix kept the mechanism and removed the requirement to use it:
+pre-enable a lean coding core when a workspace is set, and treat a bare `enable_tools()` as a
+request for that core. Errors went to zero and tasks got faster. **A token-saving indirection
+that a small model cannot reliably operate costs more than it saves.**
 
 **Open:** whether Claudette and ABCC 2.0 share code as a library, share a running model
-server, or stay fully separate. Two independent inference stacks on one 32GB machine is a
-resource conflict, not just duplication. This is a Phase 1 decision, in W2 and W3.
+server, or stay fully separate. This is a Phase 1 decision, in W2 and W3. Note that Claudette
+is deliberately synchronous - no async runtime at all - which collides with 2.0's need for
+parallel builders, a live console and a fleet protocol.
 
-### 3.3 BattleCommandForge - the proven architecture
+### 3.3 battle-command-forge - the greenfield POC
 
-Rust. Described by the owner as the proven architecture that 2.0 should follow. Believed to
-implement a 9-stage TDD pipeline with complexity-scaled quality gates, roughly along the
-lines of architect, TDD, code, verify, security, critique, quality gate, and to have reached
-a shippable state with a real test suite and Python-only code output.
+**Public**, **Apache-2.0**, `github.com/mrdushidush/battle-command-forge`, on crates.io as
+`battlecommand-forge` v0.2.0. Rust, ~16k lines in 33 flat modules in one crate, ~3.7 MB
+binary, MSRV 1.95. Git history is a squashed snapshot: 7 commits, real work ending 2026-04-30.
+`cargo test`: 96 passing, 2 failing (both Unix assumptions running on Windows).
 
-**This description is low confidence.** Phase 0 must produce an accurate account of what BCF
-actually is, what the nine stages actually are, how the quality gates are scored, and what
-in it is reusable as a crate versus what is application-specific.
+A greenfield POC that generated production-shaped projects, including good-looking landing
+pages. It never became a daily driver. Backend is Ollama, not LM Studio.
 
-**What 2.0 probably inherits:** the Rust project structure and module boundaries, the staged
-pipeline design, the quality gate scoring mechanism, and whatever agent-loop and error
-handling patterns have already survived shipping.
+Section 3.3's original description was broadly correct. The **9-stage pipeline** is real:
+Router, Architect, Tester, Coder, Verifier, Security, Critique, CTO, Gate. Stages 5 and 9 -
+the two that actually decide anything - involve no model at all.
+
+**What 2.0 inherits:**
+
+- **The gate formula**, `final_score = critique_avg * 0.4 + verifier_score * 0.6`, with the
+  source comment "Verifier (tests + linting) is the real quality signal - weight it higher".
+  This is the most portable artifact in the three repos: it does not remove the LLM judge, it
+  **outvotes** it, and unlike Q56's per-task verifiers it generalizes to arbitrary work.
+- The **surgical fix loop**: trace imports to the broken files, fix each with its own call and
+  its own error context, leave passing files untouched, restore the best round if the score
+  declines twice, and never add features during a fix round.
+- **`router.rs`** - a Rust port of ABCC's Campbell dual assessment that keeps `rule_score` and
+  `ai_score` as separate typed fields, structurally fixing the data loss ABCC's 2026-02-01
+  migration caused.
+- **`sandbox.rs`** - a subprocess environment **allowlist** (adopted after a blocklist missed
+  `OLLAMA_HOST`, `DATABASE_URL`, `AWS_ACCESS_KEY_ID`, `SSH_AUTH_SOCK`), path-traversal
+  validation, and timeouts.
+- `check_secrets` and `check_todos` folded into the quality score.
+
+**What it does not offer:** project structure. There are no crate boundaries, no workspace and
+no visibility discipline - take the pipeline, not the layout. The verifier is **not
+Python-only**: project tests run for Python, Rust, Go and TS/JS, with Python the only
+environment-constructing path. The complexity-scaled thresholds (9.2 / 8.5 / 8.0) are
+**cloud-assisted calibration** and are empirically unreachable all-local, where the 10-mission
+average was 7.5; the successor made the threshold config-driven with a default of 8.0.
+
+**Two negative results worth more than the code:** decomposition was tried and reverted
+("caused duplicate projects; single-task plus good prompts is better"), and the in-TUI
+minigames are the wrong answer to the right question about operator dead air.
+
+### 3.4 Corrections made to this section
+
+Delivered as a git diff against the original brief. The substantive changes:
+
+1. ABCC's 88 percent was a **pass rate**, presented here as a routing rate.
+2. ABCC's routing ladder was wrong: **Haiku is not an execution tier.**
+3. Stuck-task detection is 5 minutes, not 10. The persona has seven examples, not three.
+4. There is no bounty board. There *is* an undocumented 2D isometric renderer.
+5. ABCC was tuned on an **RTX 3060 Ti 8GB**, not the current hardware.
+6. Claudette runs **LM Studio**, not bare llama.cpp, and is public rather than private.
+7. Claudette's contribution was scoped to "tool calling and the eval loop"; it is most of an
+   agent runtime, a safety layer and a 131-configuration measurement campaign.
+8. BCF is **not Python-only**, is Apache-2.0 against ABCC's MIT, and has no reusable structure.
+9. BCF's gate **thresholds** do not transfer to a local-first tool; its gate **formula** does.
+
+Two corrections fall outside section 3 and are **left for David to accept or reject**, since
+section 6 asks for loud disagreement rather than quiet redesign:
+
+- **Section 5's hardware framing is out of date.** "MoE under llama.cpp with `--n-cpu-moe`,
+  mmap off" describes the incumbent configuration. The crowned configuration of 2026-07-11
+  runs **fully VRAM-resident with zero expert offload**; `--cpu-moe` measured 1.16x and is
+  marked "don't use"; "residency is ~90% of the win". This reframes W1 and W2 from surviving
+  offload into 32GB to staying resident in 16GB, and makes the 32GB ceiling much less binding.
+- **Section 6's decision table** should read "LM Studio, which runs llama.cpp underneath". The
+  value of the OpenAI-compatible surface is that it keeps that choice reversible.
 
 ---
 
