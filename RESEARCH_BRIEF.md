@@ -840,8 +840,15 @@ Deliverable: `research/W7-security.md` with a threat model table.
 
 The workstream that makes everything else measurable. Do not defer it.
 
-- Start from what exists: ABCC's 40-task scored corpus and Claudette's eval loop. Characterize
-  both, then decide what the 2.0 harness inherits.
+> **Approach decided by David, 2026-08-08, before W8 started.** Build a **new harness that treats
+> ABCC's 100-task suite and Claudette's battery as importable corpora**, rather than extending
+> ABCC's suite in place. See §14 item 1 for the reasoning and the accepted cost. The corpus
+> inventory below still applies; what changed is that the harness is not any one corpus's
+> successor.
+
+- ~~Start from what exists: ABCC's 40-task scored corpus and Claudette's eval loop. Characterize
+  both, then decide what the 2.0 harness inherits.~~ → **Start from ABCC's 100-task suite, not the
+  40** (§11.0), characterize both it and Claudette's battery, and **import** rather than inherit.
 - The V1 corpus is calibrated for a 7B. Re-run it against the 35B-A3B base agent first, to see
   how much of it is now trivially passed. Expect significant ceiling effects, and expand the
   corpus upward accordingly.
@@ -1051,6 +1058,23 @@ best weeks of the schedule re-confirming settled facts.**
    actual differentiator. Every later claim about whether 2.0 is *better* is measured by this
    harness. Building it late means grading the whole project with the wrong instrument. Start from
    ABCC's 100-task suite, keep the frozen core frozen, add the K-series extension.
+
+   **Approach decided 2026-08-08: a new harness that imports both corpora, not an extension of
+   either.** The alternative considered and rejected was extending ABCC's 100-task suite in place,
+   which is faster and inherits its category structure and 7 baseline runs. It was rejected because
+   **the axis 2.0 differentiates on is unmeasurable inside a corpus whose unit is one invocation
+   against a fixture.** Both existing instruments share that shape: every Q56 task is a single
+   `claudette "<prompt>"` call, and ABCC's suite is a one-shot scored corpus. Operator control -
+   pause, redirect, take-over, replay - needs a harness whose unit of measurement is a **session
+   with interventions in it**, and time-to-first-visible-output needs one that samples *during* a
+   run rather than scoring after it. Neither is a metric you can bolt onto a pass/fail row.
+
+   **Accepted costs, stated so they are not re-litigated as surprises:** it is slower to first
+   number than extending in place; the 7 recorded ABCC runs and the 131 Claudette model runs become
+   *imported baselines* whose comparability has to be argued rather than assumed; and W8 now owns a
+   corpus format plus an importer, which is real engineering inside a research phase. **The frozen
+   core stays frozen regardless** - importing is exactly what makes that possible, since neither
+   donor corpus gets edited.
 
 2. **W1 and W2 in parallel, scoped down.** Confirmation run plus the open parts only: concurrency
    and KV-cache growth under full residency, prefix caching against the 27.8:1 prefill:decode
