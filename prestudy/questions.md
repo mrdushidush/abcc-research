@@ -99,13 +99,17 @@ Decisions only he can make. Several gate specific workstreams.
 
 **Added 2026-08-07** from the archive repos (`archive-repos.md` §5):
 
-9. **Authorship and licensing of `independencev1` and StealthForge.** Both carry the GitHub
-   account `agentbattlecommand-ops` rather than `mrdushidush`, and `stealthsambaV2/Cargo.toml`
-   names `Hadar Raz <hadar@agentbattlecommand-ops>`. Item 2 above records sole authorship as
-   confirmed — that was established for ABCC, Claudette and BCF, not for these. **This gates every
-   PORT row in inheritance-map §11a.** It is also urgent for a second reason: both `.git`
-   directories are missing `objects/`, so the working trees on that one archive path are the only
-   surviving copies unless the GitHub remotes are still live.
+9. ~~**Authorship and licensing of `independencev1` and StealthForge.**~~ **ANSWERED by David,
+   2026-08-07.** Both were built in collaboration with **Hadar Raz**, the projects' tech lead;
+   David wrote all the code; they are still friends and there is no dispute. **The constraint is
+   to take ideas and concepts and never copy code verbatim.** In inheritance-map §11a that makes
+   PORT mean *reimplement from the concept* — the same thing the verdict has always meant, with
+   provenance rather than language as the reason. Still open underneath it: whether 2.0's licence
+   needs to say anything about the collaboration, which folds into item 2 above.
+
+   Unchanged and still worth acting on: both `.git` directories are missing `objects/`, so the
+   working trees on that one archive path are the only surviving local copies. David has confirmed
+   there is no local history to recover.
 10. **Should the independence check ship in 2.0, and in which mode?** Always on, opt-in per run, or
     only above a complexity threshold? On a one-GPU box it costs a full second review pass per
     artifact.
@@ -262,9 +266,13 @@ three dossiers; these are the ones with research consequences.
 
 **Added 2026-08-07** — see `data-assets.md` §8 for the full list:
 
-8. **The Q56 champion is `google/gemma-4-26b-a4b-qat` at median 55/56**, crowned 2026-07-25/26.
-   Every "35B-A3B base agent" reference in the brief, the dossiers and the inheritance map
-   describes a superseded configuration.
+8. **Q56 crowned `google/gemma-4-26b-a4b-qat` at median 55/56 (2026-07-25/26) — and 2.0 stays on
+   qwen.** David's ruling: gemma wins single-shot, falls apart on agentic multi-file context,
+   `qwen3.6-35b-a3b-mtp` is the foundation primary brain. The corpus agrees with him about its own
+   limits — `T2.md` axis 4 says every fixture is small and context pressure is never tested, and
+   the crown rule discards a measured **3.4x** wall-clock gap (4,535 s vs 1,338 s for the full 56).
+   **Do not cite the Q56 score column as a ranking for agentic work.** W1 evaluates candidates
+   under context pressure; W8 needs a corpus that can see that axis at all.
 9. **Q56 is not on Claudette's `main`.** The corpus, its verifiers, its reference solutions and
    all `SCORES-q50-*` live only on the unmerged branch `battery/q50-quality-corpus`. A
    local-only `.git/info/exclude` containing `/runs/` makes `git status` report clean while the
@@ -283,6 +291,13 @@ three dossiers; these are the ones with research consequences.
     BCF and Claudette. The public `battle-command-forge` repo's first commit
     (2026-04-23) describes itself as a *"port of internal pipeline work"* — five days after
     Claudette started. See `archive-repos.md` §1.1.
+14. **Claudette's `PermissionMode` has five variants, four of them live** — three capability tiers
+    that tools are graded against plus `Allow` as a session mode. The earlier "treat the enum as
+    wider than the policy" reading was wrong. **`Prompt` is dead and booby-trapped:** the derived
+    `Ord` ranks it above `DangerFullAccess`, so `authorize`'s `current >= required` guard fires
+    first and its prompt branch is unreachable — a `Prompt` session would auto-approve everything.
+    Nothing sets it today, so nothing is broken; W7 must fix the ordering before reviving it.
+    See inheritance-map §0 item 3.
 
 ---
 

@@ -47,18 +47,65 @@ written. All three are now stated correctly here.
    `aspirational` preset. BCF's demo run hitting 9.4 used the `premium` preset, where Opus writes
    the tests and Sonnet does the surgical fixes. The **formula** survives; the **numbers** are
    cloud-assisted calibration and must not be inherited as-is by a local-first tool.
-3. **Claudette's permission model is documented as three-tier, not five.** The `PermissionMode`
-   enum does carry five variants (`ReadOnly`, `WorkspaceWrite`, `DangerFullAccess`, `Prompt`,
-   `Allow`), which is what the dossier reported, but both `architecture.md` and `decisions.md`
-   describe the shipped policy as three-tier, and AD-5's five-tier design is explicitly flagged as
-   not-built. Treat the enum as wider than the policy.
+3. ~~**Claudette's permission model is documented as three-tier, not five.**~~ **Corrected
+   2026-08-07 against the code, at David's instruction. He was right; the earlier reading was
+   wrong, and checking it found a latent trap.**
+
+   `crates/claudette/src/runtime/permissions.rs:5` — the enum has **five variants and four are
+   load-bearing**. They are two different kinds of thing, which is what the "three-tier" docs are
+   describing without saying so:
+
+   - **Capability tiers**, ordered, and the only ones a tool is ever registered against:
+     `ReadOnly`, `WorkspaceWrite`, `DangerFullAccess`. Verified across `crates/`: 8 tools at
+     `ReadOnly`, 4 at `WorkspaceWrite`, 6 at `DangerFullAccess`, and **zero** at anything else.
+   - **Session-control modes**, which only ever appear as `active_mode`: `Prompt` and `Allow`. The
+     code says so itself at `permissions.rs:267` — *"`Prompt` / `Allow` modes are session-control
+     tiers (not 'higher privilege') so they bypass this cap."* `Allow` is live, set by
+     `with_active_mode` for unattended forge runs (`runtime_build.rs:146`, `:296`).
+
+   **⚠ `PermissionMode::Prompt` is dead, and if 2.0 revives it as-is it will do the opposite of
+   its name.** It appears nowhere outside `permissions.rs`. And the derived `Ord` places it
+   *above* `DangerFullAccess`, so in `authorize` the line-283 guard
+   `current_mode >= required_mode` is true for **every** tier a tool can require — the
+   `current_mode == PermissionMode::Prompt` branch at line 294 is unreachable. A session in
+   `Prompt` mode would auto-approve everything silently. Verified by reproducing the enum
+   ordering and both branches standalone; nothing is broken today because nothing sets it.
+
+   What *is* narrower than the design is the **dimension**, not the tier count.
+   `required_mode_for` keys off the **tool name**; the `Operation` enum
+   (`ReadFile`/`WriteFile`/`Execute`/`Network`/`Other`) that would let policy key off the actual
+   operation is built, but per its own doc comment at `permissions.rs:13-18` *"Today only the
+   prompter consumes it; the policy still keys off the tool name."* That is what the §10 row
+   means by "built but not load-bearing", and it stands.
 
 Added 2026-08-07, from the data-asset extraction and the archive repos:
 
-4. **The Q56 champion changed and this map names the old one.** As of `2a6acea` (2026-07-25/26)
-   the crowned model is **`google/gemma-4-26b-a4b-qat`**, Q4_0, 13.45 GiB, median **55/56**. The
-   `qwen3.6-35b-a3b-mtp@iq3_s` byteshape config this map treats as the base agent scores 48–52/56.
-   Every "35B-A3B" reference below is stale.
+4. **The Q56 crown moved to gemma — and ABCC 2.0 is building on qwen anyway. Both are true.**
+
+   Q56 crowned **`google/gemma-4-26b-a4b-qat`** at `2a6acea` (2026-07-25/26), Q4_0, 13.45 GiB,
+   median **55/56** over three runs. `qwen3.6-35b-a3b-mtp@iq3_s` scores 48–52/56.
+
+   **David's ruling, 2026-08-07: gemma wins single-shot; in agentic coding over large multi-file
+   context it falls apart, and qwen remains the champion. `qwen3.6-35b-a3b-mtp` is 2.0's
+   foundation primary brain.** This is a decision, and it is also the better reading of the
+   evidence, for two reasons the corpus states about itself:
+
+   - **Q56 structurally cannot see the thing that decides it.** `T2.md`'s own axis 4: *"Every Q56
+     fixture is small; ctx 32768 is never stressed and we never test whether a model can **find**
+     the relevant code before changing it."* Every task is one `claudette "<prompt>"` invocation
+     against a small buildable fixture. The crown is a **single-shot crown on small inputs**, and
+     `questions.md` §3.5 item 19 already flags that nothing in Q56 measures interactive operation.
+   - **The crown rule discarded a 3.4x speed difference by design.** Median wall clock for the
+     full 56: gemma-qat **4,535 s** versus qwen-mtp **1,338 s** (`prestudy/data/q56-results.csv`).
+     `Q50.md`'s crown rule says speed *"is recorded but breaks no ties; the speed champion keeps
+     the daily-driver role regardless."* For a tool whose success test is David reaching for it
+     instead of Claude Code, 3.4x on every turn is not a tiebreak.
+
+   **So:** "35B-A3B" references below are **not** stale — they name the intended base agent.
+   What is stale is treating Q56's score column as the whole ranking. Two consequences carry
+   into Phase 1: W1 evaluates candidates on **agentic multi-file work at context pressure**, not
+   Q56 alone, and W8's first job is a corpus that can see that axis (tier 2 was started for
+   exactly this and is 4 tasks in).
 5. **The Q56 corpus is not on Claudette's `main`.** It lives only on the unmerged branch
    `battery/q50-quality-corpus`. `main` carries a different, older A–K battery, and a local-only
    `.git/info/exclude` hides the artifacts from `git status`. Row "Q56 core-50 tasks + K1-K8
@@ -273,7 +320,7 @@ Everything here is the pillar Claudette deliberately omitted, so ABCC dominates.
 | `validate_path_within` (traversal, absolute, NUL, backslash) | BCF `sandbox.rs` | **REUSE** | With the regression test for the over-eager `..` substring check. |
 | Subprocess timeouts | BCF `sandbox.rs`, Claudette `test_runner.rs` | **REUSE** | |
 | `secrets.rs` token storage (`0600` / Windows ACL) | Claudette | **REUSE** | |
-| Permission tiers + `Operation` enum | Claudette `runtime/permissions.rs` | **PORT** | Policy still keys off tool name; the operation-level model is built but not load-bearing. 2.0 should finish it. |
+| Permission tiers + `Operation` enum | Claudette `runtime/permissions.rs` | **PORT** | Three capability tiers plus two session-control modes; policy still keys off **tool name**, and the `Operation` enum that would let it key off the operation is built but only the prompter reads it. 2.0 should finish it. **Carry over §0 item 3's landmine: `PermissionMode::Prompt` is unused and, under the derived `Ord`, unreachable — a `Prompt` session auto-approves everything. Fix the ordering before reviving the mode.** |
 | `[y/N]` gate + `diff_preview.rs` | Claudette | **REUSE** | Human-in-the-loop, already shipped. |
 | Docker as the isolation boundary | ABCC | **DROP** | Not a boundary against hostile code, and 2.0 ships one binary. |
 | Per-language dangerous-import string denylist | ABCC `shell.py` | **DROP** | Speed bump, not a boundary. |
@@ -310,9 +357,16 @@ Added 2026-08-07. Two Rust repos in `D:\dev\_archive\abcc_projects\abcc_projects
 April 2026, sitting in the family timeline between BCF's internal work and Claudette. Full
 assessment in `archive-repos.md`; the paired-score dataset is in `data-assets.md` §6.
 
-⚠ **Every row here is gated on an authorship question.** Both repos carry a second GitHub account
-(`agentbattlecommand-ops`) and a second name in `Cargo.toml`. `questions.md` §2 records sole
-authorship as confirmed for ABCC, Claudette and BCF — it is not established for these.
+**Authorship, resolved by David 2026-08-07:** both were built in collaboration with **Hadar Raz**,
+who was the projects' tech lead. David wrote all the code. They are still friends and there is no
+dispute.
+
+**The constraint that follows, and it applies to every row below: take the ideas and concepts,
+never copy the code verbatim.** In this table that makes **PORT** mean *reimplement from the
+concept* — which is what the verdict has always meant here (see the legend: "the idea is proven,
+the implementation is in the wrong language"), except that here the implementation is already
+Rust, so the reason is provenance rather than language. Read these repos for what they learned,
+then write 2.0's version from the design. No file from either is copied into 2.0.
 
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
@@ -325,7 +379,7 @@ authorship as confirmed for ABCC, Claudette and BCF — it is not established fo
 | Surgical fixer (only failing files + exact errors resent; ~10× faster than regeneration) | StealthForge `core/surgical_fixer.rs` | **REFERENCE** | Claudette's `apply_diff` occupies the ground more precisely. The economics argument transfers. |
 | Sandbox QA agent — build in tmpdir, detect project type, LLM agent *uses* it, UX score reported **separately from the technical verdict** | `independencev1/sandbox/` | **REFERENCE** | A concrete answer to `questions.md` §3.5 item 17 (measure fun without asking). The separation of soft score from hard gate is the precedent worth keeping. Isolation (tmpdir + allowlist, no container) is too weak to inherit. |
 | RAG + knowledge-graph memory (LanceDB 986 lines, petgraph 526 lines, 5.3 MB vectors, Distiller feedback loop) | StealthForge `memory/` | **REFERENCE** | Family's only long-term learning system, and genuinely interesting — but off by default, the feedback hook is a `TODO` that prints instead of ingesting, and no benchmark attributes anything to it. If 2.0 wants this it is a W-item with a measurement, not a 2,500-line inherited dependency. |
-| **34-mission paired score dataset** (internal gate vs independent review) | StealthForge `generated/` | **REUSE** | Extracted to `prestudy/data/stealthforge-mission-reports.tsv`. The evidence base for W6's gate design. |
+| **34-mission paired score dataset** (internal gate vs independent review) | StealthForge `generated/` | **REUSE** | A measurement, not code — the "no verbatim copying" constraint does not bind it. Extracted to `prestudy/data/stealthforge-mission-reports.tsv`. The evidence base for W6's gate design. |
 | The 9.5-overall / 9.7-critical gate thresholds | StealthForge | **DROP** | Produced a 100% pass rate on artifacts an independent reviewer graded D and F. Same lesson as §0 item 2, one step earlier and one step worse. |
 | The self-scored critic panel *as the deciding gate* | StealthForge | **DROP** | Keep the panel as a signal. Never let it be the thing that decides. |
 | Grok as primary model | StealthForge | **DROP** | Contradicts local-first. |

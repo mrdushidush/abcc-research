@@ -26,6 +26,7 @@ decided, plus a custody warning. Read `data-assets.md` §6 for the numbers.
 | Async | tokio, full features | tokio, full features |
 | Models | Ollama local + optional cloud (Gemini/Grok/OpenAI) | Grok (xAI) primary, Ollama for memory embeddings |
 | Declared licence | none in-tree | `MIT OR Apache-2.0` in `Cargo.toml`, no LICENSE file |
+| Authorship | David wrote the code; **Hadar Raz** was tech lead on both (§1.3) | same |
 
 The confusing part, stated plainly: **the directory is named `stealthsambaV2` but the code inside
 is StealthForge**, the merged successor to StealthSamba V2 *and* BattleCommand Forge. Its own
@@ -69,18 +70,28 @@ Both `config` files point at a **different GitHub account from the rest of the f
 
 versus `mrdushidush/` for ABCC, Claudette and BCF. Commits are authored
 `agentbattlecommand-ops <agentbattlecommand@gmail.com>`; `stealthsambaV2/Cargo.toml` names
-`Hadar Raz <hadar@agentbattlecommand-ops>`.
+`Hadar Raz <hadar@agentbattlecommand-ops>`. That is the shared project account, not a second
+author of the code — see §1.3.
 
-**Two things follow, one technical and one for David.**
+**Confirmed by David, 2026-08-07:** the history is gone and this is what remains. The working
+trees on that one archive path are all there is; they should be pushed somewhere durable before
+anything else happens to them.
 
-1. If those GitHub repos are gone or inaccessible, the history of both is unrecoverable. The
-   working trees on this one archive path are all that is left. They should be pushed somewhere
-   before anything else happens to them.
-2. `questions.md` §2 item 2 records "sole authorship is confirmed, so relicensing is available."
-   That was established for ABCC, Claudette and BCF. It has **not** been established for these
-   two, which carry a second account name and a second person's name in `Cargo.toml`. If any code
-   or design from them is carried into 2.0, that needs an answer first. *(New question — added to
-   `questions.md` §2.)*
+### 1.3 Authorship — answered
+
+**Both repos were built in collaboration with Hadar Raz, who was the projects' tech lead. David
+wrote all the code. They are still friends and there is no dispute.**
+
+**The rule that follows, and it governs every verdict in §3: take the ideas and the concepts,
+never copy the code verbatim.** Where §3 says PORT, it means *reimplement 2.0's own version from
+the design* — read what these repos learned, then write it fresh. No file from either is copied
+into 2.0. The one exception is §3.1's paired-score dataset, which is a measurement rather than
+code.
+
+That is also the better engineering call independently of provenance. Both codebases are
+Grok-first or Ollama-first, tokio-heavy, and carry April-2026 assumptions that Claudette has since
+superseded. What is worth having is what they *measured*, and measurements do not need to be
+copied — they need to be believed.
 
 ---
 
@@ -161,7 +172,10 @@ measuring, and it is the single most important inherited decision in the prestud
 ## 3. What is worth integrating
 
 Ranked by value, with verdicts in the inheritance-map vocabulary. Rows for these are appended to
-`inheritance-map.md` §11.
+`inheritance-map.md` §11a.
+
+**Governing rule (§1.3): concepts and ideas only. Nothing below is a licence to copy a file.**
+PORT here means *reimplement from the design in 2.0's own idiom*.
 
 ### 3.1 The independence check as a design pattern — **PORT**
 
@@ -313,8 +327,10 @@ and permission story is stricter.
 
 ## 5. New questions for `questions.md`
 
-1. **Authorship and licensing of the archive repos.** Two GitHub accounts and a second name in
-   `Cargo.toml`. Gates any code reuse from §3.1–§3.7.
+1. ~~**Authorship and licensing of the archive repos.**~~ **ANSWERED** — see §1.3. Collaboration
+   with Hadar Raz as tech lead, David wrote the code, no dispute, **concepts not code**. What
+   remains is narrower: does 2.0's licence or README need to acknowledge the collaboration? That
+   folds into `questions.md` §2 item 2, which is still open on licensing generally.
 2. **Should the independence check ship in 2.0, and in which mode?** Always on, opt-in per run, or
    only above a complexity threshold? It costs a full second review pass per artifact on a machine
    with one GPU.

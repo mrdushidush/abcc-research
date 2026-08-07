@@ -92,12 +92,28 @@ who got burned by each of them.
 
 ### 1.4 Three corrections the brief needs
 
-1. **The champion changed, and the brief still names the old one.** As of `2a6acea`
+1. **The Q56 crown moved to gemma, and 2.0 is building on qwen anyway.** As of `2a6acea`
    (2026-07-25/26), the crowned model is **`google/gemma-4-26b-a4b-qat`** — Q4_0, 13.45 GiB,
-   median **55/56** over three runs (55/54/55). The previous champion,
-   `qwen3.6-35b-a3b-mtp@iq3_s` (byteshape 3.06 bpw), sits at 48–52/56. Every reference in the
-   brief and the dossiers to "the 35B-A3B base agent" describes a superseded configuration. The
-   runner-up is `unsloth/gemma-4-26B-A4B-it` at 54/56.
+   median **55/56** over three runs (55/54/55), with `unsloth/gemma-4-26B-A4B-it` at 54/56.
+   `qwen3.6-35b-a3b-mtp@iq3_s` (byteshape 3.06 bpw) sits at 48–52/56.
+
+   **David's ruling, 2026-08-07: gemma wins single-shot; in agentic coding over large multi-file
+   context it falls apart, and qwen remains the champion. `qwen3.6-35b-a3b-mtp` is 2.0's
+   foundation primary brain.** The corpus corroborates that in its own words rather than
+   contradicting it:
+
+   - `T2.md` axis 4: *"Every Q56 fixture is small; ctx 32768 is never stressed and we never test
+     whether a model can **find** the relevant code before changing it."* Every task is one
+     `claudette "<prompt>"` invocation against a small fixture. **The crown is a single-shot crown
+     on small inputs** — which is also `questions.md` §3.5 item 19, already on the list.
+   - `Q50.md`'s crown rule discards speed by design: *"speed is recorded but breaks no ties."*
+     Median wall clock for the full 56 is **4,535 s for gemma-qat against 1,338 s for qwen-mtp
+     — 3.4x** (computed from `q56-results.csv`, ranking rows only). For a tool whose success test
+     is being reached for daily, 3.4x on every turn is not a tiebreak.
+
+   So "35B-A3B" is **not** stale as a base-agent reference. What is stale is reading Q56's score
+   column as the whole ranking. W1 evaluates on agentic multi-file work under context pressure;
+   W8's first job is a corpus that can see that axis.
 
 2. **The "consistent failure set" does not exist, and the corpus documents its own retraction.**
    The frozen record named Q03/Q05/Q25/Q51/Q52 as stable champion failures. Over six full runs the
@@ -450,8 +466,10 @@ was produced by a throwaway parse whose output is the artifact. The two non-triv
 
 ## 8. Corrections this document makes to the brief and the dossiers
 
-1. **The Q56 champion is `google/gemma-4-26b-a4b-qat` at 55/56, not the 35B-A3B.** Crowned
-   2026-07-25/26, confirmed over three runs. Every "35B-A3B base agent" reference is stale.
+1. **Q56 crowned `google/gemma-4-26b-a4b-qat` at 55/56 — and 2.0 stays on qwen.** The brief and
+   dossiers should say *why*: Q56 is a single-shot corpus on small fixtures (`T2.md` axis 4), its
+   crown rule discards a measured 3.4x wall-clock difference, and David's ruling is that gemma
+   does not hold up on agentic multi-file work. See §1.4 item 1.
 2. **Q56 is not on `main`.** It is on `battery/q50-quality-corpus`. `main` carries a different,
    older battery. A local-only `.git/info/exclude` hides the artifacts from `git status`.
 3. **ABCC's Postgres holds 9 days, not months, and its token and cost columns are empty.**
