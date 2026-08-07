@@ -6,6 +6,10 @@ reason. Per brief 4.3, this is the bridge from Phase 0 to Phase 1.
 **Sources pinned at:** ABCC v1 `d5528ea` · Claudette `fc1ea22` (v0.17.0) · battle-command-forge
 `d6c1601` (v0.2.0)
 
+**Extended 2026-08-07** with §11a, covering two archived repos the brief did not know about
+(`independencev1`, StealthForge/`stealthsambaV2`). See `archive-repos.md`. §0 items 5–8 were added
+at the same time and change rows in §6 and §9.
+
 **Verdicts:**
 
 | Verdict | Meaning |
@@ -48,6 +52,28 @@ written. All three are now stated correctly here.
    `Allow`), which is what the dossier reported, but both `architecture.md` and `decisions.md`
    describe the shipped policy as three-tier, and AD-5's five-tier design is explicitly flagged as
    not-built. Treat the enum as wider than the policy.
+
+Added 2026-08-07, from the data-asset extraction and the archive repos:
+
+4. **The Q56 champion changed and this map names the old one.** As of `2a6acea` (2026-07-25/26)
+   the crowned model is **`google/gemma-4-26b-a4b-qat`**, Q4_0, 13.45 GiB, median **55/56**. The
+   `qwen3.6-35b-a3b-mtp@iq3_s` byteshape config this map treats as the base agent scores 48–52/56.
+   Every "35B-A3B" reference below is stale.
+5. **The Q56 corpus is not on Claudette's `main`.** It lives only on the unmerged branch
+   `battery/q50-quality-corpus`. `main` carries a different, older A–K battery, and a local-only
+   `.git/info/exclude` hides the artifacts from `git status`. Row "Q56 core-50 tasks + K1-K8
+   extension" in §9 conflates the two batteries; they are separate instruments.
+6. **ABCC's 40-task corpus ships deterministic per-task verifiers.** Each task carries a Python
+   assertion one-liner. ABCC never used an LLM judge either. The §9 rows treating the ABCC corpus
+   as unverified transcription are right about C1–C4's *prompts* and wrong about its *grading*.
+7. **ABCC has a 100-task suite with 7 recorded runs** (`ultimate-100-task-test.js`) that neither
+   the brief nor this map mentions, covering React, landing pages, Python/Node APIs, security and
+   bug-fixing across 10 categories. It is closer to 2.0's stated target workload than the 40.
+   See `data-assets.md` §4.2.
+8. **§12's open piece 4, "gate independence in single player", has been measured.** StealthForge
+   ran a separate reviewer process over its own output on 34 missions: median **+3.65** points of
+   inflation, **0 of 34** where the independent reviewer scored higher. See §11a and
+   `archive-repos.md` §2.
 
 Also worth flagging: `docs/decisions.md` opens with a warning that AD-1 through AD-7 describe
 `claudettes-forge` and are "fiction relative to the shipped product". It is still valuable, but
@@ -278,14 +304,45 @@ Everything here is the pillar Claudette deliberately omitted, so ABCC dominates.
 
 ---
 
+## 11a. Archive repos — `independencev1` and StealthForge
+
+Added 2026-08-07. Two Rust repos in `D:\dev\_archive\abcc_projects\abcc_projects\`, active
+April 2026, sitting in the family timeline between BCF's internal work and Claudette. Full
+assessment in `archive-repos.md`; the paired-score dataset is in `data-assets.md` §6.
+
+⚠ **Every row here is gated on an authorship question.** Both repos carry a second GitHub account
+(`agentbattlecommand-ops`) and a second name in `Cargo.toml`. `questions.md` §2 records sole
+authorship as confirmed for ABCC, Claudette and BCF — it is not established for these.
+
+| Component | Source | Verdict | Reason |
+|---|---|---|---|
+| **Independence check as a pipeline stage** (separate process, different model, different method; `critic_inflation` recorded as a metric) | StealthForge `core/independence.rs`, `orchestrator.rs:876` | **PORT** | The only mechanism in the family that achieves gate independence in **single player**, which §17 Q6 made primary. Costs a second model pass, not a second machine. Veto threshold already calibrated 2.0 → 4.0 from regression data. Non-fatal by construction. |
+| **Static analysis as a hard clamp on LLM scores** (no-compile → Correctness ≤ 4.0; tests fail → 5.0–7.0; zero tests → TestQuality ≤ 3.0; cloud may lower, never raise) | `independencev1/critics/scoring.rs:443` | **PORT** | Resolves `questions.md` §3.2 item 9 as a false choice: the deterministic verifier sets the ceiling, the LLM ranks underneath. Both coexist with a defined precedence. |
+| The **7.0 floor** failure mode + its proposed fix (proportional clamp `min(7.0, 10·(M−N)/M)`) | `independencev1/CLAUDE.md` calibration | **REFERENCE** | Measured: TestQuality scored exactly 7.0 on 8 of 10 projects. An LLM panel does not discriminate in the middle of its range. A bug report with a patch, free to W6. |
+| **Verification-gap checklist** — `--all-targets`, subdirectory manifest detection, security findings must reach the gate | StealthForge `BENCHMARK.md` post-mortem | **REFERENCE** | Four false PASSes bought these four rules. W6 constraints, not discoveries. |
+| Legacy-review path (`--path` → `codebase_analyzer.rs` → refined mission) | StealthForge | **REFERENCE** | The family's only real legacy mode, and §17 Q2 named legacy review a target workload. Thin (204 lines), and its benchmark mission M11 was the worst gate divergence — which is itself the finding for W8. |
+| Mechanical-failure guards (`dedup.rs` 1,646 lines: duplicate-file merge, `pub mod` guard, dependency fixer, derive guard) | StealthForge | **REFERENCE** | Credited with eliminating "almost all mechanical failures". Q56's tier-2 axis 2 independently found the same class dominating. Read the *categories* before W11 designs its fix loop. |
+| Surgical fixer (only failing files + exact errors resent; ~10× faster than regeneration) | StealthForge `core/surgical_fixer.rs` | **REFERENCE** | Claudette's `apply_diff` occupies the ground more precisely. The economics argument transfers. |
+| Sandbox QA agent — build in tmpdir, detect project type, LLM agent *uses* it, UX score reported **separately from the technical verdict** | `independencev1/sandbox/` | **REFERENCE** | A concrete answer to `questions.md` §3.5 item 17 (measure fun without asking). The separation of soft score from hard gate is the precedent worth keeping. Isolation (tmpdir + allowlist, no container) is too weak to inherit. |
+| RAG + knowledge-graph memory (LanceDB 986 lines, petgraph 526 lines, 5.3 MB vectors, Distiller feedback loop) | StealthForge `memory/` | **REFERENCE** | Family's only long-term learning system, and genuinely interesting — but off by default, the feedback hook is a `TODO` that prints instead of ingesting, and no benchmark attributes anything to it. If 2.0 wants this it is a W-item with a measurement, not a 2,500-line inherited dependency. |
+| **34-mission paired score dataset** (internal gate vs independent review) | StealthForge `generated/` | **REUSE** | Extracted to `prestudy/data/stealthforge-mission-reports.tsv`. The evidence base for W6's gate design. |
+| The 9.5-overall / 9.7-critical gate thresholds | StealthForge | **DROP** | Produced a 100% pass rate on artifacts an independent reviewer graded D and F. Same lesson as §0 item 2, one step earlier and one step worse. |
+| The self-scored critic panel *as the deciding gate* | StealthForge | **DROP** | Keep the panel as a signal. Never let it be the thing that decides. |
+| Grok as primary model | StealthForge | **DROP** | Contradicts local-first. |
+| Both codebases wholesale | both | **DROP** | 6k and 11k lines, tokio-heavy, Grok-first / Ollama-first, no inheritable test suite. Claudette is the better engine on every axis the brief cares about. |
+
+---
+
 ## 12. Summary by verdict
+
+Counts updated 2026-08-07 to include §11a (14 rows: +2 PORT, +6 REFERENCE, +1 REUSE, +5 DROP).
 
 | Verdict | Count | Where it concentrates |
 |---|---|---|
-| **REUSE** | 48 | Overwhelmingly Claudette. The harness, the tools, the safety layer, the eval. |
-| **PORT** | 18 | Overwhelmingly ABCC. The complexity model, the console surfaces, the console's data model. |
-| **REFERENCE** | 22 | Spread evenly. Mostly negative results and superseded attempts. |
-| **DROP** | 21 | Mostly ABCC infrastructure and BCF's commercial scaffolding. |
+| **REUSE** | 49 | Overwhelmingly Claudette. The harness, the tools, the safety layer, the eval. |
+| **PORT** | 20 | Mostly ABCC — the complexity model and the console surfaces — plus the two gate-independence mechanisms from the archive repos. |
+| **REFERENCE** | 28 | Spread evenly. Mostly negative results and superseded attempts. |
+| **DROP** | 26 | Mostly ABCC infrastructure, BCF's commercial scaffolding, and StealthForge's self-scored gate. |
 | **REWRITE** | 5 | The genuinely new work: provider abstraction, difficulty/context separation, TTFT, operator metrics, one security test. |
 
 **The shape this implies:** 2.0 is Claudette's engine with ABCC's console bolted onto it, BCF's
@@ -300,9 +357,12 @@ found mostly an integration project with a hard UI problem attached.
 2. **Difficulty separated from required context** (W4) — fused in every existing implementation.
 3. **Operator control as a measurable property** (W5, W8) — pause, redirect, take-over, replay.
    No repo has it and no eval measures it.
-4. **Gate independence in single-player** (W6, W11) — ABCC dodged it with different providers,
-   Q56 dodged it with hand-written verifiers, BCF's formula reduces but does not remove it. Still
-   the sharpest problem in the design.
+4. ~~**Gate independence in single-player**~~ (W6, W11) — **no longer open in the "does it matter"
+   sense, as of 2026-08-07.** StealthForge measured it: median **+3.65** points of self-scoring
+   inflation across 34 missions, **0 of 34** where the independent reviewer scored higher. BCF's
+   formula reduces the bias; the residual is larger than the gaps it discriminates between. What
+   remains open is *implementation*: who plays the reviewer in 2.0, whether it always runs, and
+   whether `critic_inflation` becomes a console metric. See §11a and `archive-repos.md` §5.
 5. **Async or not** (W3) — the donors disagree and 2.0's requirements postdate the decision.
 
 ---

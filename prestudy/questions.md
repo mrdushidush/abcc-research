@@ -24,6 +24,15 @@ already settled.
 | W8: does an eval harness exist | Q56 | 56 tasks, per-task shell verifiers, no LLM judge, 131 configurations, frozen core. |
 | W5: SQLite versus Postgres | Claudette `~/.claudette/` | A serious daily-driver agent needs no database server. Files plus one SQLite. |
 
+**Closed 2026-08-07** by the data-asset extraction and the archive repos:
+
+| Was open | Closed by | Answer |
+|---|---|---|
+| §2 item 8: "Is the ABCC Postgres extraction wanted at all?" | `data-assets.md` §5 | **Done, and there is nothing more there.** 9 days of data, not months. Token, cost and `model_used` columns are 0% populated. It yielded exactly one finding: a 10.5% tool-call malformation rate. Do not schedule the ambition. |
+| §5 item 3: recover router-vs-AI comparison by text-parsing `complexity_reasoning` | same | **Not actionable.** That column is 18% populated — 39 rows. And 137 of 182 scored tasks carry the default complexity of 5.0. |
+| §3.2 item 9: verifier-as-JSON versus verifier-as-code — which is the Gate, can both coexist? | `independencev1/critics/scoring.rs` | **A false choice.** The deterministic verifier sets a **ceiling**; the LLM ranks underneath it. Shipped rules: no-compile → Correctness ≤ 4.0, tests fail → 5.0–7.0, zero tests → TestQuality ≤ 3.0, cloud may lower but never raise. |
+| §3.2 item 6: "recalibrating the gate for local-first needs measurement, not opinion" | StealthForge `BENCHMARK.md` + 34 paired missions | **Measured.** A self-scored critic panel over-scores its own output by a median +3.65 points, in one direction, on 34 of 34 samples. Recalibrating the *number* does not fix it; the panel must not be the thing that decides. |
+
 **But see section 1 below** - one thing the brief treats as settled is *not*, and it is load-bearing.
 
 ---
@@ -85,9 +94,26 @@ Decisions only he can make. Several gate specific workstreams.
 7. **Does Claudette keep shipping?** The brief scopes out Claudette's roadmap but 2.0 reuses most
    of its engine. If both are live, is the shared code a crate, a fork, or a copy? This is
    §17 Q4 at the code level rather than the process level, and W3 needs it.
-8. **Is the ABCC Postgres extraction wanted at all now?** David deferred it and named Q56 the real
-   eval. W4's retrospective routing analysis is the only remaining consumer. Worth the dump, or
-   drop the ambition?
+8. ~~**Is the ABCC Postgres extraction wanted at all now?**~~ **CLOSED** — done, and there is
+   nothing more in there. See section 0 and `data-assets.md` §5.
+
+**Added 2026-08-07** from the archive repos (`archive-repos.md` §5):
+
+9. **Authorship and licensing of `independencev1` and StealthForge.** Both carry the GitHub
+   account `agentbattlecommand-ops` rather than `mrdushidush`, and `stealthsambaV2/Cargo.toml`
+   names `Hadar Raz <hadar@agentbattlecommand-ops>`. Item 2 above records sole authorship as
+   confirmed — that was established for ABCC, Claudette and BCF, not for these. **This gates every
+   PORT row in inheritance-map §11a.** It is also urgent for a second reason: both `.git`
+   directories are missing `objects/`, so the working trees on that one archive path are the only
+   surviving copies unless the GitHub remotes are still live.
+10. **Should the independence check ship in 2.0, and in which mode?** Always on, opt-in per run, or
+    only above a complexity threshold? On a one-GPU box it costs a full second review pass per
+    artifact.
+11. **What plays the reviewer role?** A second local model, the same model with a different prompt
+    and no history, or a frontier escalation? Cheapest is most correlated; least correlated costs
+    money — which reconnects to §17 Q7, the still-open spend ceiling.
+12. **Does `critic_inflation` become a first-class console metric?** It is measurable,
+    operator-facing, and has a calibrated threshold to draw a line at.
 
 ---
 
@@ -233,6 +259,30 @@ three dossiers; these are the ones with research consequences.
 6. **ABCC was tuned on an RTX 3060 Ti 8GB.** Every V1 model choice, context size and pass rate is
    an 8GB result and none of it transfers to the 5060 Ti without re-measurement.
 7. **Q56 supersedes the 40-task corpus** per David, and the frozen core must stay frozen.
+
+**Added 2026-08-07** — see `data-assets.md` §8 for the full list:
+
+8. **The Q56 champion is `google/gemma-4-26b-a4b-qat` at median 55/56**, crowned 2026-07-25/26.
+   Every "35B-A3B base agent" reference in the brief, the dossiers and the inheritance map
+   describes a superseded configuration.
+9. **Q56 is not on Claudette's `main`.** The corpus, its verifiers, its reference solutions and
+   all `SCORES-q50-*` live only on the unmerged branch `battery/q50-quality-corpus`. A
+   local-only `.git/info/exclude` containing `/runs/` makes `git status` report clean while the
+   artifacts sit untracked. **Phase 1 cannot reproduce Q56 from a clone of `main`, and gets no
+   error saying so.**
+10. **ABCC's 40-task corpus has deterministic per-task verifiers.** ABCC never used an LLM judge
+    either. The family has never shipped one that survived measurement.
+11. **ABCC has a 100-task suite with 7 recorded runs** the brief does not mention — React,
+    landing pages, Python/Node APIs, security, bug-fixing, 10 categories, C5–C8, with
+    decomposition as a measured variable. Closer to §17 Q2's answered workload than the 40-task
+    set. W8 starts here.
+12. **The prefill:decode ratio on Claudette's battery workload is 27.8:1** (117.6M prompt tokens
+    against 4.2M output, across 3,150 task runs). §3.3 item 11 asks whether prefix caching is
+    worth exploiting; the sizing half is now answered without running anything.
+13. **The family has two more members**, `independencev1` and StealthForge, April 2026, between
+    BCF and Claudette. The public `battle-command-forge` repo's first commit
+    (2026-04-23) describes itself as a *"port of internal pipeline work"* — five days after
+    Claudette started. See `archive-repos.md` §1.1.
 
 ---
 
