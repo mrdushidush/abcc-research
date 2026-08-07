@@ -598,8 +598,40 @@ overturned.** Three are sharpened, and one workstream gains a job it did not hav
 - **W5 inherits a console panel with zero observed behaviour.** `TokenBurnLog`'s real-data list is
   structurally always empty; its only non-empty state is an opt-in demo fed by `Math.random()`. The
   layout is proven, the data path never ran. Treat "ABCC already has this surface" as a claim about
-  *design*, not about *behaviour under load*, for this panel and by extension for the rest of §8
-  that is still inventory-only.
+  *design*, not about *behaviour under load*.
+
+**Third pass, 2026-08-07 late evening: ABCC's UI was run for the first time.** Vite dev server plus
+headless Chrome over the DevTools Protocol, no backend, per David's ruling. Full detail in
+`verification.md` §3.5. **This changes a premise in W5's favour, and corrects one this brief
+inherited from the map:**
+
+- **The frame-budget question is answered and the answer is good.** `questions.md` §4 item 7 asked
+  whether the console holds frame budget at 2.0's event volume. Measured on the real DOM shape:
+  idle sprites are **free up to about 100 entities** (indistinguishable from an empty page), the
+  cliff is between 100 and 400, and 1,000 costs 48.6 ms a frame. **At any plausible 2.0 fleet size
+  the existing technique needs no canvas and no WebGL.** W5 does not have to solve a rendering
+  problem; it has to make design choices. One specific fix carries over: `filter: blur()` on firing
+  agents doubles frame cost, so pre-blur the glow and animate opacity instead.
+- **The renderer is not what the map said, and the correction is mine.** It is
+  absolutely-positioned raster sprites over a pre-rendered background image, not SVG polygons on a
+  17x17 tile board, and `isoCubeFaces` is called by nothing. **ABCC's isometric identity is
+  art-driven, not engine-driven** - six painted battlefield JPEGs and 35 MB of sprite art carry the
+  look. That reframes what W5 is inheriting: the expensive, irreplaceable asset is the **art**, in
+  the same way the 96 voice lines are.
+- **The console is a live view, not a record.** A 500-row ring buffer in the store, 50 rows visible,
+  200 recovered on reconnect, while Postgres holds everything. **2.0's replay requirement needs a
+  paged read path that ABCC never built**, so put it in W5's scope explicitly rather than assuming
+  the panel ports.
+- **A tension Q8 creates that Phase 0 had not recorded.** ABCC's theme system is a 28-line
+  **vocabulary** map - `taskQueue: 'Bounty Board'`, `agents: 'Strike Team'` - with a neutral
+  `classic` theme as the off-switch. Q8 puts the RTS framing into the Rust domain model, where an
+  enum variant cannot be renamed by a theme file. **W5 must decide what the off-switch means now**:
+  labels-only translation over fixed enums, or a neutral theme that is only cosmetic. Q8 stands;
+  this is a design consequence of it.
+- **What is still open in §8:** `audioManager.ts`'s queueing, and **memory** under real event
+  volume. 34.3 MB of animated GIF cost no measurable frame time, but decode memory was outside what
+  this harness could see, and there are two OOM-fix comments in the UI source whose cause this pass
+  did not establish. That one needs the stack up.
 - **W3 gains the durability work as a first-class item, not a port.** ABCC's task lifecycle is
   eleven states held as **untyped strings** — no status union type anywhere in the package, ≥48
   bare literal sites for `Task` alone — with no state machine; file locks are
@@ -1029,9 +1061,19 @@ best weeks of the schedule re-confirming settled facts.**
 3. **W5 next, and it keeps its extra room.** The residency reframing freed the schedule; spend it
    here, as the brief itself argues. It carries the project's identity and the success test.
    Phase 0 narrowed the starting point usefully: `isoProjection.ts` is a good foundation (181
-   lines of dependency-free 2:1 projection math), but the renderer around it is SVG-per-sprite on
-   a 17×17 board and the frame-budget question is still open. W5 also owns the four
+   lines of dependency-free 2:1 projection math), ~~but the renderer around it is SVG-per-sprite on
+   a 17×17 board and the frame-budget question is still open~~. W5 also owns the four
    operator-control questions nothing in the family answers.
+
+   **Updated after the UI was run, 2026-08-07 (see 11.0).** The renderer is raster sprites over
+   painted backdrops, and **the frame-budget question is closed and favourable** - free to ~100
+   entities, no canvas or WebGL needed at 2.0's scale. So W5's extra room is no longer insurance
+   against a rendering risk; **spend it on the four operator-control questions and on replay**,
+   which is where the real gap is. Three concrete items now in scope that were not before: a paged
+   read path for replay (the console is a 500-row ring buffer over a database that has everything),
+   deciding what the theme off-switch means once Q8 puts the vocabulary in the type system, and
+   separating the audio and no-dead-air logic from the WebSocket transport, where ABCC left it.
+   One item leaves scope: choosing a rendering technology.
 
 4. **W3, W6 and W11 as a block**, unchanged — they interlock and the stage pipeline is the shape
    the orchestrator must express. Two entry conditions: W3 needs the Claudette code-sharing answer
@@ -1148,11 +1190,15 @@ Answer during or shortly after Phase 0. These change the shape of Phase 1.
    tasks are self-contained algorithms, BCF's missions are greenfield generation, and only
    Q56's I-series (bigrepo) and J-series (git) touch real repository work. That gap is W8's
    first job.
-3. **Repo and naming.** New repo or new major version of ABCC? Still called Agent Battle
-   Command Center? This gates W12 entirely. **STILL OPEN.**
-4. ~~**Claudette's relationship.**~~ **PARTIALLY ANSWERED.** The three checkouts are working
-   roles (canonical, self-edit sandbox, Q56 runner). Whether 2.0 and Claudette share code as a
-   crate remains open and is now sharper: 2.0 reuses most of Claudette's engine. See W3.
+3. ~~**Repo and naming.** New repo or new major version of ABCC? Still called Agent Battle
+   Command Center? This gates W12 entirely. **STILL OPEN.**~~
+   **ANSWERED 2026-08-07 (see the banner above): new repo, keeps the name.** W12 unblocked.
+4. ~~**Claudette's relationship.**~~ ~~**PARTIALLY ANSWERED.**~~ **FULLY ANSWERED 2026-08-07.**
+   The three checkouts are working roles (canonical, self-edit sandbox, Q56 runner). And the part
+   that was still open - whether 2.0 and Claudette share code as a crate - is now closed:
+   **2.0 copies the engine and both stay live.** No shared crate. W3 is free to reopen the tokio
+   decision on its own merits; accepted cost is that fixes stop propagating and the 1,145-test
+   suite splits in two.
 5. ~~**Console shape.**~~ **ANSWERED: a full isometric web UI in the style of the original
    Command and Conquer** - what ABCC v1 gestured at, done properly. Not a TUI, not Tauri.
    W5 starts from ABCC's existing `components/isometric/` rather than from a blank page or
@@ -1162,23 +1208,37 @@ Answer during or shortly after Phase 0. These change the shape of Phase 1.
    is the mode to design for. Cloud is a future convenience (renting an H100 if ever needed),
    not a design assumption. This reframes the priority order: co-op and multiplayer are
    later, and the single-player evaluation baseline is the one that matters.
-7. **Monthly frontier API spend ceiling** to optimize routing against. **STILL OPEN**, and
-   lower priority now that single player is primary.
+7. ~~**Monthly frontier API spend ceiling** to optimize routing against. **STILL OPEN**, and
+   lower priority now that single player is primary.~~
+   **ANSWERED 2026-08-07 (see the banner above): effectively zero, local only.** Cloud escalation
+   is manual and rare. There is no ceiling to optimize against, so W4 optimizes latency and rework
+   instead.
 8. **RTS framing depth.** Presentation layer only, or into the Rust domain model?
-   **STILL OPEN.** Sharper than when written: Claudette's `forge/types.rs` already states a
+   ~~**STILL OPEN.**~~ **ANSWERED 2026-08-07 (see the banner above): into the Rust domain
+   model.** Sharper than when written: Claudette's `forge/types.rs` already states a
    *functional* naming principle - "role naming is about what the model is doing, not about
-   which weights are loaded" - which military naming would replace.
+   which weights are loaded" - which military naming now deliberately replaces. This is the one
+   answer that creates work rather than removing it, and §14 item 4 gives it a first job: the
+   lifecycle enum and the RTS vocabulary are the same decision.
 9. ~~**The 32GB ceiling.**~~ **ANSWERED: fixed.** 32GB RAM plus 16GB VRAM, no second machine,
    no AM4 upgrade. But see the correction in 3.4: on the crowned configuration the model is
    fully VRAM-resident and system RAM is barely involved, so this ceiling may not be the
    binding constraint the brief assumes.
 10. **Existing users.** Willing to ship a clean break with a good migration story, or does
-    something have to keep working for the people already running V1? **STILL OPEN.**
+    something have to keep working for the people already running V1? ~~**STILL OPEN.**~~
+    **ANSWERED 2026-08-07: clean break, documented.** No migration code; W12 writes the
+    succession story.
 
 **Added by Phase 0** - see `prestudy/questions.md` section 2 for the full list:
 
 11. **`BMORE.md`** is a full commercial product specification sitting in the public
     battle-command-forge repo. Demo mission input, or a real business document that should
-    come out?
+    come out? **ANSWERED 2026-08-07: a real business document - take it out.** Action on
+    David's repo; already DROP in the map.
 12. **Licensing for 2.0.** MIT like ABCC, MIT-OR-Apache like Claudette, or Apache-2.0 like
     BCF? Sole authorship makes all three available. Gates W12 with question 3.
+    **ANSWERED 2026-08-07: MIT OR Apache-2.0 dual**, matching Claudette, the largest donor.
+
+**Section 17 status: every item is answered.** Items 1-12 above are individually marked; the
+banner at the top of this section is the authoritative summary. Nothing in Phase 1 waits on
+David.

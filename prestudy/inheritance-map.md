@@ -186,6 +186,30 @@ Added 2026-08-07 by the second verification pass (`verification.md` §3.4):
     the validation is right, the consumers are right, the UI guards its demo mode carefully. The
     system still cannot record a token. Reading any one file would have found nothing wrong.
 
+    **Extent, once the UI was run (`verification.md` §3.5h):** `emitCostUpdate`'s only caller is
+    inside the dead gate, so **`cost_updated` can never fire**; `budget_updated` fires only from
+    `setConfig` / `resetDaily`, so it only ever reports zero spend. **3 columns → 2 services →
+    2 socket events → 2 store slices → the budget HUD and the burn-rate panel.** Eleven components.
+    Visible in one screenshot: `$0.00 / $5.00`, `$0.0000` all-time, `BURN RATE 0/min`,
+    `No token usage yet`.
+
+11. **The isometric renderer is raster sprites over painted backdrops, not an SVG tile engine — and
+    the wrong version of this was written into this map earlier the same day, by me.** §8's row and
+    `verification.md` §3.2 both said "one SVG node per sprite … on a `GRID_RANGE = 8` (17×17)
+    board". Both were **inferred from `isoProjection.ts`'s exports without opening the components
+    that consume them.** What ships: `IsometricGrid` is a single full-bleed background `<img>` (the
+    17×17 board is never drawn), `IsometricTank` is two divs plus a 280 px raster `<img>`, SVG
+    appears only in the projectile tracer and one arc on the target, and `isoCubeFaces` — cited as
+    the module's best evidence of quality — **has zero call sites**.
+
+    Running it settled the question the wrong reading had opened: **idle sprites are free to ~100
+    entities, the cliff is between 100 and 400, and the technique needs no canvas or WebGL at 2.0's
+    scale.** The renderer moves REFERENCE → PORT. Full numbers in `verification.md` §3.5(c).
+
+    **Why this is an item.** Items 1-10 are corrections to other people's code. This one is a
+    correction to a claim of mine that read as a code citation and was an inference. The fix was one
+    screenshot and four greps. **Open the consumer, not just the module.**
+
 Also worth flagging: `docs/decisions.md` opens with a warning that AD-1 through AD-7 describe
 `claudettes-forge` and are "fiction relative to the shipped product". It is still valuable, but
 only as a record of *measurements and reasoning*, never as a description of Claudette.
@@ -339,22 +363,22 @@ Everything here is the pillar Claudette deliberately omitted, so ABCC dominates.
 
 | Component | Source | Verdict | Reason |
 |---|---|---|---|
-| **2D isometric projection math** (`isoProjection.ts`, 181 lines, zero deps) | ABCC `packages/ui/src/components/isometric/` | **REUSE** | ✅ **Read properly 2026-08-07 — upgraded from "exists" to "good".** Classic 2:1 diamond grid in pure screen-space math (`sx=(x−z)·64`, `sy=(x+z)·32`), explicitly no CSS 3D transforms. Ships `isoZIndex` depth sorting, a `Z_LAYER` table, and `isoCubeFaces` (SVG polygons for a block's three visible faces). Cleanly separated from the components that consume it, which is what makes it portable. |
-| The isometric **renderer** (7 components: grid, tank, target, projectile, explosion, label, battlefield) | ABCC `components/isometric/` | **REFERENCE** | ⚠ **Narrowed from REUSE.** Renders one SVG node per sprite with DOM `z-index`, on a `GRID_RANGE = 8` (17×17) board. `questions.md` §4 item 7's frame-budget question was asked of the R3F battlefield; **it applies to this path too and is not answered by it.** Keep the projection, treat the renderer as open W5 work. |
-| React Three Fiber 3D battlefield (11 components) | ABCC `components/battlefield/` | **REFERENCE** | Real work, but the decision is isometric. Keep as a source of motifs. |
+| **2D isometric projection math** (`isoProjection.ts`, 181 lines, zero deps) | ABCC `packages/ui/src/components/isometric/` | **REUSE** | ✅ **Read properly 2026-08-07 — upgraded from "exists" to "good".** Classic 2:1 diamond grid in pure screen-space math (`sx=(x−z)·64`, `sy=(x+z)·32`), explicitly no CSS 3D transforms. Ships `isoZIndex` depth sorting and a `Z_LAYER` table. Cleanly separated from the components that consume it, which is what makes it portable. ⚠ **Reason corrected 2026-08-07 (late), after running the UI:** this is sprite **placement** math over painted backdrops, **not a tile engine** — nothing draws a diamond grid. And `isoCubeFaces` / `isoHexFaces`, which the earlier note singled out as "the parts people get wrong", have **zero call sites**; only `getDiamondDimensions` is imported. REUSE stands on `worldToScreen` + `isoZIndex` + `Z_LAYER`; budget for the rest as unproven. |
+| The isometric **renderer** (7 components: grid, tank, target, projectile, explosion, label, battlefield) | ABCC `components/isometric/` | ~~REFERENCE~~ → **PORT** | ⚠ **Re-verified by execution 2026-08-07 (late) — and it was wrong twice, in my own earlier note.** It does **not** render SVG-per-sprite: `IsometricTank` is an absolutely-positioned `div` + a radial-gradient glow `div` + one 280 px raster `<img>` (PNG, or GIF for coders), three DOM nodes per agent, and SVG appears only for the projectile tracer and one arc on the target. And **the 17×17 board is never drawn** — `IsometricGrid` is a single full-bleed background `<img>`, one of six pre-rendered battlefield JPEGs rotated every 10 tasks. **The look is art-driven, not engine-driven.** The frame-budget question that held this at REFERENCE is now **answered and favourable** (`verification.md` §3.5c): idle sprites are **free to ~100 entities** (pegged at the harness ceiling, 6.9 ms), the cliff is between 100 and 400 (20.8 ms) and 1,000 costs 48.6 ms. At any plausible 2.0 fleet size this technique needs **no canvas and no WebGL**. Two things to fix in the port: `iso-hex-glow` animates `filter: blur()` on every firing agent and **doubles** frame cost at N=100, so pre-blur and animate opacity instead; and four animated GIFs are **34.3 MB of the 35 MB** sprite budget (12.9 MB / 242 frames for the building) — no frame cost measured, memory under load **not** measured and still open. |
+| React Three Fiber 3D battlefield (11 components) | ABCC `components/battlefield/` | **REFERENCE** | Real work, but the decision is isometric. Keep as a source of motifs. **Confirmed by the source itself 2026-08-07:** `BattlefieldView.tsx:13` calls it *"legacy Three.js canvas (lazy-loaded)"* and the running page has **zero `<canvas>` elements**. ABCC deprecated this path on its own; the REFERENCE verdict is not an outside judgment. All three views (`cards` / `isometric` / `3d`) are runtime-switchable from the top bar. |
 | **96 Bark TTS voice lines** (6.7 MB, 3 packs) | ABCC `packages/ui/public/audio/` | **REUSE** | Irreplaceable and expensive to regenerate. Copy the files. Verified: `field-command` 32 + `mission-control` 32 + `tactical` 32. (Path corrected — it is under `packages/ui/`, and `packages/ui/dist/audio/` is a build-artifact duplicate, not a fourth pack.) |
 | `audioManager.ts` playback queue + `voicePacks.ts` | ABCC | **PORT** | Small, and the queueing behaviour is the non-obvious part. |
 | `bark-generate-all.py` regeneration script | ABCC `scripts/` | **REUSE** | Needed to extend the voice set. |
-| ToolLog terminal feed, TokenBurnLog, CodeWindow | ABCC | **PORT** | The no-dead-air surfaces. ⚠ **TokenBurnLog read 2026-08-07: the layout is proven and the data path never was.** 322 lines, and it filters the live store on the same dead predicate as the API — `.filter(log => log.inputTokens \|\| log.outputTokens)` (`:93`) — so its real-data list is **always empty** (§0 item 10). Its only non-empty state is an opt-in demo that generates entries from `Math.random()` (`:63-75`, `:121-134`). The component is *not* the problem: mock mode defaults off, auto-disables when real data arrives, and is labelled *"a demo cosmetic, not a polling fallback"*. **But no human has ever seen this panel render a real number**, so W5 inherits a design with zero observed behaviour under real volume, and W8 inherits the reason cost was never measurable. ToolLog and CodeWindow are still inventory-only. |
-| Three minimaps (Minimap, FlowMinimap, TimelineMinimap) | ABCC | **REFERENCE** | Three attempts at one problem. Pick one deliberately in W5. |
-| Dashboards (CostDashboard, SuccessRateChart, ComplexityDistribution, AgentComparison) | ABCC | **PORT** | Legibility over completeness: port selectively, not all four. |
-| Theme system (`classic.ts`, `battleclaw.ts`) | ABCC | **REUSE** | Personality-with-an-off-switch already has a mechanism. |
-| `useSocket.ts` WebSocket event plumbing | ABCC | **PORT** | Event taxonomy is reusable; transport is W5's call. |
+| ToolLog terminal feed, TokenBurnLog, CodeWindow | ABCC | **PORT** | The no-dead-air surfaces. ⚠ **TokenBurnLog read 2026-08-07: the layout is proven and the data path never was.** 322 lines, and it filters the live store on the same dead predicate as the API — `.filter(log => log.inputTokens \|\| log.outputTokens)` (`:93`) — so its real-data list is **always empty** (§0 item 10). Its only non-empty state is an opt-in demo that generates entries from `Math.random()` (`:63-75`, `:121-134`). The component is *not* the problem: mock mode defaults off, auto-disables when real data arrives, and is labelled *"a demo cosmetic, not a polling fallback"*. **But no human has ever seen this panel render a real number**, so W5 inherits a design with zero observed behaviour under real volume, and W8 inherits the reason cost was never measurable. **Seen running 2026-08-07** — it renders `BURN RATE 0/min · $0.0000 · In: 0 Out: 0 Total: 0 · No token usage yet`, with the `Demo` toggle visible in the panel header. ⚠ **And one structural fact for all three, found the same pass: the console is a live view, not a record.** The store is a **500-row ring buffer** (`store/uiState.ts:10`, enforced on both append and replace), `ToolLog` renders `slice(-50)`, and reconnect recovers `listRecent(200)` — while Postgres holds every row. Sound against unbounded growth; **a direct problem for 2.0's replay requirement**, which needs a paged read path against the store of record that ABCC never wired up. |
+| Three minimaps (Minimap, FlowMinimap, TimelineMinimap) | ABCC | **REFERENCE** | Three attempts at one problem. Pick one deliberately in W5. (190 / 129 / 297 lines. Seen running 2026-08-07: `Minimap` is the circular radar sweep and it occupies the entire left column — a real estate decision W5 should make on purpose, not inherit.) |
+| Dashboards (CostDashboard, SuccessRateChart, ComplexityDistribution, AgentComparison) | ABCC | **PORT** | Legibility over completeness: port selectively, not all four. ⚠ **Split 2026-08-07:** `SuccessRateChart`, `ComplexityDistribution` and `AgentComparison` read REST endpoints backed by columns that *are* populated, and draw **hand-rolled `<svg>` with no charting library** — the same zero-dependency instinct as `isoProjection.ts`, and worth keeping. `CostDashboard` is starved by §0 item 10 and renders zeros; it degrades rather than breaking, because it has a REST fallback alongside the live store. |
+| Theme system (`classic.ts`, `battleclaw.ts`) | ABCC | **REUSE** | Personality-with-an-off-switch already has a mechanism. ✅ **Stronger than this row said, and now in tension with Q8.** Each theme is **~28 lines** and maps **domain vocabulary**, not colours: `taskQueue: 'Bounty Board'`, `agents: 'Strike Team'`, `dashboard: 'Intel Dashboard'`, plus a logo and an `agentIcons` map (coder→Sword, qa→Shield, cto→Crown). `classic.ts` is the off-switch. ⚠ **But Q8 puts the RTS framing into the Rust domain model**, where an enum variant named `Squad` cannot be renamed by a theme file. **W5 inherits an off-switch that the chosen depth partly disables and must decide what "off" means** — labels-only translation over fixed enums, or a neutral theme that is merely cosmetic. Not a reason to reopen Q8; a thing to design for. |
+| `useSocket.ts` WebSocket event plumbing | ABCC | **PORT** | Event taxonomy is reusable; transport is W5's call. ⚠ **Read properly 2026-08-07 — 456 lines and 26 domain event handlers** (tasks, agents, execution logs and steps, alerts, cost, budget, chat streaming, validation pipeline, auto-retry, code review, five mission lifecycle events, clarification). **The no-dead-air logic lives inside the transport:** sound on status transition, a 3 s anti-overlap window, a milestone sound every 2 iterations, a failure sound when `currentIteration` *decreases*. **Port the taxonomy and break that coupling**, or 2.0 inherits it. Three scars to not repeat: `window.__ABCC_SOCKET__` and `window.chatHandlers` globals (HMR / StrictMode workarounds), and `MAX_PENDING_TIMEOUTS = 5` labelled "(OOM fix)". One pattern to keep: rehydrate the log buffer from REST on reconnect. |
 | Chat panel, CTOWelcome, MissionProgressTracker | ABCC | **REFERENCE** | Overlaps the conversational surface Claudette already owns. |
 | Ratatui TUI | Claudette `tui.rs` (5 tabs) and BCF `tui.rs` | **REFERENCE** | Decision is isometric web. Keep as the headless/SSH fallback question for W5, not the primary. |
 | `snake.rs` / `space.rs` minigames | BCF | **REFERENCE** | Correct instinct about dead air, wrong answer. Make the work watchable instead. |
 | macOS `say` voice announcements | BCF `voice.rs` | **DROP** | macOS-only; dead on the target hardware. |
-| Bounty board | brief section 3.1 | **DROP** | Does not exist in any repo. |
+| Bounty board | brief section 3.1 | **DROP** | Does not exist in any repo. **Confirmed 2026-08-07 with the UI running, and the phrase's origin found:** "BOUNTY BOARD" appears in the console because it is BattleClaw's *theme label for the task queue* (`themes/battleclaw.ts`). There is no bounty mechanic, no rewards, no claiming. DROP stands. |
 
 ---
 
@@ -462,8 +486,8 @@ PORT or REFERENCE. Six reasons were rewritten; see `verification.md` §4.2.
 | Verdict | Count | Where it concentrates |
 |---|---|---|
 | **REUSE** | 49 | Overwhelmingly Claudette. The harness, the tools, the safety layer, the eval. |
-| **PORT** | 20 | Mostly ABCC — the complexity model and the console surfaces — plus the two gate-independence mechanisms from the archive repos. |
-| **REFERENCE** | 28 | Spread evenly. Mostly negative results and superseded attempts. |
+| **PORT** | **21** | Mostly ABCC — the complexity model and the console surfaces — plus the two gate-independence mechanisms from the archive repos. **+1 on 2026-08-07 (late): the isometric renderer, promoted from REFERENCE once the frame-budget question was measured and came back favourable.** |
+| **REFERENCE** | **27** | Spread evenly. Mostly negative results and superseded attempts. (−1: the isometric renderer left for PORT.) |
 | **DROP** | 26 | Mostly ABCC infrastructure, BCF's commercial scaffolding, and StealthForge's self-scored gate. |
 | **REWRITE** | **7** | The genuinely new work: provider abstraction, difficulty/context separation, TTFT, operator metrics, one security test — **plus two added by the 2026-08-07 verification pass: peak VRAM/RAM reporting (W1, W2) and the config-driven gate threshold (W6)**, both of which the map had recorded as existing assets and neither of which is implemented anywhere. |
 
@@ -502,11 +526,20 @@ fixtures per language. The claim did not survive: no language branch parses anyt
 docked ~2.5 points on every platform by an early `return`, and on Windows a correct and a broken
 Python file both score 5.80. §6's row is rewritten and `verification.md` §2.2 has the table.
 
-**~~Medium~~ → partly resolved on the presentation layer.** `isoProjection.ts` was read properly
-and is a good foundation — 181 lines of dependency-free 2:1 projection math. The *renderer* around
-it was narrowed to REFERENCE: SVG-per-sprite on a 17×17 board, with the frame-budget question still
-open. **The rest of §8 is still inventory-only** — ToolLog, TokenBurnLog, CodeWindow, the three
-minimaps, the four dashboards, `useSocket.ts`, the theme system, and `audioManager.ts`'s queueing.
+**~~Medium~~ → ~~partly resolved~~ → resolved on the presentation layer, 2026-08-07 (late), by
+running the UI.** `isoProjection.ts` is a good foundation — 181 lines of dependency-free 2:1
+projection math — though it is placement math, not a tile engine, and two of its exports are unused.
+~~The *renderer* around it was narrowed to REFERENCE: SVG-per-sprite on a 17×17 board, with the
+frame-budget question still open.~~ **That reading was wrong** (§0 item 11): raster sprites, no
+drawn board, and the frame-budget question is now **measured and favourable**, which promoted the
+renderer to PORT. ToolLog, TokenBurnLog, CodeWindow, the dashboards, `useSocket.ts` and the theme
+system were all read properly and their rows rewritten.
+
+**Still Medium in §8, and now a short list:** `audioManager.ts`'s queueing behaviour, which the map
+calls "the non-obvious part" and which still has not been executed; the three minimaps, read only far
+enough to confirm what each one shows; and **memory under real event volume** — the one half of the
+frame-budget question that survives, since 34.3 MB of animated GIF cost no measurable *frame* time
+and this harness could not see decode memory. That needs the UI against a live backend.
 
 **~~Still Medium, and now explicit~~ → resolved 2026-08-07 (second pass).** ABCC's §2 PORT rows
 (task lifecycle, queue, resource pool, stuck-task watchdog) and §7's `ExecutionLog` / `FileLock`

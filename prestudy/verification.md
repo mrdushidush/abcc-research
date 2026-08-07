@@ -325,8 +325,15 @@ existing one is a W5 judgment."* Read properly, it is **a good foundation**:
 - It is the *math*, cleanly separated from the components that consume it. That is exactly what
   makes it portable — 2.0 can keep the projection and replace the renderer.
 
-**The caveat W5 needs.** It renders through **SVG polygons with DOM `z-index`**, and `GRID_RANGE`
-is 8 (a 17×17 board). `questions.md` §4 item 7 asks about the console's frame budget "with a live
+> ⚠ **The paragraph below is wrong and was corrected the same day by §3.5(b).** It was inferred from
+> `isoProjection.ts`'s exports without opening the components that consume them. The renderer uses
+> **absolutely-positioned raster sprites**, not SVG polygons; the 17×17 board is **never drawn**
+> (`IsometricGrid` is a single background `<img>`); and `isoCubeFaces` has **zero call sites**. The
+> frame-budget measurements are in §3.5(c) and the answer is favourable. Left in place rather than
+> deleted, because how the error was made is the point.
+
+**~~The caveat W5 needs.~~** ~~It renders through **SVG polygons with DOM `z-index`**, and `GRID_RANGE`
+is 8 (a 17×17 board).~~ `questions.md` §4 item 7 asks about the console's frame budget "with a live
 task graph at 2.0's event volume" and notes ABCC's React Three Fiber battlefield was built for
 three agents. **The same question applies to the isometric path and is not answered by it** — one
 DOM node per sprite is a different scaling curve from canvas or WebGL. Also note `isoZIndex` mixes
@@ -593,6 +600,179 @@ It only bites with two or more coder agents, since `isOllamaTask` requires
 `agentTypeName === 'coder'` (`:85`), which is likely why it was never noticed. Constants:
 **3 s** normal, **8 s** every **5th** task, per agent.
 
+### 3.5 The §8 presentation rows — the UI was run (2026-08-07, late evening)
+
+**Method.** `npm run dev` in `packages/ui` (vite 7.3.6, ready in 1.5 s), then headless Chrome 151
+driven over the DevTools Protocol from a 130-line zero-dependency Node script
+(Node 24 has a global `WebSocket`). No backend: David's ruling was UI-only with synthetic volume, so
+Postgres, the API and the Python agents were never started. Nothing in ABCC was modified; the
+benchmark harness was injected into the running page at runtime and imports ABCC's **own**
+`isoProjection.ts` through the dev server.
+
+**Caveat stated up front.** Headless Chrome composites in software and its vsync ceiling here is
+~145 Hz, so any frame time at or under 6.9 ms reads as "free" and cannot be resolved further. The
+*shape* of the scaling curve and the *relative* cost of one technique against another are the
+trustworthy parts; absolute FPS on David's GPU will be better.
+
+#### (a) It boots, and it looks like the thing the brief describes
+
+First time ABCC's console has been seen in this study. 317 DOM nodes at rest, **26 `<svg>` elements,
+zero `<canvas>`**, JS heap 22.7 MB. Every panel renders a clean empty state with no server:
+`No pending tasks`, `No execution logs yet`, `No token usage yet`, `0 targets 0 squads`,
+`Connecting to server...`. The only console errors are the vite proxy failing to reach
+`:3001` (`/api/tasks`, `/api/agents`, `/api/agents/model-features`) - expected, not a defect.
+
+Visible in one screenshot: the budget HUD, a circular radar minimap occupying the whole left column,
+PEND/ASGN/WORK/DONE task columns, a theme selector (BattleClaw), a voice-pack selector (Tactical
+Ops), an audio mute, a **Cards / Iso / 3D view switcher**, the tool log with auto-scroll and export,
+and the burn-rate panel with its `Demo` toggle sitting right next to `Auto`.
+
+#### (b) I was wrong about the renderer this morning, in three ways
+
+§3.2 of this document said the isometric path "renders through **SVG polygons with DOM `z-index`**"
+on "a `GRID_RANGE` is 8 (17×17 board)", and §8's row said "one SVG node per sprite". **All of that
+was inferred from `isoProjection.ts`'s exports rather than read in the components that consume it,
+and it is wrong.** Corrected:
+
+- **`IsometricGrid` is not a grid.** It is a single full-bleed `<img>` - one of six pre-rendered
+  battlefield JPEGs (2.3 MB total), rotated every 10 tasks, with a `brightness/contrast` filter.
+  **The 17×17 board is never drawn at all.** `GRID_RANGE` exists only in coordinate space.
+- **Sprites are raster images, not SVG.** `IsometricTank` renders an absolutely-positioned outer
+  `div` (with `zIndex` from `isoZIndex` and an `iso-fade-in` animation), an inner radial-gradient
+  glow `div`, and one `<img>` at 280 px pointing at a PNG or an animated GIF - **three DOM nodes per
+  agent, no polygons**. SVG appears only for two small decorations: the projectile tracer
+  (`IsometricProjectile`) and one arc on `IsometricTarget`. `IsometricExplosion` and
+  `IsometricLabel` are pure divs driven by CSS keyframes.
+- **`isoCubeFaces` has zero call sites.** The function I singled out as evidence the module "ships
+  the parts people get wrong" is imported by nothing; only `getDiamondDimensions` is. Same pattern
+  as §3.4 - well built, connected to nothing - this time inside a claim of mine.
+
+**So ABCC's isometric look is art-driven, not engine-driven.** `isoProjection.ts` is sprite
+*placement* math over painted backdrops. It stays REUSE and it is still good; but the row must stop
+implying a tile engine, because W5 would budget for the wrong thing.
+
+#### (c) The frame-budget question is answered, and the answer is favourable
+
+`questions.md` §4 item 7 asked whether the console holds frame budget "with a live task graph at
+2.0's event volume". Measured on the real DOM shape, with positions from ABCC's real projection
+module, 150 frames per run after a 2.5 s settle:
+
+| Scenario | Sprites | DOM nodes | median frame | p95 | implied fps |
+|---|---|---|---|---|---|
+| Idle, ABCC's design point | 3 | 327 | 6.9 ms | 7.1 | 145 (ceiling) |
+| Idle | 25 | 393 | 6.9 ms | 7.1 | 145 (ceiling) |
+| Idle | 100 | 618 | 6.9 ms | 7.1 | 145 (ceiling) |
+| Idle | 400 | 1,518 | **20.8 ms** | 27.8 | 48 |
+| Idle | 1,000 | 3,318 | **48.6 ms** | 83.3 | 21 |
+| **Firing** (`filter: blur` + `drop-shadow`) | 100 | 618 | **13.8 ms** | 14.0 | 73 |
+| **Firing** | 400 | 1,518 | **48.7 ms** | 69.5 | 21 |
+| Animated GIF sprites (coder, 3.6 MB / 97 frames) | 8 | 342 | 7.0 ms | 7.1 | 143 |
+| Animated GIF sprites (building, 12.9 MB / 242 frames) | 4 | 330 | 6.9 ms | 7.0 | 145 |
+
+**Read it this way:**
+
+1. **Up to ~100 entities the technique is free** - pegged at the harness ceiling, indistinguishable
+   from an empty page. The cliff is between 100 and 400. At any plausible 2.0 fleet size (a dozen
+   agents, a few dozen task nodes) **absolutely-positioned raster sprites are comfortably inside
+   budget, and W5 does not need canvas or WebGL to make the target scale work.** That narrows an
+   open risk rather than widening one.
+2. **The single most expensive thing per sprite is `filter: blur()`.** `iso-hex-glow` animates
+   `opacity` *and* `filter: blur(2px→4px)` on the glow ellipse of every firing agent, and it
+   **doubles** frame cost at N=100 (6.9→13.8 ms) and costs 2.3× at N=400 (20.8→48.7 ms). Every
+   other keyframe in `isometric.css` animates `transform` or `opacity`, which is exactly right; this
+   one and `iso-tank-fire` (animating `brightness`/`drop-shadow`) are the exceptions. **Cheap fix
+   for 2.0: pre-blur the glow layer and animate only its opacity.** Keep the look, drop the paint.
+3. **The 12.9 MB GIF costs no measurable frame time.** Four of them animating simultaneously stayed
+   at the ceiling. **This does not clear them**: four GIFs are **34.3 MB of the 35 MB** sprite
+   budget (`building-E/W-attacking.gif` at 380×568 × ~242 frames, `coder-E/W-attacking.gif` at
+   300×450 × ~97 frames), decode memory lives outside the JS heap where this harness could not see
+   it, and `Performance.getMetrics` returned no `ProcessPrivateMemory` in this Chrome. There are
+   **two OOM-fix comments** in the UI source (`useSocket.ts:43` "prevents timeout accumulation (OOM
+   fix)", `TokenBurnLog.tsx:88` "the OOM-inducing 10s HTTP polling is gone"). This pass did **not**
+   establish what caused either, and the frame data gives no grounds to blame the GIFs. **Memory
+   under load is still open, and it is the part of the frame-budget question that survives.**
+
+#### (d) Three renderers ship, and the source calls one of them legacy
+
+`battlefieldViewMode` is `'isometric' | '3d'` in the store plus a `cards` mode, switchable at
+runtime from the top bar. `BattlefieldView.tsx:13` describes the 3D path as *"legacy Three.js canvas
+(lazy-loaded)"*. So the map's REFERENCE verdict on the React Three Fiber battlefield is not an
+outside judgment - **ABCC deprecated it in its own comments and lazy-loads it**, which is why the
+running page has zero `<canvas>` elements.
+
+#### (e) The theme system is a vocabulary map, and it collides with the Q8 ruling
+
+`themes/battleclaw.ts` is **28 lines**: a `panels` label map (`taskQueue: 'Bounty Board'`,
+`agents: 'Strike Team'`, `dashboard: 'Intel Dashboard'`, `alerts: 'Threat Alerts'`), a logo, and an
+`agentIcons` map (coder→Sword, qa→Shield, cto→Crown). `classic.ts` is 27 lines and is the off-switch.
+So "personality with an off-switch" is stronger than the map says - it renames **domain concepts**,
+not colours, from one tiny file.
+
+Two consequences:
+
+- **The brief's bounty board still does not exist as a feature** (§8's DROP stands). "BOUNTY BOARD"
+  in the running page is BattleClaw's *label for the task queue*. That is where the phrase came from.
+- **A tension the Q8 answer creates, which Phase 0 has not recorded.** ABCC proved the RTS
+  vocabulary works as a **swappable presentation-layer file with a neutral fallback**. David's Q8
+  ruling puts the framing **into the Rust domain model**, where an enum variant named `Squad` cannot
+  be renamed by a theme. **W5 inherits an off-switch that the chosen depth partly disables, and has
+  to decide what "off" means now** - labels-only translation over fixed enums, or accept that the
+  neutral theme becomes cosmetic. Not a reason to reopen the decision; a thing to design for.
+
+#### (f) The console is a live view, not a record
+
+`MAX_EXECUTION_LOG_BUFFER = 500` in `store/uiState.ts:10`, enforced in both `setExecutionLogs` and
+`appendExecutionLog`; `ToolLog` renders `logs.slice(-50)`; on reconnect `useSocket` rehydrates via
+REST `listRecent(200)`. **So the console can show at most 500 rows and recover at most 200**, while
+Postgres holds every row. That is a sound answer to unbounded growth and a direct problem for 2.0's
+operator-control pillar: **replay cannot come from this buffer.** W5 needs a paged read path against
+the store of record, which ABCC has and never wired to the console beyond 200 rows.
+
+#### (g) `useSocket.ts` is where the *feel* lives, not just the transport
+
+456 lines and **26 domain event handlers** (tasks, agents, execution logs and steps, alerts, cost,
+budget, chat streaming, the validation pipeline, auto-retry, code review, five mission lifecycle
+events, clarification requests). §8's row calls it "event taxonomy is reusable; transport is W5's
+call" - true, and it undersells and mis-frames it:
+
+- **The experience logic is inside the socket layer.** Sound on status transition, a 3 s
+  anti-overlap window (`SOUND_DELAY_MS`), a milestone sound every 2 iterations, a failure sound when
+  `currentIteration` *decreases*. That is the no-dead-air design, implemented in the transport.
+  **2.0 must separate them** or it ports the coupling along with the taxonomy.
+- Three scars worth reading before repeating them: `window.__ABCC_SOCKET__` /
+  `window.__ABCC_SOCKET_CONNECTED__` globals to survive HMR and React StrictMode double-mount;
+  `window.chatHandlers` as a second cross-module channel; and `MAX_PENDING_TIMEOUTS = 5` labelled
+  "(OOM fix)". Also `transports: ['polling', 'websocket']` - polling first - and
+  `reconnectionAttempts: Infinity`.
+- Rehydrate-the-buffer-on-reconnect is a genuinely good pattern and should survive the port.
+
+#### (h) The dead cost vertical, seen end to end in one screenshot
+
+§3.4(h) traced three dropped fields. The running UI shows where they land:
+`$0.00 / $5.00` today, `$0.0000` all-time, `$0.0000` avg/task, `0` tasks today,
+`BURN RATE 0/min`, `In: 0 Out: 0 Total: 0`, `No token usage yet`. Confirmed in the source:
+`emitCostUpdate` has exactly one caller and it is inside the dead gate, so **`cost_updated` can
+never fire**; `budget_updated` *can* fire, but only from `setConfig` and `resetDaily`
+(`budgetService.ts:298`, `:308`) - never from `recordUsage` - so it only ever reports zero spend.
+
+**The full extent of one three-field omission: 3 database columns → 2 API services → 2 WebSocket
+events → 2 store slices → the budget HUD and the burn-rate panel.** Eleven components, all
+individually correct.
+
+The other three dashboards are fine and worth separating from this: `SuccessRateChart`,
+`ComplexityDistribution` and `AgentComparison` fetch REST endpoints backed by columns that *are*
+populated, and draw **hand-rolled `<svg>` with no charting library** - the same zero-dependency
+instinct as `isoProjection.ts`. `CostDashboard` also has a REST fallback, so it renders zeros rather
+than breaking.
+
+#### (i) Still not verified, after all of this
+
+`audioManager.ts`'s queueing behaviour - the map calls it "the non-obvious part" and it was not
+executed; the page was loaded muted-by-default in headless with no audio device. The three minimaps
+were read only as far as confirming they exist and which data each reads. And **nothing here
+exercised the UI against a live backend**, so event *volume* over a real socket, and memory under
+that volume, remain the open half of the frame-budget question.
+
 ---
 
 ## 4. Where this leaves the map
@@ -648,3 +828,29 @@ console panel with no reachable data. Neither failure mode is visible from readi
 visible from tracing a path or running the thing. Same lesson as
 `verify-claims-against-code-not-docs`, one level up: **a component being good is not evidence that
 it ran.**
+
+### 4.3 Third pass (late evening) — the §8 presentation rows, with the UI running
+
+| § | Row | Change |
+|---|---|---|
+| §0 | **new item 11** | The isometric renderer is raster sprites over painted backdrops, not an SVG tile engine. Correcting my own claim from earlier the same day |
+| §3.2 | (this document) | The "SVG polygons on a 17×17 board" caveat is **struck**, with the correction and the reason it happened |
+| §8 | `isoProjection.ts` | **REUSE stands**, reason corrected: sprite *placement* math over painted backdrops, not a tile engine. `isoCubeFaces` and `isoHexFaces` are **unused** |
+| §8 | The isometric **renderer** | **REFERENCE → PORT.** The frame-budget question that justified holding it at REFERENCE is now **answered and favourable**: free to ~100 entities, cliff between 100 and 400. The technique is sound at 2.0's scale |
+| §8 | R3F 3D battlefield | REFERENCE confirmed **by the source's own comment** — "legacy Three.js canvas (lazy-loaded)". Zero `<canvas>` in the running page |
+| §8 | Theme system | REUSE strengthened: a 28-line **vocabulary** map, not a colour scheme. **And flagged against Q8** — it is the presentation-layer naming approach the domain-model ruling partly disables |
+| §8 | Bounty board | **DROP stands**, with the origin of the phrase: BattleClaw's label for the task queue |
+| §8 | `useSocket.ts` | **26 domain event handlers**, and the audio/no-dead-air logic lives *inside* the transport. Port the taxonomy, break the coupling |
+| §8 | ToolLog / TokenBurnLog / CodeWindow | The store is a **500-row ring buffer**, ToolLog shows 50, reconnect recovers 200. The console is a live view, not a record — which 2.0's replay requirement needs to know |
+| §8 | Dashboards | Three of four work and hand-roll `<svg>` with no charting library; only `CostDashboard` is starved, and it degrades to zeros rather than breaking |
+| §13 | Confidence | §8 moves off Medium except `audioManager.ts` queueing and memory-under-load |
+
+**Net effect on the verdict counts: one row moves, REFERENCE → PORT** (the isometric renderer). That
+makes PORT **21** and REFERENCE **27**. It is the first verdict change since the first pass, and it
+moves in the direction Phase 0 kept finding: less new work than the map feared, not more.
+
+**What the third pass adds to the lesson.** The first two passes were about other people's code. This
+one caught **my own** inference presented as a reading — I described a renderer's technique from the
+exports of a module it imports, and got the technique, the board and the load-bearing function all
+wrong. The correction cost one screenshot and four greps. **The rule that would have prevented it is
+the same one: open the consumer, not just the module.**
