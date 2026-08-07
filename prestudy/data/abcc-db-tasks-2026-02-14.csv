@@ -1,0 +1,219 @@
+id,title,task_type,required_agent,status,priority,max_iterations,current_iteration,complexity,complexity_source,complexity_reasoning,error_category,created_at,completed_at
+9d80c84d-00c5-4f33-a7c6-71aba09fa63a,[STRESS-C1] double,code,,completed,3,5,0,5,actual,,,2026-02-06 20:59:25.929,2026-02-06 20:59:32.937
+264bc846-83d5-42fc-817f-7b0f401d0c5a,Create hello world function,code,,failed,5,3,0,1.3,dual,"Router: 1.5, Haiku: 1. This task requires writing a single, straightforward function with basic string formatting and no external dependencies or error handling.",,2026-02-06 19:12:07.902,2026-02-06 19:14:04.934
+32c65563-5e96-4117-8159-fa9d5ba0cabf,Create add function,code,,failed,5,3,0,1.3,dual,"Router: 1.5, Haiku: 1. This is a trivial task requiring a single function with basic arithmetic logic and no external dependencies, validation, or error handling.",,2026-02-06 19:15:27.962,2026-02-06 19:16:59.682
+a476cf71-7ca8-401a-93aa-8db2b69d390f,create hello function,code,,failed,4,3,1,,,,,2026-02-06 19:22:36.926,2026-02-06 19:29:15.464
+47a07bd0-fbd6-435f-a6f0-aff0f0734a46,[STRESS-C1] double,code,,completed,3,5,0,5,actual,,,2026-02-06 19:29:20.015,2026-02-06 19:32:09.055
+3a56617b-9d47-43f4-b885-1b6a507c7a3c,[STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-06 19:32:15.354,2026-02-06 19:32:19.805
+cd118e5a-4770-4bd6-b648-55678e842f61,[STRESS-C4] clamp,code,,completed,3,5,0,5,actual,,,2026-02-06 19:37:04.651,2026-02-06 19:37:37.823
+a2756032-4477-42c2-a440-e57c1d45656d,[STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-06 19:32:26.143,2026-02-06 19:32:41.985
+2bbf2b03-a4a8-4921-a36f-554b8618dccd,[STRESS-C2] is_even,code,,completed,3,5,0,5,actual,,,2026-02-06 19:32:48.312,2026-02-06 19:33:04.306
+5478a2a3-25fd-40b6-bc48-4bed85012bdc,[STRESS-C3] absolute,code,,completed,3,5,0,5,actual,,,2026-02-06 19:33:10.609,2026-02-06 19:33:14.803
+d06afde0-a0f4-47fb-bef3-696b25d7d20c,[STRESS-C3] max_of_two,code,,completed,3,5,0,5,actual,,,2026-02-06 19:33:27.138,2026-02-06 19:36:58.324
+e16c5ea0-b206-4181-9343-d4ef3687b493,[PARALLEL] Create double function,code,,failed,3,5,0,,,,,2026-02-06 21:09:08.821,2026-02-06 21:09:11.006
+7dbd14d6-a804-4511-b656-dbcc30f5af95,[STRESS-C4] count_vowels,code,,completed,3,5,0,5,actual,,,2026-02-06 19:37:44.156,2026-02-06 19:39:07.391
+8f31139c-bf75-4e7b-8e62-9b992d1b0224,[STRESS-C4] reverse_string,code,,completed,3,5,0,5,actual,,,2026-02-06 19:39:13.686,2026-02-06 19:39:40.526
+a49e04d2-3f9f-410c-8112-f2db8091be84,[STRESS-C4] reverse_string,code,,failed,3,5,0,,,,,2026-02-06 21:04:09.885,2026-02-06 21:08:01.426
+80321b3b-acd8-45f3-bbc8-9b7e20984462,[STRESS-C4] factorial,code,,completed,3,5,0,5,actual,,,2026-02-06 19:39:46.813,2026-02-06 19:42:42.428
+9334f3d1-cfdd-4e7a-b30c-f88811cc3878,[TEST] Task 3,code,,aborted,3,3,1,1.3,actual,"Router: 1.5, Haiku: 1. This is a placeholder test task with no actual programming requirements or implementation details specified. It requires no code development, logic, or external dependencies.",,2026-02-06 20:50:42.166,
+02f18305-8fbf-47c4-82b5-e5038ee47627,[PARALLEL] Create negate function,code,,failed,3,5,0,,,,,2026-02-06 21:08:03.764,2026-02-06 21:08:07.967
+8c6e8497-ae5b-4a9a-a181-addd7ae42835,[STRESS-C5] fizzbuzz_single,code,,completed,5,5,0,5,actual,,,2026-02-06 19:42:54.76,2026-02-06 19:43:20.685
+b5cc4f23-e790-4d60-8a48-c674cedd962b,[STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-06 20:59:39.279,2026-02-06 21:00:11.558
+59c763e1-4eab-4b60-85a6-a28b293a470e,[STRESS-C5] is_palindrome,code,,completed,5,5,0,5,actual,,,2026-02-06 19:43:27.007,2026-02-06 19:43:42.252
+3935adc1-fbd7-4c68-b91d-79b864437873,Redis Cache Layer,code,qa,failed,5,3,1,9,,,,2026-02-09 23:56:25.069,2026-02-12 14:56:21.269
+5d46b646-adb8-4ae3-8b4f-b117b40197f6,[STRESS-C5] safe_divide,code,,completed,5,5,0,5,actual,,,2026-02-06 19:43:48.631,2026-02-06 19:46:29.428
+48077c1b-825b-4e36-9d4f-6e1649117b88,[STRESS-C6] sum_of_digits,code,,completed,6,5,0,5,actual,,,2026-02-06 19:46:35.752,2026-02-06 19:46:58.346
+19be0f37-dd2a-4c97-80f5-47b4114c7841,[TEST] Check even number,code,,completed,2,3,2,6,actual,"Router: 2.5, Haiku: 1. This is a trivial task requiring only a single function with basic arithmetic logic (modulo operator). No external dependencies, error handling, or testing complexity needed.",,2026-02-06 20:50:23.193,2026-02-06 20:54:44.655
+367676bc-39ec-41e2-bcda-23bc122be799,[STRESS-C6] find_second_largest,code,,completed,6,5,0,5,actual,,,2026-02-06 19:47:04.653,2026-02-06 19:47:12.15
+9c616f8f-914d-411a-9ef2-a19c2d50a2e7,Create string utility functions,code,,aborted,3,3,1,,,,timeout,2026-02-12 15:00:53.8,
+ecabcb7c-815c-4541-8d6d-fca737e0c7a3,[STRESS-C7] fibonacci,code,,completed,7,5,0,5,actual,,,2026-02-06 19:47:36.583,2026-02-06 19:47:54.474
+51989eb0-b054-4982-86cc-a2d26a09759a,[STRESS-C6] is_prime,code,,completed,6,5,0,5,actual,,,2026-02-06 19:47:24.48,2026-02-06 19:47:30.273
+3298345d-4158-4f96-86ae-91ce84816b98,[TEST] Task 1,code,,aborted,1,3,1,1.3,actual,"Router: 1.5, Haiku: 1. This is a placeholder test task with minimal description and no actual implementation requirements. It contains no technical scope, dependencies, or functional specifications.",,2026-02-06 20:50:41.949,
+d55e97fb-e21e-4dad-9f91-d49688319206,[STRESS-C7] word_frequency,code,,completed,7,5,0,5,actual,,,2026-02-06 19:48:00.794,2026-02-06 19:48:16.982
+8b10f425-5e90-4ef6-8055-03e0ce3e7e12,[STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-06 21:00:22.879,2026-02-06 21:00:39.645
+3e34e5fc-748c-427e-a6ed-818f4bf0fce7,[MANUAL] Factorial function,code,,aborted,7,3,0,1.8,actual,"Router: 1.5, Haiku: 2. This task requires implementing a single recursive function with basic logic and no external dependencies or error handling requirements.",,2026-02-06 21:10:44.577,
+877b01b0-f3f3-4078-814e-48becdacd9b0,[MANUAL] Square function,code,,failed,3,3,0,1.3,dual,"Router: 1.5, Haiku: 1. This is a trivial task requiring a single-line function with basic arithmetic operation and no dependencies, validation, or error handling.",,2026-02-06 21:10:44.389,2026-02-07 11:20:47.045
+af82a69a-68db-4a2f-b35e-58f909e00523,[PARALLEL] Create square function,code,,failed,3,5,0,,,,,2026-02-06 21:08:03.74,2026-02-06 21:08:03.855
+2e053133-e705-4204-adc1-1ba02c041d75,[PARALLEL] Create double function,code,,failed,3,5,0,,,,,2026-02-06 21:08:03.755,2026-02-06 21:08:05.911
+08865074-9e70-4f01-9638-29dca674148c,[STRESS-C8] merge_sorted,code,,completed,8,5,0,5,actual,,,2026-02-06 19:48:23.282,2026-02-06 19:48:39.361
+9b4c5680-5387-4823-ad60-f8236ac00905,[TEST] Task 2,code,,failed,2,3,1,1.3,dual,"Router: 1.5, Haiku: 1. This is a placeholder test task with minimal description and no actual programming requirements or technical specifications.",,2026-02-06 20:50:42.066,2026-02-06 20:57:59.468
+b7bde1b0-ec33-42f7-ab1c-a602ac89c1db,[STRESS-C8] binary_search,code,,completed,8,5,0,5,actual,,,2026-02-06 19:48:45.662,2026-02-06 19:48:51.644
+3d4a1143-ee74-4508-8a3c-d00d2ebbf6a5,[STRESS-C2] is_even,code,,completed,3,5,0,5,actual,,,2026-02-06 21:00:45.959,2026-02-06 21:00:50.757
+9621a3e4-c911-42b9-a04c-7f0bcd40da75,[TEST] Simple greeting,code,,completed,5,3,1,1.3,actual,"Router: 1.5, Haiku: 1. This requires creating a single, straightforward function with basic string concatenation and no external dependencies or complex logic.",,2026-02-06 20:50:13.625,2026-02-06 20:52:39.216
+aeb47297-0ef8-40c2-a1c0-7c630224d049,[STRESS-C3] absolute,code,,completed,3,5,0,5,actual,,,2026-02-06 21:00:57.09,2026-02-06 21:01:33.811
+de8cd0e7-1ba6-458a-9702-d3c4fce071af,Post-crash smoke test,code,,completed,1,3,0,5,actual,,,2026-02-12 15:15:01.323,2026-02-12 15:17:04.16
+9f53b472-0306-4cba-98e3-9d4c8657e8d6,[STRESS-C1] double,code,,failed,3,5,0,,,,,2026-02-07 11:20:59.974,2026-02-07 11:28:08.68
+aa60af2a-e036-4e95-ab63-dbd0c24ae4dd,[STRESS-C1] double,code,,completed,3,5,0,5,actual,,,2026-02-07 14:51:54.118,2026-02-07 14:53:38.793
+a8ac446c-320e-4316-8b9b-62a329824eb4,[STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-07 14:53:45.152,2026-02-07 14:56:51.744
+6f1c08c4-4c4d-4b1d-b633-03e4cb19959f,[STRESS-C3] absolute,code,,completed,3,5,0,5,actual,,,2026-02-07 15:00:05.341,2026-02-07 15:00:41.485
+9417edd2-7b5f-49ca-89a5-82d6fee8a352,[STRESS-C4] clamp,code,,completed,3,5,0,5,actual,,,2026-02-07 15:01:20.81,2026-02-07 15:01:39.351
+808c47cf-a553-4d59-acdf-bee2fce91972,[STRESS-C3] max_of_two,code,,completed,3,5,0,5,actual,,,2026-02-06 21:01:41.221,2026-02-06 21:02:01.894
+d74b9056-a2fe-4e0a-8011-83592bc3d29e,Implement async rate limiter with sliding window algorithm,code,qa,failed,7,3,0,7,dual,"Router: 4.5, Haiku: 7 (using Haiku - semantic complexity). This task requires implementing a sophisticated algorithm (sliding window) with async concurrency patterns, proper state management, and comprehensive testing. It involves multiple considerations like thread-safety with asyncio locks, data structure optimization, and validating behavior across concurrent scenarios.",,2026-02-12 14:35:01.937,2026-02-12 15:17:22.63
+758356b3-961a-41f5-b40b-ecb6ccc4ea5c,[STRESS-C6] find_second_largest,code,,completed,6,5,0,5,actual,,,2026-02-07 11:25:40.62,2026-02-07 11:27:34.874
+d02f3136-acfe-4fb5-89a0-d59414a0dcb8,[STRESS-C4] clamp,code,,completed,3,5,0,5,actual,,,2026-02-06 21:02:08.184,2026-02-06 21:02:27.695
+2926db46-f6b3-4099-9185-881f5826ebb0,[PARALLEL] Create is_even function,code,,failed,3,5,0,,,,,2026-02-06 21:08:03.772,2026-02-06 21:08:10.031
+35844ef2-1e8a-42af-9ec3-c426fb9cba69,[PARALLEL] Create absolute function,code,,failed,3,5,0,,,,,2026-02-06 21:08:03.78,2026-02-06 21:08:12.084
+b25bda65-9e1b-4dc6-9bfd-425be05fdf23,[PARALLEL] Create prime checker,code,,failed,5,10,1,,,,,2026-02-06 21:08:03.798,2026-02-06 21:09:06.505
+6660c1c2-327c-457f-86cc-0b149791fab8,[PARALLEL] Create list deduplicator,code,,failed,5,10,1,,,,,2026-02-06 21:08:03.806,2026-02-06 21:09:06.505
+74278eee-f0c4-4103-a603-f483583a33ee,[STRESS-C4] count_vowels,code,,completed,3,5,0,5,actual,,,2026-02-06 21:02:38.992,2026-02-06 21:04:03.558
+409948b3-0322-4cd5-aa53-a4d71dc2bba0,[STRESS-C6] is_prime,code,,completed,6,5,0,5,actual,,,2026-02-07 11:28:09.707,2026-02-07 11:28:28.453
+6b18d82e-f655-4c00-ac85-11abf52faa17,Payment Gateway Integration,code,,completed,9,3,1,7,actual,"Router: 3.5, Haiku: 7 (using Haiku - semantic complexity). This task requires integration with an external payment API, implementation of multiple webhook handlers for different event types, and proper error handling across payment states. While not requiring distributed system architecture, it involves significant security considerations, async processing, and state management.",,2026-02-09 23:38:13.821,2026-02-09 23:54:16.972
+bc57b182-864c-45a8-8644-8ef88e8e425b,[STRESS-C7] fibonacci,code,,completed,7,5,0,5,actual,,,2026-02-07 11:28:34.777,2026-02-07 11:28:54.775
+00fbf9f4-06bb-44d7-bb53-2fc9af8f3a4d,[PARALLEL] Create factorial function,code,,completed,5,10,1,7,actual,,,2026-02-06 21:08:03.789,2026-02-06 21:08:24.688
+73948255-0ba9-4f6b-946b-b0af034e32a8,[STRESS-C7] word_frequency,code,,completed,7,5,0,5,actual,,,2026-02-07 11:29:01.166,2026-02-07 11:29:07.634
+1038a222-f5a4-4478-a33d-6f8600c39cf9,[STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-07 14:56:58.103,2026-02-07 14:57:03.328
+ecf0098a-741b-469f-8c82-e2401a286199,User Authentication API,code,,completed,8,3,1,5.3,actual,"Router: 4.5, Haiku: 6. This task requires implementing multiple interconnected components (login/logout endpoints, JWT token generation/validation, bcrypt hashing, and middleware) across potentially multiple files with security considerations and error handling.",,2026-02-09 23:38:13.496,2026-02-09 23:55:45.371
+beed8ccf-2c5d-441f-95dd-806b872fe53c,[STRESS-C3] max_of_two,code,,completed,3,5,0,5,actual,,,2026-02-07 15:00:53.803,2026-02-07 15:01:14.515
+c6c375d9-48cf-44d4-a97e-d057f795147f,[PARALLEL] Create prime checker,code,,completed,5,10,1,6,actual,,,2026-02-06 21:09:08.877,2026-02-06 21:09:29.909
+847a0753-d6cd-46a9-88a7-27fd5c747d52,[PARALLEL] Create list deduplicator,code,,completed,5,10,1,6,actual,,,2026-02-06 21:09:08.889,2026-02-06 21:09:44.767
+ed6d8f03-c355-4508-91a7-4e5b3fb73763,[STRESS-C4] clamp,code,,completed,3,5,0,5,actual,,,2026-02-14 20:17:31.162,2026-02-14 20:17:49.725
+67a94aa5-3189-4c68-8566-6b8a4fae7546,[TIER-OLLAMA] C6: is_prime,code,,completed,6,5,1,2.3,actual,"Router: 2.5, Haiku: 2. This is a straightforward single-function task requiring basic mathematical logic to determine primality. No external dependencies, error handling, or multiple files are needed.",,2026-02-12 17:38:24.105,2026-02-13 11:25:58.687
+3e69c409-036c-445c-93c6-3620e8e03aa8,[PARALLEL] Create square function,code,,failed,3,5,0,,,,,2026-02-06 21:09:08.806,2026-02-06 21:09:08.949
+92a009ba-b2fb-45f0-9c3a-09c4d0fe3951,[PARALLEL] Create negate function,code,,failed,3,5,0,,,,,2026-02-06 21:09:08.832,2026-02-06 21:09:13.076
+bf3664a3-b511-472f-88d7-228f1eeadfb2,[PARALLEL] Create is_even function,code,,failed,3,5,0,,,,,2026-02-06 21:09:08.842,2026-02-06 21:09:15.139
+33509679-6e84-4aea-be91-948e6ce6eafd,[PARALLEL] Create absolute function,code,,failed,3,5,0,,,,,2026-02-06 21:09:08.857,2026-02-06 21:09:17.196
+8531ff94-39ba-4482-a983-a58ade774161,[PARALLEL] Create factorial function,code,,completed,5,10,1,6,actual,,,2026-02-06 21:09:08.867,2026-02-06 21:09:19.522
+072d243f-4781-4969-89d7-1e51983104b0,[STRESS-C8] merge_sorted,code,,completed,8,5,0,5,actual,,,2026-02-07 11:29:13.921,2026-02-07 11:29:32.686
+1dca5fec-d3cf-476e-ab63-cd2c09b8bb71,[STRESS-C8] binary_search,code,,completed,8,5,0,5,actual,,,2026-02-07 11:29:39.066,2026-02-07 11:29:46.053
+084ef220-e275-4a6c-b06c-1a260e534ac8,[STRESS-C2] is_even,code,,completed,3,5,0,5,actual,,,2026-02-07 14:57:09.642,2026-02-07 14:59:58.959
+81e1c774-e480-4e12-8c75-69a7c8c3ef0d,[STRESS-C4] count_vowels,code,,completed,3,5,0,5,actual,,,2026-02-07 15:01:45.661,2026-02-07 15:01:50.815
+ba8a1da7-2c5d-43d7-bd94-14f808a1c77e,[STRESS-C4] count_vowels,code,,failed,3,5,0,,,,,2026-02-13 11:55:57.542,2026-02-13 12:01:03.753
+eb17b408-aba9-4859-9bfa-5e89104bfffa,[TIER-OLLAMA] C6: sum_digits,code,,completed,6,5,1,2.3,actual,"Router: 2.5, Haiku: 2. This is a straightforward single-function task requiring basic arithmetic and string/number manipulation. The only consideration is handling the negative number case, which adds minimal complexity.",,2026-02-12 17:38:24.098,2026-02-13 11:25:48.869
+4721a8cd-2fea-4fbb-98f8-6d5dcca716d7,Email Notification System,code,,completed,5,3,1,5,actual,,,2026-02-09 23:56:31.771,2026-02-09 23:58:40.308
+17141a0f-a773-4ed8-86d2-8f09c042405d,File Upload Service,code,,failed,5,3,0,,,,,2026-02-09 23:56:30.103,2026-02-12 14:43:58.351
+0e516086-3497-4ff7-8a8d-b9239b6d5f1b,Search with Elasticsearch,code,,failed,5,3,0,,,,,2026-02-09 23:56:33.367,2026-02-12 14:43:58.351
+f6f8ec10-b23d-4b1a-9699-3c7317a31e87,Analytics Dashboard API,code,,failed,5,3,1,,,,,2026-02-09 23:56:34.939,2026-02-12 14:56:21.269
+0e912a7f-9b09-48a5-b468-8dff91d3f686,File Upload Handler,code,,completed,6,3,1,5,actual,,,2026-02-09 23:38:14.143,2026-02-12 15:19:11.42
+6f1d2123-e697-4e8a-8633-b4308b565ef5,[TIER-OLLAMA] C5: safe_divide,code,,failed,5,5,3,3.1,dual,"Router: 4.5, Haiku: 1. This is a straightforward task requiring a single function with basic conditional logic to handle division by zero. No external dependencies, multiple files, or advanced patterns are needed.",,2026-02-12 17:38:24.089,2026-02-13 11:39:35.473
+5fa9383e-1a10-40e6-b969-413b49a03701,[STRESS-C4] reverse_string,code,,completed,3,5,0,5,actual,,,2026-02-07 15:01:57.136,2026-02-07 15:03:08.976
+83a0bbf4-d843-4f97-8b74-113188decd72,[JS-STRESS-C3] absolute,code,,completed,3,5,0,5,actual,,,2026-02-13 11:27:10.705,2026-02-13 11:30:03.793
+e98343a8-9d76-42f9-9b00-8807c9a75699,[TIER-OLLAMA] C2: is_positive,code,,failed,2,5,1,1.3,dual,"Router: 1.5, Haiku: 1. This task requires creating a single function with basic comparison logic and no external dependencies, validation, or error handling.",,2026-02-12 17:38:24.015,2026-02-13 12:01:03.753
+aa254adb-ef85-4523-a55f-e55073ef0cee,Real-time Chat System,code,,completed,7,3,1,7,actual,"Router: 4.5, Haiku: 7 (using Haiku - semantic complexity). This task requires implementing a multi-feature real-time system with WebSocket infrastructure, state management across multiple rooms, and handling concurrent connections with presence tracking. It involves multiple interconnected components and real-time event handling but doesn't require distributed system architecture.",,2026-02-09 23:38:13.601,2026-02-10 00:02:11.785
+f5eb5005-0843-4588-b312-1b19a836d46a,Payment Gateway Integration,code,,failed,5,3,0,,,,,2026-02-09 23:56:23.473,2026-02-12 14:43:58.351
+b9bf5945-dcd5-4455-86d2-68bab5f33936,GraphQL API Endpoint,code,,failed,5,3,0,,,,,2026-02-09 23:56:28.468,2026-02-12 14:43:58.351
+88030ed2-1183-4310-a85b-4479b7f9e2da,[VERIFY-FP-FIX] Test 1: Files + FAILING tests → SOFT_FAILURE,code,,completed,3,5,0,5,actual,,,2026-02-12 16:06:07.693,2026-02-12 16:06:34.739
+7b5ab70f-4c76-48fb-bfb4-05881fb29b2b,[VERIFY-FP-FIX] Test 2: Files + PASSING tests → SUCCESS,code,,completed,3,5,0,5,actual,,,2026-02-12 16:33:36.031,2026-02-12 16:36:25.623
+37ce1b55-e143-4338-8f81-c26461cbba62,[VERIFY-FP-FIX] Test 3: Files + NO tests → SUCCESS,code,,completed,3,5,0,5,actual,,,2026-02-12 16:48:22.65,2026-02-12 16:48:25.925
+6e518895-3fd2-4603-9656-84d8d69024ad,[STRESS-C4] factorial,code,,completed,3,5,0,5,actual,,,2026-02-07 15:03:15.298,2026-02-07 15:03:31.898
+8660d171-66fd-4298-89e4-75ae042991bf,[TIER-OLLAMA] C2: greet,code,,failed,2,5,0,,,,,2026-02-12 17:38:24.005,2026-02-13 11:20:05.147
+e5e43ce0-c924-4e6e-8024-309237a67457,[STRESS-C5] safe_divide,code,,completed,5,5,0,5,actual,,,2026-02-07 15:04:41.615,2026-02-07 15:05:02.611
+a3d8fba3-3553-4cda-bf30-c07ea0c05a7a,"Build a binary search tree with insert, search, delete and three traversal methods",code,qa,aborted,7,3,1,7,,,timeout,2026-02-12 14:35:13.715,
+956e66fa-23f1-4952-b266-52271af032c1,[VERIFY-FP-FIX] Test 2: Files + PASSING tests → SUCCESS,code,,completed,3,5,0,5,actual,,,2026-02-12 16:06:41.918,2026-02-12 16:09:43.668
+348e7b04-1226-446a-ad52-db8cd967cfd9,[VERIFY-FP-FIX] Test 3: Files + NO tests → SUCCESS,code,,completed,3,5,0,5,actual,,,2026-02-12 16:36:37.702,2026-02-12 16:36:43.23
+ef9983a2-ffea-4066-a718-01dfc5d3cb91,[STRESS-C5] fizzbuzz_single,code,,completed,5,5,0,5,actual,,,2026-02-07 15:03:44.249,2026-02-07 15:03:50.527
+55dca8b0-41ac-485a-bd87-c5c7073bc1a1,[STRESS-C5] is_palindrome,code,,completed,5,5,0,5,actual,,,2026-02-07 15:03:56.834,2026-02-07 15:04:35.307
+d32011bb-9a16-4348-9df1-0b7570d92386,[STRESS-C6] sum_of_digits,code,,completed,6,5,0,5,actual,,,2026-02-07 15:05:08.902,2026-02-07 15:06:03.775
+1bc8dc43-cef3-4e43-865e-8ddc202ffca0,API Rate Limiter,code,,completed,7,3,1,5,actual,,,2026-02-09 23:38:14.026,2026-02-09 23:51:56.649
+02fe5464-ccc8-418c-8722-7301fb22420f,[STRESS-C6] find_second_largest,code,,completed,6,5,0,5,actual,,,2026-02-07 15:06:10.072,2026-02-07 15:06:31.602
+6c63ebe0-2edf-48d5-abee-9bab52164902,[TIER-SONNET] C9: binary_search_tree,code,,aborted,9,10,1,4.3,dual,"Router: 4.5, Haiku: 4. This task requires implementing a classic data structure with multiple methods and proper tree traversal logic, but follows well-established patterns with straightforward algorithmic requirements and no external dependencies.",timeout,2026-02-12 17:38:24.147,
+68c345d0-103b-4b7b-8728-aaa4296acc24,[TIER-HAIKU] C7: fibonacci,code,,failed,7,10,0,,,,,2026-02-12 17:38:24.113,2026-02-13 11:20:05.147
+aae5fc27-df9e-4137-adb6-b8c6e8caea26,"Design a plugin system with dynamic registration, dependency resolution, and lifecycle hooks",code,,completed,9,3,1,5,actual,,,2026-02-12 14:35:20.849,2026-02-12 14:48:15.946
+598da556-0373-428b-a5ac-20d83ba8de81,Build async task scheduler with priority queue and concurrency limit,code,,completed,8,10,0,7,actual,"Router: 4.5, Haiku: 7 (using Haiku - semantic complexity). This task requires building a multi-component async system with priority queue management, concurrency control, state tracking, and comprehensive testing. It involves coordinating multiple async operations, managing resource constraints, and handling various execution states.",,2026-02-12 17:25:29.581,2026-02-12 17:35:38.262
+c7ffc43d-f989-44e7-a3e4-c6301ef3eb1e,[VERIFY-FP-FIX] Test 2: Files + PASSING tests → SUCCESS,code,,completed,3,5,0,5,actual,,,2026-02-12 16:47:38.331,2026-02-12 16:47:48.163
+ebada532-ce60-4b9e-bbc6-3df28145bda2,[STRESS-C6] is_prime,code,,completed,6,5,0,5,actual,,,2026-02-07 15:06:43.941,2026-02-07 15:07:01.682
+c7f2d586-beb7-4040-991f-c36846d6682f,[STRESS-C7] fibonacci,code,,completed,7,5,0,5,actual,,,2026-02-07 15:07:07.995,2026-02-07 15:09:49.448
+70634f1e-2098-42ac-8937-d458ecbf3c7f,[STRESS-C7] word_frequency,code,,completed,7,5,0,5,actual,,,2026-02-07 15:09:55.777,2026-02-07 15:11:09.53
+84a7e6bd-e3ab-42d3-b01e-5dfea81d627b,[TIER-OLLAMA] C5: fizzbuzz,code,,aborted,5,5,1,,,,timeout,2026-02-12 17:38:24.074,
+d5bfe13e-68dc-4bdb-ba46-4bf7256bfbbf,[VERIFY-FP-FIX] Test 3: Files + NO tests → SUCCESS,code,,completed,3,5,0,5,actual,,,2026-02-12 16:09:50.734,2026-02-12 16:09:56.448
+5d77aefc-529c-4e39-97f6-fac611c88a2d,[STRESS-C8] merge_sorted,code,,completed,8,5,0,5,actual,,,2026-02-07 15:11:15.861,2026-02-07 15:14:20.103
+c0247a2f-a0c5-4965-805a-f087a661d903,[STRESS-C8] binary_search,code,,completed,8,5,0,5,actual,,,2026-02-07 15:14:26.429,2026-02-07 15:17:32.306
+f75a2b1e-60fa-446f-933c-2d3e8566466d,Email Service Module,code,,completed,5,3,1,9,actual,,,2026-02-09 23:38:13.921,2026-02-12 14:53:02.524
+248dbe27-7702-4e3d-94ee-76fe60374cb0,[STRESS-C8] merge_sorted,code,,completed,8,5,0,5,actual,,,2026-02-13 12:08:20.141,2026-02-13 12:09:49.051
+d5c01688-352e-4239-a224-29f66f485010,[VERIFY-FP-FIX] Test 1: Files + FAILING tests → SOFT_FAILURE,code,,completed,3,5,0,5,actual,,,2026-02-12 16:32:57.986,2026-02-12 16:33:28.952
+a4b682bf-1b35-40fc-afc8-4586122c4ba4,"Implement Binary Search Tree with insert, search, and in-order traversal",code,,completed,7,10,0,5,actual,,,2026-02-12 17:25:29.49,2026-02-12 17:35:38.111
+d8dc6e20-c22f-4db9-80cf-943a91a16ff6,[TIER-OLLAMA] C1: double,code,,completed,1,5,0,5,actual,,,2026-02-12 17:38:23.983,2026-02-12 17:38:54.927
+5bcb439c-5e4c-45f2-9f0f-3a4f71faad1b,[PHP-STRESS-C4] reverseString,code,,completed,3,5,0,5,actual,,,2026-02-13 13:34:13.651,2026-02-13 13:34:27.071
+5c4e8777-119d-41e3-acf0-411722b5a02c,[JS-STRESS-C1] double,code,,completed,3,5,0,5,actual,,,2026-02-13 11:20:07.48,2026-02-13 11:21:35.136
+6d5b4a6a-5aa8-4a3d-8f7a-cfea16412d2a,[JS-STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-13 11:25:55.662,2026-02-13 11:26:03.176
+f558af5d-25ba-479e-8e8b-90a8aaa1ce79,[TIER-OLLAMA] C5: is_palindrome,code,,completed,5,5,1,2.3,actual,"Router: 2.5, Haiku: 2. This is a straightforward string manipulation task requiring a single function with basic logic to check palindromes after normalizing input. No external dependencies, error handling, or multiple files needed beyond the single implementation file.",,2026-02-12 17:38:24.081,2026-02-13 11:26:22.27
+c6f48a65-7b86-4956-b82d-dc010642d5e4,[JS-STRESS-C2] isEven,code,,completed,3,5,0,5,actual,,,2026-02-13 11:26:06.456,2026-02-13 11:26:36.966
+f89c597b-097d-4f1e-8bc4-5a4c0b16fb71,[JS-STRESS-C3] maxOfTwo,code,,failed,3,5,0,,,,,2026-02-13 11:30:38.521,2026-02-13 11:35:43.727
+3dd1bb00-9339-4be7-97ab-5bba3e98f695,[JS-STRESS-C4] clamp,code,,failed,3,5,0,,,,,2026-02-13 11:35:48.761,2026-02-13 11:37:08.531
+269ba714-8324-432f-b2a3-b20bf11e1e33,[STRESS-C1] double,code,,failed,3,5,0,,,,,2026-02-13 11:37:21.853,2026-02-13 11:39:35.473
+4fd69fcb-8725-45e1-8957-f03565c81d53,[TIER-HAIKU] C8: merge_sorted,code,,aborted,8,10,1,1.8,dual,"Router: 1.5, Haiku: 2. This is a straightforward implementation of the merge algorithm from merge sort, requiring a single function with basic two-pointer logic and no external dependencies or error handling complexity.",timeout,2026-02-12 17:38:24.129,
+023498d1-7073-4f08-ad9f-0570ff0163a9,[TIER-OLLAMA] C1: negate,code,,completed,1,5,0,5,actual,,,2026-02-12 17:38:23.997,2026-02-12 17:39:01.689
+c310585e-29b5-4667-87c3-54e047363377,[TIER-SONNET] C9: lru_cache,code,,completed,9,10,1,5.3,actual,"Router: 5.5, Haiku: 5. This task requires implementing a well-known data structure with specific O(1) performance requirements, involving either OrderedDict usage or a custom doubly linked list implementation. It involves multiple methods with validation and proper state management, making it medium complexity.",,2026-02-12 17:38:24.138,2026-02-12 17:39:18.751
+1012d0d2-dff7-467f-9a21-f8c7b0924075,[TIER-HAIKU] C7: word_frequency,code,,completed,7,10,1,2.3,actual,"Router: 2.5, Haiku: 2. This is a straightforward single-function task requiring basic string manipulation and dictionary counting with no external dependencies or error handling requirements.",,2026-02-12 17:38:24.121,2026-02-13 11:21:50.842
+6243144d-a5d2-4eeb-8994-390dc9a13e12,[JS-STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-13 11:21:41.455,2026-02-13 11:25:23.909
+d1a3ab9b-4da3-4a08-859f-be8a200569b1,[TIER-OLLAMA] C4: clamp,code,,completed,4,5,1,3.3,actual,"Router: 1.5, Haiku: 1. This is a simple utility function requiring basic conditional logic with no external dependencies, file I/O, or complex validation. It's a straightforward mathematical operation that can be implemented in a single function with minimal lines of code.",,2026-02-12 17:38:24.05,2026-02-13 11:33:01.401
+22ac8e2f-da14-498d-afe0-8a90443c4fe0,[STRESS-C1] double,code,,failed,3,5,0,,,,,2026-02-13 11:39:54.302,2026-02-13 11:44:59.861
+9dfb7c24-167b-482f-a929-22211c91e398,[TIER-OLLAMA] C4: count_vowels,code,,completed,4,5,1,1.3,actual,"Router: 1.5, Haiku: 1. This is a straightforward task requiring a single function that iterates through a string and counts vowels. No external dependencies, error handling, or complex logic is needed.",,2026-02-12 17:38:24.057,2026-02-13 11:46:54.022
+c709783c-1f03-4937-9b49-fdd6f3c2fcb3,[TIER-OLLAMA] C4: factorial,code,,completed,4,5,1,1.3,actual,"Router: 1.5, Haiku: 1. This is a straightforward task requiring a single function with basic iterative logic and no external dependencies or error handling complexities.",,2026-02-12 17:38:24.065,2026-02-13 11:47:22.232
+6fb4500c-c316-4f3e-a7fd-c4b49f63def0,[STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-13 11:45:04.888,2026-02-13 11:46:30.186
+476561aa-39d6-444e-a0b1-f0888b9ddb4c,[STRESS-C4] reverse_string,code,,completed,3,5,0,5,actual,,,2026-02-13 12:01:08.792,2026-02-13 12:01:59.994
+b2e8c360-37e0-4c79-b8b1-86cc0b38a798,[STRESS-C5] is_palindrome,code,,completed,5,5,0,5,actual,,,2026-02-13 12:02:47.072,2026-02-13 12:03:05.278
+e5d0cdaa-0921-42ae-b7ea-d83faeb4156e,[TIER-OLLAMA] C3: max_of_two,code,,completed,3,5,1,1.3,actual,"Router: 1.5, Haiku: 1. This is a trivial task requiring a single function with basic comparison logic and no external dependencies, validation, or error handling.",,2026-02-12 17:38:24.034,2026-02-13 11:50:44.729
+b6a07738-f434-47d5-b2c8-73d6208fb99e,[STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-13 11:46:36.49,2026-02-13 11:46:57.981
+103a6302-b032-460d-a216-d9845407b8ce,[STRESS-C4] factorial,code,,completed,3,5,0,5,actual,,,2026-02-13 12:02:06.332,2026-02-13 12:02:23.158
+6790e431-4fc3-4003-a73d-2cac2f38c999,[STRESS-C5] fizzbuzz_single,code,,completed,5,5,0,5,actual,,,2026-02-13 12:02:30.532,2026-02-13 12:02:35.764
+911cf95c-65d0-4a50-b75d-bfc9021c5fc2,[STRESS-C5] safe_divide,code,,completed,5,5,0,5,actual,,,2026-02-13 12:03:11.56,2026-02-13 12:06:17.558
+14ffcfce-6592-4219-a7fa-d5740f42b7eb,[STRESS-C6] sum_of_digits,code,,completed,6,5,0,5,actual,,,2026-02-13 12:06:23.863,2026-02-13 12:06:41.744
+e7fe4144-dbb4-4c1c-acf5-5442f30a6806,[GO-STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-13 13:05:56.476,2026-02-13 13:06:02.489
+e7867f5d-9660-4195-9b86-8878a91b0493,[PHP-STRESS-C4] factorial,code,,completed,3,5,0,5,actual,,,2026-02-13 13:34:33.37,2026-02-13 13:34:46.248
+c544138c-7b9c-4074-9390-7563f48d3dfd,[TIER-OLLAMA] C3: absolute,code,,completed,3,5,1,1.3,actual,"Router: 1.5, Haiku: 1. This is a trivial task requiring a single simple function with basic conditional logic to return the absolute value of a number without using built-in functions.",,2026-02-12 17:38:24.025,2026-02-13 11:47:48.968
+a616133e-d0c0-4cf0-b366-8ad458906eb2,[STRESS-C2] is_even,code,,completed,3,5,0,5,actual,,,2026-02-13 11:47:31.697,2026-02-13 11:47:53.825
+69d8d66c-77b2-4250-9dc8-c52fbbe15c67,[TIER-OLLAMA] C3: is_even,code,,completed,3,5,1,3.3,actual,"Router: 1.5, Haiku: 1. This is a trivial task requiring a single function with basic modulo arithmetic and a simple boolean comparison. No dependencies, validation, or error handling needed.",,2026-02-12 17:38:24.043,2026-02-13 11:54:14.321
+bd725b15-8f05-48c1-86ee-566821f22c69,[STRESS-C3] max_of_two,code,,completed,3,5,0,5,actual,,,2026-02-13 11:53:39.591,2026-02-13 11:54:32.25
+330dcf27-8d11-4270-9961-50b9f18dfd67,[GO-STRESS-C1] double,code,,completed,3,5,0,5,actual,,,2026-02-13 13:05:01.732,2026-02-13 13:05:33.047
+d7dc224c-013a-4cc1-98e8-a39f062f266b,[STRESS-C3] absolute,code,,completed,3,5,1,1.5,actual,"Router: 2, Haiku: 1. This is a trivial single-function task implementing basic absolute value logic with no dependencies, external APIs, or complex control flow.",,2026-02-13 11:48:27.524,2026-02-13 11:54:47.738
+77dc4b56-eb73-4241-b51c-290cbb175d6a,[STRESS-C4] clamp,code,,completed,3,5,1,5,actual,"Router: 2, Haiku: 1. This is a single, simple utility function with basic conditional logic and no external dependencies or error handling requirements.",,2026-02-13 11:54:38.571,2026-02-13 11:58:37.389
+aa1c1cd7-d01a-470e-8686-251085703a09,[STRESS-C7] word_frequency,code,,completed,7,5,0,5,actual,,,2026-02-13 12:07:57.187,2026-02-13 12:08:13.847
+ca91b666-1665-4e4a-ae0a-c66abd413953,[GO-STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-13 13:05:44.467,2026-02-13 13:05:50.036
+f7f88198-7fa6-49ed-97a2-e0f369dbc6f3,[GO-STRESS-C2] isEven,code,,completed,3,5,0,5,actual,,,2026-02-13 13:06:08.883,2026-02-13 13:06:17.579
+2cce2e00-74ff-4421-8bdb-bcb5b6990c3c,[STRESS-C6] find_second_largest,code,,completed,6,5,0,5,actual,,,2026-02-13 12:06:48.023,2026-02-13 12:07:09.549
+1642b735-ead8-4e2f-89a4-2f5e044aa895,[STRESS-C8] binary_search,code,,completed,8,5,0,5,actual,,,2026-02-13 12:09:55.369,2026-02-13 12:10:17.006
+35a6904b-f51e-4605-9755-48d65f4cfc34,[PHP-STRESS-C5] fizzBuzz,code,,completed,5,5,0,5,actual,,,2026-02-13 13:34:53.587,2026-02-13 13:35:03.193
+93eb04eb-c100-4f9a-9703-6cd817bd6d0e,[PHP-STRESS-C8] mergeSorted,code,,completed,8,5,0,5,actual,,,2026-02-13 13:37:49.247,2026-02-13 13:38:02.07
+f401a6ad-3987-45bb-81b4-9ef0a75945f4,[STRESS-C1] double,code,,completed,3,5,0,5,actual,,,2026-02-14 20:07:54.69,2026-02-14 20:09:25.349
+05af568c-271f-4852-9c94-e7fd98bcba8c,[STRESS-C6] is_prime,code,,completed,6,5,0,5,actual,,,2026-02-13 12:07:16.869,2026-02-13 12:07:33.754
+35e9e553-c806-4378-927e-51e51215eba4,[PHP-STRESS-C5] isPalindrome,code,,completed,5,5,0,5,actual,,,2026-02-13 13:35:14.462,2026-02-13 13:35:26.727
+ca8166de-d217-4363-8c76-908c61fdb51b,[STRESS-C7] fibonacci,code,,completed,7,5,0,5,actual,,,2026-02-13 12:07:45.079,2026-02-13 12:07:50.897
+3e8e005b-a253-4b05-b09d-ac3d62e91bc7,[PY] Palindrome checker,code,coder,failed,3,5,0,2.3,dual,"Router: 2.5, Haiku: 2. This is a straightforward task requiring a single function with basic string manipulation logic. It involves simple character comparison with minimal edge cases and no external dependencies.",,2026-02-14 20:01:45.17,2026-02-14 20:04:33.655
+0e2fa033-e45a-4976-9463-7727926de6d7,[STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-14 20:09:31.679,2026-02-14 20:10:04.202
+fa3037ca-d8bc-4937-a1b9-b4ce79864229,[STRESS-C3] absolute,code,,completed,3,5,0,1.5,actual,"Router: 2, Haiku: 1. This is a trivial task involving creation of a single, simple function with basic conditional logic and no dependencies, tests, or error handling required.",,2026-02-14 20:12:31.193,2026-02-14 20:16:26.031
+20dc51ff-c823-4f2f-885b-da6c8c8abe94,[GO-STRESS-C3] absolute,code,,completed,3,5,0,5,actual,,,2026-02-13 13:06:24.024,2026-02-13 13:06:31.259
+b90aca7c-67a1-4da0-a771-ba1177190299,[GO-STRESS-C3] maxOfTwo,code,,completed,3,5,0,5,actual,,,2026-02-13 13:06:38.716,2026-02-13 13:06:47.923
+e0bf0981-f108-4a2f-bc96-299c5949e852,[PHP-STRESS-C5] safeDivide,code,,completed,5,5,0,5,actual,,,2026-02-13 13:35:33.007,2026-02-13 13:35:41.123
+76276ac4-f51c-419f-894d-160614e8b4a7,[GO-STRESS-C4] clamp,code,,completed,3,5,0,5,actual,,,2026-02-13 13:06:59.314,2026-02-13 13:07:11.492
+d943572a-f285-4c4d-a783-030487f397ae,[PHP-STRESS-C7] wordFrequency,code,,completed,7,5,0,5,actual,,,2026-02-13 13:37:24.474,2026-02-13 13:37:42.967
+7dda3951-a206-43cc-b777-481409aab787,[GO-STRESS-C4] countVowels,code,,completed,3,5,0,5,actual,,,2026-02-13 13:07:17.926,2026-02-13 13:07:33.8
+20e082ac-3d06-4f13-9abe-1d998e679d14,[GO-STRESS-C4] reverseString,code,,completed,3,5,0,5,actual,,,2026-02-13 13:07:40.271,2026-02-13 13:07:54.282
+b136f879-9bdc-4715-ab8a-600e10438032,[GO] Reverse string,code,coder,failed,3,5,0,,,,,2026-02-14 20:01:47.587,2026-02-14 20:04:33.655
+ffb03d46-e6e5-47be-979f-bebdb7071a8d,[GO-STRESS-C4] factorial,code,,completed,3,5,0,5,actual,,,2026-02-13 13:08:00.718,2026-02-13 13:08:12.184
+653ff79d-f3bd-4e42-90b2-219a227a063c,[GO-STRESS-C5] fizzBuzz,code,,completed,5,5,0,5,actual,,,2026-02-13 13:08:19.642,2026-02-13 13:08:34.369
+31773c91-7635-4896-a238-3b6db5172d08,[PHP] Count vowels,code,coder,failed,3,5,0,,,,,2026-02-14 20:01:48.495,2026-02-14 20:04:33.655
+c2dc4358-2b7c-4a29-a78b-1b9ae90aada1,[GO-STRESS-C5] isPalindrome,code,,completed,5,5,0,5,actual,,,2026-02-13 13:08:45.799,2026-02-13 13:08:55.628
+f3fbc951-c384-4f58-883c-53d39bc189be,[PHP] Sum of digits,code,coder,failed,3,5,0,,,,,2026-02-14 20:01:48.942,2026-02-14 20:04:33.655
+0bd32b96-79ab-4ca6-b503-e1d6b781ac55,[GO-STRESS-C5] safeDivide,code,,completed,5,5,0,5,actual,,,2026-02-13 13:09:02.04,2026-02-13 13:09:12.208
+97f94c83-9c2f-4b00-be57-a0d92ac01bf9,[GO-STRESS-C6] sumOfDigits,code,,completed,6,5,0,5,actual,,,2026-02-13 13:09:18.608,2026-02-13 13:09:28.437
+2c620002-dbae-411c-b705-4132969172a6,[GO-STRESS-C6] findSecondLargest,code,,completed,6,5,0,5,actual,,,2026-02-13 13:09:34.862,2026-02-13 13:09:48.694
+d691b5cc-ee95-468c-a7b3-b1fc7dddacb6,[GO-STRESS-C6] isPrime,code,,completed,6,5,0,5,actual,,,2026-02-13 13:09:56.14,2026-02-13 13:10:04.499
+639b0f23-2b4b-4c1c-a1b7-9635199403b8,[PHP-STRESS-C6] sumOfDigits,code,,completed,6,5,0,5,actual,,,2026-02-13 13:35:47.394,2026-02-13 13:35:55.054
+51e1806c-04a2-4ec9-9269-d6b37791d7b2,[GO-STRESS-C7] fibonacci,code,,completed,7,5,0,5,actual,,,2026-02-13 13:10:15.964,2026-02-13 13:10:26.426
+511967cc-aba3-4bb7-9218-d9dafe89ffbd,[PHP-STRESS-C8] binarySearch,code,,completed,8,5,0,5,actual,,,2026-02-13 13:38:08.356,2026-02-13 13:39:10.444
+1f6c5948-f701-484f-9f53-442ad4f0568b,[GO-STRESS-C7] wordFrequency,code,,completed,7,5,0,5,actual,,,2026-02-13 13:10:32.844,2026-02-13 13:10:41.352
+c79c8aa6-b82f-425d-9c8b-5f5694679c28,[JS] FizzBuzz generator,code,coder,failed,3,5,0,2.8,dual,"Router: 3.5, Haiku: 2. This is a straightforward implementation requiring only a single function with basic conditional logic and array iteration. No external dependencies, API calls, or complex error handling needed.",,2026-02-14 20:01:46.122,2026-02-14 20:04:33.655
+9680d2b1-17d1-48e6-9bf1-a2d7da3fe2c0,[PY] Fibonacci,code,coder,completed,3,5,1,1.8,actual,"Router: 1.5, Haiku: 2. This is a straightforward implementation of a single mathematical function with basic logic and no external dependencies or complex error handling required.",,2026-02-14 20:04:58.329,2026-02-14 20:05:19.18
+f3694b2c-0f56-4e25-b47a-9a4ca4519084,[PY] Palindrome,code,coder,failed,3,5,0,1.8,dual,"Router: 1.5, Haiku: 2. This task requires implementing a single straightforward function with basic string manipulation logic. The palindrome check involves minimal validation and no external dependencies.",,2026-02-14 20:05:06.04,2026-02-14 20:07:29.465
+6a54c2b9-14df-4485-bf7a-1ade22d7b311,[STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-14 20:10:10.525,2026-02-14 20:10:24.097
+c69bd97d-79d8-4d53-aba4-e8d244a483ce,[GO-STRESS-C8] mergeSorted,code,,completed,8,5,0,5,actual,,,2026-02-13 13:10:47.804,2026-02-13 13:11:05.244
+1052aeb5-1a94-4760-96cf-f0c12f887a58,[PHP-STRESS-C6] findSecondLargest,code,,completed,6,5,0,5,actual,,,2026-02-13 13:36:01.37,2026-02-13 13:36:39.873
+7380129e-43fc-4faf-bc35-4980f8aef58d,[GO-STRESS-C8] binarySearch,code,,completed,8,5,0,5,actual,,,2026-02-13 13:11:11.685,2026-02-13 13:11:23.558
+efb8c26e-b3be-42d9-82fb-36b10c6067d1,[PY] Fibonacci function,code,coder,failed,3,5,0,1.3,dual,"Router: 1.5, Haiku: 1. This is a straightforward task requiring a single function with basic mathematical logic and no external dependencies or error handling requirements.",,2026-02-14 20:01:44.699,2026-02-14 20:04:33.655
+877d5d30-7a07-4f84-a86f-674462af5774,[JS] Array chunk function,code,coder,failed,3,5,0,2.8,dual,"Router: 3.5, Haiku: 2. This is a straightforward task requiring a single utility function with basic array iteration logic and no external dependencies or complex validation requirements.",,2026-02-14 20:01:45.638,2026-02-14 20:04:33.655
+4787668d-3ffd-4c72-b0dd-141b4696e4e7,[PHP-STRESS-C1] double,code,,completed,3,5,0,5,actual,,,2026-02-13 13:31:53.585,2026-02-13 13:32:06.944
+c61920cc-93e3-4bc3-aad1-0d7c2953a802,[TS] Capitalize words,code,coder,failed,3,5,0,,,,,2026-02-14 20:01:46.646,2026-02-14 20:04:33.655
+4145da05-bb58-4e6e-b175-3137923324e5,[PHP-STRESS-C1] negate,code,,completed,3,5,0,5,actual,,,2026-02-13 13:32:18.284,2026-02-13 13:32:24.563
+1578fe0f-6fef-4801-a01d-634228335dbf,[PHP-STRESS-C2] greet,code,,completed,3,5,0,5,actual,,,2026-02-13 13:32:30.898,2026-02-13 13:32:37.264
+fe6dde2e-aaa2-4f41-8260-be9a3cc7daa3,[PHP-STRESS-C6] isPrime,code,,completed,6,5,0,5,actual,,,2026-02-13 13:36:47.182,2026-02-13 13:36:58.154
+6f18b78e-7163-4b72-8c10-05fcdede899f,[PHP-STRESS-C2] isEven,code,,completed,3,5,0,5,actual,,,2026-02-13 13:32:43.576,2026-02-13 13:32:49.669
+d76cd21e-3b8e-4191-b2c7-4d91e8be5aaa,[TS] Unique array filter,code,coder,failed,3,5,0,,,,,2026-02-14 20:01:47.142,2026-02-14 20:04:33.655
+67674ed8-5076-44fa-af64-af531300e040,[PHP-STRESS-C3] absolute,code,,completed,3,5,0,5,actual,,,2026-02-13 13:32:55.972,2026-02-13 13:33:06.921
+5a27873b-504b-44d9-8796-ca7be76d6ef7,[GO] Max in slice,code,coder,failed,3,5,0,,,,,2026-02-14 20:01:48.065,2026-02-14 20:04:33.655
+1872a4af-edb3-462b-928e-87175cffb989,[PHP-STRESS-C3] maxOfTwo,code,,completed,3,5,0,5,actual,,,2026-02-13 13:33:14.237,2026-02-13 13:33:21.229
+9b0cfc25-7061-46d3-8638-536e187036b3,[PHP-STRESS-C4] countVowels,code,,completed,3,5,0,5,actual,,,2026-02-13 13:33:47.596,2026-02-13 13:34:07.346
+7ddb1664-c49f-4149-b1d0-bdbc66d3e8d9,[PHP-STRESS-C4] clamp,code,,completed,3,5,0,5,actual,,,2026-02-13 13:33:32.51,2026-02-13 13:33:41.304
+28a66519-b461-43cb-8f60-a5dafa7f7049,[PHP-STRESS-C7] fibonacci,code,,completed,7,5,0,5,actual,,,2026-02-13 13:37:09.426,2026-02-13 13:37:18.158
+5ac446fd-6841-4884-9f7b-f24333b3cee2,[TEST] add two numbers,code,coder,failed,3,3,1,1.3,dual,"Router: 1.5, Haiku: 1. This task requires creating a single simple function with basic arithmetic logic and no external dependencies, validation, or error handling.",,2026-02-14 20:05:16.189,2026-02-14 20:07:29.465
+3ee8d3a0-5220-4658-b0cb-3bb26b9b14b9,[STRESS-C2] is_even,code,,failed,3,5,0,,,,,2026-02-14 20:10:30.43,2026-02-14 20:17:02.808
+4ff0e004-7238-4c54-be96-36fd84046338,[STRESS-C3] max_of_two,code,,completed,3,5,0,5,actual,,,2026-02-14 20:17:03.831,2026-02-14 20:17:24.869

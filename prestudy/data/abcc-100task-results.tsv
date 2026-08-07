@@ -1,0 +1,482 @@
+run	task	section	category	complexity	status	duration_s	task_id	error
+2026-02-21T18-17-09	tm_utils	1	react	6	passed	29		
+2026-02-21T18-17-09	tm_styles	1	react	6	passed	26		
+2026-02-21T18-17-09	tm_task_item	1	react	6	passed	13		
+2026-02-21T18-17-09	tm_task_counter	1	react	6	passed	16		
+2026-02-21T18-17-09	tm_filter	1	react	7	passed	29		
+2026-02-21T18-17-09	tm_add_task	1	react	7	passed	19		
+2026-02-21T18-17-09	tm_task_list	1	react	7	passed	21		
+2026-02-21T18-17-09	tm_storage	1	react	7	passed	15		
+2026-02-21T18-17-09	tm_app	1	react	8	passed	25		
+2026-02-21T18-17-09	tm_index	1	react	6	passed	23		
+2026-02-21T18-17-09	coffee_hero	2	landing	7	passed	33		
+2026-02-21T18-17-09	coffee_menu	2	landing	7	passed	23		
+2026-02-21T18-17-09	coffee_about	2	landing	6	passed	22		
+2026-02-21T18-17-09	coffee_contact	2	landing	6	passed	19		
+2026-02-21T18-17-09	coffee_nav	2	landing	7	passed	29		
+2026-02-21T18-17-09	saas_hero	2	landing	7	passed	29		
+2026-02-21T18-17-09	saas_features	2	landing	7	passed	22		
+2026-02-21T18-17-09	saas_pricing	2	landing	8	passed	39		
+2026-02-21T18-17-09	saas_testimonials	2	landing	6	passed	31		
+2026-02-21T18-17-09	saas_footer	2	landing	6	passed	24		
+2026-02-21T18-17-09	portfolio_hero	2	landing	7	passed	58		
+2026-02-21T18-17-09	portfolio_projects	2	landing	7	passed	43		
+2026-02-21T18-17-09	portfolio_skills	2	landing	6	passed	46		
+2026-02-21T18-17-09	portfolio_timeline	2	landing	7	passed	64		
+2026-02-21T18-17-09	portfolio_contact	2	landing	6	passed	33		
+2026-02-21T18-17-09	py_json_response	3	py_api	5	passed	11		
+2026-02-21T18-17-09	py_router	3	py_api	7	passed	33		
+2026-02-21T18-17-09	py_request_parser	3	py_api	7	passed	22		
+2026-02-21T18-17-09	py_todo_model	3	py_api	6	passed	29		
+2026-02-21T18-17-09	py_todo_handlers	3	py_api	8	passed	43		
+2026-02-21T18-17-09	py_middleware_logger	3	py_api	6	passed	21		
+2026-02-21T18-17-09	py_error_handler	3	py_api	6	passed	13		
+2026-02-21T18-17-09	py_validator	3	py_api	7	passed	37		
+2026-02-21T18-17-09	py_cors_headers	3	py_api	5	passed	28		
+2026-02-21T18-17-09	py_pagination	3	py_api	7	passed	36		
+2026-02-21T18-17-09	py_auth_token	3	py_api	8	passed	36		
+2026-02-21T18-17-09	py_rate_limiter	3	py_api	8	error	308		fetch failed
+2026-02-21T18-17-09	py_server_main	3	py_api	8	passed	58		
+2026-02-21T18-17-09	node_json_response	3	node_api	5	passed	19		
+2026-02-21T18-17-09	node_router	3	node_api	7	passed	37		
+2026-02-21T18-17-09	node_query_parser	3	node_api	6	passed	20		
+2026-02-21T18-17-09	node_note_model	3	node_api	7	passed	36		
+2026-02-21T18-17-09	node_note_handlers	3	node_api	8	passed	32		
+2026-02-21T18-17-09	node_middleware	3	node_api	6	passed	23		
+2026-02-21T18-17-09	node_error_handler	3	node_api	6	passed	17		
+2026-02-21T18-17-09	node_validator	3	node_api	7	passed	36		
+2026-02-21T18-17-09	node_uuid	3	node_api	6	passed	20		
+2026-02-21T18-17-09	node_pagination	3	node_api	7	passed	34		
+2026-02-21T18-17-09	node_auth	3	node_api	8	passed	33		
+2026-02-21T18-17-09	node_server_main	3	node_api	8	passed	28		
+2026-02-21T18-17-09	sec_sanitize_html	4	security	7	passed	19		
+2026-02-21T18-17-09	sec_password_hash	4	security	8	passed	24		
+2026-02-21T18-17-09	sec_input_validator	4	security	7	passed	24		
+2026-02-21T18-17-09	sec_rate_limit	4	security	8	passed	25		
+2026-02-21T18-17-09	sec_csrf_token	4	security	7	passed	34		
+2026-02-21T18-17-09	sec_sanitize_sql	4	security	7	passed	30		
+2026-02-21T18-17-09	sec_jwt_simple	4	security	8	passed	57		
+2026-02-21T18-17-09	sec_brute_force	4	security	7	passed	44		
+2026-02-21T18-17-09	sec_xss_filter	4	security	7	failed	72		
+2026-02-21T18-17-09	sec_csp_builder	4	security	7	passed	29		
+2026-02-21T18-17-09	fix_sql_inject	4	bugfix	7	error	308		fetch failed
+2026-02-21T18-17-09	fix_xss_reflect	4	bugfix	7	failed	423		
+2026-02-21T18-17-09	fix_path_traversal	4	bugfix	7	error	307		fetch failed
+2026-02-21T18-17-09	fix_weak_hash	4	bugfix	6	error	308		fetch failed
+2026-02-21T18-17-09	fix_hardcoded_secret	4	bugfix	5	passed	71		
+2026-02-21T18-17-09	fix_insecure_random	4	bugfix	6	failed	473		
+2026-02-21T18-17-09	fix_missing_validation	4	bugfix	7	failed	212		
+2026-02-21T18-17-09	fix_info_leak	4	bugfix	6	passed	246		
+2026-02-21T18-17-09	fix_open_redirect	4	bugfix	7	passed	318		
+2026-02-21T18-17-09	fix_type_confusion	4	bugfix	7	passed	15		
+2026-02-21T18-17-09	ts_result	5	typescript	7	passed	29		
+2026-02-21T18-17-09	ts_pipe	5	typescript	7	passed	18		
+2026-02-21T18-17-09	ts_deep_clone	5	typescript	7	passed	22		
+2026-02-21T18-17-09	ts_event_bus	5	typescript	8	passed	29		
+2026-02-21T18-17-09	ts_maybe	5	typescript	7	passed	26		
+2026-02-21T18-17-09	go_word_count	5	go	6	passed	29		
+2026-02-21T18-17-09	go_fizzbuzz	5	go	5	passed	13		
+2026-02-21T18-17-09	go_stack	5	go	8	passed	35		
+2026-02-21T18-17-09	go_csv_parser	5	go	7	passed	20		
+2026-02-21T18-17-09	go_slug	5	go	6	passed	24		
+2026-02-21T18-17-09	py_csv_transform	5	py_data	7	passed	30		
+2026-02-21T18-17-09	py_aggregator	5	py_data	7	passed	13		
+2026-02-21T18-17-09	py_data_validator	5	py_data	7	passed	23		
+2026-02-21T18-17-09	py_frequency	5	py_data	6	passed	23		
+2026-02-21T18-17-09	py_text_pipeline	5	py_data	8	passed	21		
+2026-02-21T18-17-09	mini_todo_cli	5	mini	8	passed	24		
+2026-02-21T18-17-09	mini_calculator	5	mini	7	passed	18		
+2026-02-21T18-17-09	mini_markdown	5	mini	8	passed	23		
+2026-02-21T18-17-09	mini_config	5	mini	7	passed	22		
+2026-02-21T18-17-09	mini_state_machine	5	mini	8	passed	18		
+2026-02-22T00-06-27	tm_utils	1	react	6	passed	31	8d4a8668-613a-4835-9eae-a7347ad740fd	
+2026-02-22T00-06-27	tm_styles	1	react	6	passed	22	bde3d1e3-e467-4728-9451-19edc27c7edb	
+2026-02-22T00-06-27	tm_task_item	1	react	6	passed	11	2615487e-b4b8-43cb-93e7-af875de0f9b9	
+2026-02-22T00-06-27	tm_task_counter	1	react	6	passed	9	b7447eaa-c33b-42f6-bf79-d4391ab13643	
+2026-02-22T00-06-27	tm_filter	1	react	7	passed	27	a1fcb8fb-89d5-4d43-87db-5d79781b8a05	
+2026-02-22T00-06-27	tm_add_task	1	react	7	passed	13	f7fad4bc-116c-4e1d-952b-78a842ac88b6	
+2026-02-22T00-06-27	tm_task_list	1	react	7	passed	15	a1645fab-0dd8-4723-a59e-8cbbb1e665fd	
+2026-02-22T00-06-27	tm_storage	1	react	7	passed	11	0c81c98b-66dc-4e36-a148-777595cab3dd	
+2026-02-22T00-06-27	tm_app	1	react	8	passed	14	98ae2ef8-0f13-4343-8fda-09b0ae913fee	
+2026-02-22T00-06-27	tm_index	1	react	6	passed	29	4afca57a-027a-4973-84f8-5108ec1f813c	
+2026-02-22T00-06-27	coffee_hero	2	landing	7	passed	26	071b6013-1347-4046-88cf-22391389d414	
+2026-02-22T00-06-27	coffee_menu	2	landing	7	passed	16	aa3e07b6-b309-4e41-aff5-bfd587fe3397	
+2026-02-22T00-06-27	coffee_about	2	landing	6	passed	22	d1cd330a-5613-4943-af2b-29ce165d4dae	
+2026-02-22T00-06-27	coffee_contact	2	landing	6	passed	13	f73be3a0-00c4-405b-bc34-10272998e759	
+2026-02-22T00-06-27	coffee_nav	2	landing	7	passed	28	64f5a9d8-1baf-48b5-8041-a515d1a61332	
+2026-02-22T00-06-27	saas_hero	2	landing	7	passed	20	a9b323c9-6f45-4a58-8560-380889209c4e	
+2026-02-22T00-06-27	saas_features	2	landing	7	passed	15	688a6843-7186-49cd-ae5f-c1b218cd4164	
+2026-02-22T00-06-27	saas_pricing	2	landing	8	passed	22	3295f377-7133-4e37-bddc-d7901d3fe45e	
+2026-02-22T00-06-27	saas_testimonials	2	landing	6	passed	22	21f0e903-c5a3-4efe-9aa1-3623baf922d3	
+2026-02-22T00-06-27	saas_footer	2	landing	6	passed	25	c06cfd62-c095-44e6-99df-6d292fd8ed86	
+2026-02-22T00-06-27	portfolio_hero	2	landing	7	passed	27	58145d66-0711-4a87-8b15-7a30cbdf25f6	
+2026-02-22T00-06-27	portfolio_projects	2	landing	7	passed	15	67ea89dd-f5eb-4148-b34b-549dff0d8963	
+2026-02-22T00-06-27	portfolio_skills	2	landing	6	passed	35	e1a947fd-fb04-4571-9847-0652efec2bd1	
+2026-02-22T00-06-27	portfolio_timeline	2	landing	7	passed	26	a024c7b8-7a9d-4073-a942-fa82af098321	
+2026-02-22T00-06-27	portfolio_contact	2	landing	6	passed	30	5c1f8cb2-537f-4a4b-b3a2-4823a8ec9481	
+2026-02-22T00-06-27	py_json_response	3	py_api	5	passed	9	91fb6364-c00b-488c-923e-480b222529d7	
+2026-02-22T00-06-27	py_router	3	py_api	7	passed	18	1fcce439-a6c0-4a37-9658-b63c3a5655b0	
+2026-02-22T00-06-27	py_request_parser	3	py_api	7	passed	10	c38cc360-55d6-48e3-a8a5-f115226cc0cf	
+2026-02-22T00-06-27	py_todo_model	3	py_api	6	passed	22	958af2de-0f46-4f0c-92a2-2a4890989b28	
+2026-02-22T00-06-27	py_todo_handlers	3	py_api	8	passed	28	9ecf2a6a-3a53-435c-9bdd-f6249caf7333	
+2026-02-22T00-06-27	py_middleware_logger	3	py_api	6	passed	18	1e5467b6-868c-4e26-9737-b15c6d4ffa09	
+2026-02-22T00-06-27	py_error_handler	3	py_api	6	passed	11	27fd07f0-7089-4dfe-bb3c-13efce8bed9b	
+2026-02-22T00-06-27	py_validator	3	py_api	7	passed	19	8f239873-4372-46b7-9ee9-017d4c0a5815	
+2026-02-22T00-06-27	py_cors_headers	3	py_api	5	passed	18	88babd88-8519-423a-b6f6-da5b8c5ab8c0	
+2026-02-22T00-06-27	py_pagination	3	py_api	7	passed	24	011226bc-fd51-40c8-bfc5-de2f64c08c62	
+2026-02-22T00-06-27	py_auth_token	3	py_api	8	passed	14	53a4be72-b56e-46f9-9ef0-0a53c1d49726	
+2026-02-22T00-06-27	py_rate_limiter	3	py_api	8	passed	173	56d93acc-d85d-4a9f-890a-d5a846a7e6fa	
+2026-02-22T00-06-27	py_server_main	3	py_api	8	passed	11	b0570b8f-6e48-45a3-963d-dee93cbe299c	
+2026-02-22T00-06-27	node_json_response	3	node_api	5	passed	18	eaae7a81-d536-4a51-864e-45a189566771	
+2026-02-22T00-06-27	node_router	3	node_api	7	passed	24	0d05c9b8-dc10-4291-bf3e-551cbfb04a71	
+2026-02-22T00-06-27	node_query_parser	3	node_api	6	passed	19	1baace66-ad00-4934-8de8-96c5bfa0bde1	
+2026-02-22T00-06-27	node_note_model	3	node_api	7	passed	21	3266f65e-9b44-4bf9-a999-8da00b1c8df0	
+2026-02-22T00-06-27	node_note_handlers	3	node_api	8	passed	16	48e777a5-91a6-4e2b-99b0-fbb11734944f	
+2026-02-22T00-06-27	node_middleware	3	node_api	6	passed	20	5f85b2bf-ff87-4609-9e89-f14e50774568	
+2026-02-22T00-06-27	node_error_handler	3	node_api	6	passed	16	38daa3d1-60bd-4e37-aaf6-c234580a2aae	
+2026-02-22T00-06-27	node_validator	3	node_api	7	passed	20	7a82a585-45c8-448f-96e8-0aa32132842a	
+2026-02-22T00-06-27	node_uuid	3	node_api	6	passed	17	94dc0cc7-fa4a-45cb-b024-e351079cb1bc	
+2026-02-22T00-06-27	node_pagination	3	node_api	7	passed	21	f0c0a980-b415-4a48-8de3-bd9c0c9c2440	
+2026-02-22T00-06-27	node_auth	3	node_api	8	passed	16	f2c80e23-75bf-4728-b31b-85904657b074	
+2026-02-22T00-06-27	node_server_main	3	node_api	8	passed	16	5aeec3f3-69d5-4144-82f5-e9da3fd504d1	
+2026-02-22T00-06-27	sec_sanitize_html	4	security	7	passed	9	7ea0687c-585c-4454-b094-9f28bfd0c371	
+2026-02-22T00-06-27	sec_password_hash	4	security	8	passed	10	457b4710-f233-4f33-b6b8-1ba9357c6c82	
+2026-02-22T00-06-27	sec_input_validator	4	security	7	passed	10	9f9333a7-3013-460a-8325-c188cfa17d89	
+2026-02-22T00-06-27	sec_rate_limit	4	security	8	passed	11	458fd3f5-6f1c-4578-aae6-10a2c3290c85	
+2026-02-22T00-06-27	sec_csrf_token	4	security	7	passed	16	85664d7d-d9e4-4a8a-a7d1-b5a3a7ec6658	
+2026-02-22T00-06-27	sec_sanitize_sql	4	security	7	passed	11	11ece69b-24b0-4c15-b8c2-bf0ba650bef0	
+2026-02-22T00-06-27	sec_jwt_simple	4	security	8	passed	18	3786883b-5ac6-4712-8e65-d1e9a90cfb77	
+2026-02-22T00-06-27	sec_brute_force	4	security	7	passed	15	5587110e-6089-4997-b399-24d9f83b5b6e	
+2026-02-22T00-06-27	sec_xss_filter	4	security	7	passed	12	87cd295c-be1b-408c-a232-c7925d6419ab	
+2026-02-22T00-06-27	sec_csp_builder	4	security	7	passed	16	328f7e19-ac66-4f6e-9f79-8dc1a528479d	
+2026-02-22T00-06-27	fix_sql_inject	4	bugfix	7	passed	24	577a0dbd-c1e6-4b7e-85d2-7b143a826e10	
+2026-02-22T00-06-27	fix_xss_reflect	4	bugfix	7	failed	11	2a42a6c7-c74f-43af-a341-60cf31a1d98f	
+2026-02-22T00-06-27	fix_path_traversal	4	bugfix	7	passed	273	429eb59b-4619-4e44-adf2-089008c88a80	
+2026-02-22T00-06-27	fix_weak_hash	4	bugfix	6	failed	236	41fec18d-b65e-440c-a118-57bfbdaa1781	
+2026-02-22T00-06-27	fix_hardcoded_secret	4	bugfix	5	passed	88	bddd55cf-4329-45ca-b416-29fa95177e4f	
+2026-02-22T00-06-27	fix_insecure_random	4	bugfix	6	failed	218	617e998c-d15c-426f-83e7-406bfb16bbbb	
+2026-02-22T00-06-27	fix_missing_validation	4	bugfix	7	failed	116	ca378bd6-65de-4d6a-b2e9-900c2c1cc6c6	
+2026-02-22T00-06-27	fix_info_leak	4	bugfix	6	passed	233	78ab73c8-4fb3-4242-85b8-e1d5688e466f	
+2026-02-22T00-06-27	fix_open_redirect	4	bugfix	7	passed	253	0030d3dc-9f1f-4c35-9d7f-3aef2d061dfe	
+2026-02-22T00-06-27	fix_type_confusion	4	bugfix	7	passed	11	64b23140-522b-4e72-ab79-706627910b30	
+2026-02-22T00-06-27	ts_result	5	typescript	7	passed	16	45197f40-9112-4a72-a990-b2ce2a743316	
+2026-02-22T00-06-27	ts_pipe	5	typescript	7	passed	17	4ea2fc25-e7a1-43fd-8665-df988cfddcc7	
+2026-02-22T00-06-27	ts_deep_clone	5	typescript	7	passed	14	c3c5fa77-1780-4428-924c-6778bb594e90	
+2026-02-22T00-06-27	ts_event_bus	5	typescript	8	passed	19	67cf9d05-7ccf-4060-8a56-80155edcb8b0	
+2026-02-22T00-06-27	ts_maybe	5	typescript	7	passed	17	d328af52-0690-4a6b-9459-e0de1cc3e820	
+2026-02-22T00-06-27	go_word_count	5	go	6	passed	23	f086c1fc-8196-4a85-9f7e-abd2569e6e75	
+2026-02-22T00-06-27	go_fizzbuzz	5	go	5	passed	17	20658b8e-caa5-414e-a638-759c2deaee87	
+2026-02-22T00-06-27	go_stack	5	go	8	passed	26	acde8661-ec7b-4487-bba0-66c149139c8f	
+2026-02-22T00-06-27	go_csv_parser	5	go	7	passed	14	ad65023f-54c2-474d-96d2-b39a581a3115	
+2026-02-22T00-06-27	go_slug	5	go	6	passed	22	4dce2e13-56f1-47e5-8051-28523c03316f	
+2026-02-22T00-06-27	py_csv_transform	5	py_data	7	passed	19	74c195e5-ae9b-4aaa-8b1b-4713f53c8824	
+2026-02-22T00-06-27	py_aggregator	5	py_data	7	passed	15	39038534-f380-4f2b-8d73-356acbbbb9d8	
+2026-02-22T00-06-27	py_data_validator	5	py_data	7	passed	16	788ff994-c7ba-45c9-b27c-b9aa168c83b6	
+2026-02-22T00-06-27	py_frequency	5	py_data	6	passed	20	78197254-1036-4f5c-8c88-f72a6157926f	
+2026-02-22T00-06-27	py_text_pipeline	5	py_data	8	passed	18	2e85bde2-7a6e-4dbe-813d-807598666952	
+2026-02-22T00-06-27	mini_todo_cli	5	mini	8	passed	13	874d4b48-751e-4251-96dd-c0d535f8747c	
+2026-02-22T00-06-27	mini_calculator	5	mini	7	passed	17	83001eb1-1c4c-4bdf-9ba8-df312b65efb6	
+2026-02-22T00-06-27	mini_markdown	5	mini	8	passed	16	79f889d0-bd5e-48da-88ab-067694c661a4	
+2026-02-22T00-06-27	mini_config	5	mini	7	passed	15	1321df22-80c7-4e49-9463-e7ae156676a9	
+2026-02-22T00-06-27	mini_state_machine	5	mini	8	passed	13	934a7d84-2196-459e-8fba-8a7a3bcf3327	
+2026-02-22T19-03-02	tm_utils	1	react	6	passed	46	9a7dda52-ebee-4f85-a0f7-e48c5a62ac73	
+2026-02-22T19-03-02	tm_styles	1	react	6	passed	43	a83646a6-ee45-48b1-adc3-69df17f15b24	
+2026-02-22T19-03-02	tm_task_item	1	react	6	passed	25	0d151217-c63e-4f42-b9c4-cfa1adefd713	
+2026-02-22T19-03-02	tm_task_counter	1	react	6	passed	16	1373c76b-bfe4-4c76-a251-4d525507f6da	
+2026-02-22T19-03-02	tm_filter	1	react	7	passed	59	21ba2d0d-6805-4938-bd2a-40ed0aafa4ca	
+2026-02-22T19-03-02	tm_add_task	1	react	7	passed	41	df64c6d6-daf5-4bab-a570-eb1c723d365e	
+2026-02-22T19-03-02	tm_task_list	1	react	7	passed	47	37194bc5-336a-4061-86b1-eae25e311b46	
+2026-02-22T19-03-02	tm_storage	1	react	7	passed	36	d3269f4a-8596-4614-84dd-f06d18a45ac8	
+2026-02-22T19-03-02	tm_app	1	react	8	passed	46	0d1b9ec7-ccc2-4a56-b864-29cc7e1c74a7	
+2026-02-22T19-03-02	tm_index	1	react	6	passed	38	e105ef69-e064-42f5-92ec-91eed62d9af5	
+2026-02-22T19-03-02	coffee_hero	2	landing	7	passed	76	018607db-a15f-4acf-a304-46816f019a75	
+2026-02-22T19-03-02	coffee_menu	2	landing	7	passed	54	73d6a334-9d0a-45b4-8270-25e17dbd8064	
+2026-02-22T19-03-02	coffee_about	2	landing	6	passed	42	7475b4e3-b75f-4178-b84f-2cd5c9b4c382	
+2026-02-22T19-03-02	coffee_contact	2	landing	6	passed	24	efcbb45a-2c38-4a74-ac57-f2483a4ffcc6	
+2026-02-22T19-03-02	coffee_nav	2	landing	7	passed	60	670c319f-6335-45e0-92c7-34ce537df9b0	
+2026-02-22T19-03-02	saas_hero	2	landing	7	passed	69	9629a225-305b-465a-b342-e8c2a6d918d3	
+2026-02-22T19-03-02	saas_features	2	landing	7	passed	53	75c303d9-51d4-4ff4-adeb-d97b0360ff34	
+2026-02-22T19-03-02	saas_pricing	2	landing	8	passed	85	a6c4ccef-0cad-49e2-b3e7-3ba98e6b4804	
+2026-02-22T19-03-02	saas_testimonials	2	landing	6	passed	37	f95e0b26-e9ba-4e20-8aa5-40f41a71e7ea	
+2026-02-22T19-03-02	saas_footer	2	landing	6	passed	40	e3d5526a-360a-42bf-8bbe-cf84b64b7a97	
+2026-02-22T19-03-02	portfolio_hero	2	landing	7	passed	76	4646e65e-9661-4b5b-9740-bdc0e04c8c6f	
+2026-02-22T19-03-02	portfolio_projects	2	landing	7	passed	51	8e0f848d-76fd-40cf-9a1e-d5ea6bc4c6ce	
+2026-02-22T19-03-02	portfolio_skills	2	landing	6	passed	68	9736d562-2bec-4d4e-9297-94dc7b0f8a68	
+2026-02-22T19-03-02	portfolio_timeline	2	landing	7	passed	69	1119870f-ab71-49ea-8550-45083ab54f95	
+2026-02-22T19-03-02	portfolio_contact	2	landing	6	passed	43	cbd6e330-638e-471a-a0de-b315911915fc	
+2026-02-22T19-03-02	py_json_response	3	py_api	5	passed	16	0160a859-0667-463f-9807-3adb51df9c1c	
+2026-02-22T19-03-02	py_router	3	py_api	7	passed	45	e682baeb-c563-4f0d-ad24-3e79653c7598	
+2026-02-22T19-03-02	py_request_parser	3	py_api	7	passed	35	21d21262-a890-4e52-b5c4-ffebc4ef7d8e	
+2026-02-22T19-03-02	py_todo_model	3	py_api	6	passed	37	9a494835-4e39-413e-8d82-06132d5ff443	
+2026-02-22T19-03-02	py_todo_handlers	3	py_api	8	passed	65	daa600d4-f0d2-4569-b789-f93656ed2e47	
+2026-02-22T19-03-02	py_middleware_logger	3	py_api	6	passed	26	14004c4f-b58b-4d8a-9b3d-9a69763cde72	
+2026-02-22T19-03-02	py_error_handler	3	py_api	6	passed	18	7bff8003-c5e0-426b-a833-32d58d2087ac	
+2026-02-22T19-03-02	py_validator	3	py_api	7	passed	52	3fa61837-2db7-433b-b419-d3041c0f5428	
+2026-02-22T19-03-02	py_cors_headers	3	py_api	5	passed	25	80beb5ee-b9e4-447c-a316-625c44e0d5c7	
+2026-02-22T19-03-02	py_pagination	3	py_api	7	passed	40	7b534f6a-bd35-4e05-885d-a88bc0548132	
+2026-02-22T19-03-02	py_auth_token	3	py_api	8	passed	39	adda8991-2899-4e52-b40b-fcb577183bfd	
+2026-02-22T19-03-02	py_rate_limiter	3	py_api	8	error	307	504c922e-2df0-4a15-86c7-aa91fe6454f7	fetch failed
+2026-02-22T19-03-02	py_server_main	3	py_api	8	passed	177	96cf2bd3-9cd6-484c-9103-bbaf5a5c08d1	
+2026-02-22T19-03-02	node_json_response	3	node_api	5	passed	27	2488c19f-5f39-4d4d-95d6-f65f2d098d11	
+2026-02-22T19-03-02	node_router	3	node_api	7	passed	39	7a01d55d-597c-4400-a9cb-76cc1a74feb0	
+2026-02-22T19-03-02	node_query_parser	3	node_api	6	passed	23	b7a75bc3-2e7e-406d-ab03-3a7112334a39	
+2026-02-22T19-03-02	node_note_model	3	node_api	7	passed	47	496bf446-3536-4818-9b75-b685d087715b	
+2026-02-22T19-03-02	node_note_handlers	3	node_api	8	passed	44	edcefbe6-d8ca-43fc-961b-e38b5a1f177f	
+2026-02-22T19-03-02	node_middleware	3	node_api	6	passed	28	21c1b895-fa11-4f01-ba0a-df0b0abd040f	
+2026-02-22T19-03-02	node_error_handler	3	node_api	6	passed	15	5a037371-18ff-4a2a-85f9-c73dc0998778	
+2026-02-22T19-03-02	node_validator	3	node_api	7	passed	42	713b1ec8-79b3-4bdd-90ed-1943dcbb759d	
+2026-02-22T19-03-02	node_uuid	3	node_api	6	passed	20	e76e32e4-b015-41d4-8ed9-e7d58e1ae865	
+2026-02-22T19-03-02	node_pagination	3	node_api	7	passed	42	ca847f88-bffc-4bc0-929c-8f3cefd2562e	
+2026-02-22T19-03-02	node_auth	3	node_api	8	passed	47	fd1e8927-18e4-4e6e-97a3-be5489e5f459	
+2026-02-22T19-03-02	node_server_main	3	node_api	8	passed	28	914bd82a-9209-4751-af18-48d1cbef6c4d	
+2026-02-22T19-03-02	sec_sanitize_html	4	security	7	passed	21	bd742fd0-a6a1-4765-a422-1efa6907debc	
+2026-02-22T19-03-02	sec_password_hash	4	security	8	passed	25	15389c06-ceda-42f1-9a4d-82e796c47982	
+2026-02-22T19-03-02	sec_input_validator	4	security	7	passed	23	6b5f8a00-619e-4535-aa7b-f8eeeea4029f	
+2026-02-22T19-03-02	sec_rate_limit	4	security	8	passed	32	ad643ea5-ca19-4c8c-a18d-ee722f70d907	
+2026-02-22T19-03-02	sec_csrf_token	4	security	7	passed	26	b6d4185d-5917-4aec-b4e0-17dd52ba2788	
+2026-02-22T19-03-02	sec_sanitize_sql	4	security	7	passed	27	ec03a6b9-6ce6-4664-821a-a7e36378f567	
+2026-02-22T19-03-02	sec_jwt_simple	4	security	8	passed	50	0a23a519-3438-47f8-b5fc-d33e4df248d9	
+2026-02-22T19-03-02	sec_brute_force	4	security	7	passed	39	21ed9b0b-a3cb-46d5-a4e5-11c749a544f2	
+2026-02-22T19-03-02	sec_xss_filter	4	security	7	failed	34	4e76ef25-8baa-42ee-8aec-09f2b04748ee	
+2026-02-22T19-03-02	sec_csp_builder	4	security	7	passed	27	7dd20719-aa7d-40cb-ade4-007f824d0cb5	
+2026-02-22T19-03-02	fix_sql_inject	4	bugfix	7	passed	64	ddea147b-dbf7-44e2-b882-e0f6d74013c9	
+2026-02-22T19-03-02	fix_xss_reflect	4	bugfix	7	error	307	ca727e42-fc51-4178-a907-6d8e699b7fb5	fetch failed
+2026-02-22T19-03-02	fix_path_traversal	4	bugfix	7	error	307	adf67134-fa63-45fa-9081-256a633d35c7	fetch failed
+2026-02-22T19-03-02	fix_weak_hash	4	bugfix	6	error	307	02d57d6e-a103-4242-8810-39c81764d363	fetch failed
+2026-02-22T19-03-02	fix_hardcoded_secret	4	bugfix	5	error	307	0cb0e967-44ab-490e-8d0c-8ff321b8d9c3	fetch failed
+2026-02-22T19-03-02	fix_insecure_random	4	bugfix	6	failed	302	5141d3ff-f7b6-43c3-9402-bf2a543fd2e9	
+2026-02-22T19-03-02	fix_missing_validation	4	bugfix	7	failed	204	38d4d2f1-82a5-4aed-a662-fbb84f6bfe27	
+2026-02-22T19-03-02	fix_info_leak	4	bugfix	6	passed	363	c13c3452-bff3-4e1e-90bd-d9f5daa7ee26	
+2026-02-22T19-03-02	fix_open_redirect	4	bugfix	7	error	307	c8fa2029-3ca1-4e3d-9e8a-c2f8a8ad44fb	fetch failed
+2026-02-22T19-03-02	fix_type_confusion	4	bugfix	7	error	307	f380443f-88d7-498d-b108-4444135b81e3	fetch failed
+2026-02-22T19-03-02	ts_result	5	typescript	7	passed	65	02c39624-07c4-4d41-97e6-7ab0d6b96ae7	
+2026-02-22T19-03-02	ts_pipe	5	typescript	7	error	307	15ebf842-80f0-4281-bed2-050213953afb	fetch failed
+2026-02-22T19-03-02	ts_deep_clone	5	typescript	7	passed	141	73582df4-16b0-4f3f-b8da-f6baefd6a2f5	
+2026-02-22T19-03-02	ts_event_bus	5	typescript	8	passed	100	c1ddc305-c8e1-4414-a4d1-b589788fedd4	
+2026-02-22T19-03-02	ts_maybe	5	typescript	7	passed	96	c010d3be-65c7-4b71-8453-c281f006f89e	
+2026-02-22T19-03-02	go_word_count	5	go	6	passed	30	6abc6ac0-bdb0-4042-b626-c3de49d4cd00	
+2026-02-22T19-03-02	go_fizzbuzz	5	go	5	passed	19	086a16a3-09db-4198-80da-80f9882d0ccc	
+2026-02-22T19-03-02	go_stack	5	go	8	passed	61	ef3dd66d-76fc-4c25-a79e-c2e39cf1b451	
+2026-02-22T19-03-02	go_csv_parser	5	go	7	passed	36	554b28a6-bb50-4793-95f0-7803ea0d7593	
+2026-02-22T19-03-02	go_slug	5	go	6	passed	24	9670fb8f-d820-44f4-9ef1-de4ff65bb2c2	
+2026-02-22T19-03-02	py_csv_transform	5	py_data	7	passed	40	619c274b-d83d-437d-a7cb-3bb8af950a00	
+2026-02-22T19-03-02	py_aggregator	5	py_data	7	passed	28	0cf8eb9b-4a4e-4ed9-b1fd-4e3794a2cb31	
+2026-02-22T19-03-02	py_data_validator	5	py_data	7	passed	44	627c8e00-7e86-4631-8859-41f63da4726e	
+2026-02-22T19-03-02	py_frequency	5	py_data	6	passed	27	0ac60e2d-6bc4-4bba-bf0f-4a5b4fe4d867	
+2026-02-22T19-03-02	py_text_pipeline	5	py_data	8	passed	34	ba7610bd-7382-4b78-a36b-483e1668f703	
+2026-02-22T19-03-02	mini_todo_cli	5	mini	8	passed	34	f08c34e5-1d91-49c8-bf46-7292f3a93dc6	
+2026-02-22T19-03-02	mini_calculator	5	mini	7	passed	36	f5b67c10-287b-4baa-97a4-6382b27f6a9b	
+2026-02-22T19-03-02	mini_markdown	5	mini	8	passed	43	d1249d55-fa77-4f21-a5b6-fc348d3b75d4	
+2026-02-22T19-03-02	mini_config	5	mini	7	passed	41	0c2ceb35-2204-4b5e-a35b-37c9303b808f	
+2026-02-22T19-03-02	mini_state_machine	5	mini	8	passed	31	9c26f64b-1bc2-47be-b4ea-6dc0d373d8a2	
+2026-02-24T18-14-53	tm_utils	1	react	6	passed	45	2a0d08a5-c650-4e32-b2c5-143d43448601	
+2026-02-24T18-14-53	tm_styles	1	react	6	passed	28	420a1af1-606b-46c2-b6ec-d416a9330128	
+2026-02-24T18-14-53	tm_task_item	1	react	6	passed	23	996686ab-6db4-4a60-b35e-cda5429848e3	
+2026-02-24T18-14-53	tm_task_counter	1	react	6	passed	15	9c080bb0-e4cb-413d-a3ca-925bf1db8f7c	
+2026-02-24T18-14-53	tm_filter	1	react	7	passed	42	1df4d9c4-c250-4c2d-ac10-892756bdd5a6	
+2026-02-24T18-14-53	tm_add_task	1	react	7	passed	29	0cdb44da-8ec5-47ff-854a-4ff676d398c3	
+2026-02-24T18-14-53	tm_task_list	1	react	7	passed	21	4940ec5e-4cf7-45da-be10-f3e2fb4a515a	
+2026-02-24T18-14-53	tm_storage	1	react	7	passed	12	b8637e21-8c82-40df-aca3-8fb09d82a8c9	
+2026-02-24T18-14-53	tm_app	1	react	8	passed	16	20e18cbb-be20-4527-8396-3101dcb18a80	
+2026-02-24T18-14-53	tm_index	1	react	6	passed	25	5a693b15-1c22-403a-a78c-25bac292ae37	
+2026-02-24T18-14-53	weather_index	1	react_cto	6	passed	15	b4bc30fe-a9ae-4b71-8dff-d3a56a48bead	
+2026-02-24T18-14-53	weather_styles	1	react_cto	6	passed	25	3ec7f202-b489-4500-960c-1067846ffcbc	
+2026-02-24T18-14-53	weather_display	1	react_cto	7	passed	178	2319418e-f2d0-47c1-95c5-22e0bd184cd1	
+2026-02-24T18-14-53	weather_search	1	react_cto	7	passed	13	6eef5e56-eaf1-4a11-92f2-3fa48ee2e749	
+2026-02-24T18-14-53	weather_forecast	1	react_cto	7	passed	13	37ea8dac-2952-41f2-b96a-15e4865f99c6	
+2026-02-24T18-14-53	recipe_index	1	react_cto	6	passed	22	5f4a634b-4fda-489e-9f1f-f228ab060dcd	
+2026-02-24T18-14-53	recipe_styles	1	react_cto	6	passed	23	ff4446d5-544c-40e9-a404-66754b9335d0	
+2026-02-24T18-14-53	recipe_list	1	react_cto	7	passed	29	9ae1a335-ec99-4bdb-bc2d-abe881ef1049	
+2026-02-24T18-14-53	recipe_detail	1	react_cto	7	passed	18	71cc03fb-3789-441e-8824-757c5c6e206d	
+2026-02-24T18-14-53	recipe_favorites	1	react_cto	7	passed	16	eb9a921d-1497-43cc-9cc7-641293975ccd	
+2026-02-24T18-14-53	coffee_hero	2	landing	7	passed	28	11d63c5f-51fa-4437-a87e-52c3c95c37a6	
+2026-02-24T18-14-53	coffee_menu	2	landing	7	passed	30	78a4e0f9-dbad-425a-9237-6f69c416461a	
+2026-02-24T18-14-53	coffee_about	2	landing	6	passed	25	73361d89-f66c-4169-875e-73745f78bab9	
+2026-02-24T18-14-53	coffee_contact	2	landing	6	passed	15	e00c578b-d549-4ecd-9cd1-7b2da3773530	
+2026-02-24T18-14-53	coffee_nav	2	landing	7	passed	30	25ad04ee-3386-4d67-8695-d216980be6b5	
+2026-02-24T18-14-53	saas_hero	2	landing	7	passed	31	e8a505ef-2ad7-4192-b45a-08844329b1ef	
+2026-02-24T18-14-53	saas_features	2	landing	7	passed	26	310e8151-c419-42aa-88ff-4c5efb37888f	
+2026-02-24T18-14-53	saas_pricing	2	landing	8	passed	33	9b634658-4f70-41ee-b9c3-0bc3077ae989	
+2026-02-24T18-14-53	saas_testimonials	2	landing	6	passed	24	f21da012-f63b-4e78-b3c5-8630764e2597	
+2026-02-24T18-14-53	saas_footer	2	landing	6	passed	21	d72985d1-0781-4de1-9044-a7b0fbc57206	
+2026-02-24T18-14-53	portfolio_hero	2	landing	7	passed	27	6ed96e45-3d38-409e-be5c-5705fae37dc4	
+2026-02-24T18-14-53	portfolio_projects	2	landing	7	passed	23	5ca52e18-0e75-416c-a23a-ca41e34688f7	
+2026-02-24T18-14-53	portfolio_skills	2	landing	6	passed	35	6fc8e099-4a39-4afd-9d2d-f2b62df5636f	
+2026-02-24T18-14-53	portfolio_timeline	2	landing	7	passed	33	ca8e7fbb-00db-434c-bb35-5d033e753aa9	
+2026-02-24T18-14-53	portfolio_contact	2	landing	6	passed	27	5c4511f1-5404-492e-b5db-6539d6347f94	
+2026-02-24T18-14-53	py_json_response	3	py_api	5	passed	10	9abb53a7-24ec-4764-816c-4c7c8995e3c2	
+2026-02-24T18-14-53	py_router	3	py_api	7	passed	26	072236a7-e129-426b-9de3-58b1b9c9f279	
+2026-02-24T18-14-53	py_request_parser	3	py_api	7	passed	14	b50ddbb3-5edd-4c67-abc5-d19a090303ff	
+2026-02-24T18-14-53	py_todo_model	3	py_api	6	passed	24	7c6f7dc1-8d85-437d-b713-414cc23e15e1	
+2026-02-24T18-14-53	py_todo_handlers	3	py_api	8	passed	31	b1d901e9-46ee-466a-9960-eed6bef6a958	
+2026-02-24T18-14-53	py_middleware_logger	3	py_api	6	passed	19	61fd4d73-f45d-4173-a4fb-c0a7d9d1d8bc	
+2026-02-24T18-14-53	py_error_handler	3	py_api	6	passed	16	58f114c7-c4e1-4a6a-9bbe-f6cf1eea8440	
+2026-02-24T18-14-53	py_validator	3	py_api	7	passed	25	a814fc93-8a84-4f8d-9c93-9e562138ace5	
+2026-02-24T18-14-53	py_cors_headers	3	py_api	5	passed	19	080014b1-091c-40fb-b3b0-275cc1834da6	
+2026-02-24T18-14-53	py_pagination	3	py_api	7	passed	23	24c93568-2fbc-48cc-a0b1-fad0a3a28153	
+2026-02-24T18-14-53	py_auth_token	3	py_api	8	passed	21	a2df7974-9d69-4686-b403-5ff7f7300824	
+2026-02-24T18-14-53	py_rate_limiter	3	py_api	8	passed	288	ccd3da26-685d-42cc-972e-8374191d6c52	
+2026-02-24T18-14-53	py_server_main	3	py_api	8	passed	15	e3060f64-6c25-406e-a333-d03f23fe4868	
+2026-02-24T18-14-53	node_json_response	3	node_api	5	passed	20	aa50911a-0d7c-4d78-bb98-3ffabc8e1594	
+2026-02-24T18-14-53	node_router	3	node_api	7	passed	22	0f6eaf9f-3f18-483c-9194-1e0050b1d5d0	
+2026-02-24T18-14-53	node_query_parser	3	node_api	6	passed	20	fd9ec7a6-03b9-42be-bf0a-4d8bf44faabf	
+2026-02-24T18-14-53	node_note_model	3	node_api	7	passed	32	b8be6a0b-4c23-4b01-9f57-0caad2ead202	
+2026-02-24T18-14-53	node_note_handlers	3	node_api	8	passed	23	bea74ade-2d85-4f25-811c-c8ebe0ebff51	
+2026-02-24T18-14-53	node_middleware	3	node_api	6	passed	20	7fe7b14d-a7e8-4829-84fd-ebcd02c90dea	
+2026-02-24T18-14-53	node_error_handler	3	node_api	6	passed	11	d4e4fa2d-0ce8-4feb-9af4-153ffa313f8e	
+2026-02-24T18-14-53	node_validator	3	node_api	7	passed	25	c0419407-109f-42e9-b318-5915f6887eba	
+2026-02-24T18-14-53	node_uuid	3	node_api	6	passed	24	b9f6f4aa-59b3-4a29-b68e-4f0b92b9b4d4	
+2026-02-24T18-14-53	node_pagination	3	node_api	7	passed	25	f7053879-b3cc-487c-b1d2-bde3f5d24ad9	
+2026-02-24T18-14-53	node_auth	3	node_api	8	passed	23	74dd9b1b-abd5-4c56-84ae-cf95d246733d	
+2026-02-24T18-14-53	node_server_main	3	node_api	8	passed	16	7e114828-3bff-4809-b85a-5664ac9fc586	
+2026-02-24T18-14-53	sec_sanitize_html	4	security	7	passed	12	f8824e75-2097-4ed1-a751-d37a847cef41	
+2026-02-24T18-14-53	sec_password_hash	4	security	8	passed	19	84dc8445-ea0a-431f-9add-787ec239911b	
+2026-02-24T18-14-53	sec_input_validator	4	security	7	passed	13	cab62a93-f4ee-4af7-afe7-4517d8a7cb2d	
+2026-02-24T18-14-53	sec_rate_limit	4	security	8	passed	15	ac93c6e0-e49a-4d01-9d73-51c88f514649	
+2026-02-24T18-14-53	sec_csrf_token	4	security	7	passed	15	19c6eded-d707-4240-bc6b-2a4ca8de98b6	
+2026-02-24T18-14-53	sec_sanitize_sql	4	security	7	passed	15	b91b865c-0a61-4916-99f6-3ccc09af0a2c	
+2026-02-24T18-14-53	sec_jwt_simple	4	security	8	passed	31	3961437f-ef00-4086-8780-5c6bb45c9a2c	
+2026-02-24T18-14-53	sec_brute_force	4	security	7	passed	22	8c83ebd4-4aa5-45a1-afeb-a3fba7af81ad	
+2026-02-24T18-14-53	sec_xss_filter	4	security	7	failed	16	beded238-7152-44c1-8c03-861dc106aced	
+2026-02-24T18-14-53	sec_csp_builder	4	security	7	passed	15	fbb4847e-7c1c-451d-a1e4-f3b2a8b08f9e	
+2026-02-24T18-14-53	fix_sql_inject	4	bugfix	7	passed	34	9c59d521-33b3-4dd8-96be-5b7c1377eeb3	
+2026-02-24T18-14-53	fix_xss_reflect	4	bugfix	7	failed	20	b85d8f5b-cd51-4485-8329-8f6e11f436ba	
+2026-02-24T18-14-53	fix_path_traversal	4	bugfix	7	passed	352	6a03e5ab-1ab4-45b1-a90a-37ec2ce590e0	
+2026-02-24T18-14-53	fix_weak_hash	4	bugfix	6	failed	243	f33e746b-bac4-4975-820e-4cbde585fe0b	
+2026-02-24T18-14-53	fix_hardcoded_secret	4	bugfix	5	passed	90	c24c17f5-5d79-41d8-b3f1-c48e09dd82b9	
+2026-02-24T18-14-53	fix_insecure_random	4	bugfix	6	failed	222	4514475c-f9b7-40ec-ad9e-3dfb6db25561	
+2026-02-24T18-14-53	fix_missing_validation	4	bugfix	7	failed	121	dd545f14-e71a-4b8a-997b-86812a44dabd	
+2026-02-24T18-14-53	fix_info_leak	4	bugfix	6	passed	242	1ba1fbe8-001c-46e6-8672-ca1f3c7ce715	
+2026-02-24T18-14-53	fix_open_redirect	4	bugfix	7	passed	205	afc84719-6c47-49ce-a598-21882b3304ab	
+2026-02-24T18-14-53	fix_type_confusion	4	bugfix	7	passed	11	cb2153cf-f490-4b6b-a202-885556129c9c	
+2026-02-24T18-14-53	ts_result	5	typescript	7	passed	17	778ba093-0f64-45c8-b0f1-582acc68df37	
+2026-02-24T18-14-53	ts_pipe	5	typescript	7	passed	14	56f53fc2-db7e-411d-8c64-9039f5d34eaf	
+2026-02-24T18-14-53	ts_deep_clone	5	typescript	7	passed	20	7d783ddb-6a35-4b2c-ae1f-aef6ff1b3ae7	
+2026-02-24T18-14-53	ts_event_bus	5	typescript	8	passed	20	c208542e-e4cb-42b5-98d6-8c21dd745804	
+2026-02-24T18-14-53	ts_maybe	5	typescript	7	passed	18	1c779e54-44e6-4e10-9d75-8614f95d0879	
+2026-02-24T18-14-53	go_word_count	5	go	6	passed	23	ba6e3cf1-9ff9-40cf-8fe1-50d634d2dcfe	
+2026-02-24T18-14-53	go_fizzbuzz	5	go	5	passed	13	7ec25098-a8f1-42ec-9dc9-b1980fe48c6c	
+2026-02-24T18-14-53	go_stack	5	go	8	passed	33	9dc74916-da19-4181-b5ac-a01b583a7fee	
+2026-02-24T18-14-53	go_csv_parser	5	go	7	passed	15	831d4a3c-cabb-48b8-a6bd-95458e8be94a	
+2026-02-24T18-14-53	go_slug	5	go	6	passed	21	99f0cbe4-9e93-4505-82a6-e4d36859e558	
+2026-02-24T18-14-53	py_csv_transform	5	py_data	7	passed	20	50d96f9f-f2b7-497a-bb4c-79a397e07ef9	
+2026-02-24T18-14-53	py_aggregator	5	py_data	7	passed	11	ba33d0ad-eedf-4f53-a73d-bd6f5c3220e3	
+2026-02-24T18-14-53	py_data_validator	5	py_data	7	passed	21	7ee33acb-e1b0-4224-9e9c-7fe5efdb906c	
+2026-02-24T18-14-53	py_frequency	5	py_data	6	passed	23	fb91220f-5ebf-4d79-b742-5341c229f07f	
+2026-02-24T18-14-53	py_text_pipeline	5	py_data	8	passed	19	2d77479f-fe41-462d-9979-6e016c755fdd	
+2026-02-24T18-14-53	mini_todo_cli	5	mini	8	passed	14	e7e359e6-dac8-42e9-a687-44615314bd9f	
+2026-02-24T18-14-53	mini_calculator	5	mini	7	passed	13	3c9128b8-eb16-4824-876e-c697b67a9940	
+2026-02-24T18-14-53	mini_markdown	5	mini	8	passed	22	d84683da-b302-4258-989c-9e88224addb0	
+2026-02-24T18-14-53	mini_config	5	mini	7	passed	16	ad942ceb-6a1a-4d8a-9a11-39442f8fd7e4	
+2026-02-24T18-14-53	mini_state_machine	5	mini	8	passed	13	7040aba7-a7d0-47ae-b955-be5bf825c262	
+2026-02-24T20-09-20	tm_utils	1	react	6	dry_run	0		
+2026-02-24T21-10-56	tm_utils	1	react	6	passed	24	39955744-b4bb-4b1d-9bcd-4e432f9a9ad3	
+2026-02-24T21-10-56	tm_styles	1	react	6	passed	43	02ee39b6-55d2-47aa-aec0-d1aa274bb5ff	
+2026-02-24T21-10-56	tm_task_item	1	react	6	passed	21	2ef7132b-233a-476e-87a0-69eead5befba	
+2026-02-24T21-10-56	tm_task_counter	1	react	6	passed	10	b619ba28-9524-4094-88d5-b0e52c3329dc	
+2026-02-24T21-10-56	tm_filter	1	react	7	passed	26	f02a9547-45ba-4066-81db-4ddcb40dfe12	
+2026-02-24T21-10-56	tm_add_task	1	react	7	passed	19	6a4b664d-d194-45c4-af17-6a1da7ffe65e	
+2026-02-24T21-10-56	tm_task_list	1	react	7	passed	22	a79ff85d-fd5e-4032-937d-01618fd48d5f	
+2026-02-24T21-10-56	tm_storage	1	react	7	passed	20	cfb0a6d9-8ddb-41b6-b43c-f098c1e8ce86	
+2026-02-24T21-10-56	tm_app	1	react	8	passed	20	51239d73-7e3c-4c92-a40c-18dc3d433872	
+2026-02-24T21-10-56	tm_index	1	react	6	passed	24	9ac0a75d-3e69-4aea-b7bb-2376baa4f342	
+2026-02-24T21-10-56	Create index.html with React CDN setup	1	cto_decomposed	7	passed	0		
+2026-02-24T21-10-56	Create style.css with responsive layout	1	cto_decomposed	7	passed	0		
+2026-02-24T21-10-56	Create WeatherDisplay.jsx component	1	cto_decomposed	7	failed	0		
+2026-02-24T21-10-56	Create SearchBar.jsx component	1	cto_decomposed	7	failed	0		
+2026-02-24T21-10-56	Create ForecastCards.jsx component	1	cto_decomposed	7	passed	0		
+2026-02-24T21-10-56	recipe_index	1	react_cto	6	passed	82	9d417935-72bf-47af-b4c9-cffa26cb6c85	
+2026-02-24T21-10-56	recipe_styles	1	react_cto	6	passed	75	154c9ffc-fbc3-46ca-b88d-6364372fd674	
+2026-02-24T21-10-56	recipe_list	1	react_cto	7	passed	86	13c5cfa4-ca28-4b70-a7f3-76d87c6b936d	
+2026-02-24T21-10-56	recipe_detail	1	react_cto	7	passed	17	f5e386a8-6589-44b2-9aa6-19149c84079f	
+2026-02-24T21-10-56	recipe_favorites	1	react_cto	7	passed	15	bd4f9be5-e3ac-499d-b45e-cb11db128fc6	
+2026-02-26T11-04-01	tm_utils	1	react	6	passed	22	0b75b4b6-22b0-429b-bd4f-87f701bcbeff	
+2026-02-26T11-04-01	tm_styles	1	react	6	passed	27	78cb537b-a08a-47d1-a42a-93b9b432b2e1	
+2026-02-26T11-04-01	tm_task_item	1	react	6	passed	14	730779ad-4bb9-42f5-a38d-25156a8e8292	
+2026-02-26T11-04-01	tm_task_counter	1	react	6	passed	11	9bd2ce9e-7ed5-408e-b3eb-9b5097cfd973	
+2026-02-26T11-04-01	tm_filter	1	react	7	passed	49	b75af7fe-5404-4232-9972-6f58e2b18119	
+2026-02-26T11-04-01	tm_add_task	1	react	7	passed	29	350d0f71-046d-4162-8986-89e2a5f4dda1	
+2026-02-26T11-04-01	tm_task_list	1	react	7	passed	35	a6403ab8-fc98-4ec7-9785-57a3b08e41bc	
+2026-02-26T11-04-01	tm_storage	1	react	7	passed	23	d7b2f2da-e56d-4879-b4a6-3f9b454143ff	
+2026-02-26T11-04-01	tm_app	1	react	8	passed	34	6950b70e-0c3a-43d2-ae8e-b3e6ad772ff4	
+2026-02-26T11-04-01	tm_index	1	react	6	passed	31	90114f90-ae55-45cf-baa6-40618d052089	
+2026-02-26T11-04-01	coffee_hero	2	landing	7	passed	55	22ddd087-39a7-4d24-abbc-5adcb2ebecb5	
+2026-02-26T11-04-01	coffee_menu	2	landing	7	passed	38	be509c45-a4fa-4589-859d-3918df91cb3c	
+2026-02-26T11-04-01	coffee_about	2	landing	6	passed	28	1c7b7d8a-1d93-4af4-b956-dc3fbd6a947a	
+2026-02-26T11-04-01	coffee_contact	2	landing	6	passed	21	501f316a-2108-4642-8c9f-39849921fb7f	
+2026-02-26T11-04-01	coffee_nav	2	landing	7	passed	48	5be7946c-3cc2-44f2-be8a-c5d51f56abf8	
+2026-02-26T11-04-01	saas_hero	2	landing	7	passed	46	901e1e06-b41f-4b72-a389-79620d9c341b	
+2026-02-26T11-04-01	saas_features	2	landing	7	passed	34	6123e3dd-57ce-4f90-b522-3122953c1a71	
+2026-02-26T11-04-01	saas_pricing	2	landing	8	passed	50	85fb7421-306e-4b48-8472-ebe68caea4fe	
+2026-02-26T11-04-01	saas_testimonials	2	landing	6	error	22	58354a22-7553-4d0b-8b86-3cfba7a25821	fetch failed
+2026-02-26T11-04-01	saas_footer	2	landing	6	error	2		fetch failed
+2026-02-26T11-04-01	portfolio_hero	2	landing	7	error	2		fetch failed
+2026-02-26T11-04-01	portfolio_projects	2	landing	7	error	2		fetch failed
+2026-02-26T11-04-01	portfolio_skills	2	landing	6	error	2		fetch failed
+2026-02-26T11-04-01	portfolio_timeline	2	landing	7	error	2		fetch failed
+2026-02-26T11-04-01	portfolio_contact	2	landing	6	error	2		fetch failed
+2026-02-26T11-04-01	py_json_response	3	py_api	5	error	2		fetch failed
+2026-02-26T11-04-01	py_router	3	py_api	7	error	2		fetch failed
+2026-02-26T11-04-01	py_request_parser	3	py_api	7	error	2		fetch failed
+2026-02-26T11-04-01	py_todo_model	3	py_api	6	error	2		fetch failed
+2026-02-26T11-04-01	py_todo_handlers	3	py_api	8	error	2		fetch failed
+2026-02-26T11-04-01	py_middleware_logger	3	py_api	6	error	2		fetch failed
+2026-02-26T11-04-01	py_error_handler	3	py_api	6	error	2		fetch failed
+2026-02-26T11-04-01	py_validator	3	py_api	7	error	2		fetch failed
+2026-02-26T11-04-01	py_cors_headers	3	py_api	5	error	2		fetch failed
+2026-02-26T11-04-01	py_pagination	3	py_api	7	error	2		fetch failed
+2026-02-26T11-04-01	py_auth_token	3	py_api	8	error	2		fetch failed
+2026-02-26T11-04-01	py_rate_limiter	3	py_api	8	error	2		fetch failed
+2026-02-26T11-04-01	py_server_main	3	py_api	8	error	2		fetch failed
+2026-02-26T11-04-01	node_json_response	3	node_api	5	error	2		fetch failed
+2026-02-26T11-04-01	node_router	3	node_api	7	error	2		fetch failed
+2026-02-26T11-04-01	node_query_parser	3	node_api	6	error	2		fetch failed
+2026-02-26T11-04-01	node_note_model	3	node_api	7	error	2		fetch failed
+2026-02-26T11-04-01	node_note_handlers	3	node_api	8	error	2		fetch failed
+2026-02-26T11-04-01	node_middleware	3	node_api	6	error	2		fetch failed
+2026-02-26T11-04-01	node_error_handler	3	node_api	6	error	2		fetch failed
+2026-02-26T11-04-01	node_validator	3	node_api	7	error	2		fetch failed
+2026-02-26T11-04-01	node_uuid	3	node_api	6	error	2		fetch failed
+2026-02-26T11-04-01	node_pagination	3	node_api	7	error	2		fetch failed
+2026-02-26T11-04-01	node_auth	3	node_api	8	error	2		fetch failed
+2026-02-26T11-04-01	node_server_main	3	node_api	8	error	2		fetch failed
+2026-02-26T11-04-01	sec_sanitize_html	4	security	7	error	2		fetch failed
+2026-02-26T11-04-01	sec_password_hash	4	security	8	error	2		fetch failed
+2026-02-26T11-04-01	sec_input_validator	4	security	7	error	2		fetch failed
+2026-02-26T11-04-01	sec_rate_limit	4	security	8	error	2		fetch failed
+2026-02-26T11-04-01	sec_csrf_token	4	security	7	error	2		fetch failed
+2026-02-26T11-04-01	sec_sanitize_sql	4	security	7	error	2		fetch failed
+2026-02-26T11-04-01	sec_jwt_simple	4	security	8	error	2		fetch failed
+2026-02-26T11-04-01	sec_brute_force	4	security	7	error	2		fetch failed
+2026-02-26T11-04-01	sec_xss_filter	4	security	7	error	2		fetch failed
+2026-02-26T11-04-01	sec_csp_builder	4	security	7	error	2		fetch failed
+2026-02-26T11-04-01	fix_sql_inject	4	bugfix	7	error	2		fetch failed
+2026-02-26T11-04-01	fix_xss_reflect	4	bugfix	7	error	2		fetch failed
+2026-02-26T11-04-01	fix_path_traversal	4	bugfix	7	error	2		fetch failed
+2026-02-26T11-04-01	fix_weak_hash	4	bugfix	6	error	2		fetch failed
+2026-02-26T11-04-01	fix_hardcoded_secret	4	bugfix	5	error	2		fetch failed
+2026-02-26T11-04-01	fix_insecure_random	4	bugfix	6	error	2		fetch failed
+2026-02-26T11-04-01	fix_missing_validation	4	bugfix	7	error	2		fetch failed
+2026-02-26T11-04-01	fix_info_leak	4	bugfix	6	error	2		fetch failed
+2026-02-26T11-04-01	fix_open_redirect	4	bugfix	7	error	2		fetch failed
+2026-02-26T11-04-01	fix_type_confusion	4	bugfix	7	error	2		fetch failed
+2026-02-26T11-04-01	ts_result	5	typescript	7	error	2		fetch failed
+2026-02-26T11-04-01	ts_pipe	5	typescript	7	error	2		fetch failed
+2026-02-26T11-04-01	ts_deep_clone	5	typescript	7	error	2		fetch failed
+2026-02-26T11-04-01	ts_event_bus	5	typescript	8	error	2		fetch failed
+2026-02-26T11-04-01	ts_maybe	5	typescript	7	error	2		fetch failed
+2026-02-26T11-04-01	go_word_count	5	go	6	error	2		fetch failed
+2026-02-26T11-04-01	go_fizzbuzz	5	go	5	error	2		fetch failed
+2026-02-26T11-04-01	go_stack	5	go	8	error	2		fetch failed
+2026-02-26T11-04-01	go_csv_parser	5	go	7	error	2		fetch failed
+2026-02-26T11-04-01	go_slug	5	go	6	error	2		fetch failed
+2026-02-26T11-04-01	py_csv_transform	5	py_data	7	error	2		fetch failed
+2026-02-26T11-04-01	py_aggregator	5	py_data	7	error	2		fetch failed
+2026-02-26T11-04-01	py_data_validator	5	py_data	7	error	2		fetch failed
+2026-02-26T11-04-01	py_frequency	5	py_data	6	error	2		fetch failed
+2026-02-26T11-04-01	py_text_pipeline	5	py_data	8	error	2		fetch failed
+2026-02-26T11-04-01	mini_todo_cli	5	mini	8	error	2		fetch failed
+2026-02-26T11-04-01	mini_calculator	5	mini	7	error	2		fetch failed
+2026-02-26T11-04-01	mini_markdown	5	mini	8	error	2		fetch failed
+2026-02-26T11-04-01	mini_config	5	mini	7	error	2		fetch failed
+2026-02-26T11-04-01	mini_state_machine	5	mini	8	error	2		fetch failed
