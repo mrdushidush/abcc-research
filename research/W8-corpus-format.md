@@ -3,9 +3,18 @@
 Sub-deliverable 1 of W8, and the decision every other part of W8 sits on. This is the schema plus
 two worked import examples, for David's approval **before any new task content is written**.
 
+> ## ⚠ SUPERSEDED as a specification — 2026-08-08
+>
+> **R1–R8 were all approved and are now frozen as `corpus/SPEC.md` v1. Code against that file, not
+> against this one.** The spec carries five amendments to the prose below, each listed in its §14;
+> where the two disagree, the spec wins. This document keeps its value as the *reasoning and the
+> evidence* — findings F1–F10, the two worked imports, and the rejected alternatives — none of which
+> the spec repeats.
+
 Status: **R6's capability vocabulary approved 2026-08-08** — four capabilities, `pause` deliberately
 absent, and the one revision expected when 2.0 first runs is accepted rather than treated as a defect.
-The rest is still proposal. Open question 3 has since been answered by `W8-gate-step1-all90.md`.
+**R1–R5, R7 and R8 approved 2026-08-08** (session 3), with the amendments recorded in `corpus/SPEC.md`
+§14. Open question 3 has since been answered by `W8-gate-step1-all90.md`.
 
 ---
 

@@ -1,0 +1,167 @@
+schema    = 1
+id        = "fix_sql_inject"
+title     = "parameterise the user lookup query"
+lang      = "python"
+kind      = "bugfix"
+
+# No per-task timeout in the donor; the global TASK_TIMEOUT_MS is 5 minutes. The clean runs'
+# 307 s `fetch failed` entries are this timeout firing, not infra noise. F12.
+timeout_s = 300
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+# ---------------------------------------------------------------------------
+# Disposition — SPEC.md §10
+# ---------------------------------------------------------------------------
+[disposition]
+verifiable = "full"            # the verifier imports and calls the artifact
+quarantine = "with_baseline"   # ...and still passes an intact SQL injection. F8.
+reason = """
+gate point 3: the verifier PASSes a solution with the injection fully intact. Its assertion \
+is an OR-chain that short-circuits on any '?' anywhere in the query. The donor baseline is \
+carried and the task is excluded from every aggregate.\
+"""
+
+[selection]
+gate3      = true
+gate3_rank = 9
+# In R10's 30 on two independent grounds: tier 1 takes all 20 of section 4 whole, and this is
+# one of the 10 observed-hard tasks. Its gate outcome is already known, so the sham here is a
+# regression test rather than a discovery.
+
+# ---------------------------------------------------------------------------
+# Gate — SPEC.md §9. Recorded at import, not asserted at run time.
+#
+# `verifier = "rewritten"` is the authoritative column: a sham must be tested against the
+# verifier this corpus actually runs, not the donor's. The donor-verifier sweep
+# (gate_step1_all90.py) agreed on every verdict; the only difference is the absent-tier error
+# string, which reads `No module named 'tasks'` there and `No module named 'sql_inject'` here
+# because of the flat path rewrite. Same detection, different message.
+# ---------------------------------------------------------------------------
+[gate]
+point1 = "sound"     # every pre-state was rejected
+point2 = "sound"     # fixture + refsol PASSes
+point3 = "broken"    # fixture + sham PASSes, and it must not
+
+[[gate.evidence]]
+point    = 1
+tier     = "stub"
+verdict  = "FAIL"
+detail   = "AssertionError"
+verifier = "rewritten"
+run      = "corpus/suites/u100/tasks/fix_sql_inject/verify.sh, host, 2026-08-08"
+
+[[gate.evidence]]
+point    = 1
+tier     = "absent"
+verdict  = "FAIL"
+detail   = "ModuleNotFoundError: No module named 'sql_inject'"
+verifier = "rewritten"
+run      = "corpus/suites/u100/tasks/fix_sql_inject/verify.sh, host, 2026-08-08"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "AttributeError: 'NoneType' object has no attribute 'execute'"
+verifier = "rewritten"
+run      = "corpus/suites/u100/tasks/fix_sql_inject/verify.sh, host, 2026-08-08"
+note = """
+note WHY it fails: it crashes on a None db rather than being detected as vulnerable. The \
+donor verifier cannot distinguish 'still vulnerable' from 'crashed' — the same class of \
+defect the brief records for BCF's verifier in W6. Point 1 is sound here for the wrong \
+reason, which is exactly why point 1 bounds the defect rate from below and no more.\
+"""
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "donor assertions held"
+verifier = "rewritten"
+run      = "corpus/suites/u100/tasks/fix_sql_inject/verify.sh, host, 2026-08-08"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "PASS"
+detail   = "donor assertions held"
+verifier = "rewritten"
+run      = "corpus/suites/u100/tasks/fix_sql_inject/verify.sh, host, 2026-08-08"
+note = """
+The query the sham returns is: SELECT * FROM users WHERE name = 'admin' OR 1=1 --' -- ? \
+Textbook SQL injection, verdict PASS. This is F8, and it is the finding that gave the import \
+gate a third point. Claudette's two-point gate would not have caught it: the fixture FAILs \
+and the refsol PASSes, so the task gates clean while the verifier fails to verify.\
+"""
+
+# ---------------------------------------------------------------------------
+# Provenance — every corpus field appears in exactly one of the three lists
+# ---------------------------------------------------------------------------
+[provenance]
+donor        = "abcc-u100"
+donor_id     = "fix_sql_inject"
+donor_commit = "d5528ea"
+donor_path   = "scripts/ultimate-100-task-test.js"
+imported_at  = "2026-08-08"
+
+verbatim    = ["id", "lang", "kind", "fixture", "donor_tags"]
+rewritten   = ["prompt", "verify"]
+synthesized = ["title", "timeout_s", "turn", "refsol", "sham", "variants", "disposition",
+               "selection", "gate"]
+
+caveats = [
+  """
+  PROMPT REWRITE 1, and the largest single threat to comparability in the whole import: \
+  'Use file_write to save the fixed version' names a tool from ABCC's registry. Claudette has \
+  edit_file / apply_diff / write_file, so left in, the prompt instructs the subject to call a \
+  tool that does not exist. Rewritten to 'Edit the file to fix it.' This is a semantic edit \
+  to a donor prompt\
+  """,
+
+  """
+  PROMPT REWRITE 2: 'tasks/security_fixes/sql_inject.py' is a path inside ABCC's container \
+  layout. Rewritten to 'sql_inject.py', relative to the work dir\
+  """,
+
+  """
+  VERIFIER REWRITE, three ways: the donor snippet is base64'd and run as `docker exec -w \
+  /app/workspace abcc-agents python3 -c ...` (:2805-2806). Absolute /app/workspace paths \
+  become the work dir, the docker exec execution model is dropped, and the donor's \
+  `result.includes('PASS')` plus catch-all `return false` (:2809-2813) map onto \
+  RESULT: PASS|FAIL. The catch-all is PRESERVED rather than improved, because faithfulness to \
+  the donor is the point of an import — and the third gate point is what makes it safe to \
+  preserve\
+  """,
+
+  """
+  the donor's assertion chain is reproduced unchanged, defect and all. Repairing it would be \
+  recorded as `rewritten` and would break comparability with the 7 donor runs; quarantine \
+  keeps the baseline citable and keeps the task out of every aggregate\
+  """,
+
+  """
+  the research doc's worked example lists a synthesized fixture/__init__.py, carried over from \
+  the donor's package layout. The rewritten verifier imports flat, so v1 drops it\
+  """,
+
+  """
+  both donor validation paths run the same verifier string and score `exit 0 AND PASS in \
+  stdout` — local runValidationLocal (:2788-2814) and server /run-validation \
+  (packages/agents/src/main.py:524-589, the path the recorded runs actually used). There is no \
+  second copy to reconcile\
+  """,
+]
+
+[donor_tags]
+complexity = 7        # donor-scoped; takes four values across the whole suite, so it is not
+                      # a difficulty ranking and is never read by the aggregate. F17.
+section    = "4B"
+category   = "bugfix"
+dir        = "security_fixes"
+files      = 1

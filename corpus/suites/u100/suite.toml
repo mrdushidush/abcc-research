@@ -1,0 +1,110 @@
+schema = 1
+id     = "u100"
+title  = "ABCC's 100-task suite — the 90 stable tasks"
+
+# The tree currently holds ONE task, the worked example from SPEC.md §15. Step 2 of the W8
+# plan emits the other 89. The counts and the aggregate rule below describe the full import
+# so the importer has something to be checked against.
+
+[provenance]
+donor        = "agent-battle-command-center"
+donor_commit = "d5528ea"
+donor_path   = "scripts/ultimate-100-task-test.js"
+imported_at  = "2026-08-08"
+
+# The pool is 90, not 100. The last 10 slots are a CTO-decomposition experiment whose task
+# content changed between the only two runs it appeared in (weather, then recipe), so there
+# is nothing stable to import. F11.
+expected_tasks = 90
+
+caveats = [
+  """
+  the donor shared one cumulative workspace across all 100 tasks \
+  (ultimate-100-task-test.js:2642-2653); RESET_EVERY_N_TASKS resets agent memory, not the \
+  filesystem. Per-task isolation here is better science and breaks byte-comparability with \
+  the 7 recorded runs. F7\
+  """,
+
+  """
+  the donor had no permission gate anywhere in the path, so every U100 baseline is \
+  effectively mode=allow and is comparable to the `control` variant and to nothing else. F1\
+  """,
+
+  """
+  section 2 (15 `landing` tasks) is unverifiable by construction: its verifiers string-match \
+  generated marketing pages, so a PASS establishes presence and not correctness. All 24 \
+  string-match verifiers in the suite were measured passing a file whose entire content is a \
+  comment holding the searched substrings. They carry verifiable = presence_only and ARE \
+  included in aggregates, per David 2026-08-08; the alternative was quarantining them, which \
+  would have taken the usable suite from 90 to 54 and dropped all 15. F20, R9\
+  """,
+
+  """
+  36 of the 90 are demonstrated not to reject at least one wrong answer: 10 with no verifier, \
+  1 passing its own unfixed fixture, 1 passing an intact vulnerability, 24 passing an empty \
+  page. The remaining 54 are step-1 sound with no step-3 evidence either way\
+  """,
+
+  """
+  every gate result recorded in this suite was measured on the Windows host (Python 3.14.5, \
+  Node 24.15.0), not inside the abcc-agents container. A Linux re-run is unspent; the \
+  absent/stub error-class transition is the thing to check if it ever disagrees\
+  """,
+
+  """
+  `fetch failed` means two opposite things in the donor's recorded data — 2 s in the collapse \
+  run (endpoint down) and 307 s in the clean runs (the 300 s task timeout). Exclude the \
+  collapse run by run id, never by error string. F12\
+  """,
+]
+
+[aggregate]
+# Which dispositions enter a headline number. Set by David 2026-08-08. Flipping these
+# re-scores without re-importing — that is what carrying disposition as a field buys.
+# Any published number must state the rule it was computed under.
+include_verifiable  = ["full", "presence_only"]
+exclude_quarantined = true
+
+# Retry-once-on-timeout is deliberately absent. The donor battery retried on exit 124 because
+# "the first attempt warms the model"; the warmup turn required by RUNMETA removes the cause,
+# and a retry would otherwise hide a real timeout as difficulty signal. F10, F12.
+retry_on_timeout = false
+
+# ---------------------------------------------------------------------------
+# Default variants, inherited by every task in the suite. A task overrides one
+# by declaring the same `id` in its own variants.toml. SPEC.md §5.
+# ---------------------------------------------------------------------------
+
+# Donor-faithful. The 7 recorded runs are baselines for this variant only.
+[[variant]]
+id          = "control"
+permissions = { mode = "allow" }
+operator    = []
+
+# Measures what the gate costs when the operator always says yes: the same work, plus
+# whatever the round trip does to latency and iteration count.
+[[variant]]
+id          = "gated"
+permissions = { mode = "workspace_write" }
+requires    = ["tool_gate"]
+expect      = { gate_fires = { min = 1 } }
+default     = "deny"
+operator    = [ { on = { gate = {} }, do = "approve" } ]
+
+# The generic redirect. Tasks that can say something more specific override this by id;
+# `fix_sql_inject` does.
+[[variant]]
+id          = "redirect-first-edit"
+permissions = { mode = "workspace_write" }
+requires    = ["tool_gate", "redirect"]
+expect      = { gate_fires = { min = 1 }, interventions_delivered = 1 }
+default     = "deny"
+
+[[variant.operator]]
+on    = { gate = {} }
+do    = { redirect = "Before editing, say in one sentence which file you are about to change and why." }
+times = 1
+
+[[variant.operator]]
+on = { gate = {} }
+do = "approve"

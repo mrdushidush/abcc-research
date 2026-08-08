@@ -1,0 +1,43 @@
+schema  = 1
+id      = "claudette-fc1ea22"
+title   = "Claudette v0.17.0 — the stand-in subject"
+version = "0.17.0"
+commit  = "fc1ea22"
+bin     = "claudette"
+args    = []                    # no arguments = REPL
+drive   = "repl-pipe"
+
+# NOT one-shot. run.rs:186 constructs `let mut no_prompter: Option<&mut dyn PermissionPrompter>
+# = None`, so one-shot cannot answer a gate and therefore cannot edit a file at all without
+# CLAUDETTE_AUTO_APPROVE. Only the REPL builds a prompter (run/repl.rs:56, passed as Some on
+# every turn at :169-170). F1.
+
+# A baseline, not a proxy: the same harness produces the before and the after.
+
+capabilities = ["tool_gate", "redirect", "undo", "resume"]
+# Absent, deliberately: "pause". There is no SIGINT handler for a running turn; ctrl_c only
+# cancels an input line (run/line_editor.rs:663). The gate is the only synchronous
+# interception point, so it stops the agent only when a tool happens to need permission.
+#
+# R6 was approved on the understanding that this vocabulary is a prediction about a 2.0 that
+# does not exist yet, and will need one revision when 2.0 first runs. The rejected alternative
+# was naming 2.0's intended capabilities up front so the n/a column shows every gap from day
+# one; rejected because a wrong name gets stickier once imported baselines cite it.
+
+[env]
+NO_COLOR                    = "1"
+CLAUDETTE_OPENAI_COMPAT     = "1"
+CLAUDETTE_SKIP_OLLAMA_PROBE = "1"
+# CLAUDETTE_AUTO_APPROVE is deliberately unset. Setting it is what blinded Q56.
+
+[markers]
+gate     = "Allow? [y/N"                              # stderr, and it has NO trailing newline
+turn_end = '^⚡ turn iter=(\d+) in=(\d+) out=(\d+)'   # stderr, repl.rs:205-214
+
+[quirks]
+# Things the adapter must handle that a reading of the docs would have got wrong.
+gate_has_no_trailing_newline = true   # write!, not writeln!, cli_prompter.rs:84
+usage_is_session_cumulative  = true   # UsageTracker::record only ever +=, usage.rs:44-50
+usage_seeded_from_session    = true   # conversation.rs:287 — sessions must start fresh
+non_ascii_under_no_color     = true   # NO_COLOR strips ANSI, not glyphs; readers must be UTF-8
+prompt_never_echoed_on_pipe  = true   # line_editor.rs:370-376 ignores the prompt argument

@@ -1,0 +1,1 @@
+SECURITY FIX: Read the file sql_inject.py which has a SQL injection vulnerability (f-string query interpolation). Fix it by using parameterized queries. The function get_user(db, username) should return a dict with 'query' and 'params' keys instead of calling db.execute directly. Edit the file to fix it.
