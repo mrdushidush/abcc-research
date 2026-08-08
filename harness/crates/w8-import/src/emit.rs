@@ -86,7 +86,7 @@ fn wrapped(s: &str, indent: usize) -> String {
     if !cur.is_empty() {
         lines.push(cur);
     }
-    let mut out = format!("\"\"\"\n");
+    let mut out = "\"\"\"\n".to_string();
     for (i, l) in lines.iter().enumerate() {
         let last = i + 1 == lines.len();
         out.push_str(&pad);

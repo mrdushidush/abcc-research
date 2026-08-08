@@ -740,6 +740,7 @@ pub(crate) fn parse_subject(path: &Path, rej: &mut Rejections) -> Option<Subject
     Some(Subject {
         id,
         version,
+        commit: opt_str(&t, "commit").map(str::to_owned),
         bin,
         drive,
         capabilities: str_list(&t, "capabilities"),

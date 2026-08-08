@@ -394,6 +394,12 @@ impl AggregateRule {
 pub struct Subject {
     pub id: String,
     pub version: String,
+    /// The subject's own commit. SPEC §11 lists it among the RUNMETA row's required fields, and it
+    /// is what makes "measured against Claudette" mean a specific tree. The first version of this
+    /// loader dropped the key — `subjects/claudette-fc1ea22.toml` carries `commit = "fc1ea22"` and
+    /// nothing read it, so the runner's RUNMETA wrote an empty string for a required field. Optional
+    /// because SPEC §7's example does not show it and a descriptor without one is still valid.
+    pub commit: Option<String>,
     pub bin: String,
     /// `repl-pipe`, never one-shot: one-shot passes `None` for its prompter (`run.rs:186`), so it
     /// cannot edit a file without `CLAUDETTE_AUTO_APPROVE` and can never show a gate (F1).

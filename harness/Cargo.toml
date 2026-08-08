@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/w8-import", "crates/w8-corpus"]
+members = ["crates/w8-import", "crates/w8-corpus", "crates/w8-run"]
 
 # W8's harness. Step 2 of the plan is `w8-import`; step 3 is `w8-corpus` and the runner, which
 # is why this is a workspace from the start rather than a single crate to be converted.
@@ -13,6 +13,12 @@ members = ["crates/w8-import", "crates/w8-corpus"]
 # `w8-corpus` takes `toml` as the workspace's first third-party dependency — for *parsing* only,
 # which is the direction the paragraph above never objected to, and which SPEC.md §2 anticipated
 # when it chose TOML on the grounds that `toml` is already a Claudette dependency.
+#
+# `w8-run` adds `regex`, and only because the subject descriptor declares its turn-end marker as a
+# regex with capture groups (SPEC.md §7). Hand-parsing it would make the corpus declare one thing
+# and the runner do another. It talks to the model endpoint over a hand-rolled HTTP/1.1 client
+# (`src/endpoint.rs`) rather than taking an HTTP dependency: the endpoint is plain-text localhost,
+# so there is no TLS to get wrong and ~90 lines cover it.
 
 [workspace.package]
 edition = "2024"

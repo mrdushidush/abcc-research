@@ -181,7 +181,7 @@ fn run() -> Result<bool, String> {
             gates.insert(t.id.clone(), gate::GateResult::not_run());
         }
     } else {
-        let it = gate::probe().map_err(|e| e)?;
+        let it = gate::probe()?;
         println!("\n  interpreters probed by EXECUTING, not by looking (SPEC §8):");
         println!("    bash    {}", it.bash.display());
         println!("    python  {}", it.python);

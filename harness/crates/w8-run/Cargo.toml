@@ -1,0 +1,33 @@
+[package]
+name = "w8-run"
+version = "0.1.0"
+description = "Drives a subject over the REPL pipe and produces one measured cell per (task, variant)"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# `regex` is the workspace's second third-party dependency, and it is here for one reason: the
+# subject descriptor declares its turn-end marker AS A REGEX with capture groups
+# (`^⚡ turn iter=(\d+) in=(\d+) out=(\d+)`, SPEC §7). A runner that hand-parses `in=` while the
+# corpus declares a pattern would be a declaration that diverges from behaviour — the exact defect
+# class this project keeps finding. So the declared pattern is compiled and run.
+#
+# Minimal feature set on purpose: no `perf-dfa-full`, no `unicode-case`/`unicode-script`. `\d`
+# needs `unicode-perl`; everything else the two markers use is plain literal matching.
+[dependencies]
+w8-corpus = { path = "../w8-corpus" }
+regex = { version = "1", default-features = false, features = ["std", "unicode-perl"] }
+
+[[bin]]
+name = "w8-run"
+path = "src/main.rs"
+
+# The positive control for the driver itself. Every gate tier in the import gate expects FAIL and
+# the lesson (F18-F21, and David's rule 8) generalises: a driver test suite whose subject never
+# starts would report "no gates observed" as calmly as a working one. `fake-subject` speaks
+# Claudette's pipe protocol — banner, gate preview with no trailing newline, turn-end line — with
+# no model anywhere, so the driver's own behaviour is testable and a real run is not the only
+# instrument.
+[[bin]]
+name = "fake-subject"
+path = "src/bin/fake_subject.rs"

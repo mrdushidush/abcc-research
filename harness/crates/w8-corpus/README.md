@@ -75,6 +75,14 @@ fixtures plus the 4 dependency fixtures reconstructed for F23. `node_server_main
 placeholder before the reconstruction stage added the files. Harmless at run time — dotfiles are
 skipped — but the caveat is a claim about the tree and it is off by two.
 
+**The subject's `commit` was parsed by nothing.** Found while building the runner (step 3b), not
+here: `subjects/claudette-fc1ea22.toml` carries `commit = "fc1ea22"`, `Subject` had no field for it,
+and SPEC §11 lists subject commit among RUNMETA's required fields — so the first RUNMETA row wrote an
+empty string for a required field and said nothing. Now `Subject::commit: Option<String>`; optional
+because SPEC §7's example does not show the key. **The `--facts` stream is deliberately unchanged**,
+so the 364-fact cross-check above still covers exactly what it covered before; a field a runner reads
+and the cross-check does not is the residual risk, and it is smaller than re-baselining the diff.
+
 **A negative control whose mutation does not apply is vacuous.** Two rule tests here were written
 against a mis-transcribed anchor; the `str::replace` matched nothing and both tests exercised an
 unmodified valid corpus. The rejection cases failed loudly, but the *acceptance* case passed for

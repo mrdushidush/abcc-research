@@ -168,7 +168,7 @@ pub fn probe() -> Result<Interpreters, String> {
     let bash = bash_candidates
         .iter()
         .find(|c| executes(&c.to_string_lossy(), &["-c", "exit 0"]))
-        .map(|c| PathBuf::from(c))
+        .map(PathBuf::from)
         .ok_or_else(|| {
             "no working bash found. Tried $W8_BASH, Git Bash, /bin/bash, /usr/bin/bash and \
              `bash` on PATH, executing each. On Windows, `bash` on PATH is usually the WSL \
