@@ -1,0 +1,32 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create todo_cli.py with this content:
+class TodoApp:
+    def __init__(self):
+        self._todos = []
+        self._next_id = 1
+
+    def add(self, title):
+        todo = {'id': self._next_id, 'title': title, 'done': False}
+        self._todos.append(todo)
+        self._next_id += 1
+        return todo
+
+    def list(self, show_done=True):
+        if show_done:
+            return list(self._todos)
+        return [t for t in self._todos if not t['done']]
+
+    def done(self, todo_id):
+        for t in self._todos:
+            if t['id'] == todo_id:
+                t['done'] = True
+                return True
+        return False
+
+    def remove(self, todo_id):
+        before = len(self._todos)
+        self._todos = [t for t in self._todos if t['id'] != todo_id]
+        return len(self._todos) < before
+
+DO NOT just output the code - you MUST call write_file.

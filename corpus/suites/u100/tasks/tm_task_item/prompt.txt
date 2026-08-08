@@ -1,0 +1,15 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create TaskItem.jsx with:
+function TaskItem(props) {
+  var task = props.task;
+  var onToggle = props.onToggle;
+  var onDelete = props.onDelete;
+  return React.createElement('div', { className: 'task-item' + (task.done ? ' completed' : '') },
+    React.createElement('input', { type: 'checkbox', checked: task.done, onChange: function() { onToggle(task.id); } }),
+    React.createElement('span', { className: 'task-title' }, task.title),
+    React.createElement('button', { onClick: function() { onDelete(task.id); }, className: 'delete-btn' }, 'Delete')
+  );
+}
+
+DO NOT just output the code - you MUST call write_file.

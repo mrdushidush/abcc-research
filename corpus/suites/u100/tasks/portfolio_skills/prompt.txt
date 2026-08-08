@@ -1,0 +1,1 @@
+Use write_file to create skills.html with: <h2>Skills</h2> and 8+ skill items. Each skill has a label and a progress bar (div.progress-bar with inner div.progress at width %). Skills: JavaScript 90%, Python 85%, React 88%, Node.js 82%, SQL 75%, Docker 70%, Go 65%, TypeScript 80%.

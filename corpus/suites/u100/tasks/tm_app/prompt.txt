@@ -1,0 +1,12 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create App.jsx with a React component function App that:
+- Uses React.useState for tasks array and filter string
+- Has addTask(title) that adds {id, title, done:false} to tasks
+- Has toggleTask(id) that toggles done status
+- Has deleteTask(id) that removes task
+- Renders AddTaskForm, FilterBar, TaskCounter, and TaskList
+- Wires all callbacks and state
+Use React.createElement (CDN React, no JSX transform).
+
+DO NOT just output the code - you MUST call write_file.

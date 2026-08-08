@@ -1,0 +1,37 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create calculator.py with this content:
+class Calculator:
+    def __init__(self):
+        self.memory = 0
+        self.last_result = 0
+
+    def add(self, a, b):
+        self.last_result = a + b
+        return self.last_result
+
+    def subtract(self, a, b):
+        self.last_result = a - b
+        return self.last_result
+
+    def multiply(self, a, b):
+        self.last_result = a * b
+        return self.last_result
+
+    def divide(self, a, b):
+        if b == 0:
+            return None
+        self.last_result = a / b
+        return self.last_result
+
+    def store(self):
+        self.memory = self.last_result
+
+    def recall(self):
+        return self.memory
+
+    def clear(self):
+        self.memory = 0
+        self.last_result = 0
+
+DO NOT just output the code - you MUST call write_file.

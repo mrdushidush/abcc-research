@@ -1,0 +1,1 @@
+Use write_file to create about.html with: <!DOCTYPE html>, title "About - Brew & Bean", link to style.css, sections for "Our Story" (founded paragraph), "Our Team" (3 team member names), "Our Mission" (quality coffee paragraph).

@@ -1,0 +1,14 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create input_validator.py with this content:
+import re
+
+def validate_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
+
+def validate_username(username):
+    pattern = r'^[a-zA-Z][a-zA-Z0-9_]{2,19}$'
+    return bool(re.match(pattern, username))
+
+DO NOT just output the code - you MUST call write_file.

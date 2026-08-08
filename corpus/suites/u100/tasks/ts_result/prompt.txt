@@ -1,0 +1,26 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create result.ts with this content:
+type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+
+function ok<T>(value: T): Result<T, never> { return { ok: true, value }; }
+function err<E>(error: E): Result<never, E> { return { ok: false, error }; }
+function map<T, U, E>(r: Result<T, E>, fn: (v: T) => U): Result<U, E> {
+  return r.ok ? ok(fn(r.value)) : r;
+}
+function unwrap<T, E>(r: Result<T, E>): T {
+  if (r.ok) return r.value;
+  throw new Error('unwrap on Err');
+}
+
+// Self-test
+const r1 = ok(42);
+if (!r1.ok || r1.value !== 42) throw new Error('fail ok');
+const r2 = err('bad');
+if (r2.ok) throw new Error('fail err');
+const r3 = map(ok(5), (x: number) => x * 2);
+if (!r3.ok || r3.value !== 10) throw new Error('fail map');
+try { unwrap(err('x')); throw new Error('should throw'); } catch(e: any) { if (!e.message.includes('unwrap')) throw e; }
+console.log('PASS');
+
+DO NOT just output the code - you MUST call write_file.

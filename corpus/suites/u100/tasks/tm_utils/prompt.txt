@@ -1,0 +1,26 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create utils.js with this content:
+function generateId() {
+  return Math.random().toString(36).substring(2, 9);
+}
+
+function formatDate(date) {
+  var d = new Date(date);
+  var year = d.getFullYear();
+  var month = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
+}
+
+function filterTasks(tasks, filter) {
+  if (filter === 'active') return tasks.filter(function(t) { return !t.done; });
+  if (filter === 'completed') return tasks.filter(function(t) { return t.done; });
+  return tasks;
+}
+
+if (typeof module !== 'undefined') module.exports = { generateId, formatDate, filterTasks };
+
+Step 2: Verify the file was created by reading it.
+
+DO NOT just output the code - you MUST call write_file.

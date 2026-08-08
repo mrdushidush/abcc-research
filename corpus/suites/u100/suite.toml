@@ -56,6 +56,91 @@ caveats = [
   run (endpoint down) and 307 s in the clean runs (the 300 s task timeout). Exclude the \
   collapse run by run id, never by error string. F12\
   """,
+
+  # ---------------------------------------------------------------------------
+  # Added by the import itself (harness/crates/w8-import, 2026-08-08). Everything
+  # below was measured while building the importer, not predicted before it.
+  # ---------------------------------------------------------------------------
+
+  """
+  ALL 90 prompts name ABCC's `file_write` tool, which Claudette does not have. Every one is \
+  rewritten to `write_file` (tools/file_ops.rs:65), the same contract; the ten `fix_*` prompts \
+  end by asking for the fixed file to be *saved*, and take 'Edit the file to fix it.' instead. \
+  This is a semantic edit to a donor prompt on every task in the suite, and it is the largest \
+  single threat to comparability in the whole import\
+  """,
+
+  """
+  PATHS are flattened from `tasks/<dir>/<file>` to the basename, relative to the work dir. \
+  Safe as a blanket rule and checked before adopting it: all 107 donor paths sit at exactly one \
+  directory of depth, every task dictates exactly one artifact, and flattening the basenames \
+  collides in ZERO of the 90 tasks\
+  """,
+
+  """
+  `lang` is the ARTIFACT's language, taken from its file extension — not the donor's \
+  `validationLang`, which describes the verifier. 25 tasks produce html/css/jsx while their \
+  verifier is python, so reading validationLang would have labelled all of section 2 `python`. \
+  `.css` maps to `html` because SPEC §3's vocabulary has no `css` and a stylesheet is a \
+  web-page asset\
+  """,
+
+  """
+  THE DONOR SOURCE IS ENTIRELY CRLF — 3,521 \\r\\n and zero bare \\n. Normalised to LF at read. \
+  Not cosmetic: anything anchored on \\n silently misses, which first emptied the reconstructed \
+  dependency fixtures below and made two tasks' gate point 1 read `sound` while measuring \
+  nothing at all\
+  """,
+
+  """
+  FOUR tasks reach a module that a DIFFERENT donor task was supposed to create, because the \
+  donor shared one cumulative workspace (F7): py_todo_handlers, node_note_handlers, \
+  py_server_main and node_server_main. Under per-task isolation those modules are absent, the \
+  verifier raises before any assertion, and the task scores FAIL regardless of the subject's \
+  work — a FAIL indistinguishable from a sound verifier rejecting a wrong answer. Each is \
+  reconstructed into fixture/ from the sibling task's prompt, which dictates its whole body \
+  verbatim. py_server_main's four dependencies appear nowhere in its verifier; its own dictated \
+  body imports them, and only the positive control surfaced that\
+  """,
+
+  """
+  py_server_main's dictated body uses RELATIVE imports (`from .router import`), which need a \
+  package that the flattened work dir is not. Rewritten to absolute in the prompt — a \
+  mechanical consequence of the flatten decision rather than a separate one\
+  """,
+
+  """
+  FOUR donor prompts dictate content whose backslashes JS template-literal processing has \
+  ALREADY eaten, so the agent never sees them: sec_input_validator (\\.), sec_xss_filter \
+  (\\s \\S \\w \\/), go_slug (\\s) and mini_markdown (\\* \\[ \\] \\( \\)). Verified by running \
+  node, not by reading the spec: `[\\s\\S]` in a template literal evaluates to `[sS]`. For \
+  sec_xss_filter this is FATAL — the dictated regex becomes `/<script[^>]*>[sS]*?</script>/gi`, \
+  a JavaScript syntax error, so following the donor's own prompt literally cannot pass the \
+  donor's own verifier. Left UNREPAIRED: the 7 recorded runs used the corrupted prompt, and \
+  repairing it would change the task's difficulty while claiming to be an import\
+  """,
+
+  """
+  POSITIVE CONTROL, without which none of the gate results mean anything: every gate tier \
+  expects FAIL, so a verify.sh incapable of ever printing PASS would score as 80 sound \
+  verifiers. 50 of the 90 donor prompts dictate the artifact body verbatim, which is a \
+  reference solution by construction. 49 of those 50 PASS their own verifier; the one that does \
+  not is sec_xss_filter, above. So a FAIL at a gate tier is attributable to the tier and not to \
+  the import\
+  """,
+
+  """
+  78 of the 90 tasks generate their artifact from nothing and so have an EMPTY fixture/, \
+  holding only a .gitkeep because git cannot carry an empty directory. The runner must not copy \
+  dotfiles into the work dir\
+  """,
+
+  """
+  `donor_tags.section` carries the donor's raw value. The research docs' 4A/4B split (10 `sec_*` \
+  authored vs 10 `fix_*` repair tasks) is a human refinement that exists nowhere in the donor, \
+  which records both as section 4. The hand-authored fix_sql_inject task.toml says "4B" and the \
+  importer says "4" for that reason\
+  """,
 ]
 
 [aggregate]

@@ -1,0 +1,38 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create maybe.ts with this content:
+class Maybe<T> {
+  private constructor(private value: T | null) {}
+
+  static of<T>(value: T | null | undefined): Maybe<T> {
+    return new Maybe<T>(value === undefined ? null : value);
+  }
+
+  map<U>(fn: (v: T) => U): Maybe<U> {
+    if (this.value === null) return Maybe.of<U>(null);
+    return Maybe.of(fn(this.value));
+  }
+
+  flatMap<U>(fn: (v: T) => Maybe<U>): Maybe<U> {
+    if (this.value === null) return Maybe.of<U>(null);
+    return fn(this.value);
+  }
+
+  getOrElse(defaultVal: T): T {
+    return this.value !== null ? this.value : defaultVal;
+  }
+
+  isNothing(): boolean { return this.value === null; }
+}
+
+// Self-test
+const m1 = Maybe.of(5).map(x => x * 2);
+if (m1.getOrElse(0) !== 10) throw new Error('fail map');
+const m2 = Maybe.of<number>(null).map(x => x * 2);
+if (m2.getOrElse(99) !== 99) throw new Error('fail nothing');
+const m3 = Maybe.of(3).flatMap(x => Maybe.of(x + 1));
+if (m3.getOrElse(0) !== 4) throw new Error('fail flatMap');
+if (!Maybe.of(null).isNothing()) throw new Error('fail isNothing');
+console.log('PASS');
+
+DO NOT just output the code - you MUST call write_file.

@@ -1,0 +1,22 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create server.py with this content:
+from router import Router
+from todo_model import TodoStore
+from todo_handlers import handle_list, handle_create, handle_get, handle_delete
+from cors import get_cors_headers
+
+def create_app():
+    router = Router()
+    store = TodoStore()
+
+    router.add_route('GET', '/todos', lambda: handle_list(store))
+    router.add_route('POST', '/todos', lambda body='{}': handle_create(store, body))
+
+    return {
+        'router': router,
+        'store': store,
+        'cors_headers': get_cors_headers()
+    }
+
+DO NOT just output the code - you MUST call write_file.

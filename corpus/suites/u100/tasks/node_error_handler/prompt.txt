@@ -1,0 +1,20 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create errorHandler.js with this content:
+var statusMap = {
+  not_found: 404, bad_request: 400, unauthorized: 401, forbidden: 403, internal: 500
+};
+
+function handleError(errorType, message) {
+  if (!message) message = 'An error occurred';
+  var status = statusMap[errorType] || 500;
+  return {
+    body: JSON.stringify({ error: message, type: errorType }),
+    status: status,
+    headers: { 'Content-Type': 'application/json' }
+  };
+}
+
+module.exports = { handleError };
+
+DO NOT just output the code - you MUST call write_file.

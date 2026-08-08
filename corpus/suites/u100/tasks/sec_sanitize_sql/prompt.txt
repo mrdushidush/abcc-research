@@ -1,0 +1,18 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create safe_query.py with this content:
+def build_safe_query(template, params):
+    placeholders = []
+    values = []
+    parts = template.split('?')
+    if len(parts) - 1 != len(params):
+        raise ValueError('Parameter count mismatch')
+    result = parts[0]
+    for i, param in enumerate(params):
+        placeholder = ':param' + str(i)
+        result += placeholder + parts[i + 1]
+        placeholders.append(placeholder)
+        values.append(param)
+    return {'query': result, 'params': dict(zip(placeholders, values))}
+
+DO NOT just output the code - you MUST call write_file.

@@ -1,0 +1,20 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create jsonResponse.js with this content:
+function jsonResponse(data, statusCode) {
+  if (statusCode === undefined) statusCode = 200;
+  return {
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' },
+    statusCode: statusCode
+  };
+}
+
+function errorResponse(message, statusCode) {
+  if (statusCode === undefined) statusCode = 400;
+  return jsonResponse({ error: message }, statusCode);
+}
+
+module.exports = { jsonResponse, errorResponse };
+
+DO NOT just output the code - you MUST call write_file.

@@ -1,0 +1,27 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create index.html with this content:
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Brew & Bean Coffee</title>
+<style>
+body { font-family: sans-serif; margin: 0; }
+.hero { background: #4a2c2a; color: white; padding: 60px 20px; text-align: center; }
+.hero h1 { font-size: 3em; margin-bottom: 10px; }
+.cta-btn { display: inline-block; background: #d4a574; color: #333; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+nav a { color: #f0d9b5; margin: 0 10px; text-decoration: none; }
+footer { background: #333; color: white; text-align: center; padding: 10px; }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <nav><a href="menu.html">Menu</a> <a href="about.html">About</a> <a href="contact.html">Contact</a></nav>
+    <h1>Brew & Bean</h1>
+    <p>Freshly roasted, always delicious</p>
+    <a href="menu.html" class="cta-btn">View Our Menu</a>
+  </header>
+  <footer><p>&copy; 2026 Brew & Bean</p></footer>
+</body>
+</html>
+
+DO NOT just output the code - you MUST call write_file.

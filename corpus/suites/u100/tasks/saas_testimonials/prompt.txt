@@ -1,0 +1,1 @@
+Use write_file to create testimonials.html with: a section containing <h2>What Our Customers Say</h2> and 3 testimonial cards. Each card (div.testimonial) has: blockquote with quote text, and p.author with person's name and company.

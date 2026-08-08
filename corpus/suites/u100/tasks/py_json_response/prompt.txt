@@ -1,0 +1,16 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create json_helpers.py with this content:
+import json
+
+def json_response(data, status=200):
+    return {
+        'body': json.dumps(data),
+        'status': status,
+        'headers': {'Content-Type': 'application/json'}
+    }
+
+def error_response(message, status=400):
+    return json_response({'error': message}, status)
+
+DO NOT just output the code - you MUST call write_file.

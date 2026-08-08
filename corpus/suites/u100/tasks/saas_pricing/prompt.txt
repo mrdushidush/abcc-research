@@ -1,0 +1,1 @@
+Use write_file to create pricing.html with: a section containing <h2>Pricing</h2> and 3 pricing tier cards. Each card (div.pricing-card) has: plan name (h3), price (div.price), feature list (ul), and CTA button. Tiers: Free ($0/mo, 3 features), Pro ($29/mo, 6 features, class "popular"), Enterprise ($99/mo, unlimited). The Pro card should have a class "popular" or "highlighted".

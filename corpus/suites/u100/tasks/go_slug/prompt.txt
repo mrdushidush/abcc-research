@@ -1,0 +1,29 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create slug.go with this content:
+package main
+
+import (
+	"fmt"
+	"regexp"
+	"strings"
+)
+
+func slugify(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	reg := regexp.MustCompile("[^a-z0-9\\s-]")
+	s = reg.ReplaceAllString(s, "")
+	reg2 := regexp.MustCompile("[\\s-]+")
+	s = reg2.ReplaceAllString(s, "-")
+	s = strings.Trim(s, "-")
+	return s
+}
+
+func main() {
+	if slugify("Hello World") != "hello-world" { panic("fail basic") }
+	if slugify("  Foo  Bar  ") != "foo-bar" { panic("fail spaces") }
+	if slugify("Go is Great!") != "go-is-great" { panic("fail special") }
+	fmt.Println("PASS")
+}
+
+DO NOT just output the code - you MUST call write_file.

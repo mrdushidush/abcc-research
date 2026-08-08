@@ -1,0 +1,19 @@
+[workspace]
+resolver = "3"
+members = ["crates/w8-import"]
+
+# W8's harness. Step 2 of the plan is `w8-import`; step 3 adds the runner as a sibling crate,
+# which is why this is a workspace from the start rather than a single crate to be converted.
+#
+# Deliberately zero third-party dependencies. The importer parses one JavaScript file, writes
+# TOML it has to control the comment layout of anyway, and shells out to bash. A `toml`
+# serializer would strip the comments that carry the findings, and the comments are half the
+# point of the format (SPEC.md §2).
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[profile.release]
+debug = 1

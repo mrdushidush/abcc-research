@@ -1,0 +1,22 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create csv_transform.py with this content:
+def parse_csv(text, delimiter=','):
+    lines = text.strip().split('\n')
+    if not lines:
+        return []
+    headers = [h.strip() for h in lines[0].split(delimiter)]
+    rows = []
+    for line in lines[1:]:
+        values = [v.strip() for v in line.split(delimiter)]
+        row = dict(zip(headers, values))
+        rows.append(row)
+    return rows
+
+def filter_rows(rows, predicate):
+    return [r for r in rows if predicate(r)]
+
+def transform(rows, fn):
+    return [fn(r) for r in rows]
+
+DO NOT just output the code - you MUST call write_file.

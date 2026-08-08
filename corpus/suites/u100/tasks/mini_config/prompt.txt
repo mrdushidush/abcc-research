@@ -1,0 +1,47 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create config.js with this content:
+function ConfigManager(defaults) {
+  this._data = {};
+  if (defaults) {
+    var keys = Object.keys(defaults);
+    for (var i = 0; i < keys.length; i++) {
+      this._data[keys[i]] = defaults[keys[i]];
+    }
+  }
+}
+
+ConfigManager.prototype.get = function(key, fallback) {
+  if (this._data.hasOwnProperty(key)) return this._data[key];
+  return fallback !== undefined ? fallback : undefined;
+};
+
+ConfigManager.prototype.set = function(key, value) {
+  this._data[key] = value;
+  return this;
+};
+
+ConfigManager.prototype.has = function(key) {
+  return this._data.hasOwnProperty(key);
+};
+
+ConfigManager.prototype.delete = function(key) {
+  if (this._data.hasOwnProperty(key)) {
+    delete this._data[key];
+    return true;
+  }
+  return false;
+};
+
+ConfigManager.prototype.toObject = function() {
+  var result = {};
+  var keys = Object.keys(this._data);
+  for (var i = 0; i < keys.length; i++) {
+    result[keys[i]] = this._data[keys[i]];
+  }
+  return result;
+};
+
+module.exports = ConfigManager;
+
+DO NOT just output the code - you MUST call write_file.

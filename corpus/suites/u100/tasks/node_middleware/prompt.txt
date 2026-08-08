@@ -1,0 +1,20 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create middleware.js with this content:
+function logRequest(method, path, status, durationMs) {
+  if (durationMs === undefined) durationMs = 0;
+  return method + ' ' + path + ' -> ' + status + ' (' + durationMs + 'ms)';
+}
+
+function corsHeaders(origin) {
+  if (origin === undefined) origin = '*';
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  };
+}
+
+module.exports = { logRequest, corsHeaders };
+
+DO NOT just output the code - you MUST call write_file.

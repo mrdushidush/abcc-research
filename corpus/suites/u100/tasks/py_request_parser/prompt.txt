@@ -1,0 +1,22 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create request_parser.py with this content:
+import json
+
+def parse_query_string(qs):
+    params = {}
+    if not qs:
+        return params
+    for pair in qs.split('&'):
+        if '=' in pair:
+            key, value = pair.split('=', 1)
+            params[key] = value
+    return params
+
+def parse_json_body(body_str):
+    try:
+        return json.loads(body_str)
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+DO NOT just output the code - you MUST call write_file.

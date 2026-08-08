@@ -1,0 +1,20 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create queryParser.js with this content:
+function parseQuery(qs) {
+  var result = {};
+  if (!qs) return result;
+  var pairs = qs.split('&');
+  for (var i = 0; i < pairs.length; i++) {
+    var idx = pairs[i].indexOf('=');
+    if (idx === -1) continue;
+    var key = decodeURIComponent(pairs[i].substring(0, idx));
+    var val = decodeURIComponent(pairs[i].substring(idx + 1));
+    result[key] = val;
+  }
+  return result;
+}
+
+module.exports = { parseQuery };
+
+DO NOT just output the code - you MUST call write_file.

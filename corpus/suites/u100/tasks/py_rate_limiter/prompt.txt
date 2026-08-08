@@ -1,0 +1,30 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create rate_limiter.py with this content:
+import time
+
+class RateLimiter:
+    def __init__(self, max_requests=10, window_seconds=60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._clients = {}
+
+    def allow(self, client_id):
+        now = time.time()
+        if client_id not in self._clients:
+            self._clients[client_id] = []
+        # Remove expired entries
+        self._clients[client_id] = [t for t in self._clients[client_id] if now - t < self.window_seconds]
+        if len(self._clients[client_id]) >= self.max_requests:
+            return False
+        self._clients[client_id].append(now)
+        return True
+
+    def remaining(self, client_id):
+        now = time.time()
+        if client_id not in self._clients:
+            return self.max_requests
+        active = [t for t in self._clients[client_id] if now - t < self.window_seconds]
+        return max(0, self.max_requests - len(active))
+
+DO NOT just output the code - you MUST call write_file.

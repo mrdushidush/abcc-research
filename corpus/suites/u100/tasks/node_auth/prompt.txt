@@ -1,0 +1,33 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create auth.js with this content:
+var crypto = require('crypto');
+
+var SECRET = 'default-secret-key';
+
+function createToken(userId, secret) {
+  if (!secret) secret = SECRET;
+  var payload = JSON.stringify({ userId: userId, exp: Date.now() + 3600000 });
+  var payloadB64 = Buffer.from(payload).toString('base64');
+  var sig = crypto.createHmac('sha256', secret).update(payloadB64).digest('hex');
+  return payloadB64 + '.' + sig;
+}
+
+function verifyToken(token, secret) {
+  if (!secret) secret = SECRET;
+  try {
+    var parts = token.split('.');
+    if (parts.length !== 2) return null;
+    var payloadB64 = parts[0];
+    var sig = parts[1];
+    var expected = crypto.createHmac('sha256', secret).update(payloadB64).digest('hex');
+    if (sig !== expected) return null;
+    var payload = JSON.parse(Buffer.from(payloadB64, 'base64').toString());
+    if (payload.exp < Date.now()) return null;
+    return payload;
+  } catch(e) { return null; }
+}
+
+module.exports = { createToken, verifyToken };
+
+DO NOT just output the code - you MUST call write_file.

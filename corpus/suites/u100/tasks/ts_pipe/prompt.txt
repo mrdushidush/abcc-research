@@ -1,0 +1,21 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create pipe.ts with this content:
+function pipe(...fns: Array<(x: any) => any>) {
+  return (input: any) => fns.reduce((acc, fn) => fn(acc), input);
+}
+
+// Self-test
+const double = (x: number) => x * 2;
+const addOne = (x: number) => x + 1;
+const toString = (x: number) => String(x);
+
+const transform = pipe(double, addOne, toString);
+if (transform(5) !== '11') throw new Error('fail pipe');
+const identity = pipe();
+if (identity(42) !== 42) throw new Error('fail empty pipe');
+const single = pipe(double);
+if (single(3) !== 6) throw new Error('fail single');
+console.log('PASS');
+
+DO NOT just output the code - you MUST call write_file.

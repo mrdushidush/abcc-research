@@ -1,0 +1,19 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create xss_filter.js with this content:
+function filterXSS(input) {
+  if (typeof input !== 'string') return '';
+  var result = input;
+  // Remove script tags and content
+  result = result.replace(/<script[^>]*>[sS]*?</script>/gi, '');
+  // Remove event handlers
+  result = result.replace(/s+onw+s*=s*["'][^"']*["']/gi, '');
+  result = result.replace(/s+onw+s*=s*[^s>]+/gi, '');
+  // Remove javascript: URLs
+  result = result.replace(/hrefs*=s*["']javascript:[^"']*["']/gi, 'href="#"');
+  return result;
+}
+
+module.exports = { filterXSS };
+
+DO NOT just output the code - you MUST call write_file.

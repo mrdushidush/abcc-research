@@ -1,0 +1,1 @@
+Use write_file to create contact.html with: <!DOCTYPE html>, title "Contact - Brew & Bean", link to style.css, a contact form with: input name (text, required), input email (email, required), textarea message, submit button "Send Message".

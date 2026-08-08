@@ -1,0 +1,16 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create uuid.js with this content:
+var crypto = require('crypto');
+
+function generateId() {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+function shortId() {
+  return crypto.randomBytes(4).toString('hex');
+}
+
+module.exports = { generateId, shortId };
+
+DO NOT just output the code - you MUST call write_file.

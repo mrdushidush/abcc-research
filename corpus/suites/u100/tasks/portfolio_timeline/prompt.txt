@@ -1,0 +1,1 @@
+Use write_file to create timeline.html with: <h2>Experience</h2> and 3 timeline entries (div.timeline-entry). Each entry has: span.year, h3 role title, p.company, p description. Entries: 2024 "Senior Developer" at TechCorp, 2022 "Full-Stack Engineer" at StartupXYZ, 2020 "Junior Developer" at WebAgency.

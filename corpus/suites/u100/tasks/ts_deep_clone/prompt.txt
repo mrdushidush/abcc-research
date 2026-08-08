@@ -1,0 +1,25 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create deepClone.ts with this content:
+function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj.getTime()) as any;
+  if (Array.isArray(obj)) return obj.map(item => deepClone(item)) as any;
+  const result: any = {};
+  for (const key of Object.keys(obj as any)) {
+    result[key] = deepClone((obj as any)[key]);
+  }
+  return result;
+}
+
+// Self-test
+const orig = { a: 1, b: { c: [1, 2, 3] }, d: new Date('2026-01-01') };
+const clone = deepClone(orig);
+if (clone.a !== 1 || clone.b.c[0] !== 1) throw new Error('fail values');
+clone.b.c.push(4);
+if (orig.b.c.length !== 3) throw new Error('fail independence');
+if (!(clone.d instanceof Date)) throw new Error('fail date type');
+if (clone.d.getTime() !== orig.d.getTime()) throw new Error('fail date value');
+console.log('PASS');
+
+DO NOT just output the code - you MUST call write_file.

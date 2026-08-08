@@ -1,0 +1,1 @@
+SECURITY FIX: Read the file insecure_random.py which uses random.choice (predictable PRNG) for token generation. Fix generate_token to use secrets.token_hex or secrets.token_urlsafe instead of random.choice. Edit the file to fix it.

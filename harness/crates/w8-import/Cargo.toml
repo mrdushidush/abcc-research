@@ -1,0 +1,13 @@
+[package]
+name = "w8-import"
+version = "0.1.0"
+description = "Imports ABCC's 100-task suite into a corpus/SPEC.md v1 corpus"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+
+[[bin]]
+name = "w8-import"
+path = "src/main.rs"

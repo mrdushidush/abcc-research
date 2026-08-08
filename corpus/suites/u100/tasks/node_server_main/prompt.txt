@@ -1,0 +1,25 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create server.js with this content:
+var Router = require('./router');
+var NoteStore = require('./noteModel');
+var handlers = require('./noteHandlers');
+var mw = require('./middleware');
+
+function createApp() {
+  var router = new Router();
+  var store = new NoteStore();
+
+  router.addRoute('GET', '/notes', function() { return handlers.handleList(store); });
+  router.addRoute('POST', '/notes', function(body) { return handlers.handleCreate(store, body || '{}'); });
+
+  return {
+    router: router,
+    store: store,
+    corsHeaders: mw.corsHeaders()
+  };
+}
+
+module.exports = { createApp };
+
+DO NOT just output the code - you MUST call write_file.

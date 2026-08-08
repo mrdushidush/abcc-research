@@ -1,0 +1,34 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create csv_parser.go with this content:
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func parseCSV(input string) [][]string {
+	var result [][]string
+	lines := strings.Split(strings.TrimSpace(input), "\n")
+	for _, line := range lines {
+		if line == "" { continue }
+		fields := strings.Split(line, ",")
+		for i := range fields {
+			fields[i] = strings.TrimSpace(fields[i])
+		}
+		result = append(result, fields)
+	}
+	return result
+}
+
+func main() {
+	data := parseCSV("name,age\nAlice,30\nBob,25")
+	if len(data) != 3 { panic("fail rows") }
+	if data[0][0] != "name" { panic("fail header") }
+	if data[1][0] != "Alice" { panic("fail data") }
+	if data[2][1] != "25" { panic("fail data2") }
+	fmt.Println("PASS")
+}
+
+DO NOT just output the code - you MUST call write_file.

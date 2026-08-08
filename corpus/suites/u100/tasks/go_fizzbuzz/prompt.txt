@@ -1,0 +1,23 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create fizzbuzz.go with this content:
+package main
+
+import "fmt"
+
+func fizzbuzz(n int) string {
+	if n%15 == 0 { return "FizzBuzz" }
+	if n%3 == 0 { return "Fizz" }
+	if n%5 == 0 { return "Buzz" }
+	return fmt.Sprintf("%d", n)
+}
+
+func main() {
+	if fizzbuzz(15) != "FizzBuzz" { panic("fail 15") }
+	if fizzbuzz(9) != "Fizz" { panic("fail 9") }
+	if fizzbuzz(10) != "Buzz" { panic("fail 10") }
+	if fizzbuzz(7) != "7" { panic("fail 7") }
+	fmt.Println("PASS")
+}
+
+DO NOT just output the code - you MUST call write_file.

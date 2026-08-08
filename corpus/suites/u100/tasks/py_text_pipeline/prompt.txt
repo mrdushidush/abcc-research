@@ -1,0 +1,18 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create pipeline.py with this content:
+class Pipeline:
+    def __init__(self):
+        self.steps = []
+
+    def add_step(self, fn):
+        self.steps.append(fn)
+        return self
+
+    def execute(self, data):
+        result = data
+        for step in self.steps:
+            result = step(result)
+        return result
+
+DO NOT just output the code - you MUST call write_file.

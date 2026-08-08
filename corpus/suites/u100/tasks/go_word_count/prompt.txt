@@ -1,0 +1,38 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create word_count.go with this content:
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func wordCount(s string) int {
+	return len(strings.Fields(s))
+}
+
+func lineCount(s string) int {
+	if s == "" { return 0 }
+	return len(strings.Split(s, "\n"))
+}
+
+func charCount(s string) int {
+	count := 0
+	for _, c := range s {
+		if c != ' ' && c != '\n' && c != '\t' {
+			count++
+		}
+	}
+	return count
+}
+
+func main() {
+	if wordCount("hello world") != 2 { panic("fail wordCount") }
+	if wordCount("") != 0 { panic("fail empty") }
+	if lineCount("a\nb\nc") != 3 { panic("fail lineCount") }
+	if charCount("a b c") != 3 { panic("fail charCount") }
+	fmt.Println("PASS")
+}
+
+DO NOT just output the code - you MUST call write_file.

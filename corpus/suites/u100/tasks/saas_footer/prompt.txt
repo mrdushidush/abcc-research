@@ -1,0 +1,1 @@
+Use write_file to create footer.html with: a footer element with 3 columns (div.footer-col): "Product" links (Features, Pricing, Docs), "Company" links (About, Blog, Careers), "Connect" links (Twitter, GitHub, Email). Include copyright line.

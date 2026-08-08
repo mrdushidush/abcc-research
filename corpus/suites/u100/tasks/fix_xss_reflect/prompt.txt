@@ -1,0 +1,1 @@
+SECURITY FIX: Read the file xss_reflect.py which has a reflected XSS vulnerability (raw username in HTML). Fix it by HTML-escaping the username before inserting into HTML. Replace <, >, &, " with their HTML entities. Edit the file to fix it.

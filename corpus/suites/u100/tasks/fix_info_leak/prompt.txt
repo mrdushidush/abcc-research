@@ -1,0 +1,1 @@
+SECURITY FIX: Read the file info_leak.py which leaks error details via str(e). Fix divide to return a generic error message like {'error': 'division error'} instead of exposing internal exception details. Return the result as a number on success. Edit the file to fix it.

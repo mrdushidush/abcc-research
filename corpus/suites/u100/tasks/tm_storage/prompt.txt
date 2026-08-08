@@ -1,0 +1,26 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create storage.js with:
+var Storage = {
+  load: function(key) {
+    try {
+      var data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+  save: function(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  remove: function(key) {
+    localStorage.removeItem(key);
+  }
+};
+
+DO NOT just output the code - you MUST call write_file.

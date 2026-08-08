@@ -1,0 +1,37 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create login_guard.py with this content:
+import time
+
+class LoginGuard:
+    def __init__(self, max_attempts=5, lockout_seconds=300):
+        self.max_attempts = max_attempts
+        self.lockout_seconds = lockout_seconds
+        self._attempts = {}
+
+    def record_attempt(self, username, success):
+        now = time.time()
+        if username not in self._attempts:
+            self._attempts[username] = {'count': 0, 'locked_until': 0}
+        entry = self._attempts[username]
+        if success:
+            entry['count'] = 0
+            entry['locked_until'] = 0
+            return True
+        entry['count'] += 1
+        if entry['count'] >= self.max_attempts:
+            entry['locked_until'] = now + self.lockout_seconds
+        return False
+
+    def is_locked(self, username):
+        if username not in self._attempts:
+            return False
+        entry = self._attempts[username]
+        if entry['locked_until'] > time.time():
+            return True
+        if entry['locked_until'] > 0 and entry['locked_until'] <= time.time():
+            entry['count'] = 0
+            entry['locked_until'] = 0
+        return False
+
+DO NOT just output the code - you MUST call write_file.

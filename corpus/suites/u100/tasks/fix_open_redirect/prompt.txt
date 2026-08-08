@@ -1,0 +1,1 @@
+SECURITY FIX: Read the file open_redirect.py which allows redirecting to any URL (open redirect). Fix redirect(url) to only allow redirects to relative URLs (starting with /) or a whitelist of allowed domains. For invalid URLs, return {'status': 400, 'error': 'invalid redirect'}. Edit the file to fix it.

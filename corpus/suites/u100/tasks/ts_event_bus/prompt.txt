@@ -1,0 +1,54 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create eventBus.ts with this content:
+type Handler = (...args: any[]) => void;
+
+class EventBus {
+  private listeners: Map<string, Array<{ fn: Handler; once: boolean }>> = new Map();
+
+  on(event: string, fn: Handler): this {
+    if (!this.listeners.has(event)) this.listeners.set(event, []);
+    this.listeners.get(event)!.push({ fn, once: false });
+    return this;
+  }
+
+  once(event: string, fn: Handler): this {
+    if (!this.listeners.has(event)) this.listeners.set(event, []);
+    this.listeners.get(event)!.push({ fn, once: true });
+    return this;
+  }
+
+  off(event: string, fn: Handler): this {
+    const list = this.listeners.get(event);
+    if (list) this.listeners.set(event, list.filter(l => l.fn !== fn));
+    return this;
+  }
+
+  emit(event: string, ...args: any[]): this {
+    const list = this.listeners.get(event);
+    if (!list) return this;
+    const remaining = list.filter(l => { l.fn(...args); return !l.once; });
+    this.listeners.set(event, remaining);
+    return this;
+  }
+}
+
+// Self-test
+const bus = new EventBus();
+let count = 0;
+const inc = () => { count++; };
+bus.on('test', inc);
+bus.emit('test');
+bus.emit('test');
+if (count !== 2) throw new Error('fail on');
+bus.off('test', inc);
+bus.emit('test');
+if (count !== 2) throw new Error('fail off');
+let onceCount = 0;
+bus.once('x', () => { onceCount++; });
+bus.emit('x');
+bus.emit('x');
+if (onceCount !== 1) throw new Error('fail once');
+console.log('PASS');
+
+DO NOT just output the code - you MUST call write_file.

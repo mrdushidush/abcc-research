@@ -1,0 +1,23 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create pagination.js with this content:
+function paginate(items, page, perPage) {
+  if (page === undefined) page = 1;
+  if (perPage === undefined) perPage = 10;
+  var total = items.length;
+  var totalPages = total > 0 ? Math.ceil(total / perPage) : 1;
+  page = Math.max(1, Math.min(page, totalPages));
+  var start = (page - 1) * perPage;
+  var end = start + perPage;
+  return {
+    items: items.slice(start, end),
+    page: page,
+    perPage: perPage,
+    total: total,
+    totalPages: totalPages
+  };
+}
+
+module.exports = { paginate };
+
+DO NOT just output the code - you MUST call write_file.

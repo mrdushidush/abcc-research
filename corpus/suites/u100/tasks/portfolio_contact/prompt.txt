@@ -1,0 +1,1 @@
+Use write_file to create contact.html with: <h2>Get In Touch</h2>, a contact form (name input, email input, message textarea, submit button), and social links section (GitHub, LinkedIn, Email links).

@@ -1,0 +1,16 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create validator.js with this content:
+function validateNote(data) {
+  var errors = [];
+  if (!data || typeof data !== 'object') return { valid: false, errors: ['data must be an object'] };
+  if (!data.title) errors.push('title is required');
+  else if (typeof data.title !== 'string') errors.push('title must be a string');
+  else if (data.title.length > 200) errors.push('title must be 200 chars or less');
+  if (data.content !== undefined && typeof data.content !== 'string') errors.push('content must be a string');
+  return { valid: errors.length === 0, errors: errors };
+}
+
+module.exports = { validateNote };
+
+DO NOT just output the code - you MUST call write_file.

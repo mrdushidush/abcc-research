@@ -1,0 +1,32 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create noteHandlers.js with this content:
+function handleList(store) {
+  return { body: JSON.stringify(store.listAll()), status: 200 };
+}
+
+function handleCreate(store, bodyStr) {
+  try {
+    var data = JSON.parse(bodyStr);
+  } catch(e) {
+    return { body: JSON.stringify({error:'invalid json'}), status: 400 };
+  }
+  if (!data.title) return { body: JSON.stringify({error:'title required'}), status: 400 };
+  var note = store.create(data.title, data.content || '');
+  return { body: JSON.stringify(note), status: 201 };
+}
+
+function handleGet(store, id) {
+  var note = store.get(id);
+  if (!note) return { body: JSON.stringify({error:'not found'}), status: 404 };
+  return { body: JSON.stringify(note), status: 200 };
+}
+
+function handleDelete(store, id) {
+  if (store.remove(id)) return { body: JSON.stringify({ok:true}), status: 200 };
+  return { body: JSON.stringify({error:'not found'}), status: 404 };
+}
+
+module.exports = { handleList, handleCreate, handleGet, handleDelete };
+
+DO NOT just output the code - you MUST call write_file.

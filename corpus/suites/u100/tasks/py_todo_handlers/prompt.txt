@@ -1,0 +1,31 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create todo_handlers.py with this content:
+import json
+
+def handle_list(store):
+    return {'body': json.dumps(store.list_all()), 'status': 200}
+
+def handle_create(store, body_str):
+    try:
+        data = json.loads(body_str)
+    except (json.JSONDecodeError, TypeError):
+        return {'body': json.dumps({'error': 'invalid json'}), 'status': 400}
+    title = data.get('title', '')
+    if not title:
+        return {'body': json.dumps({'error': 'title required'}), 'status': 400}
+    todo = store.create(title)
+    return {'body': json.dumps(todo), 'status': 201}
+
+def handle_get(store, todo_id):
+    todo = store.get(todo_id)
+    if not todo:
+        return {'body': json.dumps({'error': 'not found'}), 'status': 404}
+    return {'body': json.dumps(todo), 'status': 200}
+
+def handle_delete(store, todo_id):
+    if store.delete(todo_id):
+        return {'body': json.dumps({'ok': True}), 'status': 200}
+    return {'body': json.dumps({'error': 'not found'}), 'status': 404}
+
+DO NOT just output the code - you MUST call write_file.

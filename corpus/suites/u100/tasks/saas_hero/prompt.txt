@@ -1,0 +1,33 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create index.html with this content:
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>LaunchPad SaaS</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; margin: 0; color: #333; }
+.hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 20px; text-align: center; }
+.hero h1 { font-size: 2.5em; }
+.cta-group { margin-top: 30px; }
+.cta-primary { background: #fff; color: #764ba2; padding: 12px 30px; border-radius: 25px; text-decoration: none; margin: 0 10px; font-weight: bold; }
+.cta-secondary { color: white; border: 2px solid white; padding: 12px 30px; border-radius: 25px; text-decoration: none; margin: 0 10px; }
+section { padding: 60px 20px; max-width: 1000px; margin: 0 auto; }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <h1>Launch Faster with LaunchPad</h1>
+    <p>The all-in-one platform for modern teams</p>
+    <div class="cta-group">
+      <a href="#" class="cta-primary">Start Free Trial</a>
+      <a href="#features" class="cta-secondary">Learn More</a>
+    </div>
+  </header>
+  <section id="features"></section>
+  <section id="pricing"></section>
+  <section id="testimonials"></section>
+  <footer id="footer"></footer>
+</body>
+</html>
+
+DO NOT just output the code - you MUST call write_file.

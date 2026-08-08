@@ -1,0 +1,21 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create error_handler.py with this content:
+import json
+
+def handle_error(error_type, message='An error occurred'):
+    status_map = {
+        'not_found': 404,
+        'bad_request': 400,
+        'unauthorized': 401,
+        'forbidden': 403,
+        'internal': 500
+    }
+    status = status_map.get(error_type, 500)
+    return {
+        'body': json.dumps({'error': message, 'type': error_type}),
+        'status': status,
+        'headers': {'Content-Type': 'application/json'}
+    }
+
+DO NOT just output the code - you MUST call write_file.

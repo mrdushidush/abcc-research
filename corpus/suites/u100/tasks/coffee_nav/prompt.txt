@@ -1,0 +1,35 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create nav.js with:
+function toggleMenu() {
+  var nav = document.querySelector('.mobile-nav');
+  if (nav) {
+    nav.classList.toggle('open');
+  }
+}
+
+function smoothScroll(targetId) {
+  var el = document.getElementById(targetId);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function initNav() {
+  var hamburger = document.querySelector('.hamburger');
+  if (hamburger) {
+    hamburger.addEventListener('click', toggleMenu);
+  }
+  var links = document.querySelectorAll('a[href^="#"]');
+  for (var i = 0; i < links.length; i++) {
+    links[i].addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = this.getAttribute('href').substring(1);
+      smoothScroll(target);
+    });
+  }
+}
+
+if (typeof module !== 'undefined') module.exports = { toggleMenu, smoothScroll, initNav };
+
+DO NOT just output the code - you MUST call write_file.

@@ -1,0 +1,19 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create validators.py with this content:
+def validate_todo(data):
+    errors = []
+    if not isinstance(data, dict):
+        return (False, ['data must be a dictionary'])
+    title = data.get('title')
+    if not title:
+        errors.append('title is required')
+    elif not isinstance(title, str):
+        errors.append('title must be a string')
+    elif len(title) > 200:
+        errors.append('title must be 200 characters or less')
+    if 'done' in data and not isinstance(data['done'], bool):
+        errors.append('done must be a boolean')
+    return (len(errors) == 0, errors)
+
+DO NOT just output the code - you MUST call write_file.

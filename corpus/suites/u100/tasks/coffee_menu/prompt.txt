@@ -1,0 +1,1 @@
+Use write_file to create menu.html with a coffee shop menu page: <!DOCTYPE html>, title "Menu - Brew & Bean", link to style.css, <h1>Our Menu</h1>, a grid of 6 menu items each in a div.menu-item with <h3> name and <p> price: Espresso $3.50, Latte $4.50, Cappuccino $4.00, Mocha $5.00, Americano $3.00, Cold Brew $4.50.

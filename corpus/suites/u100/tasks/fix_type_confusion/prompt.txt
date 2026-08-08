@@ -1,0 +1,1 @@
+SECURITY FIX: Read the file type_confusion.py which has a type confusion bug (comparing role to True with ==). Fix is_admin(user) to strictly check that user['role'] is the string 'admin' only. Use isinstance check or explicit type comparison. Edit the file to fix it.

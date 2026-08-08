@@ -1,0 +1,17 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create middleware.py with this content:
+def log_request(method, path, status, duration_ms=0):
+    return f"{method} {path} -> {status} ({duration_ms}ms)"
+
+def apply_cors(headers=None):
+    cors = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
+    if headers:
+        cors.update(headers)
+    return cors
+
+DO NOT just output the code - you MUST call write_file.

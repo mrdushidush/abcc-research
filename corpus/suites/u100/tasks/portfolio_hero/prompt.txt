@@ -1,0 +1,34 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create index.html with this content:
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Dev Portfolio</title>
+<style>
+body { font-family: 'Courier New', monospace; margin: 0; background: #0d1117; color: #c9d1d9; }
+.hero { background: #161b22; padding: 80px 20px; text-align: center; }
+.hero h1 { color: #58a6ff; font-size: 2.5em; }
+.subtitle { color: #8b949e; }
+.social-links { margin-top: 20px; }
+.social { color: #58a6ff; margin: 0 10px; text-decoration: none; }
+section { padding: 40px 20px; max-width: 800px; margin: 0 auto; }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <h1>Alex Developer</h1>
+    <p class="subtitle">Full-Stack Engineer</p>
+    <div class="social-links">
+      <a href="#" class="social">GitHub</a>
+      <a href="#" class="social">LinkedIn</a>
+      <a href="#" class="social">Twitter</a>
+    </div>
+  </header>
+  <section id="projects"></section>
+  <section id="skills"></section>
+  <section id="experience"></section>
+  <section id="contact"></section>
+</body>
+</html>
+
+DO NOT just output the code - you MUST call write_file.

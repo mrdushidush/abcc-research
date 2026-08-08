@@ -1,0 +1,1 @@
+Use write_file to create features.html with: an HTML snippet (section#features) containing <h2>Features</h2> and 3 feature cards in a div.feature-grid. Each card (div.feature-card) has: an emoji icon, h3 title, and p description. Features: "Lightning Fast" (speed), "Secure" (security), "Team Collaboration" (teamwork).

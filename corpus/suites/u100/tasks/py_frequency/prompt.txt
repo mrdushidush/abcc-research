@@ -1,0 +1,25 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create frequency.py with this content:
+def char_frequency(text):
+    freq = {}
+    for c in text.lower():
+        if c.isalpha():
+            freq[c] = freq.get(c, 0) + 1
+    return freq
+
+def top_n(freq, n=5):
+    sorted_items = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+    return sorted_items[:n]
+
+def histogram(freq, max_width=20):
+    if not freq:
+        return ''
+    max_val = max(freq.values())
+    lines = []
+    for char, count in sorted(freq.items()):
+        bar_len = int(count / max_val * max_width)
+        lines.append(f'{char} |{"#" * bar_len} ({count})')
+    return '\n'.join(lines)
+
+DO NOT just output the code - you MUST call write_file.

@@ -1,0 +1,21 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create csp_builder.js with this content:
+function buildCSP(config) {
+  var directives = [];
+  var keys = Object.keys(config);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var values = config[key];
+    if (Array.isArray(values)) {
+      directives.push(key + ' ' + values.join(' '));
+    } else {
+      directives.push(key + ' ' + values);
+    }
+  }
+  return directives.join('; ');
+}
+
+module.exports = { buildCSP };
+
+DO NOT just output the code - you MUST call write_file.

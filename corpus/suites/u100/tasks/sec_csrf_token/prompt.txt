@@ -1,0 +1,26 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create csrf.py with this content:
+import secrets
+import time
+
+_tokens = {}
+
+def generate_csrf(session_id, ttl=3600):
+    token = secrets.token_urlsafe(32)
+    _tokens[token] = {'session': session_id, 'expires': time.time() + ttl}
+    return token
+
+def validate_csrf(token, session_id):
+    if token not in _tokens:
+        return False
+    entry = _tokens[token]
+    if entry['session'] != session_id:
+        return False
+    if entry['expires'] < time.time():
+        del _tokens[token]
+        return False
+    del _tokens[token]
+    return True
+
+DO NOT just output the code - you MUST call write_file.

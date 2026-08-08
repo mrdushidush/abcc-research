@@ -1,0 +1,42 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create schema_validator.py with this content:
+class Schema:
+    def __init__(self):
+        self.rules = {}
+
+    def required(self, field):
+        if field not in self.rules:
+            self.rules[field] = {}
+        self.rules[field]['required'] = True
+        return self
+
+    def string(self, field):
+        if field not in self.rules:
+            self.rules[field] = {}
+        self.rules[field]['type'] = 'string'
+        return self
+
+    def number(self, field):
+        if field not in self.rules:
+            self.rules[field] = {}
+        self.rules[field]['type'] = 'number'
+        return self
+
+    def validate(self, data):
+        errors = []
+        for field, rule in self.rules.items():
+            if rule.get('required') and field not in data:
+                errors.append(f'{field} is required')
+                continue
+            if field not in data:
+                continue
+            val = data[field]
+            ftype = rule.get('type')
+            if ftype == 'string' and not isinstance(val, str):
+                errors.append(f'{field} must be a string')
+            elif ftype == 'number' and not isinstance(val, (int, float)):
+                errors.append(f'{field} must be a number')
+        return {'valid': len(errors) == 0, 'errors': errors}
+
+DO NOT just output the code - you MUST call write_file.

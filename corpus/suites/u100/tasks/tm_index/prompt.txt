@@ -1,0 +1,31 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create index.html with:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script src="utils.js"></script>
+    <script src="storage.js"></script>
+    <script src="TaskItem.jsx"></script>
+    <script src="TaskCounter.jsx"></script>
+    <script src="FilterBar.jsx"></script>
+    <script src="AddTaskForm.jsx"></script>
+    <script src="TaskList.jsx"></script>
+    <script src="App.jsx"></script>
+    <script>
+        var root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>
+
+DO NOT just output the code - you MUST call write_file.

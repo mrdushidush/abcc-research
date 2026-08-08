@@ -1,0 +1,1 @@
+Use write_file to create projects.html with: <h2>Projects</h2> and 4 project cards (div.project-card). Each card has: h3 project name, p description, div.tech-tags with span tags for technologies. Projects: "TaskFlow" (React, Node.js), "DataViz" (D3.js, Python), "ChatBot" (OpenAI, Express), "DevOps CLI" (Go, Docker).

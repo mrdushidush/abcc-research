@@ -1,0 +1,5 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create FilterBar.jsx with a React component function FilterBar that renders 3 filter buttons: "All", "Active", "Completed". Accepts props.currentFilter and props.onFilterChange. Highlights the active filter button. Use React.createElement (CDN React).
+
+DO NOT just output the code - you MUST call write_file.

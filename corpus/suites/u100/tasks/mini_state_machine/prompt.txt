@@ -1,0 +1,32 @@
+IMPORTANT: You MUST use the write_file tool to create the file.
+
+Step 1: Use write_file to create state_machine.py with this content:
+class StateMachine:
+    def __init__(self, initial_state):
+        self.current = initial_state
+        self.states = set()
+        self.transitions = {}
+        self.states.add(initial_state)
+
+    def add_state(self, name):
+        self.states.add(name)
+        return self
+
+    def add_transition(self, from_state, event, to_state):
+        key = (from_state, event)
+        self.transitions[key] = to_state
+        self.states.add(from_state)
+        self.states.add(to_state)
+        return self
+
+    def trigger(self, event):
+        key = (self.current, event)
+        if key not in self.transitions:
+            raise ValueError(f"No transition from '{self.current}' on '{event}'")
+        self.current = self.transitions[key]
+        return self.current
+
+    def get_state(self):
+        return self.current
+
+DO NOT just output the code - you MUST call write_file.

@@ -1,0 +1,1 @@
+SECURITY FIX: Read the file missing_validation.py which has no input validation (int(data['age']) can crash on bad input). Fix process_user to validate: data must be a dict, 'name' must be a non-empty string, 'age' must be convertible to int and between 0-150. Return {'error': message} on invalid input. Edit the file to fix it.
