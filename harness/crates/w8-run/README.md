@@ -181,7 +181,69 @@ rewrite bought nothing that the subject fix does not now provide honestly, and
 
 ## What building it found
 
-### F38. Ten of the ninety tasks can fire a gate at all, and the other eighty are silent
+### 🚨 F49. The subject could not write into its own work dir, and every number before 2026-08-08 was measured through that
+
+**`CLAUDETTE_WORKSPACE` was set to a path relative to the *runner's* cwd, while the subject is
+spawned with `current_dir(workdir)`** (`driver.rs:246`). The documented invocation is
+`cd harness && cargo run … --out ../runs`, so the value was
+`../runs\w8-…\cells\<task>__<variant>\wd` — which, resolved from inside the work dir, points at
+nothing.
+
+Claudette compares the sandbox root to the resolved target with
+`p.starts_with(normalize_path(r))` (`tools.rs:826-833`), and **`normalize_path` is purely lexical —
+it never absolutizes** (`:473-487`). A relative root can therefore never match an absolute target.
+Three independent confirmations, none of them a reading:
+
+1. **Six successful `write_file` calls across 79 cells, and all six landed in
+   `C:\Users\david\.claudette\files\`** — the scratch sandbox, outside the directory the verifier
+   grades. `open_redirect.py`, `sql_inject.py`, `missing_validation.py`, and a `write_fix.ps1`.
+2. **The subject says so in its own words**, in the cell that hit the iteration cap: *"Last obstacle:
+   writes are sandboxed to `C:\Users\david\.claudette\files` (or set `CLAUDETTE_WORKSPACE` to your
+   project dir to write there)."* That string is the final `Err` branch of `validate_write_path` —
+   the one reached only when `path_under_workspace` returns false.
+3. **The iteration profile.** `control` medians went 4 → 10.5 → 12.5 iterations across sessions, with
+   individual cells reaching **41 against a cap of 40** and 530,159 input tokens. The transcripts
+   show the model hunting for a way in — base64 through `bash`, a PowerShell dropper, "there's a typo
+   in the generated code, let me regenerate". That is not difficulty. That is an agent fighting a
+   sandbox.
+
+**What this invalidates.** Every W8 measurement to date, including the ones this README quotes:
+
+- **the pass rates** (24/24, 22/24, 18/24, 21/24) measure whether the model *found a workaround*, not
+  whether it solved the task — which is exactly why 7 of 31 cells flip verdict between two runs;
+- **`tokens_in` and `iterations`** are inflated by the fight, so `preamble_tokens_in` as "31% of a
+  control cell's input" was computed against a denominator three times too large;
+- **F30's "exploratory `bash` calls"** are not exploration. `bash` was the way in. The 168 `bash`
+  gates in one 31-cell run are the workaround, and a tool-scoped operator rule was being judged
+  against a distribution the bug created;
+- **F38's headline observation** — `write_file` passing through with no gate — **is a symptom of this
+  bug, not a property of the permission model.** A bare `write_file("x.py")` with the workspace root
+  broken resolves its base to `files_dir()` (`file_ops.rs:217-238`), where the file does not exist,
+  so `existing_write_target` returns `None` and the call reads as a *create* — `WorkspaceWrite`, no
+  gate. Under a correct workspace it resolves to the work dir file, which exists, and gates (F39).
+
+**F38's *conclusion* survives** — a genuinely new file is a create, creates never gate, and 76 of 90
+tasks start from an empty fixture — so David's decision to front-load donor 2 rests on ground the bug
+does not touch. But the 10-of-10 `INVALID` gate cells that produced it are contaminated evidence and
+must be re-measured.
+
+**The fix** is `std::path::absolute` on both `CLAUDETTE_WORKSPACE` and `CLAUDETTE_MEMORY` in
+`env.rs`, with `env::tests::the_workspace_and_memory_paths_are_absolute` as the regression.
+`CLAUDETTE_MEMORY` had the same shape and a quieter failure — an unresolvable path falls through to
+the host `~/.claudette/CLAUDETTE.MD` (`memory.rs:27-31`), which is the exact thing pinning the stub
+exists to prevent. It was harmless only because no such file exists on this host.
+
+⚠ **The lesson had already been learned one file away and was not generalised.**
+`verify::tests::a_relative_script_path_is_made_absolute_before_the_cwd_changes` is F35, fixed last
+session, for the verifier's script path — the identical bug, in the identical shape, caught then and
+missed here. **Any path handed to a process whose cwd is the work dir must be absolute**, and that is
+now a rule rather than two spot fixes.
+
+⚠ **What still needs measuring before this is closed**: an end-to-end cell showing `write_file`
+landing in the work dir, and a re-run of the n=5 repeats. Neither is done — the fix is verified by
+unit test only.
+
+### F38. Fourteen of the ninety tasks can fire a gate at all, and the other seventy-six are silent
 
 **Every one of the ten gate-variant cells in that block run was `INVALID` with `gate_fires = 0`.**
 Not a delivery failure — all five `control` cells passed on the same prompts. The cause is
@@ -189,10 +251,15 @@ structural, read at source rather than inferred (`run/runtime_build.rs:435-609`)
 
 | tool | requirement | under the active `WorkspaceWrite` mode |
 |---|---|---|
-| `write_file` | `WorkspaceWrite` | **passes through silently — no gate** |
+| `write_file` onto a path that does **not** exist | `WorkspaceWrite` | **passes through silently — no gate** |
+| `write_file` onto a path that **does** exist | `DangerFullAccess` | always gates — see F39 |
 | `apply_diff`, `edit_file`, `apply_patch`, `bash` | `DangerFullAccess` | always gates |
 
-**A task the subject can finish with `write_file` alone can never fire a gate**, so
+> ⚠ **The first two rows read as one row — `write_file` / `WorkspaceWrite` / no gate — until F39
+> corrected them on 2026-08-08.** The conclusion below is unchanged, because it never rested on the
+> tool; it rests on 76 of 90 tasks starting from an empty fixture.
+
+**A task the subject can finish by creating a new file can never fire a gate**, so
 `gated` and `redirect-first-edit` have nothing to intercept and score as INVALID by construction.
 Creating a new file is exactly that task. The five here are all "write this file", and the donor
 prompts even instruct it: *"IMPORTANT: You MUST use the write_file tool to create the file."*
@@ -218,6 +285,43 @@ Three things follow, and the third is David's call, not the harness's:
 `fix_sql_inject`'s `gated` cell fired **seven** `bash` gates in run 2. That is F30 again — which tool
 the model picks is not deterministic, so this bound is about what a task *permits*, not what it
 guarantees.
+
+**David answered on 2026-08-08: front-load donor 2.** U100 keeps its ~14 gate-capable tasks and the
+Claudette Q56 battery carries operator control, selected with the F39 rule stated up front. The
+survey is `research/W8-q56-import.md`; the short version is that all 56 Q56 tasks ship a non-empty
+fixture, so all 56 are gate-capable structurally rather than by luck of tool choice.
+
+### F39. `write_file` onto a path that already exists is `DangerFullAccess`, and F38's table was wrong
+
+F38 was read at `run/runtime_build.rs:471`, which does carry
+`with_tool_requirement("write_file", WorkspaceWrite)`. But the tier that governs a *call* is computed
+in a different file — `runtime/permissions.rs:236-252`, `effective_required_mode`, which `authorize`
+calls in preference to `required_mode_for` (`:262`) — and it overrides that base:
+
+```rust
+if crate::tools::file_ops::existing_write_target(path_str).is_some() {
+    PermissionMode::DangerFullAccess
+} else {
+    base
+}
+```
+
+Its comment names the reason (roast EDIT-04: the only tool that can replace a whole file was the only
+one that never prompted and never previewed), and `file_ops.rs:440`
+`existing_write_target_distinguishes_create_from_overwrite` is a unit test for exactly this.
+
+**The rule is about the target, not the tool: creating a new file never gates; touching a file that
+already exists gates, whichever edit tool the model reaches for.** So F38's ~14-task bound survives —
+it follows from the 76 empty fixtures — but two things change. The corpus is bounded by *what the
+task starts from*, which is a stronger and simpler statement than one about tool choice; and F30's
+tool lottery stops mattering for gate *existence* on any task that ships files, because there is no
+non-gating way in.
+
+⚠ **Not yet confirmed by execution.** Source and unit test agree, and F30 recorded a `write_file`
+call that produced a gate on `fix_sql_inject` — whose fixture ships an existing file — which is
+consistent but cannot be separated from a `bash` gate in that run. The probe is an existing file in
+the work dir, a prompt inviting a full rewrite, and `gate_fires` on the cell. Deferred only because a
+second session against the endpoint would corrupt the n=5 repeats' timings.
 
 ### F30. A tool-scoped operator rule is a bet on which tool the model picks
 

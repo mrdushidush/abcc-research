@@ -156,8 +156,30 @@ pub fn build(
     // `probe_recall_at_startup` honours the same flag (`repl.rs:88-90`).
     pinned.insert("CLAUDETTE_RECALL_DISABLE".into(), "1".into());
 
-    pinned.insert("CLAUDETTE_MEMORY".into(), memory_stub.display().to_string());
-    pinned.insert("CLAUDETTE_WORKSPACE".into(), workdir.display().to_string());
+    // ⚠ BOTH MUST BE ABSOLUTE, and getting this wrong invalidated every number W8 produced before
+    // 2026-08-08 (F49). The subject is spawned with `current_dir(workdir)` (`driver.rs:246`), so a
+    // path relative to the RUNNER's cwd — which is what `--out ../runs` produces — resolves against
+    // the work dir instead and points at nothing.
+    //
+    // `CLAUDETTE_WORKSPACE` is the write sandbox root. Claudette compares it to the resolved target
+    // with `p.starts_with(normalize_path(r))` (`tools.rs:826-833`), and `normalize_path` is purely
+    // lexical — it never absolutizes (`:473-487`). So a relative root can never match an absolute
+    // target: `write_file` into the work dir was refused on EVERY cell, the model spent its
+    // iterations hunting for a way in, and the six writes that did land went to
+    // `~/.claudette/files/` — outside the directory the verifier grades.
+    //
+    // `CLAUDETTE_MEMORY` has the same shape with a quieter failure: a path that does not resolve
+    // falls through to the host `~/.claudette/CLAUDETTE.MD` (`memory.rs:27-31`), which is exactly
+    // what pinning the stub exists to prevent. It happened to be harmless only because no such file
+    // exists on this host.
+    //
+    // `std::path::absolute`, never `canonicalize` — the latter yields a `\\?\` UNC path that bash
+    // cannot open, which is F35 and cost a whole run once.
+    let abs = |p: &Path| -> String {
+        std::path::absolute(p).unwrap_or_else(|_| p.to_path_buf()).display().to_string()
+    };
+    pinned.insert("CLAUDETTE_MEMORY".into(), abs(memory_stub));
+    pinned.insert("CLAUDETTE_WORKSPACE".into(), abs(workdir));
 
     // TTY-only, so a no-op on a pipe today (`repl.rs:63-66`). Pinned anyway: it costs nothing and
     // it means a future spinner that forgets the TTY check cannot start writing into the stream
@@ -424,6 +446,34 @@ mod tests {
         )
         .expect_err("must refuse");
         assert!(matches!(e, EnvError::Conflict { .. }), "{e}");
+    }
+
+    #[test]
+    fn the_workspace_and_memory_paths_are_absolute() {
+        // F49, and the most expensive defect W8 has had: the subject is spawned with
+        // `current_dir(workdir)`, so a path relative to the RUNNER's cwd — which is what
+        // `--out ../runs` produces — resolves against the work dir and points at nothing.
+        // Claudette's sandbox check is lexical (`tools.rs:826-833` over `normalize_path`), so a
+        // relative root never matches an absolute write target: `write_file` was refused on every
+        // cell of every run, and the writes that landed went to `~/.claudette/files/` instead of
+        // the directory the verifier grades.
+        let e = build(
+            &subject(&[]),
+            &variant(PermissionMode::Allow),
+            &Held { model: "m".into(), ..Held::default() },
+            Path::new("../runs/w8-1/cells/t__control/wd"),
+            Path::new("../runs/w8-1/memory-stub.md"),
+        )
+        .expect("a relative work dir is what the documented invocation produces");
+        for key in ["CLAUDETTE_WORKSPACE", "CLAUDETTE_MEMORY"] {
+            let v = e.pinned.get(key).unwrap_or_else(|| panic!("{key} must be pinned"));
+            assert!(
+                Path::new(v).is_absolute(),
+                "{key} = {v:?} is relative; the subject's cwd IS the work dir, so it resolves \
+                 against itself and points nowhere"
+            );
+            assert!(!v.starts_with("\\\\?\\"), "{key} must not be a UNC path — bash cannot open it");
+        }
     }
 
     #[test]
