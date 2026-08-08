@@ -1,0 +1,50 @@
+n = 5 runs x 31 cells
+subject claudette-af3f804  model qwen3.6-35b-a3b-mtp@iq3_s  num_ctx 61440
+
+=== per-cell verdicts across 5 runs (agg = counts toward the aggregate denominator)
+
+task                    variant               pass fail inval  agg  reproducible
+fix_hardcoded_secret    control                  5    0     0  yes
+fix_hardcoded_secret    gated                    5    0     0  yes
+fix_hardcoded_secret    redirect-first-edit      5    0     0  yes
+fix_info_leak           control                  5    0     0  yes
+fix_info_leak           gated                    5    0     0  yes
+fix_info_leak           redirect-first-edit      5    0     0  yes
+fix_insecure_random     control                  5    0     0  yes
+fix_insecure_random     gated                    4    1     0  yes  <- flips
+fix_insecure_random     redirect-first-edit      5    0     0  yes
+fix_missing_validation  control                  5    0     0  yes
+fix_missing_validation  gated                    5    0     0  yes
+fix_missing_validation  redirect-first-edit      5    0     0  yes
+fix_open_redirect       control                  5    0     0  yes
+fix_open_redirect       gated                    5    0     0  yes
+fix_open_redirect       redirect-first-edit      4    1     0  yes  <- flips
+fix_path_traversal      control                  5    0     0   no
+fix_path_traversal      gated                    4    1     0   no  <- flips
+fix_path_traversal      redirect-first-edit      5    0     0   no
+fix_sql_inject          control                  5    0     0   no
+fix_sql_inject          deny-first-edit          0    5     0   no
+fix_sql_inject          gated                    5    0     0   no
+fix_sql_inject          redirect-first-edit      1    0     4   no  <- flips
+fix_type_confusion      control                  4    1     0  yes  <- flips
+fix_type_confusion      gated                    5    0     0  yes
+fix_type_confusion      redirect-first-edit      5    0     0  yes
+fix_weak_hash           control                  5    0     0  yes
+fix_weak_hash           gated                    5    0     0  yes
+fix_weak_hash           redirect-first-edit      4    1     0  yes  <- flips
+fix_xss_reflect         control                  5    0     0  yes
+fix_xss_reflect         gated                    5    0     0  yes
+fix_xss_reflect         redirect-first-edit      4    1     0  yes  <- flips
+
+aggregate-eligible cells: 24
+pass count per run: [24, 23, 24, 21, 23]  (median 23, range 21-24 of 24)
+cells whose verdict is not identical across all 5 runs: 7 of 31
+
+=== per-variant medians over aggregate-eligible cells, 5 runs pooled
+
+variant               cells    wall_clock_s      iterations       tokens_in        ttfvo_ms      gate_fires
+control                  40      9.8 (6-35)      4.0 (3-15)  18312.0 (15402-87478)   5240.0 (4178-30549)       0.0 (0-0)
+gated                    40     10.4 (6-109)      4.5 (3-34)  21014.0 (15400-339650)   5295.0 (3518-11784)      1.0 (1-29)
+redirect-first-edit      40     17.4 (10-102)      7.0 (5-33)  33291.0 (20927-306155)   5011.0 (3236-9032)      2.0 (1-27)
+
+Medians, never means: the spread in brackets is min-max over every pooled cell.
