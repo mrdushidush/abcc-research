@@ -120,10 +120,33 @@ fn assert_partition(p: &Provenance) {
     assert_eq!(seen, want, "the provenance lists must partition SPEC §3's vocabulary exactly");
 }
 
+/// A sentence ends at a newline, or at a `.` **followed by whitespace or end of input**.
+///
+/// The trailing-whitespace condition is the entire point. Every Q56 prompt names the file it is
+/// about in its first sentence, so a bare `split_terminator(['.', '\n'])` cuts inside `src/lib.rs`,
+/// `solution.sh`, `taxes.py`, `config.mjs` — and it did, on **all 56**: every title ended `in
+/// src/lib` or `in solution`, and Q43-Q50 collapsed to seven byte-identical `"The script solution"`.
+/// A filename dot is followed by a letter; a sentence dot is followed by a space or nothing.
+fn first_sentence(prompt: &str) -> &str {
+    let mut it = prompt.char_indices().peekable();
+    while let Some((i, c)) = it.next() {
+        match c {
+            '\n' => return &prompt[..i],
+            '.' => match it.peek() {
+                None => return &prompt[..i],
+                Some((_, next)) if next.is_whitespace() => return &prompt[..i],
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+    prompt
+}
+
 /// The one-line title. The donor has no title field, so it is synthesized from the prompt's first
-/// sentence — clipped, lowercased at the front, and never invented.
+/// sentence — clipped at a word boundary, and never invented.
 pub fn title(prompt: &str) -> String {
-    let first = prompt.split_terminator(['.', '\n']).next().unwrap_or(prompt).trim();
+    let first = first_sentence(prompt).trim();
     let mut t: String = first.chars().take(80).collect();
     if t.len() < first.len() {
         while !t.is_empty() && !t.ends_with(' ') {
@@ -271,6 +294,15 @@ fn caveats(task: &DonorTask) -> Vec<String> {
          limitation U100's baselines carry (F1)."
             .to_string(),
     ];
+    v.push(format!(
+        "TITLE IS MECHANICAL: `{}`. The donor has no title field, so this is the prompt's first \
+         sentence clipped at a word — synthesized, listed as such, and meant to be replaced by hand \
+         where a better one exists. It is never a paraphrase: a title that read better than the \
+         prompt would be describing a task the subject was never given. u100 carries the same \
+         caveat and this suite was missing it, which is the flattering direction — a synthesized \
+         field that records nothing looks authored.",
+        title(&task.prompt)
+    ));
     if task.fixture.contains_key("Cargo.toml") {
         v.push(
             "fixture/Cargo.toml carries an empty [workspace] table. It is load-bearing, not \
@@ -329,5 +361,51 @@ mod tests {
         assert!(p.starts_with(&t), "the title must be a prefix of the prompt, not a paraphrase");
         assert!(t.chars().count() <= 80);
         assert!(!t.ends_with(' '));
+        // This assertion is the one the earlier version of this test was missing. It asserted
+        // only prefix-ness and length, which the truncated `...(see src/lib` satisfies — so it
+        // passed on the broken output and certified the defect as correct. Second time a q56
+        // importer test has encoded the wrong thing as right (session 9's `_lib.sh` test was the
+        // first): a test over a real donor prompt must assert the thing that was actually at risk.
+        assert!(t.contains("src/lib.rs"), "cut inside the filename: {t}");
+    }
+
+    #[test]
+    fn a_sentence_ends_only_at_a_dot_before_whitespace_or_end() {
+        assert_eq!(title("Fix the parser. Then run it."), "Fix the parser");
+        assert_eq!(title("Fix the parser\nThen run it."), "Fix the parser");
+        assert_eq!(title("Fix the parser."), "Fix the parser");
+        // No terminator at all: a dot bound on both sides by word characters is a filename.
+        assert_eq!(title("Fix solution.sh"), "Fix solution.sh");
+    }
+
+    #[test]
+    fn the_shell_tasks_get_distinct_titles() {
+        // Verbatim first sentences of Q43, Q45 and Q50. Under the old rule all three — and five
+        // more — produced exactly `"The script solution"`, so the field SPEC §3 calls
+        // human-readable could not tell eight tasks apart. Distinctness is the property at risk,
+        // so it is the property asserted.
+        let q43 = title(
+            "The script solution.sh counts how many lines it reads from stdin, but it's off by \
+             one when the input doesn't end with a newline.",
+        );
+        let q45 = title(
+            "The script solution.sh is supposed to strip comment lines and blank lines out of \
+             stdin, printing the rest unchanged.",
+        );
+        let q50 = title(
+            "The script solution.sh takes a column number N as its argument and should print the \
+             Nth comma-separated field of each line of stdin (1-indexed).",
+        );
+        assert_ne!(q43, q45);
+        assert_ne!(q45, q50);
+        assert_ne!(q43, q50);
+
+        // A negative control that proves this test is not vacuous — the F28 lesson, where two
+        // rule tests ran an unmodified corpus because their mutation anchor never matched. The
+        // naive rule is applied here directly, so if someone reinstates it the assertions above
+        // fail AND this one documents exactly what they were protecting against.
+        let naive = |p: &str| p.split_terminator(['.', '\n']).next().unwrap_or(p).to_string();
+        assert_eq!(naive("The script solution.sh counts lines."), "The script solution");
+        assert_eq!(naive("The script solution.sh strips comments."), "The script solution");
     }
 }

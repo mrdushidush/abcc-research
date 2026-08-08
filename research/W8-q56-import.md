@@ -5,9 +5,78 @@ last item: David answered F38 with *front-load donor 2*, which makes Claudette's
 corpus that carries operator control. This document is the survey that decides whether it can, and
 the import plan that follows if it does.
 
-Status: **survey complete, all of it measured against the donor tree rather than read off its
-prose.** Findings F39-F46 below. Two things want David's word before the importer is written; both
-are at the end and neither blocks starting.
+Status: **✅ IMPORTED, 2026-08-08 (session 10).** The survey below is history now; the result is at
+the top of this file and the importer's own README carries the design record. Findings F39-F46 are
+the survey's; **F53 is the import's**. Two things still want David's word; both are at the end and
+neither blocked the import.
+
+---
+
+## ✅ THE IMPORT RAN. 56 of 56, both gate points sound, and the F26 check holds
+
+```
+manifest: 56 task(s) at 43d6b34:runs/eval-2026-05-29/battery
+56 clean, 0 quarantined-with-baseline, 0 skipped
+```
+
+**Run twice, end to end, independently** — once before the F53 fix and once after — and the gate
+verdict was `point1=sound point2=sound` on **all 56 tasks both times**. The two emits differ in the
+56 `task.toml` files and nowhere else, so every fixture, prompt, refsol and verifier is reproducible
+byte for byte from the donor commit.
+
+| what | result |
+|---|---|
+| tasks emitted | **56 of 56** — `shell` (amendment 8) is what makes it 56 and not 48 |
+| gate point 1 (untouched donor fixture → FAIL) | **56 sound**, against the *rewritten* verifier |
+| gate point 2 (fixture + `refsol/` → PASS) | **56 sound** — free for the whole donor (F42) |
+| quarantined / skipped | **0 / 0** |
+| lang split | python 15, rust 14, node 10, typescript 9, shell 8 — exactly the survey's |
+| disposition | **56 `full`**, 0 `presence_only`, 0 no-verifier (F41 confirmed) |
+| fixtures | **0 empty, 56 with files** — the precise inverse of u100's 76-of-90 (F40 confirmed) |
+| aggregate denominator | **56**, under u100's identical rule |
+| run plan | **224 cells** (56 × 4 variants), 0 not-runnable, 0 delivery failures |
+
+**Both validators ACCEPT the two-suite corpus, and the `--facts` cross-check is 646 facts, 0
+differing** (was 365 with u100 alone). u100 is untouched: still 90 tasks, denominator 78.
+
+### The F26 check holds, and it is the strongest evidence the importer can offer about itself
+
+The u100 import proved itself by showing its mechanical emit was byte-identical to David's
+hand-authored task. Q56 reproduces that. Against `research/q56-staging/q56/tasks/Q08/`:
+
+- **`prompt.txt`, all four `fixture/` files and `refsol/src/eval.rs` are byte-identical.** Every
+  field the provenance block calls `verbatim` really is.
+- `verify.sh` differs in the prelude only; the hidden reviewer tests and every assertion are
+  identical. The one behavioural difference is in the importer's favour — it dispatches interpreters
+  through **shell functions** (`cargo(){ command "${CARGO:-cargo}" "$@"; }`) instead of rewriting
+  call sites, so the donor body stays byte-identical where the hand-authored version had edited it.
+- `task.toml` differs in comment prose, and in the gate block — which the hand-authored file
+  recorded as `not_run` because it had never been run, and the emit records as measured `sound` with
+  evidence rows. That is the direction that should differ.
+
+### F53 — the synthesized title was cut inside a filename, on all 56
+
+Full write-up in `harness/crates/w8-import-q56/README.md`. In short: the title came from the
+prompt's first sentence, split on `['.', '\n']` — and **every Q56 prompt names the file it is about
+in its first sentence**, so the split always landed on a filename dot. All 56 titles ended `in
+src/lib` or `in solution`, and **Q43-Q50 collapsed to seven byte-identical `"The script solution"`**.
+
+The half worth remembering is the test. `a_title_is_clipped_at_a_word_and_never_invented` used Q08's
+real prompt — the one that exhibits the bug — and asserted only prefix-ness, length, and no trailing
+space. The truncated output satisfies all three, so **the test passed on the defect and certified it
+as correct.** Second time a q56 importer test has done this (session 9's `_lib.sh` test was the
+first). Fixed, with a negative control that applies the naive rule inline so the regression cannot
+go vacuous (the F28 lesson).
+
+Two smaller things the run surfaced, both recorded rather than repaired:
+
+- **`suite.toml` is authored, not generated**, and the importer refuses to run without one already
+  at `<out>/suites/q56/`. Worth knowing because `--out` is the **corpus root**, not the suite dir.
+- **`cd "$WORKDIR" || fail`** is the donor's own line on all 56 and reads like a SPEC §8 violation
+  (a work dir it cannot enter is `invalid`, not `fail`). It is left alone because `w8-run` launches
+  the verifier with `current_dir(workdir)` and an absolute path, so the branch cannot be reached.
+
+---
 
 > **Read `research/W8-corpus-format.md` §A first** - the `Q08` worked import is already authored
 > there and approved, and this document does not repeat it. The mapping it gives (prompt, fixture,
