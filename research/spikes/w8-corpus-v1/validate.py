@@ -10,6 +10,14 @@ arithmetic. Every rule is numbered to match the spec, so a rule that changes the
 shows up as a numbering gap rather than as silence.
 
 Run: python validate.py [corpus-root]
+     python validate.py [corpus-root] --facts    a sorted fact stream
+
+`--facts` was added when the Rust loader (harness/crates/w8-corpus) was ported from this file.
+A port whose reference is a script nobody re-ran is a port that agrees by assertion. Both
+implementations emit the same sorted lines, so `diff` is the check.
+
+Run: python validate.py corpus --facts > /tmp/py.txt
+     w8-corpus corpus --facts > /tmp/rs.txt && diff /tmp/py.txt /tmp/rs.txt
 """
 import sys
 import tomllib
@@ -29,7 +37,14 @@ PARTITION = {
     "refsol", "sham", "variants", "disposition", "selection", "gate", "donor_tags",
 }
 
-errors, notes = [], []
+errors, notes, facts = [], [], []
+
+
+def do_label(do):
+    """The `do` action as one word, matching the Rust loader's Action::label()."""
+    if isinstance(do, dict):
+        return "redirect"
+    return do if do in DO_STRINGS else "?"
 
 
 def bad(rule, where, msg):
@@ -77,7 +92,7 @@ def check_variant(v, where, capabilities):
             "no `default`: an unmatched gate would block on stdin until the timeout burns")
 
 
-def check_task(tdir, suite_variants, capabilities):
+def check_task(tdir, suite, suite_variants, capabilities):
     tt = tdir / "task.toml"
     if not tt.exists():
         return bad(0, tdir.as_posix(), "no task.toml")
@@ -145,6 +160,22 @@ def check_task(tdir, suite_variants, capabilities):
     for vid, (origin, v) in merged.items():
         check_variant(v, where, capabilities)
         notes.append(f"  var  {where}: {vid:<20} {origin}")
+        facts.append(
+            f"variant {where} {vid} origin={origin} "
+            f"mode={(v.get('permissions') or {}).get('mode')} "
+            f"requires={'|'.join(v.get('requires', []))} "
+            f"operator={len(v.get('operator', []))} "
+            f"default={do_label(v['default']) if 'default' in v else 'none'}"
+        )
+
+    agg = suite.get("aggregate") or {}
+    counted = (disp.get("verifiable") in agg.get("include_verifiable", [])
+               and not (agg.get("exclude_quarantined") and disp.get("quarantine") != "none"))
+    facts.append(
+        f"task {where} verifiable={disp.get('verifiable')} quarantine={disp.get('quarantine')} "
+        f"gate={gate.get('point1')}|{gate.get('point2')}|{gate.get('point3')} "
+        f"counted={'yes' if counted else 'no'}"
+    )
 
     prov = t.get("provenance") or {}                                         # rule 10
     lists = {k: prov.get(k, []) for k in ("verbatim", "rewritten", "synthesized")}
@@ -163,7 +194,9 @@ def check_task(tdir, suite_variants, capabilities):
 
 
 def main():
-    root = Path(sys.argv[1] if len(sys.argv) > 1 else "corpus")
+    argv = [a for a in sys.argv[1:] if a != "--facts"]
+    want_facts = "--facts" in sys.argv[1:]
+    root = Path(argv[0] if argv else "corpus")
     if not root.is_dir():
         print(f"no corpus at {root}")
         return 1
@@ -173,6 +206,8 @@ def main():
         s = load(sp) or {}
         caps |= set(s.get("capabilities", []))
         notes.append(f"  subj {sp.stem}: drive={s.get('drive')!r} caps={s.get('capabilities')}")
+        facts.append(f"subject {s.get('id')} drive={s.get('drive')} "
+                     f"caps={'|'.join(s.get('capabilities', []))}")
 
     tasks = []
     for suite_toml in sorted(root.glob("suites/*/suite.toml")):
@@ -189,11 +224,29 @@ def main():
             if val not in VERIFIABLE:
                 bad(10, suite_toml.as_posix(), f"aggregate includes unknown {val!r}")
 
+        # `expected_tasks` sits under [provenance] in suites/u100/suite.toml, because SPEC §4's
+        # example places the key after the [provenance] header and TOML scoping does the rest.
+        # Read both, exactly as the Rust loader does, or the two disagree over a parsing detail
+        # rather than over the corpus.
+        expected = (s.get("provenance") or {}).get("expected_tasks", s.get("expected_tasks"))
+        facts.append(
+            f"suite {s.get('id')} include={'|'.join(agg.get('include_verifiable', []))} "
+            f"exclude_quarantined={str(agg.get('exclude_quarantined', True)).lower()} "
+            f"expected={expected if expected is not None else '-'}"
+        )
+
         for tdir in sorted((suite_toml.parent / "tasks").iterdir()):
             if tdir.is_dir():
-                t = check_task(tdir, sv, caps)
+                t = check_task(tdir, s, sv, caps)
                 if t:
                     tasks.append((s, t))
+
+    if want_facts:
+        for f in sorted(facts):
+            print(f)
+        print(f"verdict {'ACCEPTED' if not errors else 'REJECTED'} "
+              f"rejections={len(errors)} tasks={len(tasks)}")
+        return 0 if not errors else 1
 
     print("corpus/SPEC.md v1 — loader check\n")
     for n in notes:

@@ -1,14 +1,18 @@
 [workspace]
 resolver = "3"
-members = ["crates/w8-import"]
+members = ["crates/w8-import", "crates/w8-corpus"]
 
-# W8's harness. Step 2 of the plan is `w8-import`; step 3 adds the runner as a sibling crate,
-# which is why this is a workspace from the start rather than a single crate to be converted.
+# W8's harness. Step 2 of the plan is `w8-import`; step 3 is `w8-corpus` and the runner, which
+# is why this is a workspace from the start rather than a single crate to be converted.
 #
-# Deliberately zero third-party dependencies. The importer parses one JavaScript file, writes
-# TOML it has to control the comment layout of anyway, and shells out to bash. A `toml`
-# serializer would strip the comments that carry the findings, and the comments are half the
-# point of the format (SPEC.md §2).
+# `w8-import` has zero third-party dependencies and should keep them: it parses one JavaScript
+# file, writes TOML whose comment layout it has to control anyway, and shells out to bash. A
+# `toml` *serializer* would strip the comments that carry the findings, and the comments are half
+# the point of the format (SPEC.md §2).
+#
+# `w8-corpus` takes `toml` as the workspace's first third-party dependency — for *parsing* only,
+# which is the direction the paragraph above never objected to, and which SPEC.md §2 anticipated
+# when it chose TOML on the grounds that `toml` is already a Claudette dependency.
 
 [workspace.package]
 edition = "2024"

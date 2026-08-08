@@ -1,0 +1,18 @@
+[package]
+name = "w8-corpus"
+version = "0.1.0"
+description = "Loads and validates a corpus/SPEC.md v1 corpus"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# The workspace's first third-party dependency, and SPEC.md §2 anticipated it: the corpus is
+# TOML because `toml` is already a Claudette dependency. Used for *parsing only* — the model
+# below is walked by hand rather than derived, because SPEC.md §13's rejections have to name
+# the rule they violate, and a derive's "missing field `quarantine`" cannot.
+[dependencies]
+toml = { version = "1", default-features = false, features = ["parse", "serde"] }
+
+[[bin]]
+name = "w8-corpus"
+path = "src/main.rs"
