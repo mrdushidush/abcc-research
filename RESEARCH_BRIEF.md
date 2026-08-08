@@ -865,10 +865,17 @@ This determines the metric set, so it was checked rather than assumed:
 
 Three consequences for the harness design:
 
-1. **No PTY needed.** `cli_prompter.rs:89-96` documents the fall-through: the single-keypress path is
-   a TTY optimisation and it "falls through to the line reader below when stdin isn't a TTY (piped /
-   scripted / spawned agent)". **A harness that pipes stdin gets a deliberate, documented code
-   path**, not an accident. That removes the biggest mechanical risk from the stand-in choice.
+1. **No PTY needed, and the harness must drive the REPL rather than one-shot.** `cli_prompter.rs:89-96`
+   documents the gate's fall-through: the single-keypress path is a TTY optimisation and it "falls
+   through to the line reader below when stdin isn't a TTY (piped / scripted / spawned agent)".
+   **Corrected and extended 2026-08-08 (see `research/W8-corpus-format.md` F1-F6, all measured).**
+   That citation covers the gate but not the REPL's own input loop, which is the part that would have
+   forced a PTY; `line_editor.rs:337,369-376` degrades to a plain `read_line` when stdin/stderr is not
+   a terminal, so the conclusion stands on the right evidence. **But one-shot has no prompter at all**
+   (`run.rs:186` passes `None`), which is why the Q56 battery *must* set `CLAUDETTE_AUTO_APPROVE=1` -
+   without it a one-shot run cannot edit a file. Only the REPL constructs a `CliPrompter`
+   (`repl.rs:56`). A spike drove it end to end over pipes: gate observed on stderr, redirect injected,
+   file left unchanged, model obeyed the instruction.
 2. **The permission configuration is part of the corpus definition, not the runner.** Interventions
    can only be measured if something actually prompts, and what prompts depends on the mode and the
    per-tool tier. So each task must pin its permission configuration explicitly. ⚠ **And the mode to
@@ -879,6 +886,14 @@ Three consequences for the harness design:
    get a real baseline number; pause gets a documented "n/a - not implemented in the subject". Design
    the metric so `n/a` is a first-class value rather than a zero, because that column is precisely
    where 2.0's differentiator has to show up.
+4. **Two metric findings that only appeared by running it**, both in `research/W8-corpus-format.md`.
+   **Cost per task is reachable after all:** every REPL turn prints `turn iter=N in=X out=Y` to stderr
+   from `summary.usage` (`repl.rs:205-214`), so the metric that is unreachable everywhere else in this
+   family (ABCC's token columns are 0/5,977 populated) comes free on the stand-in, with no patch. And
+   **"time to first visible output" cannot be defined on stdout alone:** model text goes to stdout
+   (`api.rs:36-52`) while the gate preview goes to stderr (`cli_prompter.rs:52-84`), and in the spike
+   the operator saw the gate at 25.9 s but the first stdout byte at 31.6 s. Define it over both
+   streams or it overstates felt latency by the whole tool-call phase.
 
 - ~~Start from what exists: ABCC's 40-task scored corpus and Claudette's eval loop. Characterize
   both, then decide what the 2.0 harness inherits.~~ → **Start from ABCC's 100-task suite, not the
