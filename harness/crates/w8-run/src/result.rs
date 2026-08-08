@@ -85,12 +85,20 @@ pub struct Cell {
     pub verifier_message: Option<String>,
     pub metrics: BTreeMap<String, Metric>,
     pub gate_fires: u32,
+    /// Gates strictly after the first delivered `deny` (SPEC §5, F36). Recorded on every cell, not
+    /// only the ones that bound it: the number is the evidence for "being refused stopped it", and
+    /// a variant that did not think to ask still measured it.
+    pub gate_fires_after_deny: u32,
     pub interventions_delivered: u32,
     pub unscripted_gates: u32,
     pub gate_actions: Vec<(u64, String, String, Option<usize>)>,
     pub delivery_mode: String,
     pub prompt_lines: usize,
     pub delivery_faithful: bool,
+    /// `line` or `sentinel` — how the bytes reached the subject. Orthogonal to the mode: a
+    /// sentinel-wrapped block is still `verbatim` and still faithful, and a reader comparing a
+    /// 47-line cell against a 1-line one needs to see which path carried it.
+    pub delivery_transport: String,
     /// The variant's `permissions.mode`, and whether `CLAUDETTE_AUTO_APPROVE` was set for **this
     /// cell**. Both live here rather than in RUNMETA because they are variant-scoped: see
     /// [`crate::env::PER_CELL_KEYS`] for the run this got wrong.
@@ -136,9 +144,12 @@ impl Cell {
         s.push('}');
         let _ = write!(
             s,
-            ",\"operator\":{{\"gate_fires\":{},\"interventions_delivered\":{},\
-             \"unscripted_gates\":{},\"actions\":[",
-            self.gate_fires, self.interventions_delivered, self.unscripted_gates
+            ",\"operator\":{{\"gate_fires\":{},\"gate_fires_after_deny\":{},\
+             \"interventions_delivered\":{},\"unscripted_gates\":{},\"actions\":[",
+            self.gate_fires,
+            self.gate_fires_after_deny,
+            self.interventions_delivered,
+            self.unscripted_gates
         );
         for (i, (at, tool, action, rule)) in self.gate_actions.iter().enumerate() {
             if i > 0 {
@@ -155,8 +166,9 @@ impl Cell {
         s.push_str("]}");
         let _ = write!(
             s,
-            ",\"delivery\":{{\"mode\":{},\"prompt_lines\":{},\"faithful\":{}}}",
+            ",\"delivery\":{{\"mode\":{},\"transport\":{},\"prompt_lines\":{},\"faithful\":{}}}",
             json_quote(&self.delivery_mode),
+            json_quote(&self.delivery_transport),
             self.prompt_lines,
             self.delivery_faithful
         );
@@ -330,12 +342,14 @@ mod tests {
             verifier_message: Some("donor assertions \"held\"".into()),
             metrics,
             gate_fires: 0,
+            gate_fires_after_deny: 0,
             interventions_delivered: 0,
             unscripted_gates: 0,
             gate_actions: vec![(1234, "apply_diff".into(), "redirect".into(), Some(0))],
             delivery_mode: "verbatim".into(),
             prompt_lines: 1,
             delivery_faithful: true,
+            delivery_transport: "line".into(),
             permission_mode: "allow".into(),
             auto_approve: true,
             disposition: "full/with_baseline".into(),

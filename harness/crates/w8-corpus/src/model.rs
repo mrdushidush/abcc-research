@@ -298,8 +298,26 @@ impl Action {
 #[derive(Debug, Clone, Default)]
 pub struct Expect {
     pub gate_fires: Option<Bound>,
+    /// Gates that fired **strictly after** the first `deny` the operator track delivered. F36:
+    /// `gate_fires = { min = 2 }` cannot say "re-proposed after being refused" — a run that fired
+    /// five gates, four of them exploratory `bash`, satisfied it while the denial was the session's
+    /// last gate. See SPEC §5.
+    pub gate_fires_after_deny: Option<Bound>,
     pub interventions_delivered: Option<u32>,
     pub unscripted_gates: Option<Bound>,
+}
+
+/// What a run actually did, for checking against [`Expect`].
+///
+/// A struct rather than four positional `u32`s: the counters are interchangeable at the type level
+/// and three of them are already easy to transpose. A silently swapped pair would move a cell
+/// between `invalid` and `pass` with nothing to show for it.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Observed {
+    pub gate_fires: u32,
+    pub gate_fires_after_deny: u32,
+    pub interventions_delivered: u32,
+    pub unscripted_gates: u32,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -316,21 +334,38 @@ impl Bound {
 
 impl Expect {
     /// Returns the first violated expectation, if any, as a sentence fit for an `INVALID` reason.
-    pub fn violation(&self, gate_fires: u32, interventions: u32, unscripted: u32) -> Option<String> {
+    pub fn violation(&self, obs: Observed) -> Option<String> {
         if let Some(b) = self.gate_fires
-            && !b.holds(gate_fires)
+            && !b.holds(obs.gate_fires)
         {
-            return Some(format!("gate_fires = {gate_fires}, expected {}", describe(&b)));
+            return Some(format!("gate_fires = {}, expected {}", obs.gate_fires, describe(&b)));
+        }
+        if let Some(b) = self.gate_fires_after_deny
+            && !b.holds(obs.gate_fires_after_deny)
+        {
+            return Some(format!(
+                "gate_fires_after_deny = {}, expected {} (of {} gates in total)",
+                obs.gate_fires_after_deny,
+                describe(&b),
+                obs.gate_fires
+            ));
         }
         if let Some(n) = self.interventions_delivered
-            && n != interventions
+            && n != obs.interventions_delivered
         {
-            return Some(format!("interventions_delivered = {interventions}, expected {n}"));
+            return Some(format!(
+                "interventions_delivered = {}, expected {n}",
+                obs.interventions_delivered
+            ));
         }
         if let Some(b) = self.unscripted_gates
-            && !b.holds(unscripted)
+            && !b.holds(obs.unscripted_gates)
         {
-            return Some(format!("unscripted_gates = {unscripted}, expected {}", describe(&b)));
+            return Some(format!(
+                "unscripted_gates = {}, expected {}",
+                obs.unscripted_gates,
+                describe(&b)
+            ));
         }
         None
     }
@@ -407,7 +442,24 @@ pub struct Subject {
     pub capabilities: Vec<String>,
     pub env: BTreeMap<String, String>,
     pub markers: Markers,
+    /// How this subject receives a prompt whose text contains newlines, or `None` if it cannot.
+    /// A runner must read the pair from here rather than knowing any subject's strings: the whole
+    /// point of a descriptor is that a second subject can differ.
+    pub delivery: Option<BlockDelivery>,
     pub path: PathBuf,
+}
+
+/// A subject's sentinel pair for delivering a multi-line prompt as one turn.
+///
+/// Claudette gained this on 2026-08-08 (David's call: fix the subject rather than rewrite 69 of
+/// the 90 U100 prompts). Before it, no path existed — the piped REPL read one line per turn, paste
+/// stripped newlines, and one-shot had no permission prompter — so 69 tasks were undeliverable.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BlockDelivery {
+    /// The line that opens a block. Must be alone on its line and match exactly.
+    pub open: String,
+    /// The line that closes it.
+    pub close: String,
 }
 
 #[derive(Debug, Clone, Default)]

@@ -48,7 +48,16 @@ fn main() -> ExitCode {
 fn emit_facts(corpus: &Corpus, rejections: usize) {
     let mut lines: Vec<String> = Vec::new();
     for s in &corpus.subjects {
-        lines.push(format!("subject {} drive={} caps={}", s.id, s.drive, s.capabilities.join("|")));
+        let delivery = s
+            .delivery
+            .as_ref()
+            .map_or_else(|| "none".to_string(), |d| format!("{}..{}", d.open, d.close));
+        lines.push(format!(
+            "subject {} drive={} caps={} delivery={delivery}",
+            s.id,
+            s.drive,
+            s.capabilities.join("|")
+        ));
     }
     for suite in &corpus.suites {
         let inc: Vec<&str> = suite.aggregate.include_verifiable.iter().map(|v| v.as_str()).collect();

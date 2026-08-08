@@ -12,8 +12,9 @@
 //!   not held, it is inherited from David's daily-driver config**.
 //! - [`driver`] — three pipes, a newline-less gate prompt, and one stdin two readers take turns
 //!   owning.
-//! - [`delivery`] — the blocker: `claudette-fc1ea22` has no path that delivers a multi-line prompt
-//!   as a single turn, and 69 of the 90 U100 prompts are multi-line.
+//! - [`delivery`] — how a prompt becomes a turn. `claudette-fc1ea22` had no path that delivered a
+//!   multi-line prompt as one turn and 69 of the 90 U100 prompts are multi-line; `af3f804` added
+//!   the sentinel block, which the subject declares and this module never hard-codes.
 //! - [`endpoint`] — confirming which model actually answered, because LM Studio silently serves a
 //!   request that names a model it does not have.
 //! - [`verify`] — SPEC §8's contract, and interpreters probed by executing.

@@ -34,7 +34,8 @@ Task content never changes when a variant is added. That is why variants are not
 corpus/
   SPEC.md                          this file
   subjects/
-    claudette-fc1ea22.toml         one per subject under test
+    claudette-fc1ea22.toml         one per subject under test — this one predates [delivery]
+    claudette-af3f804.toml         the same subject one commit later, and the current one
   suites/
     u100/
       suite.toml                   suite metadata, caveats, aggregate rule, default variants
@@ -254,8 +255,28 @@ Both produce the same array of rule tables in the same order. The loader does no
 - **`expect` violations are `INVALID`, not `FAIL`.** A run where the gate never fired did not measure
   the thing; scoring it as a failure would be a lie in the direction that flatters 2.0.
 
-`expect` keys: `gate_fires = { min, max }`, `interventions_delivered = <int>`,
-`unscripted_gates = { max }`.
+`expect` keys: `gate_fires = { min, max }`, `gate_fires_after_deny = { min, max }`,
+`interventions_delivered = <int>`, `unscripted_gates = { max }`.
+
+### Why `gate_fires_after_deny` exists (F36, amendment 6)
+
+**`gate_fires = { min = 2 }` cannot express "the subject re-proposed the edit after being denied",
+and that is the question a deny variant is authored to ask.** Measured on `fix_sql_inject`'s own
+`deny-first-edit`: the run fired **five** gates, four of them exploratory `bash` calls (`bash` is
+`DangerFullAccess`, so it gates unconditionally), and the denial was the session's *last* gate. The
+bound passed. Nothing was answered. A count that any amount of unrelated tool use can satisfy is a
+bound on curiosity, not on persistence.
+
+`gate_fires_after_deny` counts only gates that fired **strictly after the first `deny` the operator
+track delivered**. `{ min = 1 }` therefore reads "having been refused once, the subject asked for
+something again"; `{ max = 0 }` reads "the first refusal stopped it", which is the behaviour actually
+observed on the second `fix_sql_inject` run — the subject stopped, left the fixture untouched, and
+the verifier failed on the fixture's own `AttributeError`. **Both are results. Only the bound tells
+a reader which one the variant was looking for**, and a violation is `INVALID` like every other
+`expect`, because a run that did not reach a denial did not measure persistence either way.
+
+Deliberately not counted: gates before the first denial, and the denied gate itself. A variant that
+wants "at least one gate at all" already has `gate_fires`.
 
 ## 6. Permissions (R5)
 
@@ -275,8 +296,9 @@ reasoning correctly from its name.
 
 ```toml
 schema  = 1
-id      = "claudette-fc1ea22"
+id      = "claudette-af3f804"
 version = "0.17.0"
+commit  = "af3f804"
 bin     = "claudette"
 drive   = "repl-pipe"            # NOT one-shot: one-shot has no prompter (run.rs:186)
 
@@ -288,7 +310,25 @@ NO_COLOR = "1"
 [markers]
 gate     = "Allow? [y/N"
 turn_end = '^⚡ turn iter=(\d+) in=(\d+) out=(\d+)'
+
+[delivery]                       # optional; how this subject receives a multi-line prompt
+open  = "<<<CLAUDETTE-PROMPT"
+close = "CLAUDETTE-PROMPT>>>"
 ```
+
+**`[delivery]` is what makes a multi-line prompt deliverable at all (amendment 7).** A piped REPL
+reads one line per turn, so a prompt containing newlines becomes several turns — and worse, a blank
+line inside it is skipped and a line reading `exit` ends the session. **69 of the 90 U100 prompts are
+multi-line**, up to 54 lines. The two sentinels name lines that open and close a block the subject
+reassembles into one turn; each must be alone on its line and match exactly.
+
+The table is **optional and both keys are required once it is present** — a half-declared pair would
+wrap a prompt in something the subject never closes on, and that failure lands as a timeout rather
+than as a bad descriptor. A subject that declares no `[delivery]` is valid; it simply cannot run the
+tasks whose prompts are multi-line, and the runner must refuse those cells rather than flatten them.
+
+**The runner reads the pair from here and never hard-codes it.** These strings are a fact about one
+subject; a second subject will have different ones, or none.
 
 A variant whose `requires` names a capability the subject does not declare yields `NotSupported`,
 which prints as `n/a` and is arithmetically distinct from zero. That column is exactly where 2.0's
@@ -441,7 +481,8 @@ Per cell `(task, variant, subject)`:
 | `tokens_in_preamble` | *derived*: `turns × RUNMETA.preamble_tokens_in` |
 | `tokens_in_net` | *derived*: `tokens_in − tokens_in_preamble` |
 | `iterations` | `iter=` from the same line |
-| `gate_fires`, `interventions_delivered`, `unscripted_gates` | |
+| `gate_fires`, `gate_fires_after_deny`, `interventions_delivered`, `unscripted_gates` | `gate_fires_after_deny` counts only gates strictly after the first delivered `deny` (§5, F36) |
+| `delivery.mode` / `delivery.transport` / `delivery.faithful` | the mode is `verbatim` or `escape-newlines`; the transport is `line` or `sentinel` (§7). **A wrapped block is still verbatim and still faithful** — the wrapper is how the bytes travelled, not an edit to them |
 | `peak_rss_mb` | no probe exists yet (W1/W2 owns building it); the name is reserved |
 
 **Three ways to get token accounting wrong, all silent (F9):**
@@ -482,6 +523,11 @@ Recorded here because it constrains the format, not as runner design (step 3):
   line-buffered reader blocks on it forever. Read bytes, or match the prompt suffix.
 - **The turn-end line is the only turn boundary**, because piped mode never echoes `❯`
   (`line_editor.rs:370-376`).
+- **A multi-line prompt goes in as a sentinel-delimited block** (§7's `[delivery]`), written line by
+  line before the turn starts. This is the **one** exception to §5's "never pre-queue": the subject
+  consumes the whole block inside a single read, so no gate can fire part-way through and no line of
+  it can be swallowed as a gate answer. The exception holds only because the block is *read*, not
+  *run* — a pre-queued second **turn** is still the trap §5 describes.
 
 ## 13. Loader validation
 
@@ -515,6 +561,13 @@ The delta from the prose David read, so the change is visible rather than smuggl
 | 3 | R7 | Metrics gain `tokens_in_preamble` / `tokens_in_net`; RUNMETA gains `warmup` and `preamble_tokens_in` | F9, F10 |
 | 4 | R4 | Variants declared once in `suite.toml`, overridden per task by `id` | as written the importer would emit 90 near-identical `variants.toml` files |
 | 5 | R3 | `send` split into `send_file` / `send_text` | a single key holding either a path or a prompt cannot be read unambiguously |
+| 6 | §5 | `expect` gains `gate_fires_after_deny = { min, max }` | F36 — `gate_fires = { min = 2 }` was satisfied by four exploratory `bash` gates while the denial was the session's last gate, so the bound passed and the question went unanswered |
+| 7 | §7 | Subject descriptor gains an optional `[delivery]` with `open` / `close` | 69 of 90 prompts are multi-line and no subject path delivered one as a turn; David's call (2026-08-08) was to fix the subject, so the format has to carry how each subject receives a block |
+
+**Both are additive and `schema` stays `1`.** Every existing file remains valid: a descriptor with no
+`[delivery]` and a variant with no `gate_fires_after_deny` load exactly as before. Bumping the
+integer would invalidate all 90 task files to express "two optional keys appeared", which is the
+wrong trade — the amendment table is the record of the change.
 
 Two smaller resolutions, recorded so they are not rediscovered as bugs:
 

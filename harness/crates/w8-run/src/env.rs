@@ -290,6 +290,7 @@ mod tests {
             capabilities: vec!["tool_gate".into(), "redirect".into()],
             env: env.iter().map(|(k, v)| ((*k).to_string(), (*v).to_string())).collect(),
             markers: Default::default(),
+            delivery: None,
             path: PathBuf::from("subjects/claudette-fc1ea22.toml"),
         }
     }

@@ -134,8 +134,9 @@ fn usage() -> &'static str {
      \n\
      --model is required and has no default: naming one here is how a convenience 4b ends up in\n\
      a baseline. The champion is qwen3.6-35b-a3b-mtp@iq3_s.\n\
-     --delivery verbatim (the default) refuses a prompt it cannot deliver byte-for-byte; see\n\
-     src/delivery.rs for why 69 of the 90 U100 prompts are in that position."
+     --delivery verbatim (the default) delivers the prompt byte-for-byte, wrapping a multi-line\n\
+     one in the sentinels the subject declares in [delivery], and refuses the cell if the subject\n\
+     declares none. escape-newlines is a labelled, unapproved fallback; see src/delivery.rs."
 }
 
 fn run(args: Args) -> Result<ExitCode, String> {
@@ -201,8 +202,11 @@ fn run(args: Args) -> Result<ExitCode, String> {
             };
             let deliverable = match turn_texts(c.task) {
                 Err(e) => format!("unreadable: {e}"),
-                Ok(ts) => match plan_turns(&ts, args.delivery) {
-                    Ok(_) => "ok".to_string(),
+                Ok(ts) => match plan_turns(&ts, args.delivery, sentinel_of(subject)) {
+                    Ok(p) => match p.first().map(|p| p.transport) {
+                        Some(delivery::Transport::Sentinel) => "ok (block)".to_string(),
+                        _ => "ok".to_string(),
+                    },
                     Err(u) => format!("UNDELIVERABLE ({} lines)", u.prompt_lines),
                 },
             };
@@ -445,9 +449,53 @@ fn warmup(
     let mut track = OperatorTrack::new(&[], Some(&deny));
     // Generous: this turn is where the 35B JIT load lands — 169.7 s on the champion against 4.1 s
     // for the turns after it (F10). That is the whole reason it exists.
-    let run = session.run_turn(WARMUP_PROMPT, &mut track, Instant::now() + Duration::from_secs(900));
+    let warmup = [WARMUP_PROMPT.to_string()];
+    let run = session.run_turn(&warmup, &mut track, Instant::now() + Duration::from_secs(900));
     let end = run.end.clone();
+
+    // Prove the subject actually understands the block it declares, before any cell is measured.
+    //
+    // The failure this exists for is silent and total: a subject that does not understand the
+    // sentinels runs the OPENING LINE as a turn of its own, returns a marker that looks exactly
+    // like the answer, and then runs each body line as a further turn while the harness has moved
+    // on to the verifier. Every one of the 207 block-delivered cells would carry a plausible number
+    // for a prompt the subject never received whole. A stale binary earlier on PATH is all it takes
+    // — `~/.cargo/bin/claudette` and a fresh `target/release/claudette` report the same `--version`.
+    //
+    // The probe is decisive because a split is fatal *immediately* rather than after a model turn:
+    // on a subject that understands blocks the turn text is two harmless lines, and on one that
+    // does not, the second line it reads is a bare `exit`, which ends the session with no model
+    // call at all. So a short wait separates them.
+    let block_probe = if let Some(d) = &subject.delivery {
+        let probe = [
+            d.open.clone(),
+            "exit".to_string(),
+            "Reply with the single word: ready".to_string(),
+            d.close.clone(),
+        ];
+        let p = session.run_turn(&probe, &mut track, Instant::now() + Duration::from_secs(300));
+        std::thread::sleep(Duration::from_millis(750));
+        match (&p.end, session.exited()) {
+            (TurnEnd::Marker { .. }, false) => Ok(()),
+            (end, exited) => Err(format!(
+                "subject {} declares [delivery] open = {:?} / close = {:?}, but the binary at {bin} \
+                 did not reassemble a block into one turn (probe ended {end:?}{}). Every \
+                 multi-line cell would otherwise be measured against a prompt the subject never \
+                 received whole. Check that this binary is the commit the descriptor pins — an \
+                 older `claudette` earlier on PATH reports the same --version",
+                subject.id,
+                d.open,
+                d.close,
+                if exited { ", and the session then ended — the `exit` line inside the block was \
+                              read as a command, which is exactly what a split looks like" } else { "" }
+            )),
+        }
+    } else {
+        Ok(())
+    };
+
     session.finish();
+    block_probe?;
 
     match end {
         TurnEnd::Marker { tokens_in, .. } => Ok((tokens_in, run.wall_ms, env)),
@@ -482,11 +530,22 @@ fn turn_texts(task: &Task) -> Result<Vec<String>, String> {
         .collect()
 }
 
+/// The subject's declared block sentinels, or `None` if it declares none. Read from the descriptor
+/// on every call rather than cached: which strings a subject accepts is the subject's fact, and a
+/// runner that hard-codes one subject's pair silently mis-delivers against the next one.
+fn sentinel_of(subject: &Subject) -> Option<delivery::Sentinel<'_>> {
+    subject
+        .delivery
+        .as_ref()
+        .map(|d| delivery::Sentinel { open: &d.open, close: &d.close })
+}
+
 fn plan_turns(
     texts: &[String],
     mode: delivery::Mode,
+    sentinel: Option<delivery::Sentinel<'_>>,
 ) -> Result<Vec<delivery::Plan>, delivery::Undeliverable> {
-    texts.iter().map(|t| delivery::plan(t, mode)).collect()
+    texts.iter().map(|t| delivery::plan(t, mode, sentinel)).collect()
 }
 
 fn base_cell(
@@ -508,12 +567,16 @@ fn base_cell(
         verifier_message: None,
         metrics: BTreeMap::new(),
         gate_fires: 0,
+        gate_fires_after_deny: 0,
         interventions_delivered: 0,
         unscripted_gates: 0,
         gate_actions: Vec::new(),
         delivery_mode: mode.to_string(),
         prompt_lines,
         delivery_faithful: mode.is_faithful(),
+        // Overwritten once the prompt is planned. `line` is the honest default for the cells that
+        // never get that far (n/a, unreadable turn file, undeliverable): nothing was wrapped.
+        delivery_transport: delivery::Transport::Line.to_string(),
         permission_mode: variant.mode.as_str().to_string(),
         // Derived from the mode rather than read back from the environment, and the two are checked
         // against each other in `env::build`: a subject descriptor that sets the flag is refused.
@@ -596,7 +659,7 @@ fn run_cell(
             return cell;
         }
     };
-    let plans = match plan_turns(&texts, *mode) {
+    let plans = match plan_turns(&texts, *mode, sentinel_of(subject)) {
         Ok(p) => p,
         Err(u) => {
             cell.prompt_lines = u.prompt_lines;
@@ -608,6 +671,10 @@ fn run_cell(
         }
     };
     cell.prompt_lines = plans.first().map_or(0, |p| p.prompt_lines);
+    cell.delivery_transport = plans
+        .first()
+        .map_or(delivery::Transport::Line, |p| p.transport)
+        .to_string();
 
     let dir = cells_dir.join(format!("{}__{}", task.id, variant.id));
     let wd = dir.join("wd");
@@ -672,7 +739,7 @@ fn run_cell(
     let mut turns_run = 0usize;
 
     for p in &plans {
-        let run = session.run_turn(&p.line, &mut track, deadline);
+        let run = session.run_turn(&p.lines, &mut track, deadline);
         turns_run += 1;
         wall_ms += run.wall_ms;
         // The FIRST turn's first byte is the headline: it is when the operator saw the subject
@@ -703,6 +770,7 @@ fn run_cell(
     }
 
     cell.gate_fires = track.gate_fires;
+    cell.gate_fires_after_deny = track.gate_fires_after_deny;
     cell.interventions_delivered = track.interventions_delivered;
     cell.unscripted_gates = track.unscripted_gates;
     cell.gate_actions =
@@ -785,11 +853,7 @@ fn run_cell(
     // SPEC §5: an `expect` violation is INVALID and it is checked BEFORE the verifier. A cell whose
     // gate never fired did not measure operator control, and letting the verifier's PASS stand
     // would report the run as a success at the thing it failed to observe.
-    if let Some(v) = variant.expect.violation(
-        track.gate_fires,
-        track.interventions_delivered,
-        track.unscripted_gates,
-    ) {
+    if let Some(v) = variant.expect.violation(track.observed()) {
         cell.status = Status::Invalid;
         cell.reason = Some(format!("expect violation: {v}"));
         return cell;

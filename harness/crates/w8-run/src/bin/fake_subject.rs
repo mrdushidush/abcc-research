@@ -16,7 +16,11 @@
 //!   (`cli_prompter.rs:52-85`);
 //! - the turn-end line on stderr, with **session-cumulative** `in=`/`out=` (F9), because a harness
 //!   that accumulated them would look correct against a per-turn fake;
-//! - `exit` / EOF ending the loop (`repl.rs:115-131`).
+//! - `exit` / EOF ending the loop (`repl.rs:115-131`);
+//! - the **sentinel-delimited block** that makes a multi-line prompt one turn
+//!   (`line_editor.rs`, added 2026-08-08). Without it here, a driver test for block delivery would
+//!   be asserting against a fake that treats each line as its own turn — i.e. it would pass for a
+//!   driver that had not implemented blocks at all.
 //!
 //! Knobs, all via the environment so a test can compose them:
 //!   `FAKE_GATES`      gates to fire per turn (default 0)
@@ -32,6 +36,10 @@
 //!   `FAKE_DIE`        exit immediately after reading the turn
 
 use std::io::{BufRead, Write};
+
+/// The pair the real subject declares, and the corpus descriptor carries.
+const BLOCK_OPEN: &str = "<<<CLAUDETTE-PROMPT";
+const BLOCK_CLOSE: &str = "CLAUDETTE-PROMPT>>>";
 
 fn env(k: &str) -> Option<String> {
     std::env::var(k).ok().filter(|v| !v.is_empty())
@@ -77,8 +85,27 @@ fn main() {
     let mut lines = stdin.lock().lines();
 
     while let Some(Ok(line)) = lines.next() {
-        let turn = line.trim().to_string();
-        log("TURN", &turn);
+        // A block is consumed whole, inside what the real subject does in a single `read_line`, so
+        // no gate can interleave with it and `exit` inside it is content rather than a command.
+        let turn = if line.trim_end_matches(['\r', '\n']) == BLOCK_OPEN {
+            let mut body: Vec<String> = Vec::new();
+            loop {
+                match lines.next() {
+                    Some(Ok(l)) if l.trim_end_matches(['\r', '\n']) == BLOCK_CLOSE => break,
+                    Some(Ok(l)) => body.push(l.trim_end_matches(['\r', '\n']).to_string()),
+                    _ => {
+                        log("BLOCK_UNTERMINATED", "");
+                        return;
+                    }
+                }
+            }
+            body.join("\n").trim().to_string()
+        } else {
+            line.trim().to_string()
+        };
+        // Escaped so one turn stays one log line — the tests count `TURN\t` entries, and a raw
+        // multi-line turn would inflate that count into a passing-looking number.
+        log("TURN", &turn.replace('\n', "\\n"));
         if turn.is_empty() {
             continue; // repl.rs:125-127
         }

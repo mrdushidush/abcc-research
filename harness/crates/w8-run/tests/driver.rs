@@ -76,13 +76,19 @@ fn deadline(secs: u64) -> Instant {
     Instant::now() + Duration::from_secs(secs)
 }
 
+/// A one-line turn. `run_turn` takes a slice because a sentinel-wrapped block is several lines
+/// that the subject reassembles into one turn.
+fn one(text: &str) -> Vec<String> {
+    vec![text.to_string()]
+}
+
 #[test]
 fn a_turn_completes_and_the_marker_carries_all_three_numbers() {
     let d = scratch("plain-turn");
     let log = log_path(&d);
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_IN", "4885"), ("FAKE_OUT", "63")], "plain");
     let mut t = OperatorTrack::new(&[], None);
-    let run = s.run_turn("do the thing", &mut t, deadline(30));
+    let run = s.run_turn(&one("do the thing"), &mut t, deadline(30));
     match run.end {
         TurnEnd::Marker { iterations, tokens_in, tokens_out } => {
             assert_eq!((iterations, tokens_in, tokens_out), (1, 4885, 63));
@@ -100,6 +106,68 @@ fn a_turn_completes_and_the_marker_carries_all_three_numbers() {
 }
 
 #[test]
+fn a_sentinel_block_is_delivered_as_exactly_one_turn() {
+    // The whole point of the delivery fix: several lines in, ONE turn out, with the newlines and
+    // the blank line intact and a bare `exit` treated as content instead of ending the session.
+    let d = scratch("block-turn");
+    let log = log_path(&d);
+    let mut s = spawn(&d, &[("FAKE_LOG", &log)], "block");
+    let mut t = OperatorTrack::new(&[], None);
+    let block: Vec<String> = [
+        "<<<CLAUDETTE-PROMPT",
+        "first line",
+        "",
+        "exit",
+        "last line",
+        "CLAUDETTE-PROMPT>>>",
+    ]
+    .iter()
+    .map(|s| (*s).to_string())
+    .collect();
+
+    let run = s.run_turn(&block, &mut t, deadline(30));
+    assert!(matches!(run.end, TurnEnd::Marker { .. }), "expected a marker, got {:?}", run.end);
+
+    let turns: Vec<String> = log_lines(&d)
+        .iter()
+        .filter_map(|l| l.strip_prefix("TURN\t").map(str::to_string))
+        .collect();
+    assert_eq!(turns.len(), 1, "six lines in must still be one turn: {turns:?}");
+    assert_eq!(
+        turns[0], "first line\\n\\nexit\\nlast line",
+        "the block's interior newlines and blank line survive, and `exit` is content"
+    );
+    s.finish();
+}
+
+#[test]
+fn an_unterminated_block_is_visible_rather_than_silently_swallowed() {
+    // The negative control for the test above. If the fake accepted an unterminated block as a
+    // turn, the delivery test would pass against a driver that never wrote the closing sentinel.
+    let d = scratch("block-unterminated");
+    let log = log_path(&d);
+    let mut s = spawn(&d, &[("FAKE_LOG", &log)], "block-bad");
+    let mut t = OperatorTrack::new(&[], None);
+    let open = vec!["<<<CLAUDETTE-PROMPT".to_string(), "orphan".to_string()];
+
+    let run = s.run_turn(&open, &mut t, Instant::now() + Duration::from_millis(1500));
+    assert!(
+        !matches!(run.end, TurnEnd::Marker { .. }),
+        "an unterminated block must not complete a turn, got {:?}",
+        run.end
+    );
+    // The load-bearing half: the subject is still *waiting* for the terminator, so it has not
+    // logged a turn. Without this, the test above would pass against a fake that ran the opening
+    // sentinel as a turn of its own and got a marker back by luck.
+    assert!(
+        !log_lines(&d).iter().any(|l| l.starts_with("TURN\t")),
+        "no turn may be logged while the block is still open: {:?}",
+        log_lines(&d)
+    );
+    s.finish();
+}
+
+#[test]
 fn ttfvo_spans_both_streams_and_stdout_alone_would_overstate_it() {
     // F6: the gate preview lands on stderr well before any model text lands on stdout. With a
     // stall between them the two numbers must differ, and ttfvo must be the earlier one.
@@ -112,7 +180,7 @@ fn ttfvo_spans_both_streams_and_stdout_alone_would_overstate_it() {
         "ttfvo",
     );
     let mut t = OperatorTrack::new(&rules, None);
-    let run = s.run_turn("edit it", &mut t, deadline(30));
+    let run = s.run_turn(&one("edit it"), &mut t, deadline(30));
     assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
     let ttfvo = run.ttfvo_ms.expect("something was written");
     let ttft = run.ttft_stdout_ms.expect("the fake replies on stdout");
@@ -145,7 +213,7 @@ fn an_approve_reaches_the_subject_as_the_letter_y() {
     let rules = vec![rule(Some("apply_diff"), None, Action::Approve, None)];
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "1")], "approve");
     let mut t = OperatorTrack::new(&rules, None);
-    let run = s.run_turn("fix calc.py", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix calc.py"), &mut t, deadline(30));
     assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
     assert_eq!(t.gate_fires, 1);
     assert_eq!(t.interventions_delivered, 0, "an approve is an answer, not an intervention");
@@ -162,7 +230,7 @@ fn a_redirect_arrives_verbatim_and_counts_as_an_intervention() {
     let rules = vec![rule(None, None, Action::Redirect(text.into()), None)];
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "1")], "redirect");
     let mut t = OperatorTrack::new(&rules, None);
-    let run = s.run_turn("fix it", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
     assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
     // Byte-for-byte: any non-y/n line is classified as a redirect and forwarded to the model
     // (cli_prompter.rs:127-134), so a mangled line silently becomes a different instruction.
@@ -181,11 +249,68 @@ fn times_exhaustion_falls_through_to_the_next_rule_within_one_turn() {
     ];
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "3")], "times");
     let mut t = OperatorTrack::new(&rules, None);
-    let run = s.run_turn("fix it", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
     assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
     assert_eq!(answers(&d), vec!["say which file first", "y", "y"]);
     assert_eq!(t.gate_fires, 3);
     assert_eq!(t.interventions_delivered, 1);
+    s.finish();
+}
+
+#[test]
+fn gate_fires_after_deny_counts_only_what_came_after_the_refusal() {
+    // F36. `gate_fires` alone cannot distinguish "the subject asked again after being refused"
+    // from "the subject kept exploring and happened to be refused last". Three gates, the first
+    // denied: the total is 3 either way, and only the new counter says two came afterwards.
+    let d = scratch("after-deny");
+    let log = log_path(&d);
+    let rules = vec![
+        rule(None, None, Action::Deny, Some(1)),
+        rule(None, None, Action::Approve, None),
+    ];
+    let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "3")], "after-deny");
+    let mut t = OperatorTrack::new(&rules, None);
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
+    assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
+    assert_eq!(answers(&d), vec!["n", "y", "y"], "the fake confirms which answers reached it");
+    assert_eq!(t.gate_fires, 3);
+    assert_eq!(t.gate_fires_after_deny, 2, "the denied gate itself is not counted");
+    s.finish();
+}
+
+#[test]
+fn gate_fires_after_deny_stays_zero_when_nothing_was_denied() {
+    // The negative control. Without it, a counter wired to `gate_fires` would pass the test above.
+    let d = scratch("after-deny-none");
+    let log = log_path(&d);
+    let rules = vec![rule(None, None, Action::Approve, None)];
+    let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "3")], "after-deny-none");
+    let mut t = OperatorTrack::new(&rules, None);
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
+    assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
+    assert_eq!(t.gate_fires, 3);
+    assert_eq!(t.gate_fires_after_deny, 0, "three gates, no denial, nothing 'after' one");
+    s.finish();
+}
+
+#[test]
+fn a_deny_delivered_by_the_default_also_opens_the_after_deny_window() {
+    // `default = "deny"` is the operator refusing the subject just as much as a rule is, and
+    // `deny-first-edit` relies on exactly that shape.
+    let d = scratch("after-deny-default");
+    let log = log_path(&d);
+    let rules = vec![rule(Some("write_file"), None, Action::Approve, None)];
+    let deny = Action::Deny;
+    let mut s = spawn(
+        &d,
+        &[("FAKE_LOG", &log), ("FAKE_GATES", "2"), ("FAKE_TOOL", "apply_diff")],
+        "after-deny-default",
+    );
+    let mut t = OperatorTrack::new(&rules, Some(&deny));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
+    assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
+    assert_eq!(answers(&d), vec!["n", "n"]);
+    assert_eq!(t.gate_fires_after_deny, 1);
     s.finish();
 }
 
@@ -201,7 +326,7 @@ fn a_gate_tool_matcher_narrows_and_the_default_takes_the_rest() {
         "matcher",
     );
     let mut t = OperatorTrack::new(&rules, Some(&deny));
-    let run = s.run_turn("fix it", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
     assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
     assert_eq!(answers(&d), vec!["n"]);
     // Every use of `default` is an unscripted gate — that is what makes the counter worth an
@@ -218,7 +343,7 @@ fn an_unanswerable_gate_denies_to_avoid_a_deadlock_and_reports_it() {
     let log = log_path(&d);
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "1")], "unanswerable");
     let mut t = OperatorTrack::new(&[], None);
-    let run = s.run_turn("fix it", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
     match &run.end {
         TurnEnd::Blocked(r) => {
             assert!(r.contains("no matching operator rule"), "{r}");
@@ -242,7 +367,7 @@ fn a_multi_line_redirect_is_refused_instead_of_leaking_a_turn_into_the_pipe() {
     let rules = vec![rule(None, None, Action::Redirect("first\nsecond".into()), None)];
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "1")], "mlr");
     let mut t = OperatorTrack::new(&rules, None);
-    let run = s.run_turn("fix it", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
     match &run.end {
         TurnEnd::Blocked(r) => assert!(r.contains("more than one line"), "{r}"),
         other => panic!("expected Blocked, got {other:?}"),
@@ -260,7 +385,7 @@ fn a_redirect_that_reads_as_a_plain_deny_is_refused() {
     let rules = vec![rule(None, None, Action::Redirect("  no  ".into()), None)];
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "1")], "dr");
     let mut t = OperatorTrack::new(&rules, None);
-    let run = s.run_turn("fix it", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
     assert!(matches!(run.end, TurnEnd::Blocked(_)), "{:?}", run.end);
     assert_eq!(t.interventions_delivered, 0);
     s.finish();
@@ -276,8 +401,8 @@ fn usage_is_taken_from_the_last_marker_because_the_lines_are_cumulative() {
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_IN", "4900"), ("FAKE_OUT", "60")], "cum");
     let mut t = OperatorTrack::new(&[], None);
 
-    let first = s.run_turn("turn one", &mut t, deadline(30));
-    let second = s.run_turn("turn two", &mut t, deadline(30));
+    let first = s.run_turn(&one("turn one"), &mut t, deadline(30));
+    let second = s.run_turn(&one("turn two"), &mut t, deadline(30));
     let (a, b) = match (&first.end, &second.end) {
         (TurnEnd::Marker { tokens_in: a, .. }, TurnEnd::Marker { tokens_in: b, .. }) => (*a, *b),
         other => panic!("expected two markers, got {other:?}"),
@@ -295,7 +420,7 @@ fn a_turn_that_never_ends_becomes_a_timeout_rather_than_hanging_the_run() {
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_HANG", "1")], "hang");
     let mut t = OperatorTrack::new(&[], None);
     let started = Instant::now();
-    let run = s.run_turn("fix it", &mut t, Instant::now() + Duration::from_millis(1200));
+    let run = s.run_turn(&one("fix it"), &mut t, Instant::now() + Duration::from_millis(1200));
     assert!(matches!(run.end, TurnEnd::Timeout), "{:?}", run.end);
     assert!(started.elapsed() < Duration::from_secs(20), "the deadline must actually fire");
     s.kill();
@@ -307,7 +432,7 @@ fn a_subject_that_dies_mid_turn_is_eof_and_not_a_timeout() {
     let log = log_path(&d);
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_DIE", "1")], "die");
     let mut t = OperatorTrack::new(&[], None);
-    let run = s.run_turn("fix it", &mut t, deadline(30));
+    let run = s.run_turn(&one("fix it"), &mut t, deadline(30));
     assert!(matches!(run.end, TurnEnd::Eof), "{:?}", run.end);
     s.finish();
 }
@@ -338,7 +463,7 @@ fn the_transcript_records_what_was_written_as_well_as_what_was_read() {
     let rules = vec![rule(None, None, Action::Approve, None)];
     let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_GATES", "1")], "transcript");
     let mut t = OperatorTrack::new(&rules, None);
-    s.run_turn("fix calc.py", &mut t, deadline(30));
+    s.run_turn(&one("fix calc.py"), &mut t, deadline(30));
     let path = s.transcript_path.clone();
     s.finish();
     let text = std::fs::read_to_string(path).unwrap();

@@ -29,6 +29,9 @@ VERIFIABLE = {"full", "presence_only", "none"}
 QUARANTINE = {"none", "with_baseline"}
 GATE_VERDICTS = {"sound", "broken", "inconclusive", "not_run"}
 DO_STRINGS = {"approve", "deny"}
+# SPEC §5. `gate_fires_after_deny` is amendment 6 (F36): `gate_fires = {min = 2}` was satisfied by
+# four exploratory `bash` gates while the denial was the session's last gate.
+EXPECT_KEYS = ("gate_fires", "gate_fires_after_deny", "interventions_delivered", "unscripted_gates")
 
 # SPEC.md §3. Closed by design: adding a name is a schema bump, and it is only because the
 # vocabulary is closed that "the three lists partition it" is a checkable claim at all.
@@ -90,6 +93,13 @@ def check_variant(v, where, capabilities):
     if v.get("operator") and "default" not in v:
         bad(5.2, f"{where}[{vid}]",
             "no `default`: an unmatched gate would block on stdin until the timeout burns")
+
+    # An `expect` that never checks anything always holds, so a misspelled key turns the variant's
+    # whole question into a silent pass. Refused, not ignored.
+    for k in (v.get("expect") or {}):
+        if k not in EXPECT_KEYS:
+            bad("§3", f"{where}[{vid}]",
+                f"expect.{k} is not an expectation; SPEC §5 defines [{', '.join(EXPECT_KEYS)}]")
 
 
 def check_task(tdir, suite, suite_variants, capabilities):
@@ -206,8 +216,29 @@ def main():
         s = load(sp) or {}
         caps |= set(s.get("capabilities", []))
         notes.append(f"  subj {sp.stem}: drive={s.get('drive')!r} caps={s.get('capabilities')}")
+
+        # SPEC §7 [delivery], amendment 7. Optional, but a HALF-declared pair would wrap a prompt
+        # in something the subject never closes on, and that lands as a timeout rather than as a
+        # bad descriptor.
+        dl = s.get("delivery")
+        if dl is None:
+            deliv = "none"
+        else:
+            open_, close = dl.get("open") or "", dl.get("close") or ""
+            if not open_ or not close:
+                bad("§3", f"subjects/{sp.stem}.delivery",
+                    "both `open` and `close` are required once [delivery] is present")
+                deliv = "invalid"
+            elif open_ == close:
+                bad("§3", f"subjects/{sp.stem}.delivery",
+                    f"`open` and `close` are both {open_!r}; a block that opens and closes on "
+                    "the same line can never carry content")
+                deliv = "invalid"
+            else:
+                deliv = f"{open_}..{close}"
+
         facts.append(f"subject {s.get('id')} drive={s.get('drive')} "
-                     f"caps={'|'.join(s.get('capabilities', []))}")
+                     f"caps={'|'.join(s.get('capabilities', []))} delivery={deliv}")
 
     tasks = []
     for suite_toml in sorted(root.glob("suites/*/suite.toml")):

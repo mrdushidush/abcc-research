@@ -95,6 +95,13 @@ pub struct OperatorTrack<'a> {
     default: Option<&'a Action>,
     fired: Vec<u32>,
     pub gate_fires: u32,
+    /// Gates that fired strictly after the first `deny` this track delivered (SPEC §5, F36). The
+    /// denied gate itself is not counted, and neither is anything before it.
+    pub gate_fires_after_deny: u32,
+    /// Set the moment a `deny` is delivered. Not set by the unanswerable-gate path: that writes
+    /// `n` to avoid a deadlock and fails the cell, so it is the harness refusing to guess rather
+    /// than the operator refusing the subject.
+    deny_delivered: bool,
     pub interventions_delivered: u32,
     pub unscripted_gates: u32,
     pub actions: Vec<GateAction>,
@@ -115,9 +122,21 @@ impl<'a> OperatorTrack<'a> {
             default,
             fired: vec![0; rules.len()],
             gate_fires: 0,
+            gate_fires_after_deny: 0,
+            deny_delivered: false,
             interventions_delivered: 0,
             unscripted_gates: 0,
             actions: Vec::new(),
+        }
+    }
+
+    /// What this track observed, in the shape `Expect::violation` checks.
+    pub fn observed(&self) -> w8_corpus::Observed {
+        w8_corpus::Observed {
+            gate_fires: self.gate_fires,
+            gate_fires_after_deny: self.gate_fires_after_deny,
+            interventions_delivered: self.interventions_delivered,
+            unscripted_gates: self.unscripted_gates,
         }
     }
 
@@ -373,7 +392,7 @@ impl Session {
     /// per-task `TASK_TIMEOUT_MS`, so for a multi-turn task the budget is shared.
     pub fn run_turn(
         &mut self,
-        text: &str,
+        lines: &[String],
         track: &mut OperatorTrack<'_>,
         deadline: Instant,
     ) -> TurnRun {
@@ -383,9 +402,16 @@ impl Session {
             wall_ms: 0,
             end: TurnEnd::Eof,
         };
-        if let Err(e) = self.write_line(text, "turn") {
-            run.end = TurnEnd::Blocked(format!("could not write the turn: {e}"));
-            return run;
+        // More than one line only for a sentinel-wrapped block, and writing it up front is safe
+        // precisely because the subject consumes the whole block inside a single read: no gate can
+        // fire part-way through, so none of these lines can be swallowed as a gate answer. That is
+        // the one exception to "never pre-queue" (SPEC §5) and it holds only because the block is
+        // read, not run.
+        for line in lines {
+            if let Err(e) = self.write_line(line, "turn") {
+                run.end = TurnEnd::Blocked(format!("could not write the turn: {e}"));
+                return run;
+            }
         }
         let sent = Instant::now();
         // The send, expressed on the pumps' clock. Latency is computed from the *arrival* timestamp
@@ -469,10 +495,20 @@ impl Session {
         run
     }
 
+    /// Has the subject process exited? Cheap, non-blocking.
+    pub fn exited(&mut self) -> bool {
+        matches!(self.child.try_wait(), Ok(Some(_)))
+    }
+
     /// Answer one gate. `Some(reason)` means the harness refused to guess.
     fn answer_gate(&mut self, track: &mut OperatorTrack<'_>, at_ms: u64) -> Option<String> {
         let (tool, preview) = gate_context(&self.gate_ctx);
         track.gate_fires += 1;
+        // Counted BEFORE this gate's own decision, so the denied gate is not counted as coming
+        // after itself. F36: this is the only counter that answers "did being refused stop it".
+        if track.deny_delivered {
+            track.gate_fires_after_deny += 1;
+        }
 
         let (action, rule, unscripted) = match track.decide(&tool, &preview) {
             Decision::Rule(i, a) => (a.clone(), Some(i), false),
@@ -522,6 +558,9 @@ impl Session {
             }
         };
 
+        if matches!(action, Action::Deny) {
+            track.deny_delivered = true;
+        }
         if matches!(action, Action::Redirect(_)) {
             // An intervention is operator-authored content handed back to the subject. An approve
             // or a deny is an answer, not an intervention — `deny-first-edit` sets no

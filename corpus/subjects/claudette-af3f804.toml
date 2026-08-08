@@ -1,19 +1,18 @@
 schema  = 1
-id      = "claudette-fc1ea22"
-title   = "Claudette v0.17.0 — the stand-in subject (no multi-line delivery)"
-
-# SUPERSEDED by `claudette-af3f804`, and kept on purpose. This commit has **no `[delivery]`**,
-# because at fc1ea22 no path existed that delivered a multi-line prompt as one turn — so under
-# `--delivery verbatim` the 69 multi-line tasks refuse here and run against af3f804. Kept because
-# the first measured cells (2026-08-08: the section-4B `fix_*` medians) were taken against this
-# tree, and a baseline whose subject id no longer resolves is not a baseline.
-
+id      = "claudette-af3f804"
+title   = "Claudette v0.17.0 + multi-line delivery — the stand-in subject"
 version = "0.17.0"
-commit  = "fc1ea22"
+commit  = "af3f804"
 bin     = "claudette"
 args    = []                    # no arguments = REPL
 drive   = "repl-pipe"
 
+# The same subject as `claudette-fc1ea22`, one commit later, and the commit is the whole point:
+# `af3f804` adds the piped REPL's sentinel block. Before it, 69 of the 90 U100 prompts could not be
+# delivered as one turn by ANY path, so `--delivery verbatim` refused 207 of 271 cells. Both
+# descriptors are kept: fc1ea22 is what the first measured numbers were taken against, and a
+# baseline whose subject id no longer resolves is not a baseline.
+#
 # NOT one-shot. run.rs:186 constructs `let mut no_prompter: Option<&mut dyn PermissionPrompter>
 # = None`, so one-shot cannot answer a gate and therefore cannot edit a file at all without
 # CLAUDETTE_AUTO_APPROVE. Only the REPL builds a prompter (run/repl.rs:56, passed as Some on
@@ -27,9 +26,7 @@ capabilities = ["tool_gate", "redirect", "undo", "resume"]
 # interception point, so it stops the agent only when a tool happens to need permission.
 #
 # R6 was approved on the understanding that this vocabulary is a prediction about a 2.0 that
-# does not exist yet, and will need one revision when 2.0 first runs. The rejected alternative
-# was naming 2.0's intended capabilities up front so the n/a column shows every gap from day
-# one; rejected because a wrong name gets stickier once imported baselines cite it.
+# does not exist yet, and will need one revision when 2.0 first runs.
 
 [env]
 NO_COLOR                    = "1"
@@ -41,10 +38,23 @@ CLAUDETTE_SKIP_OLLAMA_PROBE = "1"
 gate     = "Allow? [y/N"                              # stderr, and it has NO trailing newline
 turn_end = '^⚡ turn iter=(\d+) in=(\d+) out=(\d+)'   # stderr, repl.rs:205-214
 
+[delivery]
+# SPEC §7, amendment 7. A line equal to `open` starts a block; a line equal to `close` ends it;
+# everything between arrives as one turn with its newlines and blank lines intact. Both must be
+# alone on their line and match exactly. Hyphenated rather than underscored because Claudette's
+# own doc-drift guard scans `src/` for `CLAUDETTE_` followed by capitals and would read an
+# underscored sentinel as an undocumented env var.
+open  = "<<<CLAUDETTE-PROMPT"
+close = "CLAUDETTE-PROMPT>>>"
+
 [quirks]
 # Things the adapter must handle that a reading of the docs would have got wrong.
 gate_has_no_trailing_newline = true   # write!, not writeln!, cli_prompter.rs:84
 usage_is_session_cumulative  = true   # UsageTracker::record only ever +=, usage.rs:44-50
 usage_seeded_from_session    = true   # conversation.rs:287 — sessions must start fresh
 non_ascii_under_no_color     = true   # NO_COLOR strips ANSI, not glyphs; readers must be UTF-8
-prompt_never_echoed_on_pipe  = true   # line_editor.rs:370-376 ignores the prompt argument
+prompt_never_echoed_on_pipe  = true   # line_editor.rs ignores the prompt argument when piped
+block_is_trimmed_as_a_whole  = true   # the REPL trims the assembled block (repl.rs:124), so
+                                      # leading/trailing blank lines of a prompt do not survive.
+                                      # Interior ones do, which is what the dictated code bodies
+                                      # need (F25).

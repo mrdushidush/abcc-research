@@ -195,13 +195,31 @@ fn parse_bound(v: &Value) -> Bound {
     }
 }
 
-fn parse_expect(t: Option<&Table>) -> Expect {
+/// SPEC §5's `expect` keys, and **nothing else**.
+///
+/// A misspelled key is refused rather than ignored. An `expect` that never checks anything always
+/// holds, so a typo here converts a variant's whole question into a silent pass — the same
+/// silent-and-flattering shape as F28's zero caveats and F22's `sound` verifier that never ran.
+fn parse_expect(t: Option<&Table>, at: &str, rej: &mut Rejections) -> Expect {
+    const KEYS: &[&str] =
+        &["gate_fires", "gate_fires_after_deny", "interventions_delivered", "unscripted_gates"];
+
     let t = match t {
         Some(t) => t,
         None => return Expect::default(),
     };
+    for k in t.keys() {
+        if !KEYS.contains(&k.as_str()) {
+            rej.add(
+                RuleId::Field,
+                at,
+                format!("expect.{k} is not an expectation; SPEC §5 defines [{}]", KEYS.join(", ")),
+            );
+        }
+    }
     Expect {
         gate_fires: t.get("gate_fires").map(parse_bound),
+        gate_fires_after_deny: t.get("gate_fires_after_deny").map(parse_bound),
         interventions_delivered: t.get("interventions_delivered").and_then(Value::as_integer).map(|n| n as u32),
         unscripted_gates: t.get("unscripted_gates").map(parse_bound),
     }
@@ -317,7 +335,7 @@ fn parse_variant(v: &Table, origin: VariantOrigin, where_: &str, rej: &mut Rejec
         id,
         mode,
         requires: str_list(v, "requires"),
-        expect: parse_expect(table(v, "expect")),
+        expect: parse_expect(table(v, "expect"), &at, rej),
         operator,
         default,
         origin,
@@ -734,6 +752,34 @@ pub(crate) fn parse_subject(path: &Path, rej: &mut Rejections) -> Option<Subject
         })
         .unwrap_or_default();
 
+    // `[delivery]` is optional — a subject with no way to receive a multi-line prompt is a valid
+    // subject, it just cannot run the tasks that need one. But a *partial* declaration is refused:
+    // a half-declared sentinel pair would wrap a prompt in something the subject never closes on,
+    // and the failure would land as a timeout rather than as a bad descriptor.
+    let delivery = table(&t, "delivery").and_then(|d| {
+        let open = opt_str(d, "open").unwrap_or_default().to_owned();
+        let close = opt_str(d, "close").unwrap_or_default().to_owned();
+        let where_d = format!("{where_}.delivery");
+        if open.is_empty() || close.is_empty() {
+            rej.add(
+                RuleId::Field,
+                &where_d,
+                "both `open` and `close` are required once [delivery] is present".to_string(),
+            );
+            return None;
+        }
+        if open == close {
+            rej.add(
+                RuleId::Field,
+                &where_d,
+                format!("`open` and `close` are both {open:?}; a block that opens and closes on \
+                         the same line can never carry content"),
+            );
+            return None;
+        }
+        Some(BlockDelivery { open, close })
+    });
+
     if rej.len() != before {
         return None;
     }
@@ -746,6 +792,7 @@ pub(crate) fn parse_subject(path: &Path, rej: &mut Rejections) -> Option<Subject
         capabilities: str_list(&t, "capabilities"),
         env: table(&t, "env").map(|e| e.iter().map(|(k, v)| (k.clone(), scalar(v))).collect()).unwrap_or_default(),
         markers,
+        delivery,
         path: path.to_path_buf(),
     })
 }

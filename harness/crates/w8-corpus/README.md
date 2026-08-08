@@ -8,7 +8,7 @@ and is numbered to match the spec — so it is a reference to port, not a shape 
 ```bash
 cargo run -p w8-corpus -- ../corpus --subject claudette-fc1ea22   # human report
 cargo run -p w8-corpus -- ../corpus --facts                       # a sorted fact stream
-cargo test -p w8-corpus                                           # 47 tests
+cargo test -p w8-corpus                                           # 53 tests
 ```
 
 On the current corpus: **90 tasks · 54 full / 24 presence-only / 12 quarantined-with-baseline ·
@@ -116,9 +116,28 @@ a property of the *pair*, so it is answered by `Suite::plan(&subject)`, which re
 distinct from zero, because §7's column is exactly where 2.0's differentiator has to appear and it
 must never round to nothing.
 
+## SPEC amendments 6 and 7 — both additive, `schema` stays `1`
+
+- **`[delivery]` on the subject descriptor** (§7): `open` / `close` sentinels naming the lines that
+  bracket a multi-line prompt the subject reassembles into one turn. Optional, but **both keys are
+  required once the table is present** and they may not be identical — a half-declared pair would
+  wrap a prompt in something the subject never closes on, and that failure lands as a *timeout*,
+  which reads as a slow subject rather than as a bad descriptor.
+- **`expect.gate_fires_after_deny`** (§5): gates strictly after the first delivered `deny`. F36 —
+  `gate_fires = { min = 2 }` was satisfied by four exploratory `bash` gates while the denial was the
+  session's last gate, so the bound passed and the question went unanswered.
+
+A descriptor with no `[delivery]` and a variant with no `gate_fires_after_deny` load exactly as
+before, which is why the integer did not move.
+
+**A fourth deliberate strictening over `validate.py`, now matched on both sides: an unknown `expect`
+key is rejected, not ignored.** An `expect` that checks nothing always holds, so
+`gate_fires_after_denial` would have turned a variant's whole question into a silent pass — in the
+direction that flatters the subject. Same shape as F28's zero caveats.
+
 ## Tests
 
-47, in two files. `tests/rules.rs` builds a minimal valid corpus from scratch — not a copy of
+53, in two files. `tests/rules.rs` builds a minimal valid corpus from scratch — not a copy of
 `u100`, so the tests neither move when the import changes nor prove only that one donor parses —
 and mutates one thing per test. Every negative control asserts the rejection **carries that rule's
 number**; "some rejection happened" would let a rule fire for the wrong reason and still read
