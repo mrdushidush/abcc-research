@@ -1,0 +1,11 @@
+[package]
+name = "w8-import-q56"
+version = "0.1.0"
+description = "Imports Claudette's Q56 quality battery into a corpus/SPEC.md v1 corpus"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# Zero third-party dependencies, like w8-import. The donor is read through `git`, which is a
+# process rather than a crate, and nothing here parses TOML — it only writes it, comments included.
+[dependencies]

@@ -1,0 +1,112 @@
+schema    = 1
+id        = "Q08"
+title     = "fix left-associative chained subtraction in the expression evaluator"
+lang      = "rust"
+kind      = "multi-file"
+
+# Per-task, straight off the manifest row `Q08 rust multi-file Q08 700`. The donor gave the harder
+# tasks longer deliberately, "so a 15 tok/s candidate is never wall-punished" — one of the few
+# donor decisions that transfers to W8 unchanged.
+timeout_s = 700
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+# ---------------------------------------------------------------------------
+# Disposition — SPEC.md §10
+# ---------------------------------------------------------------------------
+[disposition]
+verifiable = "full"       # the verifier compiles the crate and runs hidden tests against it
+quarantine = "none"
+reason = """
+the verifier injects six hidden reviewer tests at grade time and runs them against whatever the \
+subject left on disk. It grades the code, not the transcript — no Q56 verifier reads the \
+transcript at all (F41), so nothing here is presence-only.\
+"""
+
+[selection]
+gate3 = false
+# R9/R10's gate3 set is a U100 selection and has no meaning in this suite. Q56 needs no equivalent:
+# points 1 and 2 are available for all 56 without authoring (every task ships a fixture that is
+# already a wrong answer, and a refsol), so the "which 30 do we author for" question that produced
+# gate3 does not arise here. Only point 3 needs authoring, and that is step 4's question.
+
+# ---------------------------------------------------------------------------
+# Gate — SPEC.md §9. Recorded at import, not asserted at run time.
+#
+# ⚠ NOT RUN YET. The donor's own `gate_q50.sh` requires both points to hold before a task may
+# enter manifest-q50.tsv, so both are pre-satisfied by construction (F45) — but this suite records
+# what IT measured against the REWRITTEN verifier, and `verifier = "rewritten"` is the
+# authoritative column (§9). U100 was 79 of 80 sound at point 1 and F8 still found a verifier
+# passing an intact SQL injection, so a donor's gate is a reason to expect a result, never a
+# substitute for it.
+#
+# Point 1's pre-state here is the donor's untouched fixture (tier `donor_fixture`), NOT §9's
+# generated null-implementation stub: the fixture already compiles and passes the visible tests
+# while failing the hidden ones, which is exactly the state the stub was invented to simulate.
+# ---------------------------------------------------------------------------
+[gate]
+point1 = "not_run"
+point2 = "not_run"
+point3 = "not_run"   # no sham/ — step 4's question, and never silently treated as passed
+
+# ---------------------------------------------------------------------------
+# Provenance — every corpus field appears in exactly one of the three lists
+# ---------------------------------------------------------------------------
+[provenance]
+donor        = "claudette-q56"
+donor_id     = "Q08"
+donor_commit = "43d6b34"
+donor_path   = "runs/eval-2026-05-29/battery"
+imported_at  = "2026-08-08"
+
+verbatim    = ["id", "lang", "kind", "timeout_s", "prompt", "fixture", "refsol", "donor_tags"]
+rewritten   = ["verify"]
+synthesized = ["title", "turn", "sham", "variants", "disposition", "selection", "gate"]
+
+caveats = [
+  """
+  THE PROMPT IS VERBATIM AND THAT IS THE HEADLINE. U100's import had to rewrite all 90 prompts \
+  because they name ABCC's `file_write` tool, which is the largest single threat to comparability \
+  in that whole import. This donor's prompts name no tool and no absolute path — they are written \
+  in a user's voice, state the goal, show one example, and deliberately do not enumerate the edge \
+  cases. Nothing needed changing\
+  """,
+
+  """
+  VERIFIER REWRITE, three ways and no assertion touched. `_lib.sh` is inlined (a W8 task dir is \
+  self-contained, SPEC §2) carrying only the four lines Q56 uses — the tc/tcre/tcount transcript \
+  helpers are dropped as dead code, since no Q56 verifier reads the transcript. `cargo` resolves \
+  as ${CARGO:-cargo} per SPEC §8. And a missing toolchain prints INVALID rather than FAIL, which \
+  is a deliberate strictening over the donor: its README says a missing toolchain does not skip \
+  its tasks but fails them, silently costing up to 19 points. The hidden-test body is \
+  byte-identical\
+  """,
+
+  """
+  the six hidden reviewer tests live in the verifier and are written into the work dir at grade \
+  time, so the subject never sees them. The fixture ships only happy-path visible tests, on \
+  purpose: a PASS is possible only if the subject handled an edge the prompt implies but does not \
+  state. This is the donor's central design and it survives the import untouched\
+  """,
+
+  """
+  fixture/Cargo.toml carries an empty [workspace] table. It is load-bearing, not clutter: without \
+  it the parent repo's cargo workspace captures the fixture and the build refuses. Copied verbatim\
+  """,
+
+  """
+  the donor ran this task as one invocation with no permission gate in the path, so its recorded \
+  number is comparable to the `control` variant and to nothing else — the same limitation U100's \
+  baselines carry (F1)\
+  """,
+]
+
+[donor_tags]                       # donor-scoped, no cross-suite meaning
+manifest_row = "Q08\trust\tmulti-file\tQ08\t700"
+lang         = "rust"              # the donor's own column; `lang` above maps it to SPEC's vocabulary
+kind         = "multi-file"
