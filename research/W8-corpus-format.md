@@ -251,6 +251,12 @@ That last line is textbook SQL injection and the verdict is PASS. Two things fol
 
 This is one task of 100. It is evidence for gating the import, not for distrusting the whole suite.
 
+**Update 2026-08-08:** it is no longer one task. Looking for this pattern systematically found
+`fix_path_traversal`, whose verifier passes its own *untouched* fixture and so cannot fail at all
+(`W8-hardest-30.md` F15), plus ten tasks with no verifier whatsoever (F13). The conclusion above
+still stands - gate the import, do not distrust the suite - but the gate now has more to catch than
+this section suggested.
+
 ### F9. `in=` / `out=` is session-cumulative and summed per iteration. Cost is the last line, not the sum of lines.
 
 Settled 2026-08-08 by reading the accounting and then running it, because a single-turn session
@@ -657,14 +663,16 @@ schema is approved, which is exactly why this document stops here.
    otherwise per task.
 3. ~~**How many of ABCC's other 99 tasks survive the three-point gate?**~~ **SCOPED by David
    2026-08-08: author the three-point gate across the 30 hardest ABCC tasks only**, not all 100.
-   The remaining 70 import on the two-point gate. **What "hardest" means is the first open question of
-   the import pass** and is answerable from data already in the repo:
-   `prestudy/data/abcc-100task-results.tsv` holds 481 rows across the 7 recorded runs, so hardest can
-   be ranked by observed failure rate. Two wrinkles to handle when doing it: the 2026-02-26 run is an
-   infrastructure collapse (72 errors, 0 genuine failures) and must be excluded, and the suite is
-   saturating - the best run scored 95/100 - so failure rate alone will not separate 30 tasks. Expect
-   to need a tie-break, most likely complexity band then category coverage, so the 30 are not all
-   drawn from one section.
+   The remaining 70 import on the two-point gate. ~~**What "hardest" means is the first open question
+   of the import pass.**~~ **ANSWERED 2026-08-08 - see `W8-hardest-30.md`**, which proposes the 30 and
+   carries findings F11-F17. Three things there change assumptions in this document:
+   the candidate pool is **90 tasks, not 100** (the last 10 are a CTO experiment whose content changed
+   between runs, F11); **ten tasks have no verifier at all** and are scored on the agent-execution
+   success flag (F13); and **`fix_path_traversal` is a second non-verifying verifier, worse than
+   `fix_sql_inject`** - it passes its own untouched fixture, so it fails gate step 1 (F15). The
+   predicted complexity/category tie-break did not survive: complexity takes four values across the
+   whole suite and duration below the timeout tracks output length, so the tie-break is **verifier
+   exposure** instead.
 4. **Does the redirect need a per-tool granularity the gate does not offer?** The gate fires per tool
    call with the tool name and full input available on stderr, which is enough to match on. Whether
    matching on the *input* (e.g. only redirect a `bash` running `cargo test`) is needed is a K-series
