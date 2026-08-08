@@ -9,7 +9,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use w8_corpus::{Corpus, Quarantine, RuleId, Support, Verifiable, VariantOrigin};
+use w8_corpus::{Corpus, Lang, Quarantine, RuleId, Support, Verifiable, VariantOrigin};
 
 // ---------------------------------------------------------------------------
 // A minimal valid corpus, built from scratch rather than copied out of corpus/.
@@ -345,6 +345,26 @@ fn rule10_a_field_outside_the_closed_vocabulary_is_rejected() {
     let t = Tmp::new("rule10c");
     t.task("t1", &TASK.mutate(r#"rewritten = []"#, r#"rewritten = ["vibes"]"#));
     assert_rejected_by(&t.rejections(), RuleId::R10Partition);
+}
+
+/// SPEC amendment 8, David's word on 2026-08-08. Without it, 8 of Q56's 56 tasks are a load
+/// rejection — and a rejected task rejects the whole corpus, so those eight would have taken u100
+/// down with them (F47, F48).
+#[test]
+fn a_shell_task_loads_since_amendment_8() {
+    let t = Tmp::new("lang-shell");
+    t.task("t1", &TASK.mutate(r#"lang = "python""#, r#"lang = "shell""#));
+    let c = t.load().expect("`shell` is in the lang vocabulary as of SPEC amendment 8");
+    assert_eq!(c.suites[0].tasks[0].lang, Lang::Shell);
+}
+
+/// The vocabulary is still closed, and it is only closed vocabularies that make `lang` a checkable
+/// field at all. `bash` is the plausible near-miss: it is what someone would type for a shell task.
+#[test]
+fn the_lang_vocabulary_is_still_closed_after_amendment_8() {
+    let t = Tmp::new("lang-bash");
+    t.task("t1", &TASK.mutate(r#"lang = "python""#, r#"lang = "bash""#));
+    assert_rejected_by(&t.rejections(), RuleId::Field);
 }
 
 // ---------------------------------------------------------------------------

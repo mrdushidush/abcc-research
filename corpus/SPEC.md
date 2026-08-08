@@ -137,7 +137,7 @@ adding a name to it is a `schema` bump.
 | `schema` | int | yes | must be `1` |
 | `id` | string | yes | `[a-z0-9_]+`, equal to the directory name |
 | `title` | string | yes | human-readable, not an identifier |
-| `lang` | string | yes | `python` \| `node` \| `rust` \| `go` \| `typescript` \| `html` \| `mixed` |
+| `lang` | string | yes | `python` \| `node` \| `rust` \| `go` \| `typescript` \| `html` \| `shell` \| `mixed` (amendment 8) |
 | `kind` | string | yes | free text; donor category maps straight in (`bugfix`, `security`, …) |
 | `timeout_s` | int | yes | wall clock for the whole session, not per turn |
 | `[[turn]]` | array | yes, ≥1 | ordered; `send_file` **xor** `send_text` |
@@ -563,11 +563,19 @@ The delta from the prose David read, so the change is visible rather than smuggl
 | 5 | R3 | `send` split into `send_file` / `send_text` | a single key holding either a path or a prompt cannot be read unambiguously |
 | 6 | §5 | `expect` gains `gate_fires_after_deny = { min, max }` | F36 — `gate_fires = { min = 2 }` was satisfied by four exploratory `bash` gates while the denial was the session's last gate, so the bound passed and the question went unanswered |
 | 7 | §7 | Subject descriptor gains an optional `[delivery]` with `open` / `close` | 69 of 90 prompts are multi-line and no subject path delivered one as a turn; David's call (2026-08-08) was to fix the subject, so the format has to carry how each subject receives a block |
+| 8 | §3 | `lang` gains `shell` | F47 — 8 of Q56's 56 tasks are shell, the vocabulary is closed, and a rejected task rejects the whole corpus, so those eight could not import at all. David's word, 2026-08-08 |
 
-**Both are additive and `schema` stays `1`.** Every existing file remains valid: a descriptor with no
-`[delivery]` and a variant with no `gate_fires_after_deny` load exactly as before. Bumping the
-integer would invalidate all 90 task files to express "two optional keys appeared", which is the
-wrong trade — the amendment table is the record of the change.
+**All three are additive and `schema` stays `1`.** Every existing file remains valid: a descriptor
+with no `[delivery]` and a variant with no `gate_fires_after_deny` load exactly as before, and no
+task on disk uses `shell`. Bumping the integer would invalidate all 90 task files to express "two
+optional keys and one accepted value appeared", which is the wrong trade — the amendment table is
+the record of the change.
+
+**Amendment 8 is not the bump §3 warns about.** That rule governs the `verbatim`/`rewritten`/
+`synthesized` **partition list** — the field *names* — because the partition claim is only checkable
+against a closed set. `lang`'s accepted *values* are a different vocabulary: widening it accepts
+strictly more corpora and rejects none, so every existing task loads unchanged. The direction that
+would break is an older loader reading a newer corpus, and both move together here.
 
 Two smaller resolutions, recorded so they are not rediscovered as bugs:
 

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/w8-import", "crates/w8-corpus", "crates/w8-run"]
+members = ["crates/w8-import", "crates/w8-corpus", "crates/w8-run", "crates/w8-import-q56"]
 
 # W8's harness. Step 2 of the plan is `w8-import`; step 3 is `w8-corpus` and the runner, which
 # is why this is a workspace from the start rather than a single crate to be converted.

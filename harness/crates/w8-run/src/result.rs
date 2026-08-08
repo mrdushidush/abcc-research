@@ -236,6 +236,21 @@ pub struct RunMeta {
     pub preamble_tokens_in: u64,
     pub delivery_mode: String,
     pub aggregate_rule: String,
+    /// **What the *server* says about the model, as opposed to what the runner asked for.**
+    /// `num_ctx` above is Claudette's client-side truncation budget and is pinned by the runner;
+    /// `loaded_context_length` here is the real window and is set outside the harness entirely, by
+    /// whoever loaded the model. Recording only the former is the F34 shape — a held constant
+    /// nobody measures is not held. `None` when the server has no `/api/v0/models` path.
+    pub server_model: Option<crate::endpoint::ServerModel>,
+    /// Relative path to the verbatim `lms ps` capture, or `None` when `lms` is not on PATH.
+    /// **Not parsed into columns**: the table puts spaces inside fields (`13.61 GB`), so splitting
+    /// on whitespace would mis-assign them. It is the only source for `PARALLEL`, which halves the
+    /// effective per-conversation window when it is above 1.
+    pub lms_ps_file: Option<String>,
+    /// **State that neither source reports, named rather than left silent.** The KV cache
+    /// quantization survives an unload, is invisible to `/api/v0/models` and to `lms ps` alike, and
+    /// changes both memory use and output; the Q56 campaign lost two nights to exactly this class.
+    pub server_uncaptured: Vec<String>,
     /// **Run-scoped pins only.** The variant-scoped ones are on the cell — see
     /// [`crate::env::PER_CELL_KEYS`].
     pub env_pinned: BTreeMap<String, String>,
@@ -294,6 +309,47 @@ impl RunMeta {
         );
         let _ = write!(s, ",\"delivery_mode\":{}", json_quote(&self.delivery_mode));
         let _ = write!(s, ",\"aggregate_rule\":{}", json_quote(&self.aggregate_rule));
+        s.push_str(",\"server\":");
+        match &self.server_model {
+            None => s.push_str("null"),
+            Some(m) => {
+                let _ = write!(
+                    s,
+                    "{{\"id\":{},\"state\":{},\"quantization\":{},\"arch\":{},\"publisher\":{},\
+                     \"type\":{},\"compatibility_type\":{},\"loaded_context_length\":{},\
+                     \"max_context_length\":{},\"capabilities\":[",
+                    json_quote(&m.id),
+                    json_quote(&m.state),
+                    json_quote(&m.quantization),
+                    json_quote(&m.arch),
+                    json_quote(&m.publisher),
+                    json_quote(&m.kind),
+                    json_quote(&m.compatibility_type),
+                    m.loaded_context_length.map_or("null".to_string(), |n| n.to_string()),
+                    m.max_context_length.map_or("null".to_string(), |n| n.to_string()),
+                );
+                for (i, c) in m.capabilities.iter().enumerate() {
+                    if i > 0 {
+                        s.push(',');
+                    }
+                    s.push_str(&json_quote(c));
+                }
+                s.push_str("]}");
+            }
+        }
+        let _ = write!(
+            s,
+            ",\"lms_ps\":{}",
+            self.lms_ps_file.as_ref().map_or("null".to_string(), |p| json_quote(p))
+        );
+        s.push_str(",\"server_uncaptured\":[");
+        for (i, k) in self.server_uncaptured.iter().enumerate() {
+            if i > 0 {
+                s.push(',');
+            }
+            s.push_str(&json_quote(k));
+        }
+        s.push(']');
         // `scope` is not decoration: a reader has to know this block does not describe
         // CLAUDETTE_AUTO_APPROVE, which changes per variant.
         s.push_str(",\"env\":{\"scope\":\"run\",\"pinned\":{");
@@ -432,6 +488,20 @@ mod tests {
             delivery_mode: "verbatim".into(),
             aggregate_rule: "include_verifiable = [full, presence_only], exclude_quarantined = true"
                 .into(),
+            server_model: Some(crate::endpoint::ServerModel {
+                id: "qwen3.6-35b-a3b-mtp@iq3_s".into(),
+                state: "loaded".into(),
+                quantization: "IQ3_S".into(),
+                arch: "qwen35moe".into(),
+                publisher: "byteshape".into(),
+                kind: "llm".into(),
+                compatibility_type: "gguf".into(),
+                loaded_context_length: Some(65536),
+                max_context_length: Some(262144),
+                capabilities: vec!["tool_use".into()],
+            }),
+            lms_ps_file: Some("lms-ps.txt".into()),
+            server_uncaptured: vec!["kv_cache_type".into()],
             env_pinned: [("CLAUDETTE_FALLBACK_BRAIN_MODEL".to_string(), String::new())]
                 .into_iter()
                 .collect(),
@@ -440,6 +510,13 @@ mod tests {
         let j = m.to_json();
         assert!(j.contains("\"model_confirmed\":\"qwen3.6-35b-a3b-mtp@iq3_s\""), "{j}");
         assert!(j.contains("\"preamble_tokens_in\":4885"), "{j}");
+        // The real window, which no pin the runner sets can reach — recorded beside the pin so the
+        // two are never read as the same quantity.
+        assert!(j.contains("\"loaded_context_length\":65536"), "{j}");
+        assert!(j.contains("\"num_ctx\":61440"), "{j}");
+        assert!(j.contains("\"quantization\":\"IQ3_S\""), "{j}");
+        // The gap is part of the record. A capture that lists only what it found reads as complete.
+        assert!(j.contains("\"server_uncaptured\":[\"kv_cache_type\"]"), "{j}");
         // The pin that stops a stuck signal escalating a second model into a measured turn has to
         // be visible in the record, or nobody can tell whether a run held it.
         assert!(j.contains("\"CLAUDETTE_FALLBACK_BRAIN_MODEL\":\"\""), "{j}");
@@ -447,5 +524,14 @@ mod tests {
         // the variant-scoped CLAUDETTE_AUTO_APPROVE.
         assert!(j.contains("\"scope\":\"run\""), "{j}");
         assert!(!j.contains('\n'));
+
+        // A server with no `/api/v0/models` path (anything that is not LM Studio) records the
+        // absence. `null` is "nobody asked or nobody answered"; it must not read as a value.
+        let mut bare = m.clone();
+        bare.server_model = None;
+        bare.lms_ps_file = None;
+        let j = bare.to_json();
+        assert!(j.contains("\"server\":null"), "{j}");
+        assert!(j.contains("\"lms_ps\":null"), "{j}");
     }
 }

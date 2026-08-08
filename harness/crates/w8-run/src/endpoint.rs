@@ -144,6 +144,57 @@ pub fn list_models(endpoint: &str) -> Result<Vec<String>, EndpointError> {
     Ok(json_strings_for_key(&body, "id"))
 }
 
+/// What the server says about the loaded model, from LM Studio's own `/api/v0/models`.
+///
+/// `/v1/models` (the OpenAI-compatible path) carries ids and nothing else. The `v0` path is where
+/// the load-time state lives, and that state is measurement-critical in a way the ids are not:
+/// **`loaded_context_length` is the real context window, and no environment variable the runner
+/// sets can change it.** On the OpenAI-compat path Claudette never sends `num_ctx` at all
+/// (`api.rs:757-785`, whose own comment reads "`num_ctx` has no analogue — context is set at
+/// model-load time in LM Studio"); `CLAUDETTE_NUM_CTX` drives only Claudette's *client-side*
+/// history truncator (`api.rs:1254`, at 4 chars/token). The two numbers are different quantities
+/// that read like the same one.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ServerModel {
+    pub id: String,
+    pub state: String,
+    pub quantization: String,
+    pub arch: String,
+    pub publisher: String,
+    pub kind: String,
+    pub compatibility_type: String,
+    pub loaded_context_length: Option<u64>,
+    pub max_context_length: Option<u64>,
+    pub capabilities: Vec<String>,
+}
+
+/// The `/api/v0/models` entry whose `id` is `model`, or `None` when the server has no such entry.
+///
+/// `Ok(None)` and `Err(..)` are deliberately different: a server that is not LM Studio has no `v0`
+/// path at all and answers 404, which is a *missing capture*, not a bad one.
+pub fn server_model(endpoint: &str, model: &str) -> Result<Option<ServerModel>, EndpointError> {
+    let body = request(endpoint, "GET", "/api/v0/models", None, Duration::from_secs(15))?;
+    Ok(parse_server_model(&body, model))
+}
+
+fn parse_server_model(body: &str, model: &str) -> Option<ServerModel> {
+    json_objects_in_array(body, "data")
+        .into_iter()
+        .find(|o| json_string_field(o, "id").as_deref() == Some(model))
+        .map(|o| ServerModel {
+            id: json_string_field(&o, "id").unwrap_or_default(),
+            state: json_string_field(&o, "state").unwrap_or_default(),
+            quantization: json_string_field(&o, "quantization").unwrap_or_default(),
+            arch: json_string_field(&o, "arch").unwrap_or_default(),
+            publisher: json_string_field(&o, "publisher").unwrap_or_default(),
+            kind: json_string_field(&o, "type").unwrap_or_default(),
+            compatibility_type: json_string_field(&o, "compatibility_type").unwrap_or_default(),
+            loaded_context_length: json_u64_field(&o, "loaded_context_length"),
+            max_context_length: json_u64_field(&o, "max_context_length"),
+            capabilities: json_string_array_field(&o, "capabilities"),
+        })
+}
+
 /// Ask the endpoint to answer one token as `model`, and return **the model id the server says it
 /// used**. The caller compares; a mismatch is a run-abort, not a warning.
 pub fn confirm_model(endpoint: &str, model: &str) -> Result<String, EndpointError> {
@@ -243,9 +294,223 @@ fn json_strings_for_key(body: &str, key: &str) -> Vec<String> {
     out
 }
 
+/// The objects that are direct elements of `"key": [ ... ]`, each as raw JSON text.
+///
+/// Brace-balanced and string-aware, unlike [`json_strings_for_key`]: the flat scan is only safe
+/// when a key name cannot appear as a value, and here the objects must be split *before* their
+/// fields are read or `json_string_field(body, "id")` returns whichever model the server happened
+/// to list first — which on this machine is the champion only by luck of ordering.
+fn json_objects_in_array(body: &str, key: &str) -> Vec<String> {
+    let chars: Vec<char> = body.chars().collect();
+    let Some(open) = find_array_for_key(&chars, key) else { return Vec::new() };
+
+    let mut out = Vec::new();
+    let (mut depth, mut start, mut in_str, mut esc) = (0usize, None, false, false);
+    for i in open..chars.len() {
+        let c = chars[i];
+        if in_str {
+            match c {
+                _ if esc => esc = false,
+                '\\' => esc = true,
+                '"' => in_str = false,
+                _ => {}
+            }
+            continue;
+        }
+        match c {
+            '"' => in_str = true,
+            '{' => {
+                if depth == 0 {
+                    start = Some(i);
+                }
+                depth += 1;
+            }
+            '}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    if let Some(s) = start.take() {
+                        out.push(chars[s..=i].iter().collect());
+                    }
+                }
+            }
+            // The array's own close, reached only outside any element object.
+            ']' if depth == 0 => break,
+            _ => {}
+        }
+    }
+    out
+}
+
+/// Index of the `[` introducing `"key": [`, skipping whitespace around the colon.
+fn find_array_for_key(chars: &[char], key: &str) -> Option<usize> {
+    let needle: Vec<char> = format!("\"{key}\"").chars().collect();
+    let mut i = 0usize;
+    while i + needle.len() <= chars.len() {
+        if chars[i..i + needle.len()] == needle[..] {
+            let mut j = i + needle.len();
+            while j < chars.len() && chars[j].is_whitespace() {
+                j += 1;
+            }
+            if j < chars.len() && chars[j] == ':' {
+                j += 1;
+                while j < chars.len() && chars[j].is_whitespace() {
+                    j += 1;
+                }
+                if j < chars.len() && chars[j] == '[' {
+                    return Some(j);
+                }
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+/// The unsigned integer value for `"key"`. `None` when the key is absent or the value is not a
+/// bare integer — `not-loaded` models carry no `loaded_context_length` at all, and that absence is
+/// the honest record, not a zero.
+fn json_u64_field(obj: &str, key: &str) -> Option<u64> {
+    let chars: Vec<char> = obj.chars().collect();
+    let needle: Vec<char> = format!("\"{key}\"").chars().collect();
+    let mut i = 0usize;
+    while i + needle.len() <= chars.len() {
+        if chars[i..i + needle.len()] == needle[..] {
+            let mut j = i + needle.len();
+            while j < chars.len() && chars[j].is_whitespace() {
+                j += 1;
+            }
+            if j < chars.len() && chars[j] == ':' {
+                j += 1;
+                while j < chars.len() && chars[j].is_whitespace() {
+                    j += 1;
+                }
+                let digits: String = chars[j..].iter().take_while(|c| c.is_ascii_digit()).collect();
+                return digits.parse().ok();
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+/// The string elements of `"key": ["a", "b"]`.
+fn json_string_array_field(obj: &str, key: &str) -> Vec<String> {
+    let chars: Vec<char> = obj.chars().collect();
+    let Some(open) = find_array_for_key(&chars, key) else { return Vec::new() };
+    let mut close = chars.len();
+    let (mut in_str, mut esc) = (false, false);
+    for (i, &c) in chars.iter().enumerate().skip(open) {
+        if in_str {
+            match c {
+                _ if esc => esc = false,
+                '\\' => esc = true,
+                '"' => in_str = false,
+                _ => {}
+            }
+            continue;
+        }
+        match c {
+            '"' => in_str = true,
+            ']' => {
+                close = i;
+                break;
+            }
+            _ => {}
+        }
+    }
+    let inner: String = chars[open..close].iter().collect();
+    // Every string literal inside the slice; the array holds nothing else.
+    let mut out = Vec::new();
+    let (mut cur, mut in_s, mut es) = (String::new(), false, false);
+    for c in inner.chars() {
+        if in_s {
+            match c {
+                _ if es => {
+                    cur.push(c);
+                    es = false;
+                }
+                '\\' => es = true,
+                '"' => {
+                    out.push(std::mem::take(&mut cur));
+                    in_s = false;
+                }
+                _ => cur.push(c),
+            }
+        } else if c == '"' {
+            in_s = true;
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The real `GET /api/v0/models` body from 2026-08-08, trimmed to three entries. Kept verbatim
+    /// so the parser is tested against bytes the server actually sent, not against a shape assumed
+    /// from the docs.
+    const REAL_V0_MODELS: &str = r#"{"data":[
+      {"id":"qwen3.6-35b-a3b-mtp@iq3_s","object":"model","type":"llm","publisher":"byteshape",
+       "arch":"qwen35moe","compatibility_type":"gguf","quantization":"IQ3_S","state":"loaded",
+       "max_context_length":262144,"loaded_context_length":65536,"capabilities":["tool_use"]},
+      {"id":"devstral-small-2-24b-instruct-2512","object":"model","type":"llm",
+       "publisher":"unsloth","arch":"mistral3","compatibility_type":"gguf","quantization":"IQ4_XS",
+       "state":"not-loaded","max_context_length":393216,"capabilities":["tool_use"]},
+      {"id":"google/gemma-4-26b-a4b","object":"model","type":"vlm","publisher":"google",
+       "arch":"gemma4","compatibility_type":"gguf","quantization":"Q4_K_M","state":"not-loaded",
+       "max_context_length":262144}
+    ],"object":"list"}"#;
+
+    #[test]
+    fn reads_the_loaded_model_out_of_the_real_v0_body() {
+        let m = parse_server_model(REAL_V0_MODELS, "qwen3.6-35b-a3b-mtp@iq3_s").unwrap();
+        assert_eq!(m.state, "loaded");
+        assert_eq!(m.quantization, "IQ3_S");
+        assert_eq!(m.arch, "qwen35moe");
+        assert_eq!(m.kind, "llm", "`type` must not be read out of `compatibility_type`");
+        assert_eq!(m.compatibility_type, "gguf");
+        assert_eq!(m.loaded_context_length, Some(65536));
+        assert_eq!(m.max_context_length, Some(262144));
+        assert_eq!(m.capabilities, vec!["tool_use"]);
+    }
+
+    /// The bug this splitter exists to prevent: a flat scan for `"id"` over the whole body returns
+    /// the first model listed, so every field would describe a model that is not the one measured.
+    #[test]
+    fn selects_by_id_rather_than_taking_the_first_entry() {
+        let m = parse_server_model(REAL_V0_MODELS, "devstral-small-2-24b-instruct-2512").unwrap();
+        assert_eq!(m.arch, "mistral3");
+        assert_eq!(m.state, "not-loaded");
+        // Absent for an unloaded model, and absence is recorded as absence rather than as 0.
+        assert_eq!(m.loaded_context_length, None);
+        assert_eq!(json_string_field(REAL_V0_MODELS, "id").unwrap(), "qwen3.6-35b-a3b-mtp@iq3_s");
+    }
+
+    #[test]
+    fn an_id_containing_a_slash_is_still_matched() {
+        let m = parse_server_model(REAL_V0_MODELS, "google/gemma-4-26b-a4b").unwrap();
+        assert_eq!(m.publisher, "google");
+        assert!(m.capabilities.is_empty(), "the key is absent on this entry");
+    }
+
+    #[test]
+    fn a_model_the_server_does_not_list_is_none_not_a_default() {
+        assert_eq!(parse_server_model(REAL_V0_MODELS, "w8-bogus-model-id"), None);
+        // A server with no v0 path at all answers something without `data`.
+        assert_eq!(parse_server_model(r#"{"error":"not found"}"#, "anything"), None);
+    }
+
+    /// A `}` inside a string value must not close the object early, or the following entries shift
+    /// by one and the wrong model is reported with total confidence.
+    #[test]
+    fn a_brace_inside_a_string_value_does_not_split_an_object() {
+        let body = r#"{"data":[{"id":"a}b","state":"loaded","loaded_context_length":8},
+                               {"id":"c","state":"not-loaded"}]}"#;
+        let m = parse_server_model(body, "a}b").unwrap();
+        assert_eq!(m.loaded_context_length, Some(8));
+        assert_eq!(parse_server_model(body, "c").unwrap().state, "not-loaded");
+    }
 
     #[test]
     fn host_port_defaults_and_paths() {

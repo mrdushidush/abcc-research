@@ -239,9 +239,67 @@ session, for the verifier's script path — the identical bug, in the identical 
 missed here. **Any path handed to a process whose cwd is the work dir must be absolute**, and that is
 now a rule rather than two spot fixes.
 
-⚠ **What still needs measuring before this is closed**: an end-to-end cell showing `write_file`
-landing in the work dir, and a re-run of the n=5 repeats. Neither is done — the fix is verified by
-unit test only.
+✅ **VERIFIED END TO END, 2026-08-08 (session 9).** `fix_weak_hash/control` against `af3f804`:
+
+```
+[    5694ms] ERR    ▸ apply_diff: …\cells\fix_weak_hash__control\wd\weak_hash.py (98 → 184 bytes)
+```
+
+The path is the work dir, the file on disk really changed (`hashlib.md5` → a salted `sha256`), the
+verifier PASSed against the graded artifact, and **nothing new appeared in `~/.claudette/files/`**.
+**Iterations came back to 5**, against the 10.5 and 12.5 medians the bug produced — so the fight for
+a way in is gone, and the fix was the whole story rather than one contributor.
+
+The binary doubt is closed too: `cargo build --release` from a clean `af3f804` tree reported nothing
+to rebuild, and `CLAUDETTE-PROMPT` is present in the exe. The 19:44-vs-20:02 timestamp gap was the
+build preceding the commit of the same sources, not a stale binary.
+
+### F50. `CLAUDETTE_NUM_CTX` is not the context window. It is the truncator's budget, and the window is set outside the harness
+
+The session-8 note recorded that "LM Studio reports `loaded_context_length: 65536` while the runner
+pins `CLAUDETTE_NUM_CTX=61440`" and filed it as a disagreement to resolve. **It is not a
+disagreement. They are two different quantities that read like the same one**, and only one of them
+is reachable from this harness.
+
+On the OpenAI-compatible path — which is the path in use, since the runner pins
+`CLAUDETTE_OPENAI_COMPAT=1` — **Claudette never sends `num_ctx` to the server at all.** Its own
+comment says so (`api.rs:757-785`):
+
+> `num_ctx` has no analogue — context is set at model-load time in LM Studio
+> (e.g. `lms load --context-length 32768`).
+
+The Ollama branch below it puts `num_ctx` in `options`; the OpenAI branch sends `temperature` and
+`max_tokens` and nothing else. So `CLAUDETTE_NUM_CTX` drives exactly one thing: Claudette's own
+history truncator (`api.rs:1254`, `num_ctx * CHARS_PER_TOKEN`, 4 chars per token). The **real**
+window is whatever the model was loaded with, by a person, in an application the harness does not
+control and cannot query through the OpenAI API.
+
+**This is F34's shape at one remove.** F34 said a held constant the runner does not set is inherited
+from David's `.env`; this one is not even inherited — it is a property of a *separate process's*
+load-time state, and RUNMETA recorded the pin as though it described the model.
+
+**David's `.env` already has the rule right**, which is why nothing has actually gone wrong:
+
+> `# === Context window: 60K, deliberately UNDER LM Studio's loaded window ===`
+> `# the only overflow rule is: LM Studio window >= CLAUDETTE_NUM_CTX`
+
+61440 under 65536 is a deliberate ~4K cushion against Claudette's optimistic 4-chars/token estimate
+on dense code. **So the check is an inequality, not an equality**, and the runner now enforces it in
+the one direction that is silent: if the loaded window is *smaller* than the pin, Claudette happily
+builds a context the server cannot hold, the server drops the front of it, and every cell still
+reports a plausible number. That aborts the run with the `lms load` command needed to fix it.
+
+**What RUNMETA now carries** (`endpoint::server_model`, `GET /api/v0/models`): `state`,
+`quantization`, `arch`, `loaded_context_length`, `max_context_length`, `capabilities`. Plus
+`lms ps` **verbatim** into `lms-ps.txt` — verbatim because its table puts spaces inside fields
+(`13.61 GB`), so column-splitting would mis-assign them, and because it is the only source for
+`PARALLEL`, which splits the KV window across slots when above 1.
+
+⚠ **`kv_cache_type` is reported by neither**, survives an unload, and moves both memory use and
+output — the Q56 campaign lost two nights to that class. It is recorded in RUNMETA as
+`server_uncaptured: ["kv_cache_type"]`, because a capture that lists only what it found reads as
+complete. One correction to the session-8 note while here: **`lms ps` *does* report `PARALLEL`**; it
+is the KV cache type that neither source exposes.
 
 ### F38. Fourteen of the ninety tasks can fire a gate at all, and the other seventy-six are silent
 
@@ -317,11 +375,24 @@ task starts from*, which is a stronger and simpler statement than one about tool
 tool lottery stops mattering for gate *existence* on any task that ships files, because there is no
 non-gating way in.
 
-⚠ **Not yet confirmed by execution.** Source and unit test agree, and F30 recorded a `write_file`
-call that produced a gate on `fix_sql_inject` — whose fixture ships an existing file — which is
-consistent but cannot be separated from a `bash` gate in that run. The probe is an existing file in
-the work dir, a prompt inviting a full rewrite, and `gate_fires` on the cell. Deferred only because a
-second session against the endpoint would corrupt the n=5 repeats' timings.
+**Confirmed by execution 2026-08-08 (session 9), in the half that matters operationally, and
+honestly short of the whole claim.** `fix_weak_hash/gated` — an existing `weak_hash.py` in the work
+dir, post-F49 — recorded:
+
+```json
+"gate_fires": 1, "actions": [{"at_ms": 5393, "tool": "apply_diff", "action": "approve", "rule": 0}]
+```
+
+The same task shape produced `gate_fires = 0` before the F49 fix, so **an edit to an existing file
+in the work dir does now fire a gate, and gate-capable tasks are real rather than theoretical.**
+
+⚠ **What this does NOT confirm is F39's specific mechanism.** The subject reached for `apply_diff`,
+which is `DangerFullAccess` unconditionally under F38's table — so the gate is fully explained
+without `effective_required_mode`'s input-dependent override ever being consulted. The
+`write_file`-onto-an-existing-path path remains source plus `file_ops.rs:440` only. **It cannot be
+isolated from the corpus**, because which tool the subject picks is exactly F30's lottery and no
+prompt can force it; separating them needs a direct call against the subject, outside a measured
+cell. Recorded rather than quietly upgraded to "confirmed".
 
 ### F30. A tool-scoped operator rule is a bet on which tool the model picks
 

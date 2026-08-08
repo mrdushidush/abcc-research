@@ -75,14 +75,17 @@ are pre-satisfied by construction (F45). They are measured anyway, against the *
 verifier, because `verifier = "rewritten"` is SPEC §9's authoritative column — and because U100
 scored 79 of 80 sound at point 1 and F8 still found a verifier passing an intact SQL injection.
 
-## What blocks 8 of the 56
+## ~~What blocks 8 of the 56~~ ✅ CLOSED — `shell` is SPEC amendment 8
 
-**F47: SPEC §3's `lang` vocabulary has no `shell`**, and 8 Q56 tasks are shell. The vocabulary is
-closed in the loader (`w8-corpus/src/model.rs`), so those tasks are a load rejection, and a rejected
-task rejects the whole corpus. The importer **refuses them by name with the reason** and imports the
-other 48; it does not map them onto `mixed`, which means "several languages in one task" and would
-put a false value in a field whose entire purpose is to be checkable. The fix is a one-word
-amendment and it is David's to make.
+**F47: SPEC §3's `lang` vocabulary had no `shell`**, and 8 Q56 tasks are shell. The vocabulary is
+closed in the loader (`w8-corpus/src/model.rs`), so those tasks were a load rejection, and a
+rejected task rejects the whole corpus. The importer refused them by name rather than mapping them
+onto `mixed` — which means "several languages in one task" and would have put a false value in a
+field whose entire purpose is to be checkable.
+
+**David added `shell` on 2026-08-08** (SPEC §14 amendment 8, `Lang::Shell` in the loader). **All 56
+import now**, not 48. It is not a `schema` bump: §3's bump rule governs the partition field-name
+list, not `lang` values, and widening the accepted values rejects nothing already on disk.
 
 ## Two sequencing constraints, both learned the hard way
 

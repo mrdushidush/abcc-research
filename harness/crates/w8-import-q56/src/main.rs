@@ -141,9 +141,10 @@ fn run(args: Args) -> Result<ExitCode, String> {
         let lang = match donor::spec_lang(&row.lang) {
             Ok(l) => l,
             Err(e) => {
-                // F47. Refused by name with the reason rather than mapped onto the nearest thing
-                // that loads — `mixed` means something else, and a false value in a checkable field
-                // is worse than a missing task.
+                // Refused by name with the reason rather than mapped onto the nearest thing that
+                // loads — a false value in a checkable field is worse than a missing task. F47's
+                // eight shell tasks no longer land here: SPEC amendment 8 gave them a name. What
+                // remains is a donor language nobody has mapped, which must stop and be looked at.
                 skipped.push(format!("{}: {e}", row.id));
                 continue;
             }

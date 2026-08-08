@@ -155,23 +155,20 @@ impl Donor {
 }
 
 /// SPEC §3's `lang` vocabulary, which is closed and enforced by the loader
-/// (`w8-corpus/src/model.rs`). Four of the donor's five map cleanly.
+/// (`w8-corpus/src/model.rs`). **All five of the donor's languages now map cleanly.**
 ///
-/// **`shell` has no home in the vocabulary and 8 tasks are shell** (F47). It is returned as an
-/// error rather than mapped onto `mixed`: `mixed` means "several languages in one task", so using
-/// it here would put a false value in a field whose entire purpose is to be checkable. The fix is a
-/// one-word SPEC amendment, and it is David's to make.
+/// `shell` was F47's blocker: 8 of the 56 are shell, the vocabulary had no name for it, and a
+/// rejected task rejects the whole corpus. **David added `shell` on 2026-08-08 (SPEC amendment
+/// 8)**, so these eight import as themselves. The alternative that was refused, and stays refused:
+/// mapping them onto `mixed`, which means "several languages in one task" and would put a false
+/// value in a field whose entire purpose is to be checkable.
 pub fn spec_lang(donor_lang: &str) -> Result<&'static str, String> {
     match donor_lang {
         "python" => Ok("python"),
         "rust" => Ok("rust"),
         "js" => Ok("node"),
         "ts" => Ok("typescript"),
-        "shell" => Err(
-            "SPEC §3's lang vocabulary has no `shell` (F47). Add it by amendment — do not map \
-             these onto `mixed`, which means something else"
-                .to_string(),
-        ),
+        "shell" => Ok("shell"),
         other => Err(format!("unknown donor lang {other:?}")),
     }
 }

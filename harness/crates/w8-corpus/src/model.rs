@@ -34,9 +34,15 @@ macro_rules! vocab {
     };
 }
 
+// `shell` is amendment 8, added on David's word 2026-08-08 (F47): 8 of Q56's 56 tasks are shell,
+// the vocabulary is closed, and a rejected task rejects the whole corpus — so without it those
+// eight cannot import at all. Deliberately NOT mapped onto `mixed`, which means "several languages
+// in one task": that would put a false value in a field whose only purpose is to be checkable.
+// Not a `schema` bump — §3's bump rule governs the *partition* field-name list, not `lang` values,
+// and every task already on disk keeps loading unchanged.
 vocab!(Lang {
-    Python => "python", Node => "node", Rust => "rust",
-    Go => "go", TypeScript => "typescript", Html => "html", Mixed => "mixed",
+    Python => "python", Node => "node", Rust => "rust", Go => "go",
+    TypeScript => "typescript", Html => "html", Shell => "shell", Mixed => "mixed",
 });
 
 vocab!(Verifiable {

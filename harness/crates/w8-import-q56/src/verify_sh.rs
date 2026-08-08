@@ -36,6 +36,12 @@ pub fn interpreters_used(body: &str) -> Vec<(&'static str, &'static str)> {
 }
 
 /// Strip the donor's two-line header. Everything after it is carried verbatim.
+///
+/// **The two-line shape is measured across all 56, not assumed** (2026-08-08, `git show` over
+/// `battery/q50-quality-corpus:runs/eval-2026-05-29/battery/verify/Q*.sh`): line 1 is the shebang,
+/// line 2 is the `source`, and `_lib.sh` appears on no other line of any script. So the leading
+/// `skip_while` cannot swallow an assertion, and no `source` survives further down to be resolved
+/// against some *other* `_lib.sh` at run time.
 fn body_after_header(donor: &str) -> String {
     donor
         .lines()
@@ -126,7 +132,16 @@ mod tests {
         // The header is replaced, not kept: a `source _lib.sh` that survived would break at run
         // time in a task dir that has no _lib.sh, and it would break loudly, which is the good
         // case. The bad case is it resolving to some *other* _lib.sh, so assert it is gone.
-        assert!(!out.contains("_lib.sh"));
+        //
+        // Scoped to executable lines. The prelude's own comment says "_lib.sh inlined" — it is the
+        // record of the rewrite and belongs in the output, so a blanket `!contains` would fail on
+        // the documentation while a surviving `source` slipped past a differently-worded one.
+        let live: Vec<&str> =
+            out.lines().filter(|l| !l.trim_start().starts_with('#') && !l.trim().is_empty()).collect();
+        assert!(
+            live.iter().all(|l| !l.contains("_lib.sh")),
+            "an executable line still references _lib.sh: {live:?}"
+        );
     }
 
     #[test]

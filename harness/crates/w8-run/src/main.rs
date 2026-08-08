@@ -259,6 +259,8 @@ fn run(args: Args) -> Result<ExitCode, String> {
 
     // ── 3. Which model is actually going to answer ──────────────────────────
     let mut model_confirmed = String::new();
+    let mut server_model = None;
+    let mut lms_ps_file = None;
     if !args.dry_run {
         let served = endpoint::confirm_model(&args.held.endpoint, &args.held.model)
             .map_err(|e| format!("the endpoint at {} did not answer: {e}", args.held.endpoint))?;
@@ -277,6 +279,52 @@ fn run(args: Args) -> Result<ExitCode, String> {
         }
         model_confirmed = served;
         println!("model confirmed by the endpoint: {model_confirmed}");
+
+        // The model id is confirmed; the *window it was loaded with* is not, and no environment
+        // variable the runner sets can reach it. See `endpoint::ServerModel`.
+        server_model = endpoint::server_model(&args.held.endpoint, &model_confirmed)
+            .unwrap_or_else(|e| {
+                println!("⚠ no LM Studio state captured ({e}) — `server` will be null in RUNMETA");
+                None
+            });
+        if let Some(m) = &server_model {
+            let loaded = m
+                .loaded_context_length
+                .map_or("unreported".to_string(), |n| n.to_string());
+            println!(
+                "server: {} {} · state={} · loaded_ctx={loaded} (pin CLAUDETTE_NUM_CTX={})",
+                m.quantization, m.arch, m.state, args.held.num_ctx
+            );
+            // David's rule, from `~/.claudette/.env`: "the only overflow rule is: LM Studio window
+            // >= CLAUDETTE_NUM_CTX". Under it, 61440 against a 65536 window is a deliberate ~4K
+            // cushion, not a discrepancy. The violation is the other direction, and it is silent:
+            // Claudette would build a context the server cannot hold, the server would drop the
+            // front of it, and every cell would still report a plausible number.
+            if let Some(loaded) = m.loaded_context_length {
+                if loaded < args.held.num_ctx as u64 {
+                    return Err(format!(
+                        "LM Studio has {:?} loaded with a {loaded}-token window, but the run pins \
+                         CLAUDETTE_NUM_CTX={}.\n  Claudette does not send num_ctx on the \
+                         OpenAI-compatible path (api.rs:757-785) — it is the client-side \
+                         truncation budget only, so nothing would refuse the oversized context. \
+                         The server would silently drop the front of it and every cell would still \
+                         produce a plausible number.\n  Fix: reload with \
+                         `lms load --context-length {}` or lower the pin with --num-ctx.",
+                        model_confirmed, args.held.num_ctx, args.held.num_ctx
+                    ));
+                }
+            }
+            if m.state != "loaded" {
+                println!(
+                    "⚠ server state is {:?}, not \"loaded\" — the first request JIT-loads it. The \
+                     warmup turn exists to absorb that (F10), so this is a note, not a fault.",
+                    m.state
+                );
+            }
+        }
+
+        // `PARALLEL` lives only here, and `parallel > 1` splits the KV window across slots.
+        lms_ps_file = capture_lms_ps(&out_run);
     }
 
     // ── 4. The warmup, in its own session ───────────────────────────────────
@@ -311,6 +359,12 @@ fn run(args: Args) -> Result<ExitCode, String> {
         preamble_tokens_in: 0,
         delivery_mode: args.delivery.to_string(),
         aggregate_rule: suite.aggregate.describe(),
+        server_model,
+        lms_ps_file,
+        // Named, not silently omitted. `lms ps` reports PARALLEL and TTL; `/api/v0/models` reports
+        // quantization and the loaded window; the KV cache type appears in neither, survives an
+        // unload, and moves both memory use and output.
+        server_uncaptured: vec!["kv_cache_type".to_string()],
         env_pinned: BTreeMap::new(),
         env_removed: Vec::new(),
     };
@@ -902,6 +956,24 @@ fn run_cell(
 
 /// The corpus commit, and whether the tree is dirty. A cell measured against edited files is not
 /// reproducible from a commit id, so the dirt is part of the row.
+/// `lms ps` verbatim into `lms-ps.txt`, returning the file name for RUNMETA.
+///
+/// Verbatim on purpose. The table carries `PARALLEL` — the one measurement-critical setting that
+/// `/api/v0/models` does not expose, and which splits the KV window across slots when it is above
+/// 1 — but it also puts spaces *inside* fields (`13.61 GB`), so parsing it into columns would
+/// silently mis-assign them. Best-effort: `lms` is a separate CLI and may not be installed, which
+/// is a missing capture rather than a failed run.
+fn capture_lms_ps(out_run: &Path) -> Option<String> {
+    let out = Command::new("lms").arg("ps").output().ok().filter(|o| o.status.success())?;
+    let mut text = String::from_utf8_lossy(&out.stdout).into_owned();
+    if text.trim().is_empty() {
+        return None;
+    }
+    text.push('\n');
+    std::fs::write(out_run.join("lms-ps.txt"), text).ok()?;
+    Some("lms-ps.txt".to_string())
+}
+
 fn git_state(root: &Path) -> (String, bool) {
     let head = Command::new("git")
         .args(["rev-parse", "HEAD"])
