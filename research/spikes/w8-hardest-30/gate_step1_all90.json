@@ -1,0 +1,1809 @@
+[
+ {
+  "name": "tm_utils",
+  "cat": "react",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/react_taskmanager/utils'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "exit 1, no stderr (process.exit reject path)"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "tm_styles",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_task_item",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_task_counter",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_filter",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_add_task",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_task_list",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_storage",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_app",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "tm_index",
+  "cat": "react",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "coffee_hero",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "coffee_menu",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "coffee_about",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "coffee_contact",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "coffee_nav",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "saas_hero",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "saas_features",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "saas_pricing",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "saas_testimonials",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "saas_footer",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "portfolio_hero",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "portfolio_projects",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "portfolio_skills",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "portfolio_timeline",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "portfolio_contact",
+  "cat": "landing",
+  "shape": "py-open",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/david/AppDat"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "sham": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "BROKEN",
+  "step3_passing": [
+   "sham"
+  ]
+ },
+ {
+  "name": "py_json_response",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_router",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'add_route'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_request_parser",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_todo_model",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'create'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_todo_handlers",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_middleware_logger",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: argument of type 'NoneType' is not a container or iterable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_error_handler",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_validator",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: cannot unpack non-iterable NoneType object"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_cors_headers",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_pagination",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_auth_token",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: argument of type 'NoneType' is not a container or iterable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_rate_limiter",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'allow'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_server_main",
+  "cat": "py_api",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_json_response",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/jsonResponse'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'statusCode')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_router",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/router'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Router is not a constructor"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_query_parser",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/queryParser'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'a')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_note_model",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/noteModel'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: NoteStore is not a constructor"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_note_handlers",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/noteModel'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: NoteStore is not a constructor"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_middleware",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/middleware'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'includes')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_error_handler",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/errorHandler'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'status')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_validator",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/validator'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'valid')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_uuid",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/uuid'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "exit 1, no stderr (process.exit reject path)"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_pagination",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/pagination'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'items')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_auth",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/auth'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'includes')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "node_server_main",
+  "cat": "node_api",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/node_api_server/server'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'router')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_sanitize_html",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_password_hash",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: argument of type 'NoneType' is not a container or iterable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_input_validator",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_rate_limit",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'consume'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_csrf_token",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_sanitize_sql",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_jwt_simple",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'count'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_brute_force",
+  "cat": "security",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'is_locked'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_xss_filter",
+  "cat": "security",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/security/xss_filter'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'includes')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "sec_csp_builder",
+  "cat": "security",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/security/csp_builder'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'includes')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_sql_inject",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'execute'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_xss_reflect",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: argument of type 'NoneType' is not a container or iterable"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_path_traversal",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "PASS",
+    "detail": ""
+   },
+   "fixture": {
+    "verdict": "PASS",
+    "detail": ""
+   }
+  },
+  "step1": "BROKEN",
+  "step1_passing": [
+   "stub",
+   "fixture"
+  ],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_weak_hash",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: argument of type 'NoneType' is not a container or iterable"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_hardcoded_secret",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: object of type 'NoneType' has no len()"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_insecure_random",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_missing_validation",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'get'"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_info_leak",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_open_redirect",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "fix_type_confusion",
+  "cat": "bugfix",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   },
+   "fixture": {
+    "verdict": "FAIL",
+    "detail": "AssertionError"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "ts_result",
+  "cat": "typescript",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "ts_pipe",
+  "cat": "typescript",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "ts_deep_clone",
+  "cat": "typescript",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "ts_event_bus",
+  "cat": "typescript",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "ts_maybe",
+  "cat": "typescript",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "go_word_count",
+  "cat": "go",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "go_fizzbuzz",
+  "cat": "go",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "go_stack",
+  "cat": "go",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "go_csv_parser",
+  "cat": "go",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "go_slug",
+  "cat": "go",
+  "shape": "none",
+  "tiers": {},
+  "step1": "NO VERIFIER",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_csv_transform",
+  "cat": "py_data",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: object of type 'NoneType' has no len()"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_aggregator",
+  "cat": "py_data",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_data_validator",
+  "cat": "py_data",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'required'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_frequency",
+  "cat": "py_data",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: 'NoneType' object is not subscriptable"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "py_text_pipeline",
+  "cat": "py_data",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'add_step'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "mini_todo_cli",
+  "cat": "mini",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'add'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "mini_calculator",
+  "cat": "mini",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'add'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "mini_markdown",
+  "cat": "mini",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/mini_projects/markdown'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: Cannot read properties of undefined (reading 'includes')"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "mini_config",
+  "cat": "mini",
+  "shape": "node-require",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "Error: Cannot find module './tasks/mini_projects/config'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "TypeError: CM is not a constructor"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ },
+ {
+  "name": "mini_state_machine",
+  "cat": "mini",
+  "shape": "py-import",
+  "tiers": {
+   "absent": {
+    "verdict": "FAIL",
+    "detail": "ModuleNotFoundError: No module named 'tasks'"
+   },
+   "stub": {
+    "verdict": "FAIL",
+    "detail": "AttributeError: 'NoneType' object has no attribute 'add_transition'"
+   }
+  },
+  "step1": "SOUND",
+  "step1_passing": [],
+  "step3": "n/a",
+  "step3_passing": []
+ }
+]

@@ -4,7 +4,11 @@ Sub-deliverable 2 of W8, and the first open question of the import pass. Answers
 of `W8-corpus-format.md`, which David scoped on 2026-08-08: **author the three-point gate across the
 30 hardest ABCC tasks only**; the other 70 import on the two-point gate.
 
-Status: proposal. The selection at the end is the thing to approve or overrule.
+Status: **approved 2026-08-08.** David accepted R9 (read "hardest" as *where a sham is most likely to
+pass*), so R10's 30 is the set that gets a `sham/` authored. He also set the disposition for R11 item 1
+— the 10 no-verifier tasks are **quarantined-with-baseline** — and answered open question 2 with yes,
+which produced `W8-gate-step1-all90.md` (findings F18-F21). Per R9 the selection field should be named
+`gate3` rather than `hardest` when the corpus format encodes it.
 
 Findings are numbered from F11 to continue `W8-corpus-format.md`, which ends at F10.
 
@@ -296,6 +300,8 @@ These came out of the analysis and are decisions, not work:
    answer. Options: import quarantined-with-baseline like `fix_sql_inject`; import with a synthesized
    verifier (recorded as `rewritten`, breaking comparability); or drop. Recommend
    **quarantine-with-baseline**, consistent with the disposition David already set.
+   **Decided 2026-08-08: quarantine-with-baseline.** The corpus loses its only `typescript` and `go`
+   coverage, which is the accepted cost.
 2. **`fix_path_traversal`.** Fails gate step 1. Same disposition as `fix_sql_inject` by David's
    standing rule - quarantine-with-baseline - so it needs no new decision, only recording.
 3. **The 24 `strmatch` tasks.** They pass the two-point gate and will import cleanly. The caveat that
@@ -328,10 +334,11 @@ two-point gated by a script, and only the sham is hand work.
 1. **Does R9's redefinition stand?** The one real decision in this document. If "hardest" is to keep
    its literal meaning, `ts_pipe` returns to the list and something drops - but see F13 for why that
    slot buys nothing.
-2. **Should gate step 1 be run across all 90 now?** It is mechanical (F16) and it is the only cheap
-   way to find more F15s. The 56 executing verifiers are the only ones it can say anything about;
-   for the other 34 the answer is already known. Estimate: an afternoon, and it would turn "56
-   verifiers, strength unknown" into a number.
+2. ~~**Should gate step 1 be run across all 90 now?**~~ **Done — `W8-gate-step1-all90.md` (F18-F21).**
+   79 of 80 sound, 0 inconclusive, `fix_path_traversal` the only step-1 defect, so there is no third
+   one. Two things this document got wrong: the "other 34" were *not* a foregone conclusion — the 24
+   `strmatch` verifiers turned out to be mechanically shammable, which is F20 — and the obvious
+   empty-workspace generalisation of step 1 would have found nothing at all (F19).
 3. **Does the sham get authored against the donor verifier or the rewritten one?** For the U100
    import every verifier is `rewritten` (paths, contract, execution model - corpus-format doc §B), so
    the sham tests the rewrite. That is the right target, but it means a sham cannot be authored until

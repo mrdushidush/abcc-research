@@ -3,7 +3,9 @@
 Sub-deliverable 1 of W8, and the decision every other part of W8 sits on. This is the schema plus
 two worked import examples, for David's approval **before any new task content is written**.
 
-Status: proposal. Nothing below has been committed to as a build decision yet.
+Status: **R6's capability vocabulary approved 2026-08-08** — four capabilities, `pause` deliberately
+absent, and the one revision expected when 2.0 first runs is accepted rather than treated as a defect.
+The rest is still proposal. Open question 3 has since been answered by `W8-gate-step1-all90.md`.
 
 ---
 
@@ -473,6 +475,11 @@ reason in the error message, so the trap cannot be re-entered by someone reading
 reasonably assuming it means "prompt me".
 
 ### R6. Subject descriptor: capabilities are declared, `n/a` is derived
+
+**Approved as-is, 2026-08-08.** The alternative considered and rejected was naming 2.0's intended
+capabilities up front (`pause`, `steer`, `branch`, `checkpoint`) so the `n/a` column shows every gap
+from day one; rejected because a wrong name gets stickier once imported baselines cite it. The cost
+accepted is that `n/a` starts nearly empty.
 
 ```toml
 # corpus/subjects/claudette-fc1ea22.toml

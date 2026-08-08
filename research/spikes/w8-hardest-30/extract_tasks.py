@@ -16,6 +16,46 @@ from pathlib import Path
 
 FIELD = re.compile(r"\b(name|section|complexity|category|validationLang|dir|files):\s*")
 
+# JS escape sequences, as a template literal / quoted string resolves them. The walkers
+# below capture `\x` pairs verbatim so the closing delimiter is not misread; the value
+# still has to be unescaped afterwards or it carries one backslash too many. Getting this
+# wrong is silent and one-directional: `py_csv_transform`'s `\\n` reaches python3 -c as a
+# literal backslash-n instead of a newline, the CSV parses as one row, and the verifier
+# FAILs for a reason that has nothing to do with the artifact.
+JS_ESC = {
+    "\\": "\\", "`": "`", "$": "$", "'": "'", '"': '"',
+    "n": "\n", "t": "\t", "r": "\r", "b": "\b", "f": "\f", "v": "\v", "0": "\0",
+}
+
+
+def js_unescape(s):
+    """Resolve JS string escapes to the value the donor actually passes to the runner."""
+    out = []
+    i = 0
+    while i < len(s):
+        c = s[i]
+        if c != "\\" or i + 1 >= len(s):
+            out.append(c)
+            i += 1
+            continue
+        nxt = s[i + 1]
+        if nxt == "u" and i + 5 < len(s) + 1:
+            hexs = s[i + 2 : i + 6]
+            if len(hexs) == 4 and all(h in "0123456789abcdefABCDEF" for h in hexs):
+                out.append(chr(int(hexs, 16)))
+                i += 6
+                continue
+        if nxt == "x":
+            hexs = s[i + 2 : i + 4]
+            if len(hexs) == 2 and all(h in "0123456789abcdefABCDEF" for h in hexs):
+                out.append(chr(int(hexs, 16)))
+                i += 4
+                continue
+        # Unknown escapes resolve to the escaped character itself, as JS does.
+        out.append(JS_ESC.get(nxt, nxt))
+        i += 2
+    return "".join(out)
+
 
 def read_template_literal(src, i):
     """src[i] == '`'. Return (value, index_after_closing_backtick)."""
@@ -57,9 +97,11 @@ def read_value(src, i):
     while src[i] in " \t\n":
         i += 1
     if src[i] == "`":
-        return read_template_literal(src, i)
+        val, j = read_template_literal(src, i)
+        return js_unescape(val), j
     if src[i] in "\"'":
-        return read_quoted(src, i)
+        val, j = read_quoted(src, i)
+        return js_unescape(val), j
     j = i
     while j < len(src) and src[j] not in ",\n}":
         j += 1
