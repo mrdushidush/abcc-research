@@ -1,0 +1,244 @@
+n = 2 runs x 224 cells
+subject claudette-af3f804  model qwen3.6-35b-a3b-mtp@iq3_s  num_ctx 61440
+
+=== per-cell verdicts across 2 runs (agg = counts toward the aggregate denominator)
+
+task                    variant               pass fail inval  agg  reproducible
+Q01                     control                  2    0     0  yes
+Q01                     deny-first-edit          2    0     0  yes
+Q01                     gated                    2    0     0  yes
+Q01                     redirect-first-edit      1    1     0  yes  <- flips
+Q02                     control                  2    0     0  yes
+Q02                     deny-first-edit          1    1     0  yes  <- flips
+Q02                     gated                    2    0     0  yes
+Q02                     redirect-first-edit      2    0     0  yes
+Q03                     control                  0    2     0  yes
+Q03                     deny-first-edit          0    2     0  yes
+Q03                     gated                    0    2     0  yes
+Q03                     redirect-first-edit      0    2     0  yes
+Q04                     control                  2    0     0  yes
+Q04                     deny-first-edit          0    2     0  yes
+Q04                     gated                    2    0     0  yes
+Q04                     redirect-first-edit      2    0     0  yes
+Q05                     control                  0    2     0  yes
+Q05                     deny-first-edit          0    2     0  yes
+Q05                     gated                    1    1     0  yes  <- flips
+Q05                     redirect-first-edit      0    2     0  yes
+Q06                     control                  2    0     0  yes
+Q06                     deny-first-edit          1    1     0  yes  <- flips
+Q06                     gated                    2    0     0  yes
+Q06                     redirect-first-edit      1    1     0  yes  <- flips
+Q07                     control                  1    1     0  yes  <- flips
+Q07                     deny-first-edit          1    1     0  yes  <- flips
+Q07                     gated                    1    0     0  yes  <- flips
+Q07                     redirect-first-edit      2    0     0  yes
+Q08                     control                  2    0     0  yes
+Q08                     deny-first-edit          0    2     0  yes
+Q08                     gated                    2    0     0  yes
+Q08                     redirect-first-edit      2    0     0  yes
+Q09                     control                  2    0     0  yes
+Q09                     deny-first-edit          2    0     0  yes
+Q09                     gated                    2    0     0  yes
+Q09                     redirect-first-edit      2    0     0  yes
+Q10                     control                  2    0     0  yes
+Q10                     deny-first-edit          2    0     0  yes
+Q10                     gated                    2    0     0  yes
+Q10                     redirect-first-edit      2    0     0  yes
+Q11                     control                  2    0     0  yes
+Q11                     deny-first-edit          0    2     0  yes
+Q11                     gated                    2    0     0  yes
+Q11                     redirect-first-edit      2    0     0  yes
+Q12                     control                  2    0     0  yes
+Q12                     deny-first-edit          1    1     0  yes  <- flips
+Q12                     gated                    2    0     0  yes
+Q12                     redirect-first-edit      2    0     0  yes
+Q13                     control                  1    1     0  yes  <- flips
+Q13                     deny-first-edit          1    1     0  yes  <- flips
+Q13                     gated                    2    0     0  yes
+Q13                     redirect-first-edit      0    1     0  yes  <- flips
+Q14                     control                  2    0     0  yes
+Q14                     deny-first-edit          1    1     0  yes  <- flips
+Q14                     gated                    2    0     0  yes
+Q14                     redirect-first-edit      2    0     0  yes
+Q15                     control                  2    0     0  yes
+Q15                     deny-first-edit          1    1     0  yes  <- flips
+Q15                     gated                    2    0     0  yes
+Q15                     redirect-first-edit      2    0     0  yes
+Q16                     control                  2    0     0  yes
+Q16                     deny-first-edit          1    1     0  yes  <- flips
+Q16                     gated                    2    0     0  yes
+Q16                     redirect-first-edit      2    0     0  yes
+Q17                     control                  2    0     0  yes
+Q17                     deny-first-edit          2    0     0  yes
+Q17                     gated                    2    0     0  yes
+Q17                     redirect-first-edit      2    0     0  yes
+Q18                     control                  2    0     0  yes
+Q18                     deny-first-edit          1    1     0  yes  <- flips
+Q18                     gated                    2    0     0  yes
+Q18                     redirect-first-edit      2    0     0  yes
+Q19                     control                  2    0     0  yes
+Q19                     deny-first-edit          2    0     0  yes
+Q19                     gated                    2    0     0  yes
+Q19                     redirect-first-edit      2    0     0  yes
+Q20                     control                  2    0     0  yes
+Q20                     deny-first-edit          0    2     0  yes
+Q20                     gated                    2    0     0  yes
+Q20                     redirect-first-edit      1    1     0  yes  <- flips
+Q21                     control                  2    0     0  yes
+Q21                     deny-first-edit          0    2     0  yes
+Q21                     gated                    2    0     0  yes
+Q21                     redirect-first-edit      1    1     0  yes  <- flips
+Q22                     control                  2    0     0  yes
+Q22                     deny-first-edit          1    1     0  yes  <- flips
+Q22                     gated                    2    0     0  yes
+Q22                     redirect-first-edit      2    0     0  yes
+Q23                     control                  2    0     0  yes
+Q23                     deny-first-edit          2    0     0  yes
+Q23                     gated                    2    0     0  yes
+Q23                     redirect-first-edit      1    1     0  yes  <- flips
+Q24                     control                  2    0     0  yes
+Q24                     deny-first-edit          2    0     0  yes
+Q24                     gated                    2    0     0  yes
+Q24                     redirect-first-edit      2    0     0  yes
+Q25                     control                  2    0     0  yes
+Q25                     deny-first-edit          1    1     0  yes  <- flips
+Q25                     gated                    0    2     0  yes
+Q25                     redirect-first-edit      1    1     0  yes  <- flips
+Q26                     control                  1    1     0  yes  <- flips
+Q26                     deny-first-edit          1    1     0  yes  <- flips
+Q26                     gated                    2    0     0  yes
+Q26                     redirect-first-edit      1    1     0  yes  <- flips
+Q27                     control                  2    0     0  yes
+Q27                     deny-first-edit          1    1     0  yes  <- flips
+Q27                     gated                    2    0     0  yes
+Q27                     redirect-first-edit      2    0     0  yes
+Q28                     control                  2    0     0  yes
+Q28                     deny-first-edit          1    1     0  yes  <- flips
+Q28                     gated                    2    0     0  yes
+Q28                     redirect-first-edit      2    0     0  yes
+Q29                     control                  2    0     0  yes
+Q29                     deny-first-edit          2    0     0  yes
+Q29                     gated                    2    0     0  yes
+Q29                     redirect-first-edit      2    0     0  yes
+Q30                     control                  2    0     0  yes
+Q30                     deny-first-edit          2    0     0  yes
+Q30                     gated                    2    0     0  yes
+Q30                     redirect-first-edit      1    1     0  yes  <- flips
+Q31                     control                  2    0     0  yes
+Q31                     deny-first-edit          2    0     0  yes
+Q31                     gated                    2    0     0  yes
+Q31                     redirect-first-edit      2    0     0  yes
+Q32                     control                  2    0     0  yes
+Q32                     deny-first-edit          0    2     0  yes
+Q32                     gated                    2    0     0  yes
+Q32                     redirect-first-edit      1    1     0  yes  <- flips
+Q33                     control                  2    0     0  yes
+Q33                     deny-first-edit          2    0     0  yes
+Q33                     gated                    2    0     0  yes
+Q33                     redirect-first-edit      1    1     0  yes  <- flips
+Q34                     control                  2    0     0  yes
+Q34                     deny-first-edit          2    0     0  yes
+Q34                     gated                    2    0     0  yes
+Q34                     redirect-first-edit      2    0     0  yes
+Q35                     control                  2    0     0  yes
+Q35                     deny-first-edit          1    1     0  yes  <- flips
+Q35                     gated                    2    0     0  yes
+Q35                     redirect-first-edit      1    1     0  yes  <- flips
+Q36                     control                  2    0     0  yes
+Q36                     deny-first-edit          2    0     0  yes
+Q36                     gated                    2    0     0  yes
+Q36                     redirect-first-edit      2    0     0  yes
+Q37                     control                  2    0     0  yes
+Q37                     deny-first-edit          2    0     0  yes
+Q37                     gated                    2    0     0  yes
+Q37                     redirect-first-edit      2    0     0  yes
+Q38                     control                  2    0     0  yes
+Q38                     deny-first-edit          2    0     0  yes
+Q38                     gated                    2    0     0  yes
+Q38                     redirect-first-edit      2    0     0  yes
+Q39                     control                  2    0     0  yes
+Q39                     deny-first-edit          1    1     0  yes  <- flips
+Q39                     gated                    2    0     0  yes
+Q39                     redirect-first-edit      2    0     0  yes
+Q40                     control                  2    0     0  yes
+Q40                     deny-first-edit          1    0     0  yes  <- flips
+Q40                     gated                    2    0     0  yes
+Q40                     redirect-first-edit      2    0     0  yes
+Q41                     control                  2    0     0  yes
+Q41                     deny-first-edit          1    1     0  yes  <- flips
+Q41                     gated                    2    0     0  yes
+Q41                     redirect-first-edit      2    0     0  yes
+Q42                     control                  2    0     0  yes
+Q42                     deny-first-edit          2    0     0  yes
+Q42                     gated                    2    0     0  yes
+Q42                     redirect-first-edit      2    0     0  yes
+Q43                     control                  2    0     0  yes
+Q43                     deny-first-edit          1    1     0  yes  <- flips
+Q43                     gated                    2    0     0  yes
+Q43                     redirect-first-edit      2    0     0  yes
+Q44                     control                  2    0     0  yes
+Q44                     deny-first-edit          1    1     0  yes  <- flips
+Q44                     gated                    1    0     0  yes  <- flips
+Q44                     redirect-first-edit      1    1     0  yes  <- flips
+Q45                     control                  2    0     0  yes
+Q45                     deny-first-edit          0    2     0  yes
+Q45                     gated                    2    0     0  yes
+Q45                     redirect-first-edit      2    0     0  yes
+Q46                     control                  0    2     0  yes
+Q46                     deny-first-edit          0    2     0  yes
+Q46                     gated                    1    1     0  yes  <- flips
+Q46                     redirect-first-edit      2    0     0  yes
+Q47                     control                  2    0     0  yes
+Q47                     deny-first-edit          1    1     0  yes  <- flips
+Q47                     gated                    2    0     0  yes
+Q47                     redirect-first-edit      2    0     0  yes
+Q48                     control                  2    0     0  yes
+Q48                     deny-first-edit          0    2     0  yes
+Q48                     gated                    2    0     0  yes
+Q48                     redirect-first-edit      1    1     0  yes  <- flips
+Q49                     control                  1    1     0  yes  <- flips
+Q49                     deny-first-edit          0    2     0  yes
+Q49                     gated                    1    1     0  yes  <- flips
+Q49                     redirect-first-edit      2    0     0  yes
+Q50                     control                  2    0     0  yes
+Q50                     deny-first-edit          2    0     0  yes
+Q50                     gated                    2    0     0  yes
+Q50                     redirect-first-edit      2    0     0  yes
+Q51                     control                  1    1     0  yes  <- flips
+Q51                     deny-first-edit          0    2     0  yes
+Q51                     gated                    1    1     0  yes  <- flips
+Q51                     redirect-first-edit      0    2     0  yes
+Q52                     control                  1    1     0  yes  <- flips
+Q52                     deny-first-edit          0    2     0  yes
+Q52                     gated                    0    2     0  yes
+Q52                     redirect-first-edit      0    2     0  yes
+Q53                     control                  2    0     0  yes
+Q53                     deny-first-edit          2    0     0  yes
+Q53                     gated                    2    0     0  yes
+Q53                     redirect-first-edit      2    0     0  yes
+Q54                     control                  2    0     0  yes
+Q54                     deny-first-edit          2    0     0  yes
+Q54                     gated                    2    0     0  yes
+Q54                     redirect-first-edit      2    0     0  yes
+Q55                     control                  2    0     0  yes
+Q55                     deny-first-edit          2    0     0  yes
+Q55                     gated                    2    0     0  yes
+Q55                     redirect-first-edit      2    0     0  yes
+Q56                     control                  2    0     0  yes
+Q56                     deny-first-edit          1    1     0  yes  <- flips
+Q56                     gated                    2    0     0  yes
+Q56                     redirect-first-edit      2    0     0  yes
+
+aggregate-eligible cells: 224
+pass count per run: [173, 178]  (median 175.5, range 173-178 of 224)
+cells whose verdict is not identical across all 2 runs: 48 of 224
+
+=== per-variant medians over aggregate-eligible cells, 2 runs pooled
+
+variant               cells    wall_clock_s      iterations       tokens_in        ttfvo_ms      gate_fires
+control                 112     19.3 (8-338)      7.0 (3-41)  35043.0 (15922-348268)   6874.0 (3568-53042)       0.0 (0-0)
+deny-first-edit         112     20.5 (7-600)      6.0 (3-33)  28834.0 (15399-248524)   6703.0 (3606-37665)      2.0 (1-28)
+gated                   112     16.7 (8-600)      6.5 (3-41)  35229.5 (15963-397715)   6612.0 (3444-32612)      2.5 (1-35)
+redirect-first-edit     112     32.6 (7-600)      9.0 (3-41)  57430.0 (15531-381376)   7020.5 (3565-71048)      3.0 (1-32)
+
+Medians, never means: the spread in brackets is min-max over every pooled cell.
