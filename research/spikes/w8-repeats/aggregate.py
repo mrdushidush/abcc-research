@@ -6,6 +6,15 @@ same 31 cells disagreed on the headline (24/24, 22/24, 18/24) with byte-identica
 W8 number may be quoted at n=1.
 
   python aggregate.py ../../../runs
+  python aggregate.py ../../../runs/q56 --variant redirect-first-edit --variant deny-first-edit
+
+`--variant` (repeatable) restricts every run to those variants BEFORE the cell sets are compared.
+That is what lets a 4-variant campaign and a later 2-variant top-up pool: session 11 ran all 224
+cells twice, session 12 ran only the 112 redirect/deny cells three more times, and without the
+filter the majority rule below would silently drop the two full runs (3 runs of 112 outvote 2 of
+224). With the filter all five carry the same 112 cells and pool to n=5. The active filter is
+printed in the header, because a pass rate whose denominator changed must never look like a
+pass rate that moved.
 
 Reads every `runs/w8-*/cells.jsonl`, keeps the runs that carry the same cell set, and reports:
 
@@ -44,10 +53,38 @@ def measured(cell, name):
 
 
 def main():
-    runs_dir = sys.argv[1] if len(sys.argv) > 1 else "runs"
+    argv = sys.argv[1:]
+    want_variants = set()
+    positional = []
+    i = 0
+    while i < len(argv):
+        if argv[i] == "--variant":
+            if i + 1 >= len(argv):
+                sys.exit("--variant needs a value")
+            want_variants.add(argv[i + 1])
+            i += 2
+        else:
+            positional.append(argv[i])
+            i += 1
+    runs_dir = positional[0] if positional else "runs"
     runs = load(runs_dir)
     if not runs:
         sys.exit(f"no completed runs under {runs_dir}")
+
+    if want_variants:
+        seen = {c["variant"] for _, _, cells in runs for c in cells}
+        unknown = want_variants - seen
+        if unknown:
+            # A typo'd variant would silently filter to nothing and print a clean, empty table.
+            sys.exit(f"no such variant(s): {', '.join(sorted(unknown))}; "
+                     f"present: {', '.join(sorted(seen))}")
+        runs = [(name, meta, [c for c in cells if c["variant"] in want_variants])
+                for name, meta, cells in runs]
+        runs = [r for r in runs if r[2]]
+        # ASCII only: this output gets redirected to a RESULTS file and Windows stdout is cp1252,
+        # which turns a stray em dash into a mojibake byte in the committed evidence.
+        print(f"variant filter: {', '.join(sorted(want_variants))} "
+              f"- all numbers below are over these variants only\n")
 
     # Only compare runs that measured the same cells. A partial run is reported and dropped, never
     # silently folded in — a smaller denominator that looks like a worse pass rate is exactly the

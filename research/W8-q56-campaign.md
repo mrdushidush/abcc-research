@@ -20,9 +20,45 @@ deliverables).
 | caps | `max_iterations = 40`, `num_predict = 8192` |
 | preamble | **4855** then **4859** `tokens_in` — 4 tokens apart across two runs |
 
-**⚠ `kv_cache_type` was not pinned.** Every donor row records `kv=q8_0`; this campaign inherited LM
-Studio's sticky setting, which neither `lms ps` nor `/api/v0/models` reports. Recorded as a known
-uncontrolled variable, and the first thing to fix before the next campaign.
+**⚠ `kv_cache_type` was not pinned *by the harness* — but it was not floating either. Resolved
+2026-08-09 (session 12), and the answer is `q8_0`, matching every donor row.**
+
+The setting lives in LM Studio's per-model sticky config, not in anything the runner controls:
+
+```
+~/.lmstudio/.internal/user-concrete-model-default-config/
+  byteshape/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-IQ3_S-3.06bpw.gguf.json
+```
+
+It carries `llm.load.llama.kCacheQuantizationType` and `...vCacheQuantizationType`, both
+`{checked: true, value: "q8_0"}`. Four things make it the operative value for this campaign:
+
+- the file's mtime is **2026-08-08 14:59**, before both runs (06:18 and 09:18 on 08-09);
+- **loading a model does not rewrite it** — the 08-09 06:16 load left the mtime untouched, so it is
+  a stable preference and not a load journal;
+- **`lms load` has no KV flag at all**, so the command line could not have overridden it;
+- the three values the CLI *does* set — `contextLength 65536`, `numParallelSessions 1`,
+  `offloadRatio 1` — match the file exactly, while its other keys (`tryMmap`, `cpuThreadPoolSize`,
+  `keepModelInMemory`) have no CLI expression and must come from somewhere.
+
+**The reporting gap is real and stands: `lms ps`, `lms ps --json` and `GET /api/v0/models` all omit
+the KV cache type**, so `server_uncaptured: ["kv_cache_type"]` in RUNMETA remains correct. The one
+mechanism that *would* record it is LM Studio's own engine log — `llama_kv_cache: CUDA0 KV buffer
+size = N MiB` appears in the May 2026 server logs and is absent from August's, gated by
+`fileLoggingMode` in `~/.lmstudio/.internal/http-server-config.json`. That key is a validated enum
+whose accepted values are not discoverable from outside the app: setting it to `"verbose"` was
+silently rejected and reset to `"succinct"` on restart. **Reading it off the GUI load panel, or
+finding the valid enum value, is the way to close the capture gap for good.**
+
+⚠ **VRAM does not identify the KV type here, and two plausible-looking readings of it are wrong.**
+The `13.61 GB` in `lms ps` and the `12.67 GiB` from `lms load` are the *weights*, invariant across
+KV settings — the donor's own `gib` column is 12.67 on every champion row regardless of `kv`. And
+the arithmetic does not close from the other end either: the GGUF gives 41 layers × 2 KV heads ×
+(k 256 + v 256) = 41,984 bytes/token per byte of element width, so 65536 tokens needs ~2,788 MiB at
+q8_0 and ~5,248 MiB at f16, while the measured load delta leaves only ~1,279 MiB unaccounted for
+after weights. Filling the window confirms the puzzle rather than solving it: between prompts of
+18,915 and 60,915 tokens, GPU VRAM moved **+2 MiB**. Whatever the allocator is doing, **VRAM is not
+a measurement of KV element width on this stack — do not treat it as one.**
 
 ## 1. The control variant reproduces the donor's own score, twice
 
@@ -132,6 +168,21 @@ faithful to the donor's own scoring.
 rate against the donor's beyond `control`, since the harness, the scaffold and the context window
 all differ; and anything about `deny`/`redirect` magnitudes to better than ±4 passes.
 
-**Next:** pin `kv_cache_type = q8_0` to match the donor's rows, and take `redirect` and `deny` to
-n=5 — they are the two variants whose numbers are still soft, and they are the two the workstream
-cares most about.
+**Next (session 12, in progress):** `kv_cache_type` is resolved to `q8_0` above — it needed no
+change, only identification — so `redirect` and `deny` are being taken to n=5 by **three more runs
+of just those 112 cells**, pooled with the two runs here. They are the two variants whose numbers
+are still soft, and the two the workstream cares most about. `control` and `gated` are deliberately
+not re-run: F56 puts them at 11% cell flipping against 25% and 39%, so they are already defensible
+at n=2.
+
+Pooling a 112-cell top-up with these 224-cell runs requires the aggregator's variant filter, added
+for exactly this reason:
+
+```
+python research/spikes/w8-repeats/aggregate.py runs/q56 \
+    --variant redirect-first-edit --variant deny-first-edit
+```
+
+⚠ **Without `--variant` the aggregator keeps the majority cell set, and three 112-cell runs outvote
+two 224-cell runs — the two full runs above would be silently dropped.** The runner script and its
+reasoning are `research/spikes/w8-repeats/repeat-rd3.sh`.
