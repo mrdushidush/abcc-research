@@ -1,12 +1,16 @@
-# W8 — the first full Q56 campaign (n=2, 448 measured cells)
+# W8 — the full Q56 campaign (784 measured cells; `redirect`/`deny` at n=5)
 
 Two complete repetitions of all 224 Q56 cells, run back to back on 2026-08-09 against subject
-`claudette-af3f804`. This is the measurement the workstream exists for: **the first operator-control
+`claudette-af3f804`, plus **three further repetitions of the 112 `redirect`/`deny` cells on
+2026-08-13** (§7). This is the measurement the workstream exists for: **the first operator-control
 numbers taken on a corpus where every task can fire a permission gate.**
 
-Evidence: `research/spikes/w8-repeats/RESULTS-q56-n2.txt` (committed), run artifacts under
-`runs/q56/w8-1786245496371/` and `runs/q56/w8-1786256305205/` (gitignored — runs are evidence, not
-deliverables).
+Evidence: `research/spikes/w8-repeats/RESULTS-q56-n2.txt` and
+`research/spikes/w8-repeats/RESULTS-q56-rd-n5.txt` (both committed), run artifacts under `runs/q56/`
+(gitignored — runs are evidence, not deliverables).
+
+⚠ **Sections 1–6 report the n=2 campaign as it stood. §7 supersedes two of its numbers** — read it
+before quoting any `deny` magnitude.
 
 ## Held constants
 
@@ -158,25 +162,76 @@ same thing — `control` was 50 and 50, while `deny` was 29 then 33.
 Only **Q03, Q05, Q46** fail control in both runs. Everything else in the control column that failed,
 failed once.
 
+## 7. The top-up: `redirect` and `deny` at n=5 (session 14, 2026-08-13)
+
+Three further repetitions of just the 112 `redirect`/`deny` cells, pooled with the two runs above.
+`control` and `gated` are deliberately **not** re-run — F56 puts them at 11% cell flipping. Evidence:
+**`research/spikes/w8-repeats/RESULTS-q56-rd-n5.txt`**. All three banked clean, `error: 0`.
+
+```
+redirect-first-edit  [46, 43, 46, 41, 44]  median 44  range 41-46
+deny-first-edit      [29, 33, 33, 38, 37]  median 33  range 29-38
+control [50, 50]   gated [48, 52]          (n=2)
+```
+
+| variant | pass | wall | iter | `tokens_in` | vs `control` |
+|---|---|---|---|---|---|
+| `control` (n=2) | 50 | 19.3 s | 7.0 | 35,043 | — |
+| `redirect-first-edit` (n=5) | **44** | 32.0 s | 10.0 | 59,284 | **+24,241 tok, +3 iter, −6 passes** |
+| `deny-first-edit` (n=5) | **33** | 20.7 s | 6.0 | 33,192 | **−1,851 tok, −1 iter, −17 passes** |
+
+**The redirect number got stronger.** n=2 said +22,387 tokens, +2 iterations, −5.5 passes; n=5 says
+**+24,241, +3, −6**.
+
+⚠ **F55's "a denial *saves* 6,209 tokens" does not survive: at n=5 the saving is ~1,851, a 70%
+shrink.** The qualitative finding — deny is the cheaper intervention that destroys far more work —
+holds and is the point. The *magnitude* was an n=2 artefact. It is also measured against a `control`
+still at n=2, so that delta's error is dominated by the un-topped-up baseline. **Quote the saving as
+"small", not as a number, until `control` is itself at n=5.**
+
+### F56 survives — but only when the statistic is computed correctly
+
+`aggregate.py` reports *"cells whose verdict is not identical across all N runs"*: 65/112 at n=4 and
+71/112 at n=5, against F56's 25%/39% at n=2. **That is a category error, not a regression** — the
+statistic rises mechanically with N, because each added run is another chance to disagree.
+
+The comparable statistic is the **mean pairwise flip rate**, and it reproduces F56 almost exactly:
+
+| variant | pairs | mean pairwise flip rate | F56 at n=2 |
+|---|---|---|---|
+| `control` | 1 | 10.7% | 11% |
+| `gated` | 1 | 10.7% | 11% |
+| `redirect-first-edit` | 10 | **24.3%** | 25% |
+| `deny-first-edit` | 10 | **35.2%** | 39% |
+
+**The monotone ordering in operator interference is real and reproduces at n=5.**
+
+### Two caveats specific to this top-up
+
+- ⚠ **One cell of the 280 is `fail` by intervention, not by grading**: Q13/`deny-first-edit` in
+  repetition 3, the F57 hang, killed by hand after 2h17m of verifier CPU. No other cell was touched.
+- Repetitions 3–5 carried a **5-minute cooling pause between runs** (operator request). The gap is
+  between repetitions, never inside a cell.
+
 ## What this does and does not license
 
-**Licensed:** the gate is free; a redirect costs about +22k tokens and +2 iterations on this corpus;
-denial destroys roughly a third of completions; every Q56 task is gate-capable; the import is
-faithful to the donor's own scoring.
+**Licensed:** the gate is free; a redirect costs about **+24k tokens and +3 iterations** and −6
+passes; **denial destroys about a third of completions (−17 of 50) while costing slightly fewer
+resources**; every Q56 task is gate-capable; reproducibility degrades monotonically with operator
+interference; the import is faithful to the donor's own scoring.
 
-**Not licensed:** any single cell (n=2, and 21% of cells flip); any comparison of *absolute* pass
-rate against the donor's beyond `control`, since the harness, the scaffold and the context window
-all differ; and anything about `deny`/`redirect` magnitudes to better than ±4 passes.
+**Not licensed:** any single cell; any comparison of *absolute* pass rate against the donor's beyond
+`control`, since the harness, the scaffold and the context window all differ; **the size of denial's
+token saving**, which moved by 70% between n=2 and n=5 and is measured against an n=2 baseline; and
+any `control`/`gated` magnitude to better than what n=2 supports.
 
-**Next (session 12, in progress):** `kv_cache_type` is resolved to `q8_0` above — it needed no
-change, only identification — so `redirect` and `deny` are being taken to n=5 by **three more runs
-of just those 112 cells**, pooled with the two runs here. They are the two variants whose numbers
-are still soft, and the two the workstream cares most about. `control` and `gated` are deliberately
-not re-run: F56 puts them at 11% cell flipping against 25% and 39%, so they are already defensible
-at n=2.
+**Next:** bound the verify phase (F57 — `verify.rs:142` calls `Command::output()` with no timeout).
+Deliberately **not** done mid-campaign, because changing the harness between repetitions would break
+comparability with runs 1–2. After that, brief §14 item 2 (W1+W2). Taking `control` to n=5 is the
+cheapest way to firm up the remaining soft number.
 
-Pooling a 112-cell top-up with these 224-cell runs requires the aggregator's variant filter, added
-for exactly this reason:
+Pooling a 112-cell top-up with the 224-cell runs requires the aggregator's variant filter, added for
+exactly this reason:
 
 ```
 python research/spikes/w8-repeats/aggregate.py runs/q56 \

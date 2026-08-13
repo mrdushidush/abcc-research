@@ -35,6 +35,15 @@ cd /d/dev/ABCC_20_powerd_by_claudette/harness || exit 1
 LOG=/d/dev/ABCC_20_powerd_by_claudette/runs/q56/repeat-rd3.log
 mkdir -p /d/dev/ABCC_20_powerd_by_claudette/runs/q56
 
+# COOLING PAUSE (added session 14, David's instruction). Five minutes between repetitions, and
+# deliberately NOT after the last one. The machine ran hot enough during session 14's first attempt
+# that the run was called off; this lets the GPU settle between the three ~66 min repetitions.
+# It is a gap BETWEEN runs, not inside one, so no cell's measurement spans it and no held constant
+# changes. Session 9's F52 check found the GPU at 57 C with no throttle flags and identical
+# throughput, so thermal throttling was never distorting these numbers - the pause is for the
+# machine's sake, not the measurement's.
+PAUSE_S=300
+
 for i in 3 4 5; do
   echo "===== repetition $i starting $(date -Is) =====" >>"$LOG"
   cargo run -q -p w8-run --bin w8-run -- ../corpus \
@@ -46,5 +55,9 @@ for i in 3 4 5; do
     --variant deny-first-edit \
     --bin /d/dev/claudette/target/release/claudette.exe >>"$LOG" 2>&1
   echo "===== repetition $i exit=$? $(date -Is) =====" >>"$LOG"
+  if [ "$i" != "5" ]; then
+    echo "===== cooling pause ${PAUSE_S}s after repetition $i $(date -Is) =====" >>"$LOG"
+    sleep "$PAUSE_S"
+  fi
 done
 echo "ALL DONE $(date -Is)" >>"$LOG"

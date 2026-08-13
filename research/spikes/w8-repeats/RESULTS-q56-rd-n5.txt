@@ -1,0 +1,172 @@
+W8 q56 redirect/deny top-up to n=5 - aggregated 2026-08-13 (session 14)
+
+Runs pooled (all in runs/q56/, gitignored):
+  w8-1786245496371  224 cells  campaign run 1 (session 11)
+  w8-1786256305205  224 cells  campaign run 2 (session 11)
+  w8-1786552205081  112 cells  repetition 3 (session 14)
+  w8-1786566151404  112 cells  repetition 4 (session 14)
+  w8-1786570814013  112 cells  repetition 5 (session 14)
+
+The two 224-cell runs are restricted to their redirect/deny cells by --variant, so all
+five contribute the same 112 cells. control and gated stay at n=2 and are NOT re-run.
+
+CAVEATS THAT MUST TRAVEL WITH THESE NUMBERS:
+  1. F57. verify.rs:142 calls Command::output() with NO timeout. On Q13/deny-first-edit in
+     repetition 3 the subject wrote a non-terminating parse_csv_line and the verifier spun
+     for 2h17m of CPU until killed by hand. THAT CELL'S 'fail' IS BY INTERVENTION, NOT BY
+     GRADING. It is 1 cell of 280 redirect/deny samples. No other cell was intervened on;
+     the watchdog armed for repetitions 4-5 never fired.
+  2. Repetitions 3-5 ran with a 5-minute cooling pause BETWEEN runs (session 14). The gap
+     is between repetitions, never inside a cell, so no measurement spans it.
+  3. preamble_tokens_in was 4855/4859 in the campaign runs and 4876 at this relaunch.
+  4. Held constants re-confirmed at relaunch: ctx 65536 loaded vs CLAUDETTE_NUM_CTX 61440,
+     PARALLEL 1, IQ3_S, kv_cache_type q8_0 (sticky config unchanged since 2026-08-08 14:59).
+
+PASS COUNTS PER RUN (of 56):
+  redirect-first-edit  [46, 43, 46, 41, 44]  median 44  range 41-46
+  deny-first-edit      [29, 33, 33, 38, 37]  median 33  range 29-38
+  control              [50, 50]              n=2, donor median is 50
+  gated                [48, 52]              n=2
+
+MEAN PAIRWISE FLIP RATE (share of cells whose verdict differs between two runs;
+comparable across different n, unlike 'identical across all N runs'):
+  control              10.7%  (1 pair)
+  gated                10.7%  (1 pair)
+  redirect-first-edit  24.3%  (10 pairs)
+  deny-first-edit      35.2%  (10 pairs)
+  -> F56's monotone ordering SURVIVES at n=5; its n=2 estimates were 11/11/25/39.
+
+================ aggregate.py output ================
+
+variant filter: deny-first-edit, redirect-first-edit - all numbers below are over these variants only
+
+n = 5 runs x 112 cells
+subject claudette-af3f804  model qwen3.6-35b-a3b-mtp@iq3_s  num_ctx 61440
+
+=== per-cell verdicts across 5 runs (agg = counts toward the aggregate denominator)
+
+task                    variant               pass fail inval  agg  reproducible
+Q01                     deny-first-edit          4    1     0  yes  <- flips
+Q01                     redirect-first-edit      4    1     0  yes  <- flips
+Q02                     deny-first-edit          3    2     0  yes  <- flips
+Q02                     redirect-first-edit      5    0     0  yes
+Q03                     deny-first-edit          0    5     0  yes
+Q03                     redirect-first-edit      0    5     0  yes
+Q04                     deny-first-edit          2    3     0  yes  <- flips
+Q04                     redirect-first-edit      3    2     0  yes  <- flips
+Q05                     deny-first-edit          1    4     0  yes  <- flips
+Q05                     redirect-first-edit      0    5     0  yes
+Q06                     deny-first-edit          2    3     0  yes  <- flips
+Q06                     redirect-first-edit      3    2     0  yes  <- flips
+Q07                     deny-first-edit          4    1     0  yes  <- flips
+Q07                     redirect-first-edit      5    0     0  yes
+Q08                     deny-first-edit          1    4     0  yes  <- flips
+Q08                     redirect-first-edit      5    0     0  yes
+Q09                     deny-first-edit          5    0     0  yes
+Q09                     redirect-first-edit      5    0     0  yes
+Q10                     deny-first-edit          4    1     0  yes  <- flips
+Q10                     redirect-first-edit      4    1     0  yes  <- flips
+Q11                     deny-first-edit          0    5     0  yes
+Q11                     redirect-first-edit      5    0     0  yes
+Q12                     deny-first-edit          2    3     0  yes  <- flips
+Q12                     redirect-first-edit      5    0     0  yes
+Q13                     deny-first-edit          1    4     0  yes  <- flips
+Q13                     redirect-first-edit      1    3     0  yes  <- flips
+Q14                     deny-first-edit          4    1     0  yes  <- flips
+Q14                     redirect-first-edit      5    0     0  yes
+Q15                     deny-first-edit          4    1     0  yes  <- flips
+Q15                     redirect-first-edit      5    0     0  yes
+Q16                     deny-first-edit          3    2     0  yes  <- flips
+Q16                     redirect-first-edit      4    1     0  yes  <- flips
+Q17                     deny-first-edit          4    1     0  yes  <- flips
+Q17                     redirect-first-edit      2    3     0  yes  <- flips
+Q18                     deny-first-edit          3    2     0  yes  <- flips
+Q18                     redirect-first-edit      4    1     0  yes  <- flips
+Q19                     deny-first-edit          4    1     0  yes  <- flips
+Q19                     redirect-first-edit      5    0     0  yes
+Q20                     deny-first-edit          0    5     0  yes
+Q20                     redirect-first-edit      4    1     0  yes  <- flips
+Q21                     deny-first-edit          2    3     0  yes  <- flips
+Q21                     redirect-first-edit      4    1     0  yes  <- flips
+Q22                     deny-first-edit          4    1     0  yes  <- flips
+Q22                     redirect-first-edit      5    0     0  yes
+Q23                     deny-first-edit          5    0     0  yes
+Q23                     redirect-first-edit      3    2     0  yes  <- flips
+Q24                     deny-first-edit          5    0     0  yes
+Q24                     redirect-first-edit      5    0     0  yes
+Q25                     deny-first-edit          4    1     0  yes  <- flips
+Q25                     redirect-first-edit      1    4     0  yes  <- flips
+Q26                     deny-first-edit          4    1     0  yes  <- flips
+Q26                     redirect-first-edit      4    1     0  yes  <- flips
+Q27                     deny-first-edit          2    3     0  yes  <- flips
+Q27                     redirect-first-edit      5    0     0  yes
+Q28                     deny-first-edit          4    1     0  yes  <- flips
+Q28                     redirect-first-edit      4    1     0  yes  <- flips
+Q29                     deny-first-edit          5    0     0  yes
+Q29                     redirect-first-edit      5    0     0  yes
+Q30                     deny-first-edit          5    0     0  yes
+Q30                     redirect-first-edit      4    1     0  yes  <- flips
+Q31                     deny-first-edit          5    0     0  yes
+Q31                     redirect-first-edit      5    0     0  yes
+Q32                     deny-first-edit          2    3     0  yes  <- flips
+Q32                     redirect-first-edit      3    2     0  yes  <- flips
+Q33                     deny-first-edit          4    1     0  yes  <- flips
+Q33                     redirect-first-edit      4    1     0  yes  <- flips
+Q34                     deny-first-edit          4    1     0  yes  <- flips
+Q34                     redirect-first-edit      5    0     0  yes
+Q35                     deny-first-edit          4    1     0  yes  <- flips
+Q35                     redirect-first-edit      4    1     0  yes  <- flips
+Q36                     deny-first-edit          4    1     0  yes  <- flips
+Q36                     redirect-first-edit      5    0     0  yes
+Q37                     deny-first-edit          5    0     0  yes
+Q37                     redirect-first-edit      5    0     0  yes
+Q38                     deny-first-edit          5    0     0  yes
+Q38                     redirect-first-edit      5    0     0  yes
+Q39                     deny-first-edit          4    1     0  yes  <- flips
+Q39                     redirect-first-edit      4    1     0  yes  <- flips
+Q40                     deny-first-edit          3    1     0  yes  <- flips
+Q40                     redirect-first-edit      3    2     0  yes  <- flips
+Q41                     deny-first-edit          4    1     0  yes  <- flips
+Q41                     redirect-first-edit      5    0     0  yes
+Q42                     deny-first-edit          4    1     0  yes  <- flips
+Q42                     redirect-first-edit      5    0     0  yes
+Q43                     deny-first-edit          1    4     0  yes  <- flips
+Q43                     redirect-first-edit      3    1     0  yes  <- flips
+Q44                     deny-first-edit          3    2     0  yes  <- flips
+Q44                     redirect-first-edit      3    2     0  yes  <- flips
+Q45                     deny-first-edit          2    3     0  yes  <- flips
+Q45                     redirect-first-edit      5    0     0  yes
+Q46                     deny-first-edit          0    5     0  yes
+Q46                     redirect-first-edit      4    1     0  yes  <- flips
+Q47                     deny-first-edit          1    4     0  yes  <- flips
+Q47                     redirect-first-edit      5    0     0  yes
+Q48                     deny-first-edit          1    4     0  yes  <- flips
+Q48                     redirect-first-edit      4    1     0  yes  <- flips
+Q49                     deny-first-edit          1    4     0  yes  <- flips
+Q49                     redirect-first-edit      4    1     0  yes  <- flips
+Q50                     deny-first-edit          5    0     0  yes
+Q50                     redirect-first-edit      5    0     0  yes
+Q51                     deny-first-edit          2    3     0  yes  <- flips
+Q51                     redirect-first-edit      1    4     0  yes  <- flips
+Q52                     deny-first-edit          0    5     0  yes
+Q52                     redirect-first-edit      1    4     0  yes  <- flips
+Q53                     deny-first-edit          4    1     0  yes  <- flips
+Q53                     redirect-first-edit      4    1     0  yes  <- flips
+Q54                     deny-first-edit          4    1     0  yes  <- flips
+Q54                     redirect-first-edit      4    1     0  yes  <- flips
+Q55                     deny-first-edit          4    1     0  yes  <- flips
+Q55                     redirect-first-edit      5    0     0  yes
+Q56                     deny-first-edit          3    2     0  yes  <- flips
+Q56                     redirect-first-edit      5    0     0  yes
+
+aggregate-eligible cells: 112
+pass count per run: [75, 76, 79, 79, 81]  (median 79, range 75-81 of 112)
+cells whose verdict is not identical across all 5 runs: 71 of 112
+
+=== per-variant medians over aggregate-eligible cells, 5 runs pooled
+
+variant               cells    wall_clock_s      iterations       tokens_in        ttfvo_ms      gate_fires
+deny-first-edit         280     20.7 (7-600)      6.0 (3-41)  33192.0 (15399-445661)   6537.0 (3315-49031)      3.0 (1-39)
+redirect-first-edit     280     32.0 (7-600)     10.0 (3-41)  59284.0 (15531-411877)   6830.0 (3380-71048)      3.0 (1-34)
+
+Medians, never means: the spread in brackets is min-max over every pooled cell.
