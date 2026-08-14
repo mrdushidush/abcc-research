@@ -3,7 +3,7 @@
 //!        [--task <id>]... [--variant <id>]... [--out <dir>]
 //!        [--num-ctx N] [--num-predict N] [--max-iterations N] [--max-tools N]
 //!        [--endpoint URL] [--delivery verbatim|escape-newlines] [--bin <path>]
-//!        [--list] [--dry-run]
+//!        [--verify-timeout-s N] [--list] [--dry-run]
 //! ```
 //!
 //! Order of operations, and none of it is arbitrary:
@@ -46,6 +46,9 @@ struct Args {
     delivery: delivery::Mode,
     out: PathBuf,
     bin: Option<String>,
+    /// The F57 bound on **one verifier**, separate from the corpus's `timeout_s` because they bound
+    /// different halves of a cell: `timeout_s` is the subject's budget, this is the grader's.
+    verify_timeout: Duration,
     list: bool,
     dry_run: bool,
 }
@@ -78,6 +81,7 @@ fn parse_args() -> Result<Args, String> {
         delivery: delivery::Mode::Verbatim,
         out: PathBuf::from("runs"),
         bin: None,
+        verify_timeout: verify::DEFAULT_TIMEOUT,
         list: false,
         dry_run: false,
     };
@@ -100,6 +104,17 @@ fn parse_args() -> Result<Args, String> {
             "--max-tools" => a.held.max_tools = Some(parse_num(&next("--max-tools")?)?),
             "--out" => a.out = PathBuf::from(next("--out")?),
             "--bin" => a.bin = Some(next("--bin")?),
+            "--verify-timeout-s" => {
+                let n: u32 = parse_num(&next("--verify-timeout-s")?)?;
+                // 0 is refused rather than read as "unbounded". Unbounded is what F57 *was*, and a
+                // flag that can silently restore it is a flag that will.
+                if n == 0 {
+                    return Err("--verify-timeout-s must be > 0: an unbounded verifier is F57, \
+                                where one cell held the whole campaign for 2h17m"
+                        .to_string());
+                }
+                a.verify_timeout = Duration::from_secs(u64::from(n));
+            }
             "--delivery" => {
                 let v = next("--delivery")?;
                 a.delivery = delivery::Mode::parse(&v)
@@ -130,10 +145,14 @@ fn usage() -> &'static str {
     "usage: w8-run <corpus-root> --subject <id> --model <id> [--suite <id>] [--task <id>]...\n\
      \x20      [--variant <id>]... [--out <dir>] [--num-ctx N] [--num-predict N]\n\
      \x20      [--max-iterations N] [--max-tools N] [--endpoint URL]\n\
-     \x20      [--delivery verbatim|escape-newlines] [--bin <path>] [--list] [--dry-run]\n\
+     \x20      [--delivery verbatim|escape-newlines] [--bin <path>] [--verify-timeout-s N]\n\
+     \x20      [--list] [--dry-run]\n\
      \n\
      --model is required and has no default: naming one here is how a convenience 4b ends up in\n\
      a baseline. The champion is qwen3.6-35b-a3b-mtp@iq3_s.\n\
+     --verify-timeout-s bounds ONE VERIFIER (default 300). The corpus's timeout_s bounds the\n\
+     subject; this bounds the grader, which executes code the subject wrote and can therefore be\n\
+     handed an infinite loop (F57). A verifier that hits it scores invalid, never fail.\n\
      --delivery verbatim (the default) delivers the prompt byte-for-byte, wrapping a multi-line\n\
      one in the sentinels the subject declares in [delivery], and refuses the cell if the subject\n\
      declares none. escape-newlines is a labelled, unapproved fallback; see src/delivery.rs."
@@ -353,6 +372,7 @@ fn run(args: Args) -> Result<ExitCode, String> {
         bash: interp.bash.display().to_string(),
         python: interp.python.clone(),
         node: interp.node.clone(),
+        verify_timeout_s: args.verify_timeout.as_secs(),
         warmup: false,
         warmup_prompt: WARMUP_PROMPT.to_string(),
         warmup_wall_ms: 0,
@@ -435,6 +455,7 @@ fn run(args: Args) -> Result<ExitCode, String> {
                 &interp,
                 turn_end.clone(),
                 meta.preamble_tokens_in,
+                args.verify_timeout,
             ),
         };
         *tally.entry(cell.status.as_str()).or_default() += 1;
@@ -684,6 +705,7 @@ const METRIC_NAMES: &[&str] = &[
     "gate_fires",
     "interventions_delivered",
     "unscripted_gates",
+    "verify_ms",
 ];
 
 #[allow(clippy::too_many_arguments)]
@@ -700,6 +722,7 @@ fn run_cell(
     interp: &verify::Interpreters,
     turn_end: regex::Regex,
     preamble_tokens_in: u64,
+    verify_timeout: Duration,
 ) -> Cell {
     let mut cell = base_cell(suite, task, variant, subject, *mode, 0);
 
@@ -877,6 +900,14 @@ fn run_cell(
         "peak_rss_mb".to_string(),
         Metric::NotApplicable { reason: "no probe exists yet; W1/W2 owns building it".into() },
     );
+    // Overwritten below if the verifier runs. Recorded because the F57 bound has to be defensible
+    // from the run itself: a cell's headroom against `verify_timeout_s` is the only evidence that
+    // the ceiling is generous rather than lucky, and it is invisible in `wall_clock_s`, which is
+    // the subject-interaction time alone.
+    m.insert(
+        "verify_ms".to_string(),
+        Metric::NotApplicable { reason: "no verifier ran for this cell".into() },
+    );
     cell.metrics = m;
 
     // ── Status, in precedence order ─────────────────────────────────────────
@@ -926,7 +957,12 @@ fn run_cell(
             );
         }
         Some(script) => {
-            let v = verify::run(interp, &script, &wd, Path::new(&cell.transcript));
+            let t0 = Instant::now();
+            let v = verify::run(interp, &script, &wd, Path::new(&cell.transcript), verify_timeout);
+            cell.metrics.insert(
+                "verify_ms".to_string(),
+                Metric::Measured(t0.elapsed().as_millis() as f64),
+            );
             cell.verifier_verdict = Some(v.verdict.as_str().to_string());
             cell.verifier_message = Some(v.message.clone());
             cell.status = match v.verdict {

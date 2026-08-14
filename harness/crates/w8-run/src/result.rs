@@ -223,6 +223,12 @@ pub struct RunMeta {
     pub bash: String,
     pub python: String,
     pub node: Option<String>,
+    /// **The F57 bound on one verifier, in seconds.** It belongs in RUNMETA and not only in the
+    /// source because the campaign of 2026-08-09 through 08-13 ran with *no* bound at all: pooling a
+    /// bounded run with an unbounded one is mixing two harnesses, and the row is what makes that
+    /// visible instead of a thing a reader has to remember. A cell that hit it is `invalid`, so it
+    /// leaves the aggregate rather than deflating it.
+    pub verify_timeout_s: u64,
     /// It must have run: on the champion, turn 1 took 169.7 s against 4.1 s and 3.7 s for turns
     /// 2-3, and since corpora run in a fixed order the same unlucky task eats that JIT load every
     /// time (F10).
@@ -307,6 +313,7 @@ impl RunMeta {
             json_quote(&self.python),
             self.node.as_ref().map_or("null".to_string(), |n| json_quote(n))
         );
+        let _ = write!(s, ",\"verify_timeout_s\":{}", self.verify_timeout_s);
         let _ = write!(s, ",\"delivery_mode\":{}", json_quote(&self.delivery_mode));
         let _ = write!(s, ",\"aggregate_rule\":{}", json_quote(&self.aggregate_rule));
         s.push_str(",\"server\":");
@@ -481,6 +488,7 @@ mod tests {
             bash: "C:/Program Files/Git/bin/bash.exe".into(),
             python: "python".into(),
             node: Some("node".into()),
+            verify_timeout_s: 300,
             warmup: true,
             warmup_prompt: crate::env::WARMUP_PROMPT.into(),
             warmup_wall_ms: 169_700,
@@ -517,6 +525,9 @@ mod tests {
         assert!(j.contains("\"quantization\":\"IQ3_S\""), "{j}");
         // The gap is part of the record. A capture that lists only what it found reads as complete.
         assert!(j.contains("\"server_uncaptured\":[\"kv_cache_type\"]"), "{j}");
+        // The harness delta F57 introduced. Runs measured before it had no verifier bound at all,
+        // and a pool that mixes the two must be able to see that from the rows.
+        assert!(j.contains("\"verify_timeout_s\":300"), "{j}");
         // The pin that stops a stuck signal escalating a second model into a measured turn has to
         // be visible in the record, or nobody can tell whether a run held it.
         assert!(j.contains("\"CLAUDETTE_FALLBACK_BRAIN_MODEL\":\"\""), "{j}");

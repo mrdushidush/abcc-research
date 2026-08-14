@@ -11,7 +11,7 @@ cargo run -p w8-run --bin w8-run -- ../corpus --subject claudette-af3f804 --list
 cargo run -p w8-run --bin w8-run -- ../corpus --subject claudette-af3f804 \
   --model 'qwen3.6-35b-a3b-mtp@iq3_s' --task fix_sql_inject --out ../runs
 
-cargo test -p w8-run          # 71 tests, 19 of them driving a fake subject
+cargo test -p w8-run          # 80 tests, 19 of them driving a fake subject
 ```
 
 Output per run: `runmeta.json`, `cells.jsonl` (one line per cell), and per cell a work dir and a
@@ -267,6 +267,78 @@ rewrite bought nothing that the subject fix does not now provide honestly, and
 `escape-newlines` is dead weight kept only for a future subject that has no way in.
 
 ## What building it found
+
+### 🚨 F57. The verifier had no timeout, so one cell could hang the campaign forever. **FIXED 2026-08-14**
+
+**Found by measurement, in the middle of the `redirect`/`deny` top-up (2026-08-12).** Repetition 3
+had been "running" for 2.5 h and had completed **25 of 112 cells**. It was not slow and it was not
+throttled: **the GPU was at 2% and 29 W**, while a single `python.exe` spawned by `w8-run` had burned
+**8,236 s of user-mode CPU — 2h17m pinned at 100% of one core** — and every process above it was
+blocked waiting on it.
+
+**The mechanism, read at source rather than inferred.** `verify.rs` called `cmd.output()`, which
+blocks until the child exits *and* both pipes reach EOF, with no deadline anywhere. The corpus's
+`timeout_s` (Q56: 45 tasks at 600 s, 7 at 700, 4 at 900) bounds **the subject interaction only**.
+Nothing bounded the grader.
+
+**The trigger is a normal outcome, not an exotic one.** On `Q13 / deny-first-edit` the subject wrote
+a `parse_csv_line` whose scanner could fail to advance `i`, and the verifier — whose entire job is to
+execute the artifact — ran that loop. **A verifier executes code the subject wrote, so "the subject
+wrote an infinite loop" is a routine failure mode of a code-writing subject.** It will recur.
+
+**Why it was left in place for two sessions**: changing the harness mid-campaign would have broken
+comparability with runs 1–2, which had no bound. It was killed by hand, the cell scored `fail`, the
+run carried on, and the fix waited for the pool to close.
+
+**The fix, and the three ways it could have been written wrong:**
+
+| what | why not the obvious thing |
+|---|---|
+| a deadline loop over `try_wait`, **not** `output()` | `output()` *is* the unbounded wait |
+| a **draining thread per pipe** | a verifier that outruns the pipe buffer blocks on the write while a runner that is not reading blocks on the wait — deadlock, arriving through the fix for the deadline |
+| **`taskkill /F /T`**, not `Child::kill()` | F57's spinner was a **grandchild** (`python` under `bash`). Killing bash leaves it running, still pinned at a core and still holding the stdout pipe. On unix the child leads its own process group and the negative pid does the same job |
+| the buffers are **snapshotted, never joined** | EOF arrives when the *last* holder of the write end closes it. A survivor of the kill holds it, and a `join` would restore the unbounded wait one line below where it was removed |
+
+**SPEC §8 decides the verdict, and it is `invalid`, not `fail`.** A killed verifier graded nothing,
+so "the artifact is wrong" is a fact the run does not have. **The `fail` that session 14's manual
+kill produced is not the model for this** — it was a hand intervention recorded as a grade. The rule
+holds even when partial stdout already carried a `RESULT:` line: a verdict from a verifier that then
+failed to terminate is not a verdict, and taking it would mean believing the half of a broken
+instrument that flatters the subject. The partial line is kept in the message.
+
+**Default 300 s**, `--verify-timeout-s N` to change it, `0` refused rather than read as "unbounded"
+— unbounded is what F57 *was*, and a flag that can silently restore it is a flag that will. The
+number is chosen against what real verifiers cost (the slowest Q56 verifiers are the 14 `cargo` ones,
+seconds to low tens of seconds), so it is an order of magnitude of headroom and still bounds a hang
+at 5 minutes instead of forever. **`verify_ms` is now recorded per cell** so that headroom is
+evidence from the run itself rather than an assertion here; it is invisible in `wall_clock_s`, which
+is subject-interaction time alone.
+
+**⚠ It is a harness delta and RUNMETA carries it.** Every number banked in the Q56 campaign
+(2026-08-09 → 08-13) was measured with **no** bound at all. That invalidates nothing — the bound only
+ever fires where the old harness hung — but a later pool must not mix the two silently, so
+`runmeta.json` records `verify_timeout_s` and a run without the key predates the fix.
+
+**The regression test is `a_verifier_that_never_terminates_is_killed_and_scored_invalid`**, in F35's
+shape and with the F53 lesson applied: it spins a **grandchild**, asserts the call returns, asserts
+`invalid`, and then asserts **the grandchild stopped growing its heartbeat file**. Verified by
+mutation rather than by reading: dropping `/T` fails it on the heartbeat while the verdict assertions
+still pass, and the leaked tree then held an inherited stdout handle open and hung the parent
+pipeline as well. **A leaked grandchild does not merely waste a core — it can stop the process that
+spawned it from ever being seen to finish.**
+
+**F57 completes a family of three, and the family is the lesson.** F49 (writes silently refused), the
+session-12 shutdown (a degraded run that looks finished), and F57 (a hang that looks like slowness)
+are all failures whose **symptom is silence**. A W8 watcher must alarm on the absence of progress,
+never on the presence of a success marker. The detector that finally worked was **log gone quiet AND
+GPU idle AND not in a cooling pause** — the GPU-idle conjunct is what separates a hung verifier from
+a cell legitimately burning its 900 s subject timeout, because a live cell still generates.
+
+⚠ **The importers still call `output()` unbounded** (`w8-import/src/gate.rs:270`,
+`w8-import-q56/src/gate.rs:117`). Left alone deliberately: the import gate executes the *donor's*
+stub and the *donor's* refsol, never subject-written code, so F57's mechanism does not reach it — and
+an import is run by hand, where a hang is seen in minutes rather than in hours. Recorded so the next
+reader does not have to re-derive that it is a different risk rather than a missed one.
 
 ### 🚨 F49. The subject could not write into its own work dir, and every number before 2026-08-08 was measured through that
 

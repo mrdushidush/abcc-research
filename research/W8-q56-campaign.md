@@ -225,10 +225,30 @@ interference; the import is faithful to the donor's own scoring.
 token saving**, which moved by 70% between n=2 and n=5 and is measured against an n=2 baseline; and
 any `control`/`gated` magnitude to better than what n=2 supports.
 
-**Next:** bound the verify phase (F57 — `verify.rs:142` calls `Command::output()` with no timeout).
-Deliberately **not** done mid-campaign, because changing the harness between repetitions would break
-comparability with runs 1–2. After that, brief §14 item 2 (W1+W2). Taking `control` to n=5 is the
-cheapest way to firm up the remaining soft number.
+**Next:** taking `control` to n=5 is the cheapest way to firm up the remaining soft number, and then
+brief §14 item 2 (W1+W2).
+
+## 8. ⚠ The harness delta: every number above was measured with **no verifier timeout**
+
+**F57 was fixed on 2026-08-14, after this pool closed.** `verify.rs` no longer calls
+`Command::output()`: one verifier is now bounded (default **300 s**, `--verify-timeout-s`), the whole
+process **tree** is killed on expiry — F57's spinner was a grandchild, `python` under `bash` — and a
+verifier that hits the bound scores **`invalid`, never `fail`**, because a killed verifier graded
+nothing (SPEC §8). Full write-up in `harness/crates/w8-run/README.md`.
+
+**This invalidates nothing in §§1–7.** The bound can only fire where the old harness hung, and the
+one cell that hung is already flagged above as `fail` by intervention. But the two harnesses are not
+the same instrument, so:
+
+- **`runmeta.json` now records `verify_timeout_s`.** A run without that key predates the fix. **Do
+  not pool the two silently** — state which harness produced each run, as this section does.
+- **Every run in `runs/q56/` as of this pool is pre-fix**, i.e. unbounded. The five pooled runs are
+  `w8-1786245496371`, `w8-1786256305205`, `w8-1786552205081`, `w8-1786566151404`, `w8-1786570814013`.
+- **Cells now carry `verify_ms`**, so the headroom against the 300 s bound is measurable from the run
+  rather than asserted. Pre-fix runs do not have it.
+
+The delta is one-directional and small: under the old harness a non-terminating artifact stopped the
+campaign until a human noticed; under the new one it costs that cell 300 s and one `invalid`.
 
 Pooling a 112-cell top-up with the 224-cell runs requires the aggregator's variant filter, added for
 exactly this reason:
