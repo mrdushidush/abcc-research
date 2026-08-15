@@ -268,6 +268,66 @@ rewrite bought nothing that the subject fix does not now provide honestly, and
 
 ## What building it found
 
+### 🚨 F58. The subject's prompt carries `git status` of the repo the work dir sits in, so this harness's own tree is an input to every cell
+
+**Found from a 15-token discrepancy, in the pre-flight of the `control` n=5 run (2026-08-15).** The
+warmup reported `preamble_tokens_in = 4874` against the campaign's **4859** and **4855** — a figure
+the campaign write-up had called "extremely stable, 4 tokens apart across two runs". It is neither
+noise nor the model.
+
+**Mechanism, read at source in Claudette:**
+
+- `prompt.rs:138` — the live agent path (`agent_system_prompt_with_memory`) appends
+  `build_environment_block()` to the system prompt.
+- `prompt.rs:296-306` — that block carries the cwd, the date, the platform, and **`Git:` followed by
+  the status, truncated to 500 chars**.
+- `runtime/prompt.rs:246-252` — the status is `git --no-optional-locks status --short --branch`, run
+  with `current_dir(cwd)`.
+
+**And `--out ../runs/q56` puts every work dir INSIDE this repo**, so the status Claudette reads is
+ABCC's own. Observed directly from a live cell rather than reasoned about:
+
+```
+$ cd runs/q56/w8-1786802658531/cells/Q01__control/wd
+$ git --no-optional-locks status --short --branch
+## main
+?? ../../../../../../research/spikes/w8-repeats/repeat-control.sh
+```
+
+That second line is the entire delta — and note it is rendered **relative to the work dir**, so a
+file six levels up costs more tokens than its real path would. **One untracked file ≈ +15 tokens on
+every turn of every cell.** It also retires the "extremely stable" reading of 4855 vs 4859: that
+wobble has a cause, and the cause was this.
+
+**🚨 The operational rule, and it is cheap to obey: DO NOT TOUCH THE WORKING TREE WHILE REPEATS ARE
+IN FLIGHT.** Not `git add`, not `git commit`, and **not editing a tracked file** — a modified file is
+a ` M` line in the same block. Committing between repetitions moves a held constant *inside a single
+pool*, which is worse than leaving the tree untidy for two hours. Session 15 left `repeat-control.sh`
+uncommitted for the duration and wrote its notes outside the repo for exactly this reason.
+
+**Bounded, and worth knowing the bound.** `read_git_diff` exists (`runtime/prompt.rs:264`) and would
+put the **whole staged and unstaged diff** in the prompt — but the live path never calls it: the only
+caller of the builder that uses it (`render_project_context`) is reached from tests. **So the
+exposure is capped at 500 chars, ~150 tokens.** Do not assume that survives a Claudette refactor. It
+is one `with_project_context` call away from becoming unbounded, and nothing in Claudette marks it as
+load-bearing for W8.
+
+**This invalidates nothing.** It is ~15 tokens against ~35,000 `tokens_in` (0.04%), it is subtracted
+out of `tokens_in_net` by construction, and it cannot move a pass count. The two n=2 `control` runs
+and any n=5 top-up differ by one untracked-file line in the preamble. Recorded, not repaired.
+
+**The permanent fix is a decision, not a chore.** Pointing `--out` at a directory outside any git
+repo makes `read_git_status` return `None`, which **removes the `Git:` line entirely** and shifts the
+preamble against every number banked so far. So it belongs at a pool boundary with the delta stated,
+exactly like F57's timeout. The alternative — `git init` an empty repo in each work dir — makes the
+status constant *and* keeps a `Git:` line, at the cost of one more thing the runner does to a
+directory it hands the subject.
+
+**Family: F34's shape, from a direction that audit never covered.** F34 and F50 chased what the
+harness passes **into** the subject — environment variables, `num_ctx`. This is the harness's own
+**repository state** leaking in through a feature of the subject, and no amount of pinning env vars
+would have caught it. **The measuring apparatus is inside the measured quantity.**
+
 ### 🚨 F57. The verifier had no timeout, so one cell could hang the campaign forever. **FIXED 2026-08-14**
 
 **Found by measurement, in the middle of the `redirect`/`deny` top-up (2026-08-12).** Repetition 3
