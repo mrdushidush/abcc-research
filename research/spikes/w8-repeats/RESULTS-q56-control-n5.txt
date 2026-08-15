@@ -1,0 +1,88 @@
+variant filter: control - all numbers below are over these variants only
+
+n = 5 runs x 56 cells
+subject claudette-af3f804  model qwen3.6-35b-a3b-mtp@iq3_s  num_ctx 61440
+
+=== per-cell verdicts across 5 runs (agg = counts toward the aggregate denominator)
+
+task                    variant               pass fail inval  agg  reproducible
+Q01                     control                  4    1     0  yes  <- flips
+Q02                     control                  5    0     0  yes
+Q03                     control                  0    5     0  yes
+Q04                     control                  5    0     0  yes
+Q05                     control                  2    3     0  yes  <- flips
+Q06                     control                  5    0     0  yes
+Q07                     control                  3    2     0  yes  <- flips
+Q08                     control                  5    0     0  yes
+Q09                     control                  5    0     0  yes
+Q10                     control                  5    0     0  yes
+Q11                     control                  5    0     0  yes
+Q12                     control                  5    0     0  yes
+Q13                     control                  4    1     0  yes  <- flips
+Q14                     control                  5    0     0  yes
+Q15                     control                  5    0     0  yes
+Q16                     control                  5    0     0  yes
+Q17                     control                  5    0     0  yes
+Q18                     control                  5    0     0  yes
+Q19                     control                  5    0     0  yes
+Q20                     control                  5    0     0  yes
+Q21                     control                  5    0     0  yes
+Q22                     control                  5    0     0  yes
+Q23                     control                  5    0     0  yes
+Q24                     control                  5    0     0  yes
+Q25                     control                  2    3     0  yes  <- flips
+Q26                     control                  4    1     0  yes  <- flips
+Q27                     control                  5    0     0  yes
+Q28                     control                  5    0     0  yes
+Q29                     control                  5    0     0  yes
+Q30                     control                  5    0     0  yes
+Q31                     control                  5    0     0  yes
+Q32                     control                  5    0     0  yes
+Q33                     control                  5    0     0  yes
+Q34                     control                  5    0     0  yes
+Q35                     control                  4    0     0  yes  <- flips
+Q36                     control                  5    0     0  yes
+Q37                     control                  5    0     0  yes
+Q38                     control                  5    0     0  yes
+Q39                     control                  5    0     0  yes
+Q40                     control                  4    1     0  yes  <- flips
+Q41                     control                  5    0     0  yes
+Q42                     control                  5    0     0  yes
+Q43                     control                  5    0     0  yes
+Q44                     control                  5    0     0  yes
+Q45                     control                  4    1     0  yes  <- flips
+Q46                     control                  1    4     0  yes  <- flips
+Q47                     control                  5    0     0  yes
+Q48                     control                  5    0     0  yes
+Q49                     control                  3    1     0  yes  <- flips
+Q50                     control                  5    0     0  yes
+Q51                     control                  2    3     0  yes  <- flips
+Q52                     control                  2    3     0  yes  <- flips
+Q53                     control                  4    1     0  yes  <- flips
+Q54                     control                  5    0     0  yes
+Q55                     control                  5    0     0  yes
+Q56                     control                  4    1     0  yes  <- flips
+
+aggregate-eligible cells: 56
+pass count per run: [50, 50, 49, 50, 48]  (median 50, range 48-50 of 56)
+cells whose verdict is not identical across all 5 runs: 15 of 56
+
+=== per-variant medians over aggregate-eligible cells, 5 runs pooled
+
+variant               cells    wall_clock_s      iterations       tokens_in        ttfvo_ms      gate_fires
+control                 280     19.0 (8-600)      7.0 (3-41)  39528.0 (15922-387783)   7006.0 (3501-233952)       0.0 (0-0)
+
+Medians, never means: the spread in brackets is min-max over every pooled cell.
+
+=== PER-RUN BREAKDOWN (medians over each run's 56 control cells) ===
+
+run                     pass   tok_in  tok_in_net  tok_out  preamble  iter   wall
+w8-1786245496371          50    37101       32246     1024      4855   7.0   18.7
+w8-1786256305205          50    35002       30142     1142      4859   7.0   19.9
+w8-1786808290277          49    39690       34816     1222      4874   7.0   19.8
+w8-1786811844322          50    40277       35403     1102      4874   7.0   17.8
+w8-1786815053791          48    39948       35074     1079      4874   7.0   17.5
+
+pooled control tokens_in median over 278 cells: 39528
+mean PAIRWISE flip rate: 73/560 = 13.0%  (F56 at n=2 said control 10.7%)
+tasks: 56, runs per task: [5]
