@@ -422,11 +422,25 @@ impl Report {
         worst
     }
 
-    /// Peak `local_usage` (resident VRAM) and `non_local_usage` (spill) for the process named by
-    /// [`Report::focus_pid`], summed over its adapter instances.
+    /// Peak `local_usage` (resident VRAM) and `non_local_usage` (host-shared GPU memory) for the
+    /// process named by [`Report::focus_pid`], summed over its adapter instances.
     ///
     /// A pid can appear more than once — once per adapter LUID — so summing rather than taking a
     /// maximum is what makes the number the process's whole footprint.
+    ///
+    /// 🚨 **`non_local` is NOT eviction, and this crate printed "NOT fully resident" off it until
+    /// 2026-08-16.** F61 established that a *system-wide* Non Local total is not a residency
+    /// verdict and required `--pid` before any verdict was made. The negative control that should
+    /// have accompanied that fix was only run in session 19, and it falsifies the per-pid verdict
+    /// too: **`gemma-4-e2b`, a 4.1 GiB model on a 16,311 MiB card with ~13 GiB free, reports
+    /// 2,290 MiB non-local** — 5.5× what the champion reports at 65k, while it cannot possibly be
+    /// evicting anything. Non Local counts host memory the process has committed to the GPU
+    /// address space, which llama.cpp allocates by design (staging buffers, and for this
+    /// architecture the host-side per-layer embeddings), pressure or no pressure.
+    ///
+    /// So the pair is reported and **no verdict is derived from it**. The instrument that *can*
+    /// settle residency is throughput: a model genuinely streaming hundreds of MiB per token over
+    /// PCIe 3.0 x8 cannot hold 54–76 tok/s decode, and the champion does.
     pub fn focus_gpu_bytes(&self) -> Option<(f64, f64)> {
         let pid = self.focus_pid?;
         let s = self.host.as_ref()?;
@@ -516,7 +530,7 @@ impl Report {
              \"throttle_reasons\":[{}],\"peak_committed_b\":{},\"commit_limit_b\":{},\
              \"min_avail_mib\":{},\"host_blind_window_ms\":{},\
              \"peak_gpu_shared_b_systemwide\":{},\"focus_pid\":{},\
-             \"focus_resident_b\":{},\"focus_spilled_b\":{},\
+             \"focus_on_card_b\":{},\"focus_host_shared_b\":{},\
              \"focus_ws_peak_b_exact\":{},\"focus_ws_rise_b\":{}}}",
             opt(self.peak_vram_mib()),
             opt(self.total_vram_mib()),
@@ -617,16 +631,15 @@ impl Report {
         match (self.focus_pid, self.focus_gpu_bytes()) {
             (Some(pid), Some((local, non_local))) => {
                 let mib = |b: f64| b / 1024.0 / 1024.0;
+                // No verdict is derived from `non_local` — see `focus_gpu_bytes`. It counts
+                // host-shared GPU memory that llama.cpp commits by design, so a threshold on it
+                // flags a model with 13 GiB of headroom just as loudly as one that is truly full.
                 let _ = writeln!(
                     s,
-                    "  pid {pid:<6}     peak {:.0} MiB resident + {:.1} MiB spilled — {}",
+                    "  pid {pid:<6}     peak {:.0} MiB on-card + {:.1} MiB host-shared \
+                     (host-shared is not eviction — see focus_gpu_bytes)",
                     mib(local),
                     mib(non_local),
-                    if non_local > 0.0 {
-                        "🚨 NOT fully resident"
-                    } else {
-                        "fully resident over the whole window"
-                    }
                 );
             }
             (Some(pid), None) => {
@@ -805,15 +818,31 @@ mod tests {
     }
 
     #[test]
-    fn naming_a_pid_turns_the_same_data_into_a_verdict_about_that_pid() {
+    fn naming_a_pid_attributes_both_numbers_to_that_pid() {
         let mut r = report(None, Some(two_pid_host()));
         r.focus_pid = Some(1);
         assert_eq!(r.focus_gpu_bytes(), Some((1000.0, 0.0)));
-        assert!(r.render().contains("fully resident over the whole window"));
 
         r.focus_pid = Some(22);
         assert_eq!(r.focus_gpu_bytes(), Some((4_000_000.0, 5_242_880.0)));
-        assert!(r.render().contains("NOT fully resident"));
+        let out = r.render();
+        assert!(out.contains("on-card"), "{out}");
+        assert!(out.contains("host-shared"), "{out}");
+    }
+
+    #[test]
+    fn host_shared_memory_never_becomes_an_eviction_verdict() {
+        // The bug this pins, and it outlived the F61 fix: `--pid` was treated as enough to turn
+        // Non Local into "🚨 NOT fully resident". The live negative control says otherwise —
+        // gemma-4-e2b, 4.1 GiB on a 16,311 MiB card with ~13 GiB free, reports 2,290 MiB
+        // non-local. A model that cannot be evicting must not trip the alarm, so there is no
+        // alarm to trip: the pair is reported and the reader is told what it is not.
+        let mut r = report(None, Some(two_pid_host()));
+        r.focus_pid = Some(22); // the pid WITH non-local usage
+        let out = r.render();
+        assert!(!out.contains("NOT fully resident"), "{out}");
+        assert!(!out.contains("spilled"), "{out}");
+        assert!(out.contains("not eviction"), "{out}");
     }
 
     #[test]

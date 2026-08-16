@@ -1,15 +1,17 @@
-# W1 — Model tiering around the base agent (desk half; measurements still open)
+# W1 — Model tiering around the base agent
 
-**Retrieval date for every external claim in this file: 2026-08-16.** Written after the peak
-VRAM/RAM probe landed (`d7a0f67`, `harness/crates/hw-probe`, F60–F64) and before any new
-measurement on the champion. §14 item 2 splits naturally in two, and this is the half that needed
-no GPU: base-choice re-validation, tier partners, quantizer lineage, effective-vs-advertised
-context, licensing. **The measurement half is untouched and listed in §Open questions.**
+**Retrieval date for every external claim in this file: 2026-08-16.** Desk half written first
+(F65–F73, `d09011d`); **the measurement half ran the same day and is F74–F80 below.**
 
-⚠ **Nothing in this file is a new number off this box.** Every VRAM figure quoted is either
-*imported* from the donor's Q56 run metadata (`prestudy/data/q56-runmeta.tsv`, measured 2026-07)
-or produced by `lms load --estimate-only`, which §Findings F69 shows is weights-only. New numbers
-need the champion loaded.
+⚠ **The two halves have different provenance and must not be quoted as one.** F65–F73 are desk
+work — vendor model cards, licences, and VRAM figures either *imported* from the donor's Q56 run
+metadata (`prestudy/data/q56-runmeta.tsv`, measured 2026-07) or produced by `lms load
+--estimate-only`, which F69 shows is weights-only. **F74–F80 are new measurements on this box**,
+champion resident, via `harness/crates/hw-probe`.
+
+🚨 **The measured half overturned one thing in the desk half and one thing in the instrument, and
+left §11.0's central premise standing.** Read F74 before quoting any residency number from
+anywhere in this repo.
 
 ## Question
 
@@ -30,9 +32,15 @@ base choice.
   `--estimate-only` does not load the model, so this involved no GPU work and no heat.
 - **Quantizer lineage**: byteshape's model card for the ladder, and the *donor's own* crowning
   document for the quality comparison — which turned out to be the load-bearing source (F70).
-- **Not done**: any measurement requiring the champion resident. No throughput, no prefill/decode
-  split, no quality-per-quant run, no agentic-under-context-pressure evaluation. Those are §14
-  item 2's other half.
+- **Measurement half (added 2026-08-16)**: champion loaded via the canonical command, probed with
+  `hw-probe` (`baseline` / `watch --pid` / `run --pid`) and driven over
+  `/v1/chat/completions` — the same dialect Claudette uses, `stream: true` with
+  `stream_options.include_usage`, so token counts come from the server rather than an estimate.
+  Twelve loads across the session; the `llama-server` pid re-resolved after each (F75).
+- **Every residency claim here has a named negative control**, after F74 showed that a plausible
+  number from working code survived a week of review without one.
+- **Still not done**: quality-per-quant, and any agentic-under-context-pressure evaluation. Those
+  need the W8 corpus rather than a probe, and they are §Open questions items 1–2.
 
 ## Inherited
 
@@ -282,6 +290,145 @@ at draft-max 2, and it is not visible in the config file that every W8 champion 
 Whether LM Studio defaults it on when the key is absent is unresolved and is not answerable from
 the config file. It costs one flag to settle during the first measured load.
 
+---
+
+## Findings — the measured half (2026-08-16, champion resident)
+
+### 🚨 F74 — "host-shared GPU memory" is not eviction, the probe's residency alarm was wrong, and §11.0 survives
+
+The first `--pid` reading on a real model looked like the biggest finding of the project: the
+champion at `-c 65536` reported **14,284 MiB on-card + 416 MiB host-shared**, and `hw-probe`
+printed `🚨 NOT fully resident` — apparently falsifying the string Claudette ships to every user,
+*"fully VRAM-resident in 13.6 GB, zero RAM spill"* (`hw.rs:103-109`, quoted in §11.0). It
+reproduced byte-identically across two windows.
+
+**It was the instrument, not the model.** The control:
+
+| Loaded | on-card | host-shared | free VRAM at the time |
+|---|---|---|---|
+| champion `-c 4096` | 13,320 MiB | 296 MiB | ~2.5 GiB |
+| champion `-c 32768` | 13,756 MiB | 352 MiB | ~2.1 GiB |
+| champion `-c 65536` | 14,284 MiB | 416 MiB | ~1.5 GiB |
+| **`gemma-4-e2b` `-c 32768`** | **2,958 MiB** | **2,290 MiB** | **~12.9 GiB** |
+
+A 4.1 GiB model with **13 GiB of the card free** reports 5.5× more "spill" than the champion at
+65k. Nothing is evicting it; there is no pressure to evict it. `Non Local Usage` counts host memory
+a process commits to the GPU address space, which llama.cpp allocates by design — both configs run
+`--no-mmap`, so this is not a mapped-file artefact.
+
+**What actually settles residency is throughput.** 416 MiB fetched per token across PCIe 3.0 x8
+(~7.9 GB/s) caps decode near 19 tok/s; the champion measures **54–76 tok/s** (F80). It is resident.
+**§11.0's premise stands and no document needs correcting** — but `hw-probe` did: the alarm is
+deleted, the fields are renamed `focus_on_card_b` / `focus_host_shared_b`, and the control is
+pinned by `host_shared_memory_never_becomes_an_eviction_verdict`.
+
+**This is F61 repeating one level deeper.** F61 fixed a bad system-wide verdict by demanding
+`--pid` — a *narrower* verdict — instead of asking whether the counter supports a verdict at all.
+Both times a cheap negative control caught it, and both times the control ran late. **F67's 458 MiB
+"noise floor" is not retired by this session**, because the quantity it was measuring was never the
+one that mattered.
+
+### F75 — LM Studio spawns a fresh `llama-server` per load, so the weight-holder never predates the probe
+
+`hw-probe run --per-process` around a load showed **not one pre-existing pid rising** — the
+README's guidance (*"the pid holding the weights is LM Studio's server process, which already
+exists before `lms load` runs"*) was false. LM Studio holds no weights itself; it spawns
+`llama-server.exe`, which appears *during* the load and therefore can never have a `typeperf`
+column for it. The pid changes every time (23412 → 21304 → 20760 → … over session 19).
+
+Consequences: **peak VRAM through a load is adapter-level only**, per-process attribution must come
+from a second `watch --pid` after the load, and the pid must be re-resolved after every load. Full
+correction in the probe README (F75); the serving detail it exposed is W2 F86.
+
+### F77 — the KV cache is allocated in full at load time, which reconciles "+2 MiB" with "692 MiB"
+
+Session 9 saw VRAM move **+2 MiB** across an 18,915 → 60,915-token prompt; F66's f16 rows implied
+**~692 MiB per 32k**. `always-test-on-the-champion-model` records both and says they cannot both be
+right. **They can.** Measured across a real 54,930-token prefill:
+
+| | peak VRAM |
+|---|---|
+| champion at `-c 65536`, idle | 14,750 MiB |
+| same, during a 54,930-token prefill | **14,773 MiB** |
+
+**+23 MiB to fill 55k tokens of context.** Meanwhile the *load-time* figures scale strongly with
+the requested window: 13,785 → 14,221 → 14,750 MiB at `-c` 4096 → 32768 → 65536.
+
+So llama.cpp reserves the whole KV for the configured window **when the model loads**, and filling
+it costs nothing. F66's 692 MiB is a difference between two *loads*; Session 9's +2 MiB is growth
+*within* one. Both observations were correct and neither was a measurement of the other.
+
+▶ **This is a design lever, not trivia:** `-c` is not a ceiling you might use, it is memory you
+have already spent. Loading at 65,536 to run a 20k session costs ~965 MiB of card for nothing.
+
+### F78 — MTP is genuinely engaged by the flag, and buys nothing measurable here
+
+F73 could not tell whether MTP was on. It is now settled from both ends. Passing
+`--speculative-draft-mtp --speculative-draft-max-tokens 2` puts **`--spec-type draft-mtp
+--spec-draft-n-max 2 --spec-draft-n-min 0 --spec-draft-p-min 0.75`** on the real `llama-server`
+command line (W2 F86) — so the flag is not silently ignored. And at a 7,440-token prompt, twice
+each:
+
+| | decode tok/s | TTFT (cold / warm) |
+|---|---|---|
+| without the flag | 75.84 / 76.69 | 5.920 s / 2.237 s |
+| **with MTP draft-max 2** | **75.65 / 73.26** | 5.878 s / 2.255 s |
+
+**No difference — the MTP arm is if anything marginally slower**, and TTFT matches to ~40 ms. This
+is consistent with the donor's own measurement (+13% at 24k, **+1.5% at 64k**) and with its
+conclusion that *"residency is ~90% of the win; MTP in LMS is a small bonus"*.
+
+**Consequence for W8:** the held-constant discrepancy is closed and it is harmless. Every champion
+cell ran without the flag, the flag changes nothing at this context, so **no W8 number needs
+re-running or re-labelling.** Do not add it to the canonical load command; it costs a config
+divergence and buys noise.
+
+### F79 — a per-gate model swap costs 23.77 s, and W6 can now be costed
+
+F68 made W6's second-opinion reviewer a swap rather than a co-resident model, which made this a
+blocking input. Measured, n=3 each direction, unload and load timed separately:
+
+| Direction | unload | load | total |
+|---|---|---|---|
+| champion → `gpt-oss-20b` (reviewer, `-c 32768`) | 0.57–0.83 s | 10.53–10.86 s | **11.42 s** median |
+| `gpt-oss-20b` → champion (`-c 65536`) | ~0.57 s | 11.76–11.80 s | **12.35 s** median |
+| **round trip — one gate firing** | | | **23.77 s** median |
+
+Spreads are tight (the champion's load varies by <50 ms across three runs), so this is a solid
+number. Unload is nearly free; **load dominates and is not bandwidth-bound** — 12.67 GiB in 11.78 s
+is ~1.10 GiB/s, far under PCIe 3.0 x8, so it is dequantisation and upload, not the NVMe read.
+A warm OS file cache is worth only ~0.5 s (first load of the session 12.29 s vs 11.80 s warm).
+
+**For W6:** every gate that uses a second local model costs **~24 s of wall clock before the
+reviewer has read a single token**. Against same-model-no-history at zero swap cost, that is the
+price of decorrelation, and it should be quoted per gate, per task, in whatever budget W6 writes.
+W2's open question 3 (slot save/restore) is the one thing that might reduce it.
+
+### F80 — the champion's throughput ladder, and the number that proves residency
+
+Measured on the loaded champion, `-c 65536`, single stream:
+
+| prompt tokens | TTFT | prefill tok/s | decode tok/s |
+|---|---|---|---|
+| 2,361 | 2.215 s | 1,066 | 70.12 |
+| 7,440 | 5.920 s | 1,257 | 75.84 |
+| 18,470 | 11.549 s | 1,599 | — |
+| 18,485 | 11.282 s | 1,639 | 65.22 |
+| **54,930** | **33.905 s** | **1,620** | **54.00** |
+
+**Prefill throughput rises with prompt size and plateaus near 1,600 tok/s** (batching amortises
+fixed cost). **Decode degrades gracefully with context** — 70 → 76 → 65 → 54 tok/s — losing ~29%
+between 2.4k and 55k. The donor's NTP figures (67.34 at 24k, 68.71 at 64k) sit inside this range.
+
+Two things follow. First, **TTFT at the daily driver's context is ~34 s**, which is the number every
+latency claim in this project should be anchored to. Second, this table is F74's proof: sustained
+54–76 tok/s decode is not achievable by a model streaming its weights over PCIe.
+
+⚠ **Temperature: peak 73 °C under a 55k prefill, 69 °C under 6-way concurrency, no throttle at any
+point.** Thermals were never the constraint in this session.
+
+---
+
 ## Options compared
 
 Scored against the criteria this box actually imposes: fits resident at 61440 with room for the
@@ -369,44 +516,57 @@ the one you deploy deliberately. That asymmetry is a game mechanic, not a compro
 
 ## Open questions
 
-**The measurement half of §14 item 2, unchanged and untouched.** Every item needs the champion
-loaded, and per `always-test-on-the-champion-model` and two killed W8 campaigns, it needs David's
-say-so on heat first:
+**Six of the seven measurement items are now closed.** What the 2026-08-16 session settled: peak
+VRAM through a load and at rest (F74, with the method corrected by F75), KV growth (F77), MTP
+(F78), swap cost (F79), prefill/decode throughput (F80), and the concurrency ceiling
+(`research/W2-serving.md` F83). Per `gpu-is-available-by-default` these no longer wait on anything.
 
-1. **Peak VRAM through a model load**, `-c 65536` vs `-c 32768`, `hw-probe run --pid <LM Studio
-   server>`. Settles F66's ladder with a stated blind window instead of a one-shot reading, and
-   retires F67's noise floor.
-2. **Qwen3.8-27B vs the champion on agentic multi-file work under context pressure** — the F65
-   decision. Also the moment to check whether its 500 MiB of headroom at 65k survives a real
-   prefill (`qwen38-27b-daily-driver-question`).
-3. **KV growth under residency**, re-measured with the probe. Session 9 saw +2 MiB across
-   18,915→60,915 prompt tokens; F66's f16 rows suggest ~692 MiB per 32k. Both cannot be right.
-4. **Whether MTP is on** (F73) — one flag on the first measured load, plus a tok/s pair. Cheap, and
-   it retro-validates or invalidates a held constant for every W8 champion cell.
-5. **Model-swap cost**, mmap off, NVMe over PCIe 3.0 x8 — promoted from W2 item 4 to a **blocking
-   input for W6** by F68.
-6. **The concurrency ceiling**, N parallel builders, reported as a hard limit. `Non Local Usage` is
-   the instability detector (F60).
-7. **Prefill/decode throughput and quality-per-quant** for the tier table's empty columns — the
-   3.06 vs 3.53 vs 3.97 bpw rungs are all on disk and all measurable in one session.
+**What is genuinely left:**
 
-**Desk-side, still open:** no independent long-context evaluation of Qwen3.6-35B-A3B exists yet
-(F72) — worth one more sweep before W1 closes, and required for the "24 GB or more" variant.
+1. 🚨 **Qwen3.8-27B vs the champion on agentic multi-file work under context pressure.** The one
+   item that was decision-critical before this session and still is — **W1's confidence cannot
+   leave *medium* on the base choice until it runs**, because the deciding evidence remains
+   vendor-reported benchmarks on a model released 2026-08-14. It needs the W8 corpus, not a score
+   column, so it is a campaign rather than a measurement. Also the moment to check whether its
+   ~500 MiB of headroom at 65k survives a real prefill
+   ([[qwen38-27b-daily-driver-question]]).
+2. **Quality-per-quant across the 3.06 / 3.53 / 3.97 bpw rungs** — all three are on disk, and F80's
+   method now makes the throughput half a single session's work. The *quality* half needs the same
+   harness as item 1, so run them together.
+3. **Tool-calling and structured-output reliability per candidate**, which the brief asks for and
+   nothing here measured. W2's F82 changes the shape of this question: with schema-constrained
+   decoding available and enforced, "reliability" splits into *can it be forced* (yes, for anything
+   expressible as a schema) and *does it choose the right tool* (unmeasured, and the part that
+   matters).
+4. **Desk-side:** still no independent long-context evaluation of Qwen3.6-35B-A3B (F72). Required
+   for the "24 GB or more" variant, moot for this box.
 
-## Confidence: medium
+**Closed and explicitly not worth re-running:** F67's 458 MiB noise floor is superseded rather than
+retired — F74 shows the counter it came from was never measuring residency. Do not spend a session
+reconciling the donor's `vram_mib` column with the probe's; they are different quantities.
 
-**High** on the parts that are arithmetic or primary-source: the licensing table (F71, every row
-checked against the vendor's own page), the co-residency impossibility (F68 — it follows from two
-measured numbers and a subtraction), the estimator's weights-only behaviour (F69 — three runs,
-identical output), and the provenance correction on the 4.1 GB claim (F70).
+## Confidence: medium overall — high on the hardware, unchanged on the choice
 
-**Medium** on the base re-validation (F65): the survey is one day's search, and the deciding
-comparison is vendor-reported benchmarks on a model 48 hours old. **Low** on anything that would
-rank models by quality — Q56's score column cannot see the axis, and the 2.0 harness that can does
-not have these models in it yet.
+**High**, and now measured rather than argued: KV pre-allocation (F77, +23 MiB across a 55k
+prefill), MTP's irrelevance here (F78, both arms twice, plus the server command line), swap cost
+(F79, n=3 per direction with <50 ms spread), and the throughput ladder (F80, five prompt sizes).
+Also high on the desk items that are arithmetic or primary-source: licensing (F71), co-residency
+impossibility (F68), the estimator's weights-only behaviour (F69), and the 4.1 GB provenance
+correction (F70).
 
-**What would raise it:** running item 2 above. A single agentic-under-pressure comparison between
-the champion and Qwen3.8-27B, on the W8 corpus that was built precisely to see that axis, would
-convert the weakest claim in this file into the strongest. After that, item 1 — because every
-residency number here is imported from an instrument with a 460 MiB noise floor, and the
-replacement is already built, tested, and committed.
+**Medium, and deliberately unmoved, on the base re-validation (F65).** This session measured a
+great deal about *the champion* and nothing about *whether it should be the champion*. Qwen3.8-27B
+is still judged on a vendor benchmark, and a 12.2-point SWE-bench Pro gap is exactly the sort of
+number §11.0 forbids settling a decision on.
+
+**Low** on anything ranking models by quality — unchanged, and unchangeable until item 1 runs.
+
+**What would raise it: item 1, and nothing else.** The hardware questions that used to sit ahead of
+it are answered. A single agentic-under-pressure comparison on the W8 corpus would convert the
+weakest claim in this file into the strongest, and it is now the only thing standing between W1 and
+a confident close.
+
+⚠ **One methodological warning this session earned.** F74 deleted a residency verdict that had
+survived a clean build, clean clippy, 44 green tests and a written README for a week; it died to a
+four-second negative control. **Before quoting any number in this file, ask what its control was.**
+Where a finding has one, it is named.

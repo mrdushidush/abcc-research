@@ -101,13 +101,10 @@ Windows' performance counters can, per pid, and they additionally split it in th
 - `\GPU Process Memory(pid_N_luid_…)\Non Local Usage` — **the shared system memory a WDDM driver
   spills into**.
 
-That second counter is the direct measurement of the question W1 exists to answer. §11.0 reframed
-W1 from "survive offload into 32 GB" to "stay resident in 16 GB", and *stay resident* has, until
-now, been argued from `memory.used` not exceeding the card. **Non Local usage measures it
-directly**: a config that spills is not resident, however good its `memory.used` looks.
-
-Consequence for the runs already banked: none are invalidated, but none of them measured this
-either. It is new information, available from the first W1/W2 run onward.
+~~That second counter is the direct measurement of the question W1 exists to answer.~~
+**Withdrawn 2026-08-16 by F74 below — Non Local Usage is not an eviction signal and this section
+overclaimed it.** The per-pid split is still worth having; what it cannot do is answer *"is this
+config resident"* on its own.
 
 ### 🚨 F61. A system-wide "spill" number is not a residency verdict, and this crate claimed it was
 
@@ -124,6 +121,39 @@ This is the flattering-silence shape again (F28, F49, F51): a plausible number, 
 code, that would have been quoted into a document. It survived a clean build, clean clippy and a
 green test suite, and only the *live idle baseline* exposed it — **the negative control was the
 thing that caught it.**
+
+### 🚨 F74. `--pid` was not enough either. Non Local Usage is not eviction, and the alarm is gone
+
+**2026-08-16, session 19 — the first time this crate was pointed at a real model.** F61 fixed the
+*system-wide* verdict by requiring `--pid`. It did not question whether the counter supports a
+verdict **at all**, and the control that would have shown it was never run. Run now:
+
+| Loaded model | on-card | host-shared | free VRAM at the time |
+|---|---|---|---|
+| champion, `-c 4096` | 13,320 MiB | 296 MiB | ~2.5 GiB |
+| champion, `-c 32768` | 13,756 MiB | 352 MiB | ~2.1 GiB |
+| champion, `-c 65536` | 14,284 MiB | 416 MiB | ~1.5 GiB |
+| **`gemma-4-e2b`, `-c 32768`** | **2,958 MiB** | **2,290 MiB** | **~12.9 GiB** |
+
+The last row is the control and it is decisive: a **4.1 GiB model with ~13 GiB of the card free**
+reports **5.5× more "spill" than the champion does at 65k**. Nothing is being evicted — there is
+nowhere for the pressure to come from. Non Local Usage counts host memory the process has committed
+to the GPU address space, which llama.cpp allocates *by design* (both configs run `--no-mmap`, so
+this is not a mapped-file artefact; for Gemma-4's architecture the per-layer embeddings are
+deliberately host-side).
+
+So `🚨 NOT fully resident` is deleted rather than re-thresholded — any threshold on this counter
+flags the roomiest config on the box. The render now says `peak N MiB on-card + M MiB host-shared`
+and names what it is not; the JSON fields are `focus_on_card_b` / `focus_host_shared_b`. Pinned by
+`host_shared_memory_never_becomes_an_eviction_verdict`.
+
+**What does settle residency: throughput.** A model streaming hundreds of MiB per token across
+PCIe 3.0 x8 cannot hold the champion's measured 54–76 tok/s decode. That, not a counter, is why
+§11.0's "fully VRAM-resident" premise survives session 19 intact.
+
+**The lesson is F61's, one level deeper, and it is the second time:** the fix for a bad verdict was
+a *narrower* verdict, when the honest move was to ask what the instrument can support. A negative
+control caught it both times, and both times the control was cheap and ran late.
 
 ### 🚨 F62. A streaming child does not die when its pipe closes
 
@@ -185,6 +215,24 @@ columns via `ID Process` — **never by executable name**, because instances are
 `#1`/`#2` suffixes whose assignment order is undocumented and can change between runs.
 
 ⚠ **Wildcards are resolved when `typeperf` starts.** A process that appears *later* gets no column
-at all. For a model load that is fine — the pid holding the weights is LM Studio's server process,
-which already exists before `lms load` runs — but the probe must be started **after** its target
-exists, and a pid with no columns is reported as such rather than as zero.
+at all, so the probe must be started **after** its target exists; a pid with no columns is reported
+as such rather than as zero.
+
+🚨 **~~For a model load that is fine — the pid holding the weights is LM Studio's server process,
+which already exists before `lms load` runs.~~ FALSE, corrected 2026-08-16 (F75).** LM Studio does
+not hold weights in its own process at all. **It spawns a fresh `llama-server.exe` per load**, and
+that process **does not exist until the load is under way** — so it can never have a typeperf
+column during the load that created it. Measured: `hw-probe run --per-process` wrapped around
+`lms load` showed **not one pre-existing pid rising**, while `llama-server` appeared mid-load; and
+the pid **changes on every load** (23412 → 21304 → 20760 → … across session 19's reloads).
+
+Two consequences, both permanent:
+
+1. **Peak VRAM *through* a load is adapter-level only.** Per-process attribution of the load itself
+   is not obtainable with this mechanism. Attribute *after* the load, with a second `watch --pid`.
+2. **Re-resolve the pid after every load**, never cache it across one:
+   `(Get-Process llama-server).Id`. Its full command line is also the only place several held
+   constants are visible at all — `--cache-type-k/v`, `--flash-attn`, `--kv-unified`, `--spec-type`
+   — none of which any LM Studio API reports. Read it with
+   `Get-CimInstance Win32_Process -Filter "Name='llama-server.exe'"`; the full line and what it
+   settles are recorded once, as **F86 in `research/W2-serving.md`**.
