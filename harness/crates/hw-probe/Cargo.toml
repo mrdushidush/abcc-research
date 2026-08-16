@@ -1,0 +1,18 @@
+[package]
+name = "hw-probe"
+version = "0.1.0"
+description = "Peak VRAM, peak system RAM, temperature and throttle around a workload"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# No dependencies, and no `unsafe` either — which is worth a line because the obvious way to read
+# system memory on Windows is an FFI call to `GlobalMemoryStatusEx`, and this crate deliberately
+# does not. Both quantities it needs are already streamed by tools that ship with the platform:
+# `nvidia-smi -lms` for the card and `typeperf -si` for the host. That keeps the workspace's
+# no-unsafe, minimal-dependency shape (see ../../Cargo.toml) and costs one process per source
+# instead of one process per sample.
+
+[[bin]]
+name = "hw-probe"
+path = "src/main.rs"

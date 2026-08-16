@@ -1,6 +1,12 @@
 [workspace]
 resolver = "3"
-members = ["crates/w8-import", "crates/w8-corpus", "crates/w8-run", "crates/w8-import-q56"]
+members = [
+    "crates/w8-import",
+    "crates/w8-corpus",
+    "crates/w8-run",
+    "crates/w8-import-q56",
+    "crates/hw-probe",
+]
 
 # W8's harness. Step 2 of the plan is `w8-import`; step 3 is `w8-corpus` and the runner, which
 # is why this is a workspace from the start rather than a single crate to be converted.
@@ -19,6 +25,12 @@ members = ["crates/w8-import", "crates/w8-corpus", "crates/w8-run", "crates/w8-i
 # and the runner do another. It talks to the model endpoint over a hand-rolled HTTP/1.1 client
 # (`src/endpoint.rs`) rather than taking an HTTP dependency: the endpoint is plain-text localhost,
 # so there is no TLS to get wrong and ~90 lines cover it.
+#
+# `hw-probe` is the first crate here that is not W8's, which is why it is not named `w8-*`. It
+# belongs to brief §14 item 2 (W1 + W2) and is the instrument those two owe every measured claim
+# to — the concurrency ceiling, KV growth under residency, model-swap cost — but W6 needs it too,
+# for whether a second model can sit beside the champion's 13.6 GB. Naming it for one workstream
+# would misdescribe it by the time it is first reused. It adds no dependency and no `unsafe`.
 
 [workspace.package]
 edition = "2024"
