@@ -1,0 +1,303 @@
+[
+  {
+    "number": "INV-1001",
+    "customer": "acme-industrial",
+    "region": "uk",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 1250,
+        "discount_rate": 0.125
+      },
+      {
+        "sku": "CONN-RJ45",
+        "qty": 300,
+        "discount_rate": 0.125
+      }
+    ]
+  },
+  {
+    "number": "INV-1002",
+    "customer": "borough-schools",
+    "region": "uk",
+    "items": [
+      {
+        "sku": "PRN-A4-SH",
+        "qty": 3730,
+        "discount_rate": 0.12
+      },
+      {
+        "sku": "PRN-A3-SH",
+        "qty": 415,
+        "discount_rate": 0.06
+      }
+    ]
+  },
+  {
+    "number": "INV-1003",
+    "customer": "northwind-labs",
+    "region": "de",
+    "items": [
+      {
+        "sku": "SW-8P-GB",
+        "qty": 7,
+        "discount_rate": 0.08
+      },
+      {
+        "sku": "PSU-150W",
+        "qty": 3,
+        "discount_rate": 0.08
+      }
+    ]
+  },
+  {
+    "number": "INV-1004",
+    "customer": "harbour-freight",
+    "region": "ie",
+    "items": [
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 875,
+        "discount_rate": 0.1
+      },
+      {
+        "sku": "RACK-1U",
+        "qty": 11,
+        "discount_rate": 0.07
+      }
+    ]
+  },
+  {
+    "number": "INV-1005",
+    "customer": "acme-industrial",
+    "region": "fr",
+    "items": [
+      {
+        "sku": "LIC-SEAT-YR",
+        "qty": 27,
+        "discount_rate": 0.125
+      },
+      {
+        "sku": "SUP-HR",
+        "qty": 19,
+        "discount_rate": 0.125
+      }
+    ]
+  },
+  {
+    "number": "INV-1006",
+    "customer": "tallow-media",
+    "region": "nl",
+    "items": [
+      {
+        "sku": "PRN-A4-SH",
+        "qty": 1265,
+        "discount_rate": 0.12
+      },
+      {
+        "sku": "INST-CALL",
+        "qty": 1,
+        "discount_rate": 0.0
+      }
+    ]
+  },
+  {
+    "number": "INV-1007",
+    "customer": "kestrel-net",
+    "region": "ch",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 640,
+        "discount_rate": 0.1
+      },
+      {
+        "sku": "SW-24P-GB",
+        "qty": 2,
+        "discount_rate": 0.0
+      }
+    ]
+  },
+  {
+    "number": "INV-1008",
+    "customer": "borough-schools",
+    "region": "uk",
+    "items": [
+      {
+        "sku": "PRN-A3-SH",
+        "qty": 5210,
+        "discount_rate": 0.2
+      },
+      {
+        "sku": "CONN-RJ45",
+        "qty": 95,
+        "discount_rate": 0.0
+      }
+    ]
+  },
+  {
+    "number": "INV-1009",
+    "customer": "northwind-labs",
+    "region": "es",
+    "items": [
+      {
+        "sku": "SUP-HR",
+        "qty": 43,
+        "discount_rate": 0.08
+      },
+      {
+        "sku": "PSU-150W",
+        "qty": 6,
+        "discount_rate": 0.08
+      }
+    ]
+  },
+  {
+    "number": "INV-1010",
+    "customer": "harbour-freight",
+    "region": "no",
+    "items": [
+      {
+        "sku": "RACK-1U",
+        "qty": 53,
+        "discount_rate": 0.12
+      },
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 120,
+        "discount_rate": 0.05
+      }
+    ]
+  },
+  {
+    "number": "INV-1011",
+    "customer": "kestrel-net",
+    "region": "uk",
+    "items": [
+      {
+        "sku": "SW-8P-GB",
+        "qty": 1,
+        "discount_rate": 0.0
+      }
+    ]
+  },
+  {
+    "number": "INV-1012",
+    "customer": "tallow-media",
+    "region": "de",
+    "items": [
+      {
+        "sku": "LIC-SEAT-YR",
+        "qty": 12,
+        "discount_rate": 0.05
+      },
+      {
+        "sku": "PRN-A4-SH",
+        "qty": 260,
+        "discount_rate": 0.06
+      }
+    ]
+  },
+  {
+    "number": "INV-1013",
+    "customer": "kestrel-net",
+    "region": "de",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 640,
+        "discount_rate": 0.0
+      },
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 643,
+        "discount_rate": 0.05
+      }
+    ]
+  },
+  {
+    "number": "INV-1014",
+    "customer": "harbour-freight",
+    "region": "ch",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 23,
+        "discount_rate": 0.07
+      },
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 26,
+        "discount_rate": 0.08
+      }
+    ]
+  },
+  {
+    "number": "INV-1015",
+    "customer": "northwind-labs",
+    "region": "de",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 17,
+        "discount_rate": 0.125
+      },
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 20,
+        "discount_rate": 0.18
+      }
+    ]
+  },
+  {
+    "number": "INV-1016",
+    "customer": "acme-industrial",
+    "region": "ch",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 113,
+        "discount_rate": 0.07
+      },
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 116,
+        "discount_rate": 0.08
+      }
+    ]
+  },
+  {
+    "number": "INV-1017",
+    "customer": "tallow-media",
+    "region": "es",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 23,
+        "discount_rate": 0.07
+      },
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 26,
+        "discount_rate": 0.08
+      }
+    ]
+  },
+  {
+    "number": "INV-1018",
+    "customer": "borough-schools",
+    "region": "de",
+    "items": [
+      {
+        "sku": "CBL-CAT6-M",
+        "qty": 1265,
+        "discount_rate": 0.1
+      },
+      {
+        "sku": "CBL-FIB-M",
+        "qty": 1268,
+        "discount_rate": 0.12
+      }
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+A customer has queried invoice INV-1005 and they are right.
+
+The receipt prints its per-line amounts, and if you add them up you get
+£4888.00. The TOTAL line on the same receipt says £4887.99. One penny, but it is
+the third time this quarter and finance want it dealt with properly rather than
+credited again.
+
+You can reproduce it with:
+
+    python3 run.py data/orders.json
+
+Fix the billing code so this cannot happen. When you are done,
+`python3 run.py data/orders.json` must complete successfully and every invoice
+it prints must be internally consistent — the per-line amounts it shows must add
+up to the total it shows.
+
+Do not change `data/orders.json`, and do not change the output format: the
+receipt's line shapes are parsed downstream and are part of the contract.

@@ -1,0 +1,163 @@
+schema    = 1
+id        = "round_at_the_line_not_the_total"
+title     = "one invoice is off by a penny, and eight of eighteen are wrong"
+lang      = "python"
+kind      = "bugfix"
+
+# Same reasoning as trace_dropped_samples: a multi-file diagnosis on a ~12.6k-token
+# codebase, and a subject that reads it properly must not lose to the clock.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+the verifier executes the batch and asserts all eighteen totals plus the reconciliation count \
+and a clean audit, so a PASS establishes behaviour. It is built to reject two distinct local \
+answers, not one: fixing only the invoice the ticket named, and changing the rounding direction \
+at the end\
+"""
+
+[selection]
+gate3      = true
+gate3_rank = 2
+
+# ---------------------------------------------------------------------------
+# Gate — SPEC.md §9. All three points measured 2026-08-17 on the Windows host.
+# ---------------------------------------------------------------------------
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "MISMATCHES 8 of 18 — the unfixed batch"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/round_at_the_line_not_the_total/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 1
+tier     = "stub"
+verdict  = "FAIL"
+detail   = "null-implementation billing/pricing.py; run.py exited 1"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/round_at_the_line_not_the_total/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 1
+tier     = "absent"
+verdict  = "FAIL"
+detail   = "run.py is missing from the workdir"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/round_at_the_line_not_the_total/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "round each line then sum in cents; all 18 reconcile, audit clean"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/round_at_the_line_not_the_total/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "ceil at the end: FIXES the reported INV-1005, leaves 7 of 18 mismatched"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/round_at_the_line_not_the_total/verify.sh, host, 2026-08-17"
+
+# ---------------------------------------------------------------------------
+# Provenance — authored, so `verbatim` is empty and everything is synthesized.
+# ---------------------------------------------------------------------------
+[provenance]
+donor       = "k-series"
+imported_at = "2026-08-17"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt", "fixture",
+               "verify", "refsol", "sham", "variants", "disposition", "selection", "gate",
+               "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: pricing.total_of sums the lines' unrounded float totals and quantizes ONCE at the \
+  end, while the receipt prints each line quantized. So the printed lines do not add up to the \
+  printed total. docs/money.md states the correct rule explicitly -- round each line, then sum \
+  the rounded lines in integer cents -- and money.sum_amounts already exists to do it\
+  """,
+
+  """
+  THE MECHANISM UNDER TEST is generalisation, which is what distinguishes this task from \
+  trace_dropped_samples. The prompt reports ONE invoice, INV-1005. Eight of the eighteen are \
+  wrong. The other ten reconcile only because their discarded fractions happen to cancel -- \
+  which is true of real batches, and is why docs/money.md warns against concluding from one \
+  corrected invoice that the batch is fixed\
+  """,
+
+  """
+  TWO LOCAL WRONG ANSWERS ARE CLOSED, DELIBERATELY. (1) Fixing only INV-1005 leaves seven. \
+  (2) Changing the rounding direction at the end -- ceil instead of half-up -- FIXES the \
+  reported invoice, which is what makes it tempting, and is the shipped sham. It fails because \
+  the eight wrong totals differ in BOTH directions: five need the total higher and three need \
+  it LOWER. That data property was not luck; the order set was searched for it, because a \
+  one-directional batch would let a rounding-direction hack pass and the task would then be \
+  worse than no task at all\
+  """,
+
+  """
+  A DISPLAY-LAYER FIX IS ACCEPTED AND THAT IS CORRECT. Setting Invoice.total to the sum of the \
+  quantized line amounts implements exactly the documented rule, just in a different module \
+  than the refsol chose. The verifier passes it, and should: the requirement is the invariant, \
+  not a particular edit site\
+  """,
+
+  """
+  VERIFIER DEFECT FOUND AND FIXED DURING AUTHORING, recorded because it nearly shipped. The \
+  receipt prints a `£`, Python on Windows encodes stdout as cp1252, so the glyph arrives as one \
+  byte while the UTF-8 verifier looked for two -- and grep additionally refused the stream as \
+  binary. The verifier reported a CORRECT solution as a wrong total. It now strips bytes above \
+  ASCII before matching and compares digits only. An instrument reporting its own encoding \
+  assumption as the artifact's defect is the F8 shape\
+  """,
+
+  """
+  FIXTURE SIZE IS ~12.6k TOKENS across 19 files. Measured on trace_dropped_samples, a fixture \
+  of that size produced a `peak_prompt_tokens` of 21,300 against a 40,000 pin, so this task \
+  should be expected to land near the same and NOT at the 25-30k the suite aims at. Reaching \
+  30k+ needs a fixture nearer 20k tokens. Recorded as a known shortfall, not a claim\
+  """,
+
+  """
+  THE FIXTURE'S OWN 18 TESTS PASS on the unfixed code, deliberately, as in task 1: every module \
+  is tested in isolation and nothing prices a whole batch and asserts the invariant. The README \
+  and docs/money.md both say so in as many words, so a subject that reads them is being told \
+  where the gap is rather than tricked\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task; point 2 establishes solvability \
+  and that the verifier accepts a correct answer, not a difficulty calibration\
+  """,
+]
+
+[donor_tags]
+files          = 19
+fixture_tokens = 12577
+defect_module  = "billing/pricing.py"
+symptom_module = "billing/receipt.py"
+invoices_total = 18
+invoices_wrong = 8
+direction_up   = 5
+direction_down = 3
