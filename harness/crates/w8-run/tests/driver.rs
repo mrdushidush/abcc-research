@@ -90,8 +90,12 @@ fn a_turn_completes_and_the_marker_carries_all_three_numbers() {
     let mut t = OperatorTrack::new(&[], None);
     let run = s.run_turn(&one("do the thing"), &mut t, deadline(30));
     match run.end {
-        TurnEnd::Marker { iterations, tokens_in, tokens_out } => {
+        TurnEnd::Marker { iterations, tokens_in, tokens_out, ctx_est } => {
             assert_eq!((iterations, tokens_in, tokens_out), (1, 4885, 63));
+            // This descriptor's `turn_end` declares only the three required groups, so the
+            // context estimate is absent rather than zero — the distinction `peak_prompt_tokens`
+            // reports as `not_applicable`.
+            assert_eq!(ctx_est, None);
         }
         other => panic!("expected a marker, got {other:?}"),
     }

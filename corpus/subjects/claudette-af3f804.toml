@@ -36,7 +36,17 @@ CLAUDETTE_SKIP_OLLAMA_PROBE = "1"
 
 [markers]
 gate     = "Allow? [y/N"                              # stderr, and it has NO trailing newline
-turn_end = '^⚡ turn iter=(\d+) in=(\d+) out=(\d+)'   # stderr, repl.rs:205-214
+# Four capture groups: iterations, in, out, and the context estimate. The fourth is OPTIONAL in
+# the loader (`compile_turn_end`) and is declared here because it is the only thing on the wire
+# that can answer "how full did the window actually get" — the first three are session-cumulative,
+# so 317,865 tokens over 22 iterations reads the same whether the session sat at 14k or climbed
+# past 30k. It feeds `peak_prompt_tokens`, which the K-series needs as a validity gate.
+#
+# The line is `⚡ turn iter=22 in=317865 out=27734 ctx ~14k/39k (36%)` (repl.rs:205-214, gauge at
+# run/cli_prompter.rs:26-38). `.*?` rather than a literal space so an ANSI colour reset between
+# the fields cannot break the match. `(\d+k?)` because the gauge humanizes: below 1024 it prints
+# the raw count, above it prints round(n/1024) with a `k` — and ⚠ that `k` is 1024, not 1000.
+turn_end = '^⚡ turn iter=(\d+) in=(\d+) out=(\d+).*?ctx ~(\d+k?)/'   # stderr, repl.rs:205-214
 
 [delivery]
 # SPEC §7, amendment 7. A line equal to `open` starts a block; a line equal to `close` ends it;

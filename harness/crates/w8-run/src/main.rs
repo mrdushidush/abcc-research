@@ -700,6 +700,8 @@ const METRIC_NAMES: &[&str] = &[
     "tokens_out",
     "tokens_in_preamble",
     "tokens_in_net",
+    "mean_prompt_tokens",
+    "peak_prompt_tokens",
     "iterations",
     "turns",
     "gate_fires",
@@ -809,6 +811,7 @@ fn run_cell(
     let mut track = OperatorTrack::new(&variant.operator, variant.default.as_ref());
     let deadline = Instant::now() + Duration::from_secs(u64::from(task.timeout_s));
     let mut last_marker: Option<(u32, u64, u64)> = None;
+    let mut peak_ctx: Option<u64> = None;
     let mut ttfvo: Option<u64> = None;
     let mut ttft: Option<u64> = None;
     let mut wall_ms = 0u64;
@@ -830,8 +833,15 @@ fn run_cell(
         match &run.end {
             // Session-cumulative: the LAST marker is the cost of the task, and summing the lines
             // multiply-counts (F9). Overwriting rather than adding is the whole point.
-            TurnEnd::Marker { iterations, tokens_in, tokens_out } => {
+            TurnEnd::Marker { iterations, tokens_in, tokens_out, ctx_est } => {
                 last_marker = Some((*iterations, *tokens_in, *tokens_out));
+                // The context estimate is the ONE number here that is not cumulative — it is a
+                // point-in-time reading of how full the window was when this turn ended. So it is
+                // MAXed across turns, not overwritten: a later turn can be smaller than an earlier
+                // one if the subject evicted or compacted, and the peak is what the K-series needs.
+                if let Some(c) = ctx_est {
+                    peak_ctx = Some(peak_ctx.map_or(*c, |seen: u64| seen.max(*c)));
+                }
             }
             other => {
                 ended = Some(other.clone());
@@ -881,15 +891,74 @@ fn run_cell(
             // Deliberately signed: a negative means the warmup's preamble estimate exceeded this
             // task's whole input, which is information about the estimate, not something to clamp.
             m.insert("tokens_in_net".to_string(), Metric::Measured(tin as f64 - pre as f64));
+            // An EXACT lower bound on the largest single prompt this session sent: a mean never
+            // exceeds a max. Cheap, needs nothing from the subject, and it is the only token
+            // number here that says anything about the SIZE of a request rather than their sum.
+            // Reported alongside `peak_prompt_tokens` because the two fail independently — this
+            // one survives a subject that declares no context group.
+            m.insert(
+                "mean_prompt_tokens".to_string(),
+                if iter == 0 {
+                    Metric::NotApplicable { reason: "the marker reported zero iterations".into() }
+                } else {
+                    Metric::Measured(tin as f64 / f64::from(iter))
+                },
+            );
         }
         None => {
             let reason = "no turn-end marker, so the session-cumulative counts were never printed";
-            for k in ["iterations", "tokens_in", "tokens_out", "tokens_in_preamble", "tokens_in_net"]
-            {
+            for k in [
+                "iterations",
+                "tokens_in",
+                "tokens_out",
+                "tokens_in_preamble",
+                "tokens_in_net",
+                "mean_prompt_tokens",
+            ] {
                 m.insert(k.to_string(), Metric::NotApplicable { reason: reason.into() });
             }
         }
     }
+    // ── peak_prompt_tokens ──────────────────────────────────────────────────
+    //
+    // Why this metric exists, and it is a validity gate rather than a performance number.
+    // The K-series measures behaviour under context pressure, and the cumulative counts cannot
+    // see it: 317,865 tokens over 22 iterations reads identically whether the session sat at 14k
+    // the whole way or climbed past 30k. Without this, a poor score from a subject that never
+    // entered the regime is indistinguishable from a poor score from one that did — so the suite
+    // would be reporting results about a condition it never established.
+    //
+    // ⚠ WHAT IT IS, stated because the name is friendlier than the measurement. It is the
+    // SUBJECT'S OWN session-size estimate at turn end, maxed over turns, PLUS the measured
+    // preamble — and it inherits four limits, every one of which points the same way:
+    //   1. THE GAUGE OMITS THE SYSTEM PROMPT AND TOOL SCHEMAS. That is what its `~` means
+    //      (`run/cli_prompter.rs:26-29`), and it is why `preamble_tokens_in` is added back here:
+    //      a request on the wire carries both. Without that addition this understated the real
+    //      prompt by the whole preamble — 4,871 tokens on the first K-series cell.
+    //   2. THE PREAMBLE ITSELF IS A LOWER BOUND. W2/F81: the tools array is re-read every
+    //      request and a mid-session `enable_tools` grows it, so a session that opens tool
+    //      groups has a preamble larger than the warmup measured.
+    //   3. GRANULARITY IS 1,024 TOKENS above 1k, because the gauge is humanized. Never quote
+    //      this to finer precision than ±512.
+    //   4. IT IS A CHARS/4 ESTIMATE, not the server's tokenizer, and this corpus measures ~3.39
+    //      chars/token on prose — so the estimate runs LOW against a real count.
+    // All four understate, which makes this a CONSERVATIVE gate: if it says a cell crossed a
+    // threshold, the cell crossed it. Treat it as a floor on the peak, never as the peak.
+    //
+    // For an exact figure the harness would have to observe every request, which means proxying
+    // the endpoint — and that would add latency to `ttfvo_ms`, the number this harness exists to
+    // measure. Rejected for that reason, not overlooked.
+    m.insert(
+        "peak_prompt_tokens".to_string(),
+        match peak_ctx {
+            Some(c) => Metric::Measured((c + preamble_tokens_in) as f64),
+            None => Metric::NotApplicable {
+                reason: "the subject descriptor's turn_end declares no context-estimate capture \
+                         group (an optional 4th group), so the subject never reported occupancy"
+                    .into(),
+            },
+        },
+    );
     m.insert("gate_fires".to_string(), measured(u64::from(track.gate_fires)));
     m.insert(
         "interventions_delivered".to_string(),

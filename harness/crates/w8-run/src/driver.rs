@@ -63,7 +63,15 @@ struct Chunk {
 #[derive(Debug, Clone)]
 pub enum TurnEnd {
     /// The `turn iter=` marker matched. **Session-cumulative** counts, not per-turn (F9).
-    Marker { iterations: u32, tokens_in: u64, tokens_out: u64 },
+    ///
+    /// `ctx_est` is the subject's OWN estimate of its session size when the turn ended, already
+    /// converted to tokens, and it is `None` unless the descriptor's `turn_end` declares a fourth
+    /// capture group for it. It exists because the three cumulative counts cannot answer *"did this
+    /// cell ever hold a large context"* — 317,865 tokens over 22 iterations is the same number
+    /// whether the session sat at 14k throughout or climbed to 30k. The K-series needs that
+    /// distinction: a task that measures behaviour under context pressure cannot report a result
+    /// from a cell that never entered the regime. See `peak_prompt_tokens` in `main.rs`.
+    Marker { iterations: u32, tokens_in: u64, tokens_out: u64, ctx_est: Option<u64> },
     Timeout,
     /// The subject exited without printing a turn boundary.
     Eof,
@@ -211,6 +219,19 @@ impl std::fmt::Display for SpawnError {
     }
 }
 
+/// Parse a humanized token count of the shape Claudette's gauge prints — `840` or `14k`.
+///
+/// 🚨 **`k` is 1024, not 1000.** `humanize_tokens` is
+/// `if n < 1024 { n } else { round(n / 1024.0) }k` (`run/cli_prompter.rs:18-24`), so `14k` means
+/// 14,336. Reading it as 14,000 would understate every context figure by 2.4%, in the direction
+/// that makes a cell look like it entered a regime it did not.
+fn parse_humanized(s: &str) -> Option<u64> {
+    match s.strip_suffix('k') {
+        Some(head) => head.parse::<u64>().ok().map(|k| k * 1024),
+        None => s.parse::<u64>().ok(),
+    }
+}
+
 /// Compile the descriptor's `turn_end` and check it can actually yield the three numbers.
 pub fn compile_turn_end(pattern: &str) -> Result<Regex, SpawnError> {
     let re = Regex::new(pattern)
@@ -222,6 +243,11 @@ pub fn compile_turn_end(pattern: &str) -> Result<Regex, SpawnError> {
             re.captures_len() - 1
         )));
     }
+    // A FOURTH group is optional and means the subject's context estimate, humanized.
+    // Optional rather than required so both existing subject descriptors stay valid without
+    // edits — a descriptor is pinned to a subject commit, and a baseline whose subject id no
+    // longer resolves is not a baseline. A descriptor that declares it gets
+    // `peak_prompt_tokens`; one that does not gets an explicit `not_applicable`, never a zero.
     Ok(re)
 }
 
@@ -454,6 +480,9 @@ impl Session {
                                 iterations: caps[1].parse().unwrap_or(0),
                                 tokens_in: caps[2].parse().unwrap_or(0),
                                 tokens_out: caps[3].parse().unwrap_or(0),
+                                // Absent group, or a group that does not parse, both mean "the
+                                // subject did not tell us" — which is not the same as zero.
+                                ctx_est: caps.get(4).and_then(|m| parse_humanized(m.as_str())),
                             });
                             break;
                         }
@@ -768,5 +797,44 @@ mod tests {
     fn a_marker_without_three_captures_is_refused_at_startup() {
         let e = compile_turn_end(r"^⚡ turn iter=(\d+)").expect_err("must refuse");
         assert!(format!("{e}").contains("capture"), "{e}");
+    }
+
+    #[test]
+    fn a_fourth_capture_group_is_optional_not_required() {
+        // Both shipped descriptors declare only three groups and must keep compiling: a
+        // descriptor is pinned to a subject commit, and a baseline whose subject no longer
+        // resolves is not a baseline.
+        compile_turn_end(r"^⚡ turn iter=(\d+) in=(\d+) out=(\d+)").expect("three is still valid");
+        compile_turn_end(r"^⚡ turn iter=(\d+) in=(\d+) out=(\d+).*?ctx ~(\d+k?)/")
+            .expect("four is also valid");
+    }
+
+    #[test]
+    fn humanized_k_is_1024_not_1000() {
+        // The bug this pins. `humanize_tokens` is round(n / 1024.0) with a `k` suffix
+        // (claudette run/cli_prompter.rs:18-24), so reading `k` as 1000 understates every
+        // context figure by 2.4% — in the direction that makes a cell look like it entered a
+        // regime it did not. A conservative gate must never be optimistic by accident.
+        assert_eq!(parse_humanized("14k"), Some(14 * 1024));
+        assert_eq!(parse_humanized("39k"), Some(39_936));
+        // Below 1024 the gauge prints the raw count with no suffix.
+        assert_eq!(parse_humanized("840"), Some(840));
+        // Anything unparseable is absent, never zero: "the subject did not say" and "the subject
+        // said nothing was in context" are different facts.
+        assert_eq!(parse_humanized(""), None);
+        assert_eq!(parse_humanized("k"), None);
+        assert_eq!(parse_humanized("~14k"), None);
+    }
+
+    #[test]
+    fn the_context_estimate_is_read_from_the_fourth_group() {
+        // The real line Claudette printed on the first K-series cell, verbatim.
+        let re = compile_turn_end(r"^⚡ turn iter=(\d+) in=(\d+) out=(\d+).*?ctx ~(\d+k?)/").unwrap();
+        let line = "⚡ turn iter=22 in=317865 out=27734 ctx ~14k/39k (36%)";
+        let caps = re.captures(line).expect("must match the shipped format");
+        assert_eq!(&caps[1], "22");
+        assert_eq!(&caps[2], "317865");
+        assert_eq!(&caps[3], "27734");
+        assert_eq!(parse_humanized(&caps[4]), Some(14 * 1024));
     }
 }
