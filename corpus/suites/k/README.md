@@ -66,6 +66,49 @@ F84). The dangerous direction is silent.
    confirm the rebuild actually happened — `cargo build` will report "Finished"
    without recompiling if it believes the target is fresh.
 
+## The three tasks, and the mechanism each one tests
+
+A suite of three is only worth more than a suite of one if the tasks fail
+differently. These do:
+
+| Task | Mechanism | The local wrong answer | Fixture |
+|---|---|---|---|
+| `trace_dropped_samples` | the cause is **four modules upstream** of the symptom | a guard at the crash site — runs clean, discards half the fleet | 12.3k tok, 20 files |
+| `round_at_the_line_not_the_total` | **one reported case, eight real ones** | fix the invoice the ticket named; or change the rounding direction, which fixes it too | 12.6k tok, 19 files |
+| `finish_the_cancelled_status` | a change that must land at **four sites**, of which the ticket names one | fix the one consumer operations complained about | 9.4k tok, 16 files |
+
+All three ship a `refsol` and a `sham`, and all three are gate-sound on points
+1–3 (measured 2026-08-17, evidence in each `task.toml`). All three have a fixture
+whose **own unit tests pass on the unfixed code** — deliberately, and each
+fixture's README says so, because that is how these defects survive in real
+repositories.
+
+## 🚨 The suite's main open weakness: the fixtures are too small
+
+**Measured, not estimated.** `trace_dropped_samples` on the champion produced
+`peak_prompt_tokens` = **21,300 against a 40,000 pin — 53% occupancy**, from a
+12.3k-token fixture. The other two fixtures are the same size or smaller, so
+expect the same or less.
+
+The suite aims at 25–30k. It is not getting there, and the honest reading is that
+**a fixture needs to be nearer 20k tokens** to put a session past 30k (the
+observed relationship is roughly `peak ≈ preamble + 1.3 × fixture`, from one data
+point — treat it as an order of magnitude, not a formula).
+
+Two ways to close it, and they are not equivalent:
+
+1. **Grow the fixtures.** Keeps the regime absolute — a session genuinely holding
+   30k of someone else's code, which is what §W1 means by context pressure and
+   what the daily driver does at 61440. This is the right fix and it is work.
+2. **Lower the pin.** Running both arms at `--num-ctx 24000` turns the same
+   21,300 peak into 89% occupancy. Cheap, and legitimate if the question is
+   *behaviour near the window limit* — but it is a different question from
+   *behaviour holding a lot of context*, and a result from one must not be
+   reported as the other.
+
+Until one of them is done, **quote `peak_prompt_tokens` next to every K-series
+result** and say which regime the cell actually reached.
+
 ## Reading a result
 
 The aggregate is `include_verifiable = ["full"]`, so only tasks whose verifier

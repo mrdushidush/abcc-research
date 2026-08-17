@@ -1,0 +1,160 @@
+schema    = 1
+id        = "finish_the_cancelled_status"
+title     = "a status was added to the vocabulary and to one consumer of six"
+lang      = "python"
+kind      = "bugfix"
+
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+the verifier executes the report and asserts counts, SLA breaches, chargeable-job count and \
+total, and retry candidates -- four independent consumers -- plus per-job positive controls, so \
+a PASS establishes behaviour at every site rather than at the one the ticket named\
+"""
+
+[selection]
+gate3      = true
+gate3_rank = 3
+
+# ---------------------------------------------------------------------------
+# Gate — SPEC.md §9. All three points measured 2026-08-17 on the Windows host.
+# ---------------------------------------------------------------------------
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "COUNTS shows other=4 instead of cancelled=4; SLA 6, charges 17, retries 11"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/finish_the_cancelled_status/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 1
+tier     = "stub"
+verdict  = "FAIL"
+detail   = "null-implementation jobs/summary.py; no COUNTS line at all"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/finish_the_cancelled_status/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 1
+tier     = "absent"
+verdict  = "FAIL"
+detail   = "run.py is missing from the workdir"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/finish_the_cancelled_status/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "all four consumers corrected: cancelled=4/other=0, SLA 2, charges 13 at 37615.00p, retries 7"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/finish_the_cancelled_status/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "sla.py only: FIXES the reported symptom (SLA 2) and still bills and requeues all 4 cancelled jobs"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/finish_the_cancelled_status/verify.sh, host, 2026-08-17"
+
+# ---------------------------------------------------------------------------
+# Provenance
+# ---------------------------------------------------------------------------
+[provenance]
+donor       = "k-series"
+imported_at = "2026-08-17"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt", "fixture",
+               "verify", "refsol", "sham", "variants", "disposition", "selection", "gate",
+               "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `cancelled` was added to status.py -- to ALL, to TERMINAL, and to TRANSITIONS -- \
+  and to exactly one consumer, dashboard.py, which is the one that only picks a colour. Four \
+  consumers that make decisions still branch on the four statuses that existed before it: \
+  sla.finished_at measures it against `now` so it accrues forever, charges.is_chargeable bills \
+  it, summary.counts drops it into `other`, and retry.should_retry requeues it. Every one of \
+  those has a default branch, so nothing raises\
+  """,
+
+  """
+  THE MECHANISM UNDER TEST is completing a change across sites, which is the third distinct \
+  failure mode in this suite: task 1 is tracing a cause away from its symptom, task 2 is \
+  generalising from one reported case, this one is finding the other four places. The ticket \
+  names ONE consumer. The prompt says "not only in the report operations complained about", so \
+  the requirement is explicit -- the work is locating the sites, not guessing the intent\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER is fixing sla.py alone, and it is the shipped sham. It fixes exactly \
+  what the ticket described -- SLA breaches drop from 6 to 2 -- and leaves the service billing \
+  customers for four cancelled jobs and requeueing work an operator told it to stop. The second \
+  of those is the item in docs/status_lifecycle.md with a support ticket attached\
+  """,
+
+  """
+  POSITIVE CONTROLS ARE IN THE VERIFIER, and they are what makes it trustworthy. Three of the \
+  four assertions could be satisfied by switching the feature OFF: return False from \
+  is_breached and SLA drops to 0; return False from should_retry and retries drop to 0. So the \
+  verifier also requires that J-007 and J-008 REMAIN SLA breaches (genuinely late done-jobs) \
+  and that J-009, J-010 and J-023 REMAIN retry candidates (genuinely failed). Rule 8 of \
+  verify-claims-against-code-not-docs: when the expected direction of every assertion is the \
+  same, a positive control is what separates a fix from a deletion\
+  """,
+
+  """
+  DASHBOARD.PY IS A DELIBERATE DECOY and a fair one. It handles `cancelled` correctly and \
+  completely, so a subject grepping for the constant finds a consumer that already works. That \
+  is exactly the shape of the real bug -- somebody DID update a consumer in 4.2 -- and it is \
+  why "the constant exists" is not evidence that the release is finished. \
+  docs/status_lifecycle.md says so explicitly\
+  """,
+
+  """
+  FIXTURE SIZE IS ~9.4k TOKENS across 16 files, the smallest of the three tasks. Task 1 measured \
+  peak_prompt_tokens of 21,300 from a 12.3k fixture against a 40,000 pin, so this task should be \
+  expected LOWER than that, and well under the 25-30k the suite aims at. See the suite README on \
+  sizing: the shortfall is real and it is the suite's main open weakness\
+  """,
+
+  """
+  THE FIXTURE'S OWN 24 TESTS PASS on the unfixed code, and here the irony is sharper than in the \
+  other two tasks: the status VOCABULARY is tested thoroughly -- cancelled is asserted to be in \
+  ALL, in TERMINAL, and reachable in TRANSITIONS -- while no test asserts what any CONSUMER does \
+  with it. Well-tested vocabulary, four consumers that disagree with it, green suite. The \
+  fixture's README and test docstring both say so\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task; point 2 establishes solvability \
+  and that the verifier accepts a correct answer, not a difficulty calibration\
+  """,
+]
+
+[donor_tags]
+files            = 16
+fixture_tokens   = 9360
+sites_to_fix     = 4
+sites_correct    = 1        # dashboard.py, the decoy
+consumers_total  = 6
+symptom_module   = "jobs/sla.py"

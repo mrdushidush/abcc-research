@@ -1,0 +1,17 @@
+Support ticket from operations:
+
+  "Since 4.2 the SLA report is full of jobs we cancelled ourselves. J-017 was
+  cancelled two minutes after it started and the report says it's over its SLA
+  by twenty-four hours. We can't use this report to find real problems any more."
+
+They are right. Reproduce it with:
+
+    python3 run.py data/jobs.json
+
+`cancelled` was added as a status in 4.2. Finish the job properly: make the
+service treat a cancelled job correctly everywhere it makes a decision based on
+status, not only in the report operations complained about.
+
+`docs/status_lifecycle.md` is the specification for what each status means.
+
+Do not change `data/jobs.json`.
