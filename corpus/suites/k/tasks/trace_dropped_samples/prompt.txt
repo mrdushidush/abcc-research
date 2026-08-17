@@ -1,0 +1,20 @@
+The nightly telemetry roll-up in this repository is failing. Running it:
+
+    python3 run.py data/samples.jsonl
+
+crashes with:
+
+    File "pipeline/stats.py", line 52, in summarise
+        mean = total / len(window.values)
+    ZeroDivisionError: division by zero
+
+Operations have also been unhappy with this report for a while: the sample
+counts it prints look lower than the volume the fleet is actually sending, but
+nobody has pinned that down.
+
+Fix it. When you are done, `python3 run.py data/samples.jsonl` must complete
+successfully AND the report it prints must account for every usable sample in
+the input file — not merely avoid crashing.
+
+Do not change `data/samples.jsonl`, and do not change the output format: the
+report's line shapes are consumed downstream and are part of the contract.

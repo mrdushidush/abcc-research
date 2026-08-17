@@ -1,0 +1,85 @@
+schema = 1
+id     = "k"
+title  = "K-series — agentic multi-file work under context pressure"
+
+# ---------------------------------------------------------------------------
+# Why this suite exists
+#
+# §11.0 bars deciding a model choice on Q56's score column, and §W1 asks for
+# evaluation on "agentic multi-file work under context pressure". Neither
+# imported suite can supply it: every Q56 task is one `claudette "<prompt>"`
+# call against a small fixture, and U100 is a one-shot scored corpus. Both
+# share the shape — one invocation, one artifact, ctx 32768 never stressed —
+# while the daily driver runs at 61440.
+#
+# SPEC.md §2 reserved `suites/k/` for "new tasks, authored after this freeze".
+# This is that suite. The frozen cores stay frozen: nothing here edits q56 or
+# u100, and nothing here is imported from a donor.
+#
+# THE DESIGN RULE, and it is the whole point:
+#
+#   Context pressure comes from the FIXTURE, never from a padded prompt.
+#
+# A task creates pressure by requiring the subject to read across many files
+# before it can answer correctly. Padding a prompt to 30k tokens would measure
+# prefill, which `research/spikes/w2-serving/` already measures far more
+# cheaply and far more precisely. What is unmeasured — and what decides a base
+# model — is whether a subject that has read 25k tokens of someone else's code
+# still makes the right call at the end of it.
+#
+# The corollary is that every task here must have a LOCAL WRONG ANSWER that
+# looks right: a fix at the point of the symptom, a rename that catches the
+# obvious call sites, a constraint honoured where it was restated and ignored
+# where it was only stated once. That local wrong answer is the sham (§9
+# point 3). A task whose wrong answer is obviously wrong measures nothing
+# about context pressure.
+# ---------------------------------------------------------------------------
+
+[provenance]
+donor       = "k-series"          # authored, not imported
+imported_at = "2026-08-17"
+
+caveats = [
+  """
+  AUTHORED, NOT IMPORTED. There is no donor baseline for any task in this suite, so no \
+  number here is comparable to the 7 recorded ABCC runs or the 131 Claudette model runs. \
+  Comparability across SUBJECTS within this suite is the only comparison it supports, and \
+  that is exactly what it was built for\
+  """,
+
+  """
+  NO HUMAN BASELINE EITHER. Every task's refsol was authored by the same process that \
+  authored the task, so `refsol` proves the task is SOLVABLE and that the verifier accepts a \
+  correct answer. It does not establish a difficulty calibration against a human engineer\
+  """,
+
+  """
+  CONTEXT PRESSURE IS A PROPERTY OF THE RUN, NOT OF THE TASK FILE. A subject with \
+  aggressive context eviction, or one that greps instead of reading, may complete a K task \
+  without ever holding 25k tokens. That is a legitimate strategy and the corpus does not \
+  penalise it — but it means `peak_prompt_tokens` must be reported per cell, or a low score \
+  cannot be distinguished from a subject that never entered the regime being tested\
+  """,
+]
+
+[aggregate]
+include_verifiable  = ["full"]
+exclude_quarantined = true
+
+# ---------------------------------------------------------------------------
+# Variants. `control` is the comparison variant for model selection: no
+# operator, permissions open, so a difference between two subjects is a
+# difference between the models and not between two operator tracks.
+# ---------------------------------------------------------------------------
+[[variant]]
+id          = "control"
+permissions = { mode = "allow" }
+operator    = []
+
+[[variant]]
+id          = "gated"
+permissions = { mode = "workspace_write" }
+requires    = ["tool_gate"]
+expect      = { gate_fires = { min = 1 } }
+operator    = [ { on = { gate = {} }, do = "approve" } ]
+default     = "deny"

@@ -1,0 +1,159 @@
+schema    = 1
+id        = "trace_dropped_samples"
+title     = "the roll-up crashes, and the cause is four modules upstream"
+lang      = "python"
+kind      = "bugfix"
+
+# Generous relative to Q56/U100's 300s. This is a multi-file diagnosis on a
+# ~12k-token codebase, and the champion needs ~13s of prefill alone once the
+# transcript reaches 28k (research/W1-models.md F80). A subject that reads the
+# codebase properly must not lose to the clock for doing so.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+# ---------------------------------------------------------------------------
+# Disposition — SPEC.md §10
+# ---------------------------------------------------------------------------
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+the verifier executes the pipeline and asserts the resulting sample counts and per-channel \
+means, so a PASS establishes behaviour and not presence. It is specifically constructed to \
+reject the local fix: a guard at the crash site runs clean and reports 30 samples where 54 \
+are usable\
+"""
+
+[selection]
+gate3      = true
+gate3_rank = 1
+
+# ---------------------------------------------------------------------------
+# Gate — SPEC.md §9. All three points measured 2026-08-17 on the Windows host.
+#
+# Point 1 is recorded at three tiers rather than the required one. The extra
+# two are cheap and they close a specific worry: `stub` and `absent` both fail
+# HERE for an uninteresting reason (run.py cannot import, or is missing), so
+# neither of them demonstrates that the verifier can see this task's actual
+# defect. `donor_fixture` — the unmodified buggy fixture — is the tier that
+# does, and it is the one that matters.
+# ---------------------------------------------------------------------------
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: ZeroDivisionError: division by zero at pipeline/stats.py:52"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/trace_dropped_samples/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 1
+tier     = "stub"
+verdict  = "FAIL"
+detail   = "null-implementation pipeline/stats.py; run.py exited 1"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/trace_dropped_samples/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 1
+tier     = "absent"
+verdict  = "FAIL"
+detail   = "run.py is missing from the workdir"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/trace_dropped_samples/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "54 samples, 12 windows, all four channels at the expected means"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/trace_dropped_samples/verify.sh, host, 2026-08-17"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "guard at the crash site: runs clean, reports samples: 30 against an expected 54"
+verifier = "rewritten"
+run      = "corpus/suites/k/tasks/trace_dropped_samples/verify.sh, host, 2026-08-17"
+
+# ---------------------------------------------------------------------------
+# Provenance — authored, so `verbatim` is empty and everything is synthesized.
+# The three lists must partition SPEC.md §3's closed vocabulary.
+# ---------------------------------------------------------------------------
+[provenance]
+donor       = "k-series"
+imported_at = "2026-08-17"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt", "fixture",
+               "verify", "refsol", "sham", "variants", "disposition", "selection", "gate",
+               "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT, stated here because a gate record is not a design document: ingest.accept \
+  compares a raw quality flag against constants.VALID_FLAGS without folding it through \
+  normalize.canonical_flag first, while the channel immediately above it DOES go through \
+  canonical_channel. Rev-B firmware emits upper-case flags, so every rev-B sample is dropped \
+  as bad_flag. Two (channel, window) pairs are rev-B-only, so they arrive at stats.summarise \
+  empty and it divides by zero\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER is a guard at the crash site in stats.py. It is what the traceback \
+  points at, it makes the crash go away, and it silently discards half the fleet -- 30 \
+  accepted samples against 54 usable. The verifier asserts counts and means precisely so \
+  that answer fails. A task whose wrong answer is obviously wrong measures nothing about \
+  context pressure\
+  """,
+
+  """
+  FIXTURE SIZE IS ~12.3k TOKENS across 20 files (41,739 chars at the 3.39 chars/token \
+  measured for this corpus). That is the READABLE material, not the session's peak context: \
+  a subject that reads the codebase, runs the pipeline, and iterates will exceed it. It is \
+  NOT the 25-30k the suite is aiming at from the fixture alone, so `peak_prompt_tokens` must \
+  be reported per cell before any claim is made about behaviour under pressure\
+  """,
+
+  """
+  THE FIXTURE'S OWN TEST SUITE PASSES, 9 tests, on the unfixed code. That is deliberate and \
+  it is realistic: there is no end-to-end test that runs a mixed-firmware file through run.py \
+  and asserts totals, which is exactly how a whole firmware revision goes missing without a \
+  single test turning red. A subject that runs the tests and concludes the code is healthy \
+  has been fairly misled, in the way real codebases mislead people\
+  """,
+
+  """
+  DOCS ARE PART OF THE FIXTURE, not decoration. docs/firmware_notes.md states the rule the \
+  bug breaks, and pipeline/schema.py restates it as a shape check. Both are reachable, \
+  neither is on the crash path, and finding either is the difference between diagnosing and \
+  guessing. This is the axis the task is built to measure\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+files          = 20
+fixture_tokens = 12312
+defect_module  = "pipeline/ingest.py"
+symptom_module = "pipeline/stats.py"
+hop_distance   = 4          # ingest -> calibration -> windowing -> stats
