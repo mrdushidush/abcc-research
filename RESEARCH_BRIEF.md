@@ -777,8 +777,13 @@ The highest-stakes workstream, because this is where the project's identity live
 - **Frontend architecture is the big open question.** A Rust backend can serve: the existing
   React and React Three Fiber console over WebSocket, a Tauri desktop app, a Ratatui TUI, or
   a TUI plus web hybrid. Each has real consequences for how much of V1's visual work survives,
-  how it feels, and how a user installs it. Argue all four. Note that the owner has already
-  researched Ratatui, Bubbletea and Textual, so start from those findings.
+  how it feels, and how a user installs it. Argue all four. ~~Note that the owner has already
+  researched Ratatui, Bubbletea and Textual, so start from those findings.~~
+  **CORRECTED 2026-08-18 — David: "i did not research Ratatui, Bubbletea and Textual."** The
+  premise was false and there are no prior findings to start from; W5 searched for them and found
+  only the March 2026 archived design brief's opencode/Bubble Tea reference (`W5-command-center.md`
+  F93). The three frameworks were researched from scratch on 2026-08-18 instead — see
+  `research/W5-command-center.md`, "Addendum: the TUI framework comparison".
 - What survives from V1's console verbatim, what gets ported, what gets rebuilt. Inventory
   the existing assets, including the 96 Bark voice lines, before designing new screens.
 - What the console must show: live task DAG, per-agent state, queue depth, escalation events,

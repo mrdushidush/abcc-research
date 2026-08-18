@@ -19,6 +19,10 @@ Effect on fun / Open questions / Confidence, per §13.
 7. ✅ **Fun, grounded and made testable** (F127–F130) — the written position, as six queries over the
    event log.
 
+Plus an **addendum** (F131–F139), added the same day: the Ratatui / Bubble Tea / Textual comparison
+§11 wrongly said already existed, run from scratch by four parallel researchers — and the shipped-
+agent evidence around it, which corrects F94 and adds three verbs to item 2.
+
 **All three of §11's named deliverables exist:** this file, the component inventory (item 3), and
 the written position on what "fun" means (item 7, F129).
 
@@ -78,7 +82,14 @@ Desk work, no GPU. Sources in order of weight:
 ### F93 — the frontend question has two opposite owner rulings five months apart, and neither document cites the other
 
 §11 says *"the owner has already researched Ratatui, Bubbletea and Textual, so start from those
-findings."* Those findings are not in this repo, and not in `prestudy/`. They are here:
+findings."* Those findings are not in this repo, and not in `prestudy/`.
+
+> ✅ **Resolved 2026-08-18 — the premise was false.** Asked directly, David: *"i did not research
+> Ratatui, Bubbletea and Textual."* There were never any findings to start from. `RESEARCH_BRIEF.md`
+> §11 has been corrected in place, and the three frameworks were researched from scratch the same
+> day — see the addendum at the end of this file. **OQ-W5-5 is closed.**
+
+What the search did turn up is a different document, and it is worth keeping:
 
 `D:\dev\_archive\abcc_projects\abcc_projects\Archive\abcc-internal-docs-20260423\ABCC_V2_DESIGN_BRIEF.md`,
 dated **Mar 3, 2026**, 143 lines. It is not referenced by `RESEARCH_BRIEF.md` or by any
@@ -137,6 +148,12 @@ The counter-evidence is equally concrete and must not be waved away: **44 MB of 
 lines have no terminal expression whatsoever.** §7's fun requirements — no dead air, legibility,
 personality — were solved in V1 with sprites and sound. A TUI cannot show a painted battlefield.
 The two halves of this finding are what force the hybrid question rather than settling it.
+
+> ⚠ **Corrected 2026-08-18 by F136 (addendum).** "A TUI cannot show a painted battlefield" is too
+> strong: Windows Terminal supports sixel, and OpenAI's Codex CLI ships animated sprites in the
+> terminal. But the capability is palette-reduced to 256 colours and **dies under tmux and over
+> SSH** — i.e. it exists exactly where the web console is already available, and not in the case the
+> TUI is deferred for. The conclusion holds; the absolute phrasing does not.
 
 ### F95 — install shape is a first-class difference, and the two donors sit at opposite ends of it
 
@@ -370,10 +387,10 @@ reopening it.
 - **OQ-W5-4 — is the console served, embedded, or both?** Serving from the binary means the static
   assets ship in it or beside it, and there are 44 MB of them. Interacts with W12's distribution
   story.
-- **OQ-W5-5 — did a Ratatui / Bubbletea / Textual comparison ever exist beyond the March brief?**
-  F93 found the ruling and its opencode reference but no side-by-side of the three frameworks. If
-  those notes exist elsewhere they change nothing about the recommendation (the TUI is deferred),
-  but they belong in the record.
+- ~~**OQ-W5-5 — did a Ratatui / Bubbletea / Textual comparison ever exist beyond the March brief?**~~
+  ✅ **ANSWERED 2026-08-18 — no.** David: *"i did not research Ratatui, Bubbletea and Textual."* The
+  brief's premise was false; it has been corrected in place, and the comparison was run from scratch
+  (see the addendum).
 
 ---
 
@@ -633,6 +650,13 @@ the lock; replay is the primary read path.
 **And one thing not to build:** a second control surface in the terminal. Item 1's asymmetry holds
 here — the terminal surface carries entry, stream, and the permission prompt. Every other verb is
 console-side until something proves otherwise.
+
+> ➕ **Extended 2026-08-18 by F138 (addendum).** Four shipped agents have now specified the verbs
+> this section called least-specified, and two of their answers were missing above. **Add
+> stop-but-keep-the-work** — Claude Code's `Esc` stops generating and retains the artefacts, which is
+> neither kill nor pause and is what an operator wants most often. **Add queue-while-streaming** —
+> type during a turn, land at the next boundary — which is take-over's cheap first step and needs no
+> checkpoint machinery. F133 also supplies a scoped persistent grant key worth copying.
 
 ## Rejected alternatives and why
 
@@ -1735,6 +1759,391 @@ This item *is* the fun section, so the honest framing is what it costs rather th
 
 ---
 
+# Addendum — the TUI framework comparison, run from scratch 2026-08-18
+
+**Why this exists.** §11 instructed W5 to *"start from"* the owner's prior research on Ratatui,
+Bubbletea and Textual. Asked directly, David: *"i did not research Ratatui, Bubbletea and
+Textual."* The premise was false, `RESEARCH_BRIEF.md` §11 is corrected in place, and the comparison
+below was run the same day by four parallel researchers.
+
+**What it does and does not decide.** Item 1 defers the TUI to the headless/SSH question, and David
+accepted that. **This addendum does not reopen it.** It exists so that when the deferred decision is
+taken it is taken from evidence — and because two of its findings bear on work that is *not*
+deferred (F101's stale-answer hazard, and the streaming-render budget).
+
+All claims retrieved 2026-08-18.
+
+## Ratatui (Rust)
+
+**Status.** 0.30.2 published 2026-06-19; 0.30.0 2025-12-26 after a ~14-month gap for the workspace
+restructure into `ratatui-core` / `-widgets` / `-macros` / per-backend crates. 22.3k stars, MSRV
+1.86. Applications keep depending on the umbrella `ratatui` crate. **Expect a breaking change every
+minor** — `BREAKING-CHANGES.md` is a maintained file, which is honest and also the point.
+([crates.io](https://crates.io/api/v1/crates/ratatui), [repo](https://github.com/ratatui/ratatui),
+[v0.30 highlights](https://ratatui.rs/highlights/v030/))
+
+**Streaming.** Immediate mode: every `draw()` rebuilds the whole buffer, and the double-buffer diff
+bounds *terminal I/O*, not *your* construction cost. So the documented pattern decouples the rates —
+`tick_rate(1.0).frame_rate(30.0)` — coalescing ~5 tokens per frame at F123's 150 events/sec.
+([rendering](https://ratatui.rs/concepts/rendering/under-the-hood/),
+[async tutorial](https://ratatui.rs/tutorials/counter-async-app/full-async-events/))
+
+**Two open issues that land on this project's exact paths.**
+[#1004](https://github.com/ratatui/ratatui/issues/1004) — a `Table` of 15k rows costs 1–2 s per
+scroll, because rows are collected into a `Vec` at construction. And
+[#584](https://github.com/ratatui/ratatui/issues/584) — `Viewport::Inline` plus high-frequency
+`insert_before()` **flickers, reproduced on Windows Terminal**, which is the chat-scrollback path
+exactly. The `scrolling-regions` feature (0.29) partially mitigates and is **not on by default**.
+
+**Windows.** crossterm is the default and the documented recommendation when Windows matters.
+Documented gotcha: Windows emits **duplicate key events**, so `KeyEventKind::Press` must be filtered.
+
+**Modals.** Nothing built in — `Clear` for overdraw plus an app-state enum is the convention, and the
+idiomatic way to block a worker is a request channel carrying a `oneshot` reply.
+
+**Images.** `ratatui-image` covers sixel / kitty / iTerm2 with a half-block fallback, but **Windows
+is absent from its compatibility matrix** and [issue #69](https://github.com/benjajaja/ratatui-image/issues/69)
+(open since 2025-01-05) reports `Picker::from_query_stdio` panicking there. Windows Terminal itself
+gained sixel in 1.22 — the gap is the crate's autodetection. **Plan on half-blocks on Windows.**
+
+**Async.** Tokio is **not** required; a `std::thread` + `mpsc` worker feeding one event enum is
+equally idiomatic — which matters, because §14 item 0 leaves 2.0 free to reopen the tokio question.
+
+**Who ships on it.** 🚨 **OpenAI's Codex CLI** — `codex-tui` is ratatui + crossterm with streaming
+responses, inline diffs and **approval overlays**. That is the closest shipped analogue to what item
+2 specifies, in the same language as the backend. Also gitui, bottom, yazi, xplr.
+
+### F131 — the inherited TUI already neutralises three of Ratatui's four named hazards
+
+Checked in Claudette's source this session, against the hazards above:
+
+| Hazard | Claudette at `af3f804` |
+|---|---|
+| Breaking change every minor | On **ratatui 0.30 + crossterm 0.29** — current majors, not trailing |
+| Windows duplicate key events | **`KeyEventKind::Press` filtered** at `tui.rs:820` and `:915` |
+| #584 inline-viewport flicker | Uses **`EnterAlternateScreen`** (`tui.rs:712`), so the flicker path is structurally unreachable |
+| Redraw per token | Event loop polls on a **50 ms** budget (`:817`, `:872`) — a bounded ~20 Hz redraw, which is the decoupling the docs require |
+
+So the 3,011 inherited lines are not merely "a TUI exists" — they are **a TUI that already met this
+framework's sharp edges and is on the right side of them**. That raises the value of the deferred
+option without changing the deferral.
+
+### 🚨 F132 — Codex CLI shipped F101's stale-answer hazard, then fixed it, and the fix adds a rule W5 missed
+
+[`openai/codex#19513`](https://github.com/openai/codex/pull/19513), merged 2026-04-27: an approval
+modal appearing **while the user was typing** let a plain `y` or `a` be consumed as an approval
+shortcut. The fix was a one-second delay while the composer is active, plus queuing.
+
+F101 derived from Claudette's source that an operator-control channel needs per-request identity and
+a defined loss behaviour. **This is that hazard, in shipped code, on the exact mechanism item 2
+recommends porting** — and it adds a third rule the derivation missed: **a control surface must not
+accept an answer the operator had no chance to read.** Arrival time is part of the contract, not just
+target identity.
+
+This one does **not** wait for the deferred TUI decision. It applies to the console's permission
+modal the moment there is one.
+
+## Textual (Python)
+
+**Status — healthy code, fragile institution.** v8.2.8 published 2026-06-30 on a 2–4 week cadence;
+36,968 stars; MIT; actively released. But Textualize *the company* wound down: on 2025-05-07 Will
+McGugan wrote that it *"will be wrapping up in the next few weeks"* and that Textual *"has always
+been a solution in search of a problem"*, while committing to maintain it personally. He has — 8.x is
+post-wind-down work — but **14 of the last 15 commits are his**, and a recent release note reads
+*"This release sponsored by Mistral AI."* Per-release patronage, **bus factor 1**.
+([the future of Textualize](https://textual.textualize.io/blog/2025/05/07/the-future-of-textualize/),
+[releases](https://api.github.com/repos/Textualize/textual/releases))
+
+**Streaming — structurally the best of the three.** Retained mode with a widget tree, TCSS
+stylesheets, reactive attributes and a spatial map for visible-widget lookup. `MAX_FPS` defaults to
+**60**, and `Widget.refresh()` sets a flag serviced on the next idle — *"only one refresh will be
+done even if this method is called multiple times."* F123's 150 events/sec collapses to ≤60 repaints
+**by construction**, where Ratatui requires the developer to arrange it.
+([constants.py](https://raw.githubusercontent.com/Textualize/textual/main/src/textual/constants.py),
+[Widget.refresh](https://textual.textualize.io/api/widget/#textual.widget.Widget.refresh))
+
+**Modals — also the best of the three.** `ModalScreen` blocks app-level bindings, and
+`push_screen_wait()` gives `if await self.push_screen_wait(QuestionScreen(...))` — a genuine
+block-on-human-decision primitive, with the documented constraint that it *"can only be done from a
+worker, so that waiting for the screen doesn't prevent your app from updating."*
+([screens guide](https://textual.textualize.io/guide/screens/))
+
+**Windows.** *"The new Windows Terminal runs Textual apps beautifully"* — with no legacy-conhost
+guarantee, and eight open Windows-titled issues including **CJK IME breakage on both Windows
+Terminal (#5457) and conhost (#5456)**.
+
+**⚠ `textual-web` / `textual-serve` are not a two-surface shortcut.** Worth stating plainly, because
+the name invites exactly that hope: both render **a terminal emulator in a browser tab**, not a web
+UI. And both are near-dormant — `textual-serve` has ~2 commits in two years, both version bumps;
+`textual-web` last saw a commit 2024-08-30 and depends on relay infrastructure from a wound-down
+company. It would not have given 2.0 its console.
+
+**Packaging — the disqualifier.** Official guidance is `pip` / `pipx`; there is **no
+standalone-binary story** in the docs, and PyInstaller on Windows has an open regression
+([#5162](https://github.com/Textualize/textual/issues/5162), open since 2024-10). Against F95's
+one-verified-`.exe` install that is decisive on its own.
+
+**Who ships on it.** Posting (12,277 stars, active), Harlequin, Toolong, Bloomberg's Memray. **The AI
+gap is the notable part:** Elia, the flagship LLM chat TUI, was last pushed 2024-10-10 — ~22 months
+stale. The maintained agent TUIs are Go or Rust.
+
+**The Rust tension, stated exactly.** A TUI sidecar is worse than the usual sidecar case: it must own
+the parent TTY — raw mode, stdin, resize — so the Rust binary degrades to a launcher that hands over
+the terminal, having paid a bundled interpreter and tens of megabytes for the *deferred* surface.
+
+## Bubble Tea (Go)
+
+**Status — the healthiest of the three, and the most recently churned.** v2.0.8 published 2026-07-03;
+**v2.0.0 landed 2026-02-24** after a long beta. 44,437★, 153 contributors, pushed the day this was
+retrieved. The ecosystem shipped v2 together — Lip Gloss v2.0.6, Bubbles v2.1.1, Glamour v2.0.1 —
+with one exception worth knowing: **Harmonica (animation) is dormant, last released 2022-04-15.**
+v2 brought the "Cursed Renderer" (an ncurses-derived diffing engine) and a new lower-level
+primitives library, `ultraviolet`, which crush still pins by pseudo-version. **The foundation is
+good and still moving.**
+([releases](https://github.com/charmbracelet/bubbletea/releases),
+[v2: what's new](https://github.com/charmbracelet/bubbletea/discussions/1374))
+
+**Streaming — the sharpest difference between the three, and it was found in source, not docs.**
+The renderer flushes on a ticker at `fps` (default 60, hard cap 120), so *writes* are coalesced. But
+`View()` is called **once per message, not once per frame**: `eventLoop` runs `model.Update(msg)`
+and then unconditionally renders (`tea.go:872`, `:880`). At F123's 150 msg/sec that is **150 full
+re-renders of the entire UI string per second**, of which ~60 reach the terminal. The ceiling is
+your `View()` cost — and for a view containing Glamour-rendered markdown, that is the expensive
+path. **Mitigation is producer-side batching**, before `p.Send`.
+
+### F133 — 🚨 crush has already built F101's permission channel *and* item 6's transport, and it solved a case W5 missed
+
+Read in `charmbracelet/crush` source (`internal/permission/permission.go`), the mechanism is:
+
+1. A tool calls `Request(...)`, which takes a mutex that **globally serialises to one prompt at a
+   time**, creates `respCh := make(chan bool, 1)`, registers it under a request ID, publishes the
+   request over a **pubsub broker**, and blocks on `select` over `ctx.Done()` and `respCh`.
+2. The UI subscribes to the broker, renders the dialog, and calls `Grant` / `GrantPersistent` /
+   `Deny`. All three route through `resolve()`, which does an atomic take-under-lock so **"the first
+   caller wins, the rest become no-ops"** — a comment that says it is deliberately written *"so
+   multi-subscriber UIs can race safely."*
+3. In client/server mode the same flow is bridged over **SSE plus `POST /v1/workspaces/{id}/permissions/grant`.**
+
+**Three things this does to W5's design, and they all point the same way.**
+
+- **F101 is confirmed and extended.** W5 derived per-request identity and fail-safe loss from
+  Claudette's single-subscriber rendezvous. crush shows the *multi*-subscriber case — which is
+  exactly what item 1's console-plus-terminal creates — and its answer is the same shape: a
+  per-request channel, resolved atomically, first answer wins.
+- **F124 and F126 are independently arrived at by someone else.** crush's chosen wire format for
+  this is **SSE down, POST up** — the exact split item 6 recommends, reached from the same asymmetry.
+- **W5 missed a scoping idea worth stealing:** crush's persistent grants are keyed on
+  `PermissionKey{SessionID, ToolName, Action, Path}`. That is "don't ask me again *for this*", scoped
+  narrowly enough to stay safe — a middle ground between prompting every time and a global
+  danger-mode toggle, and neither donor has it.
+
+### 🚨 F134 — the polyglot TUI sidecar was tried at scale, by a better-resourced team, and deleted
+
+This is the decisive finding for the Bubble Tea option, and it is empirical rather than theoretical.
+
+**It works.** crush runs its own HTTP server over a **Unix socket, or a Windows named pipe** (via
+`go-winio`, message mode), ships a **Swagger/OpenAPI spec** with ~50 `/v1` endpoints including
+`/workspaces/{id}/events` (SSE), `/permissions/grant` and `/agent/sessions/{sid}/cancel`, and lets
+multiple TUI clients attach to one `crush serve`. So a Rust backend would not "embed Go" — it would
+serve a documented local protocol that a stock TUI binary consumes.
+
+**And then it was abandoned.** `opencode` ran precisely that architecture: a Go/Bubble Tea TUI as a
+**separate platform-specific binary spawned by a TypeScript backend**, talking HTTP + SSE against an
+OpenAPI 3.1 spec explicitly intended for generating clients in other languages. Today the repo
+reports **zero Go** — the TUI was replaced by **OpenTUI** (TypeScript with a Zig core), with issue
+#2956 documenting the deliberation.
+([opencode server docs](https://opencode.ai/docs/server/),
+[issue #2956](https://github.com/anomalyco/opencode/issues/2956))
+
+**What it costs, quantified honestly:** not a Go rewrite, but (a) a versioned local RPC surface —
+which item 6 wants anyway for the console, (b) a second binary shipped and updated per platform,
+(c) named-pipe versus Unix-socket branching, (d) owning a Go build. **And the real cost is drift:
+every backend feature needs a second client implementation.** That is what opencode paid and then
+stopped paying.
+
+**Conclusion for W5:** this is the strongest available evidence that the *deferred* TUI, when it is
+built, should be **Rust/Ratatui in-process** rather than a polyglot sidecar — and it strengthens the
+deferral itself, since the sidecar is the only route by which Bubble Tea's superior agent ecosystem
+was ever reachable from a Rust backend.
+
+**Windows.** Materially better than its reputation, and recently so: the deprecated Windows caveat
+was removed from the README in **2026-05-10**, and v2's resize/`WindowSizeMsg` regressions
+(#1595, #1601) are closed. **Windows Terminal is fine; legacy `cmd.exe`/conhost is where the
+remaining bugs live** — clipboard paste garbling (#1712), `Ctrl+Space` undetectable (#1495), cursor
+visibility under `WithAltScreen` (#1454).
+
+**Images.** None built in — [issue #163](https://github.com/charmbracelet/bubbletea/issues/163) has
+been open since **2021-11-29**. Bubble Tea offers only *detection* (query primary device attributes
+for Sixel) and a raw escape hatch. Third-party support is small (`go-termimg` 66★, `rasterm` 112★).
+Note that "kitty" throughout the codebase means the **keyboard** protocol, not graphics — the same
+trap Textual's release notes set.
+
+**Who ships on it.** crush 27,483★ (pushed the day of retrieval, and 643 open issues — young and
+fast-moving, not settled), glow 26,938★, gum 24,250★, gh-dash 12,319★, soft-serve, huh. The README
+additionally names Microsoft, NVIDIA, AWS, MinIO and Ubuntu as users.
+
+**Honest weaknesses.** `View()`-per-message (above); no first-class nested-component routing, so
+message plumbing is manual past ~3 levels; a documented input-loss defect during shutdown from the
+async input reader ([dr-knz.net, 2022](https://dr-knz.net/bubbletea-control-inversion.html)) whose
+status on v2 is **unverified**, with a related issue (#1692) still open — which matters for headless
+*testing* of the TUI; v2 is only ~6 months old and broke its API meaningfully.
+
+## The surrounding reality — what shipped agents actually do
+
+The three framework write-ups above answer "which library". This section answers the question that
+turned out to matter more: **what do the agents people actually use build their terminal UIs with,
+and what can a terminal really do?**
+
+### F135 — the choice tracks the backend language in every current case, and the one exception reversed itself
+
+| Tool | Language | Terminal UI |
+|---|---|---|
+| **Claude Code** | TS/JS in a per-platform native binary | **React + Ink** (a fork), Yoga flexbox |
+| **Gemini CLI** | TypeScript | **Ink** (a different fork) + React 19 |
+| **opencode** | TypeScript / Bun | **OpenTUI** — SolidJS in the terminal over a **Zig** render core |
+| **crush** | Go | **Bubble Tea v2** |
+| **OpenAI Codex CLI** | **Rust** | **ratatui + crossterm** |
+| **aider** | Python | `prompt_toolkit` + `rich` — **a line REPL, not a full-screen TUI** |
+| **Cursor CLI** | closed binary, unverified | unverified — and its installer serves **linux/darwin only, no Windows** |
+
+Two things fall out. First, **there is no dominant framework, but there is a dominant rule: the TUI
+is written in the backend's language.** Every current example follows it. Second, **the single
+exception was opencode**, whose Go/Bubble Tea TUI drove a TypeScript server over HTTP+SSE — and they
+reversed it (F134), building OpenTUI so that `packages/tui`, an Electron desktop app and their web
+console all consume **one shared SolidJS component layer**.
+
+For a Rust backend the rule points at **Ratatui**, and Codex CLI is the proof that it carries an
+agent of this exact shape. Note also that both React-in-terminal shops run a **fork** of Ink rather
+than upstream — a reminder that the terminal is not a solved rendering target for anyone.
+
+### 🚨 F136 — correction to F94: a terminal *can* show animated sprites, and it fails in exactly the case the TUI is deferred *for*
+
+**F94 asserted that "a TUI cannot show a painted battlefield." That was too strong, and this
+corrects it.**
+
+- **Windows Terminal supports sixel**, since Preview 1.22; the stable build on this machine
+  (`v1.24.11911.0`, 2026-07-16) has it. It does **not** support the kitty graphics protocol
+  ([microsoft/terminal#8389](https://github.com/microsoft/terminal/issues/8389), open) — kitty's
+  *keyboard* protocol is a different thing that it does ship.
+  ([WT Preview 1.22](https://devblogs.microsoft.com/commandline/windows-terminal-preview-1-22-release/))
+  ⚠ [arewesixelyet.com](https://www.arewesixelyet.com/) still lists Windows Terminal as unsupported;
+  that contradicts Microsoft's own release blog and OpenAI's shipped detection code, and should be
+  treated as stale.
+- **OpenAI's Codex CLI ships animated sprites in the terminal** — `codex-rs/tui/src/pets/`, with
+  `image_protocol.rs` selecting kitty / kitty-local-file / sixel, and a purpose-built sixel encoder
+  using RGB332 colour reduction to a 256-colour palette, alpha threshold 128, a transparent-background
+  DCS introducer and a disk frame cache. Sprites target 75 px against a 15 px terminal row.
+
+So the capability is real. **But read the failure modes against W5's actual use case:**
+
+- The sprites are **palette-reduced to 256 colours** — against 35 MB of full-colour art and four
+  animated GIFs, that is a different medium, not the same one.
+- **tmux and Zellij are hard-unsupported**, in Codex's own shipped error text: *"Pets aren't
+  available in this terminal… Try a terminal with Kitty graphics or Sixel support, or run Codex
+  outside tmux."*
+- Over SSH, kitty's file and shared-memory transports are local-only, leaving base64 over the wire —
+  and a multiplexer kills images outright.
+
+**The corrected claim, and it is sharper than the original:** a terminal can carry the identity
+*locally on Windows Terminal*, which is precisely where the web console is already available — and
+cannot carry it *over SSH inside tmux*, which is the only scenario the TUI is deferred for. **The
+sprite capability exists in the case that does not need it.** F94's conclusion survives; its
+absolute phrasing does not.
+
+### F137 — Codex ships a tuned answer to F123's streaming problem, with numbers, in Rust
+
+F123 established that the console must not redraw per token at ~150 events/sec. Codex's source
+gives a shipped policy rather than a guess:
+
+- `tui/frame_rate_limiter.rs` — a hard **120 FPS** cap, `MIN_FRAME_INTERVAL = 8_333_334 ns`, with the
+  comment that it *"clamps draw notifications to a maximum of 120 FPS to avoid wasted work."*
+- `tui/streaming/chunking.rs` — an adaptive two-mode policy. **Smooth** emits one line per tick;
+  **CatchUp** drains the queue. Enter CatchUp at **queue depth ≥ 8 lines** *or* **oldest line
+  ≥ 120 ms**; leave it only when depth ≤ 2 **and** age ≤ 40 ms, sustained for **250 ms**, with a
+  **250 ms** re-entry cooldown — which a **severe** backlog (≥ 64 lines or ≥ 300 ms) bypasses.
+
+For comparison: Bubble Tea defaults to 60 FPS (cap 120); Ink defaults to **30** FPS (a 34 ms
+throttle) with incremental rendering **off** by default.
+
+**Why this matters beyond the TUI:** the same problem exists in the web console, and the same shape
+solves it. A smooth mode that paces output for readability, a catch-up mode that sacrifices smoothness
+to stay current, and hysteresis so it does not oscillate — that is a better specification than
+"throttle to 30 fps", and it is free to copy.
+
+### 🚨 F138 — three different shipped answers to "redirect mid-run", and the console should copy Claude Code's
+
+Item 2 named *take over manually* and *edit a task prompt* as the least-specified verbs
+(`questions.md` §3.4 item 14 calls take-over *"the single most-cited 2.0 feature and the least
+specified"*). Four shipped agents have now specified it, differently:
+
+| Agent | Interrupt | Redirect mid-run | Permission gate |
+|---|---|---|---|
+| **Claude Code** | `Esc` stops the response or tool call mid-turn and **keeps the work done so far**; `Ctrl+C` interrupts, then clears, then exits | **Queue-while-streaming**: type + Enter queues a message, shown above the input; `Esc` flushes the queue immediately; `Up` recalls it. **No key injects into a live turn** | `Shift+Tab` cycles modes (default → acceptEdits → plan → bypass → auto). ⚠ **Windows: `Alt+M` instead**, when the runtime does not enable VT input mode |
+| **Codex CLI** | `Esc` interrupts | **Genuine steering** — state carries `queued_user_messages`, `pending_steers`, `rejected_steers_queue`, `submit_pending_steers_after_interrupt`; a steer rejected against a non-regular turn is **retried first on the next turn** | policies `untrusted` / `on-request` / `never`, plus sandbox profiles |
+| **crush** | `esc` cancels the chat; **`ctrl+c` quits, not interrupts** | none documented — no queue while streaming | modal keys: `a` allow, **`s` allow-for-session**, `d` deny, `t` diff, `f` fullscreen; global `ctrl+y` yolo; desktop notification when a call needs permission |
+| **aider** | `Ctrl-C`, and *"the partial response remains in the conversation, so you can refer to it when you reply"* | implicit — you just reply | none (line REPL) |
+
+**Three design lessons W5 should take:**
+
+1. **"Keeps the work done so far" is the important half of interrupt.** F104 defined kill as
+   destructive and pause as resumable; Claude Code's Esc is a third thing — *stop generating, keep
+   the artefacts, hand control back*. That is what an operator actually wants most of the time, and
+   W5's verb list did not name it. Add it.
+2. **Queue-while-streaming is the cheap version of take-over**, and it is what the most-used agent
+   ships. The operator types while the model works; the input lands at the next boundary. It needs
+   no checkpoint machinery, and it is a far smaller first step than fork-from-checkpoint.
+3. **Esc must be unambiguous.** Claude Code documents that when a dialog is open, `Esc` closes the
+   dialog *instead of* interrupting — a disambiguation rule, written down. With a console and a
+   terminal surface both bound to the same verbs (item 1), that rule has to exist here too.
+
+### F139 — the unification trick that saved opencode is not available in Rust, which prices the deferral honestly
+
+opencode's escape from the polyglot sidecar was to build **one component layer that renders to the
+terminal, to Electron and to the browser**. There is no Rust equivalent — no framework renders the
+same components to both a browser and a terminal.
+
+**So the deferral has an honest price:** whenever ABCC 2.0's TUI arrives, it will be a **second,
+separate UI codebase**, not a re-skin of the console. Nothing in the ecosystem removes that cost for
+a Rust backend.
+
+**And the mitigation is already W5's answer.** The lever available now is keeping the agent core
+behind a **surface-agnostic event/SSE API** — which is exactly what opencode, Codex's app-server and
+Claude Code's multi-surface story all do. That is F99's broker and item 6's transport, arrived at
+independently by three shipped agents. **Build the contract now; build the second renderer only when
+something demands it.**
+
+Two further structural notes on the deferral, in both directions. **For it:** every serious vendor
+now ships multiple surfaces, and Anthropic explicitly sells its desktop app on *"review diffs
+visually"* — the visual affordances are deliberately not in the terminal; Cursor's CLI does not even
+install on Windows, which is this project's primary platform. **Against it:** crush and aider are
+terminal-only and viable, and opencode's response to a limiting TUI was to build a whole framework
+rather than drop the terminal.
+
+## Where this leaves the deferred decision
+
+| | Ratatui | Bubble Tea | Textual |
+|---|---|---|---|
+| Language vs backend | **Rust — same process** | Go — second binary | Python — bundled interpreter |
+| Streaming at 150 ev/s | manual decoupling required | `View()` per **message**; producer must batch | **coalesced to ≤60 FPS by construction** |
+| Blocking modal | hand-rolled + `oneshot` | crush's broker, **production-proven** (F133) | `push_screen_wait`, cleanest API |
+| Windows | crossterm, current majors; key-repeat gotcha | good since 2026-05; legacy `cmd.exe` still rough | Windows Terminal fine; **CJK IME broken** |
+| Images | sixel/kitty crate, **broken on Windows** | none built in since 2021 | none built in |
+| Install | **same `.exe`** | second binary per platform | no standalone-binary story |
+| Agent precedent | **Codex CLI** | **crush** | none maintained (Elia stale ~22 months) |
+| Project health | active, breaks every minor | very active, v2 six months old | active but **bus factor 1** |
+| Inherited here | **3,011 lines already written** (F131) | none | none |
+
+**Ratatui, when the time comes.** It is the only option that stays inside the single binary F95
+requires, it is what the one shipped Rust agent chose, this project already owns 3,011 lines of it
+that are on the right side of the framework's known hazards (F131), and the alternatives' advantages
+— Textual's coalescing refresh, crush's permission broker — are **patterns that can be copied
+without adopting the runtime** (F133, F137).
+
+**None of that changes the deferral.** Item 1's ordering stands: terminal entry point now, console
+next, TUI when the headless case is real.
+
+---
+
 # What W5 hands to other workstreams
 
 W5 is a design workstream, so several of its conclusions are other people's requirements. Collected
@@ -1748,6 +2157,11 @@ here so they are not lost in the body.
 | **W3** | Enum rendering must be **exhaustive** — four of V1's eleven states have no colour, in three duplicated maps | F113 |
 | **W3 / core** | The worker must **select on a control channel at every step boundary**, not block on a rendezvous | F100 |
 | **W3 / core** | The permission event carries `Allow \| Deny \| Redirect(String)` — the TUI already lost the third branch once | F106 |
+| **W3 / core** | A control answer must not be accepted if the operator had no chance to read the prompt — **arrival time is part of the contract**, not just target identity | F132 |
+| **W3 / core** | Persistent grants scoped as `{session, tool, action, path}` — "don't ask again *for this*", between prompt-every-time and a global yolo toggle | F133 |
+| **W3 / core** | Add two verbs item 2 missed: **stop-but-keep-the-work** (distinct from kill and from pause) and **queue-while-streaming** as the cheap take-over | F138 |
+| **Console** | Streaming render policy: a smooth mode, a catch-up mode, and hysteresis between them — not a flat FPS throttle | F137 |
+| **Console** | One written disambiguation rule for `Esc` across both surfaces, before either binds it | F138 |
 | **W6** | `MemoryApproval`'s async review-queue shape is where independent-review output should land | F110 |
 | **W7** | OTLP export ships as a **non-default feature**, preserving the structural air gap rather than degrading it to a toggle | F121, F122 |
 | **W8** | The six-row fun table is a **first-class evaluation criterion**, alongside pass rate | F129 |
@@ -1760,8 +2174,10 @@ here so they are not lost in the body.
 
 # Open questions, consolidated
 
-Answered here: **OQ-W5-1** (David, 2026-08-18 — the narrowing accepted) and **OQ-W5-11**
-(F130 — the off-switch is a label map over a fixed enum).
+Answered here: **OQ-W5-1** (David, 2026-08-18 — the narrowing accepted), **OQ-W5-5** (David,
+2026-08-18 — the prior research never existed; the brief's premise was false and is corrected in
+place, and the comparison was run from scratch — see the addendum) and **OQ-W5-11** (F130 — the
+off-switch is a label map over a fixed enum).
 
 Still open, in the order they would be cheapest to close:
 
@@ -1770,7 +2186,6 @@ Still open, in the order they would be cheapest to close:
 | 2 | The terminal surface's exact floor | a written line, before accretion starts |
 | 3 | Where the permission channel lives with two subscribers | W3's broker design |
 | 4 | Console served, embedded, or both — with 44 MB of assets | W12 |
-| 5 | Whether a Ratatui/Bubbletea/Textual comparison exists beyond the March brief | David |
 | 6 | Does `Paused` release the workspace lock as well as the slot | design call, leaning "keeps it" |
 | 7 | What a disconnected operator does to a running fleet | design call, per verb |
 | 8 | Take-over per task or fleet-wide | design call |
