@@ -598,17 +598,49 @@ pressure. This is also the first time anything in W1 has exercised the compactio
 measurement, and it means the quality comparison above is across two different regimes — a
 confound to close, not a result to celebrate.
 
-### F91 — a cell can time out having done substantial work and leave no evidence
+### F91 — a cell can time out having done substantial work and leave no evidence — **FIXED 2026-08-18**
 
 `trace_dropped_samples` timed out in the first repeat of *both* Arm B configurations with a
 1,887-byte transcript: banner at 99 ms, prompt at 358 ms, then nothing for 40 minutes, and an
 untouched workdir. **This is not a hang** — the LM Studio server log records **20 chat completions**
 in that window (one per ~2 min, message counts climbing to 31), so the subject was working
-throughout. `driver.rs:388` writes only **newline-terminated** lines to the transcript, deliberately,
-so the newline-less gate prompt stays observable; nothing newline-terminated arrived. Net effect: a
-`timeout` verdict with zero evidence of 40 minutes of work. Reproduced twice on the largest fixture;
-never once in the champion's 9 cells. **Needs its own investigation before the K-series is used
-again** — any cell it hits is unfalsifiable.
+throughout. Reproduced twice on the largest fixture; never once in the champion's 9 cells.
+
+🚨 **The cause first recorded here was wrong, and the correction is the finding.** The original
+note blamed `driver.rs:388`, which writes only **newline-terminated** lines so the newline-less gate
+prompt stays observable in the tail, and inferred that the subject's output had been withheld.
+Checking the subject instead of the harness says otherwise: Claudette emits a `▸` line for file
+**mutations** only (`tools.rs:962`, `fuzzy_apply.rs:107`, `git.rs:230`) and prints assistant prose
+only when a completion carries prose. Read-only tools print **nothing**. Against the successful
+repeat of the same cell, which shows exactly two `▸` lines for its two `apply_diff` calls and its
+first stdout byte at **183 s**, the picture is consistent: the timed-out cell spent forty minutes in
+a read-only tool loop, produced no prose, edited nothing, and therefore genuinely put **no bytes on
+either pipe**. The transcript was faithful. The instrument's real defect was that **a faithful record
+of silence is byte-for-byte indistinguishable from a failure to record** — so the operator read
+"produced nothing" off a subject that was working, which is [[verify-claims-against-code-not-docs]]
+item 14 in its original form.
+
+**The fix, in `driver.rs`:** every exit path now calls `seal()`, which (1) flushes any unterminated
+tail — the one real instance of the originally-suspected defect, since a subject killed mid-sentence
+did lose its last words — and (2) writes an `END` footer stating what the pipes carried: total bytes
+per stream, chunk count, and **how long the session had been silent**. The silence is the load-bearing
+figure, not the byte count: the banner alone puts ~180 bytes on stderr, so no session totals zero.
+The same two numbers are now emitted as `subject_output_bytes` and `subject_last_output_ms`, so they
+survive into `cells.jsonl` — which matters precisely because a timed-out cell records every other
+metric as `not_applicable`. A transcript with no `END` line is now positive evidence of truncation by
+something *outside* the driver.
+
+**Control:** the three new tests in `tests/driver.rs` were re-run with `seal` stubbed to a no-op and
+all three fail; `FAKE_MUTE` makes the fake subject reproduce the silent-worker shape, and the silence
+test asserts the fake actually said nothing before asserting that the silence was recorded — without
+that, it would pass against a subject that had no output to lose.
+
+⚠ **What this does not fix.** The cell still times out and still produces no verdict; a silent
+40-minute cell is now *legible* rather than *unfalsifiable*, which is a different and smaller claim.
+Whether the 27B needs more than 2400 s on the largest fixture (F89) is unanswered, and the underlying
+observability limit — that the harness sees a subject's reads only if the subject narrates them —
+is a property of the subject, not of the driver. Closing that would mean changing Claudette's own
+output under measurement, which would break comparability with every run recorded above.
 
 ### F92 — what the 27B spends its extra time on
 
@@ -636,8 +668,10 @@ VRAM through a load and at rest (F74, with the method corrected by F75), KV grow
    - **"Under context pressure" was not actually held** (F90). Only the 27B reached the regime;
      the champion never crossed compaction on this corpus. A comparison across two regimes cannot
      close the base choice on its own.
-   - **F91 must be fixed first.** A cell that times out with no transcript is unfalsifiable, and it
-     hit the largest fixture twice.
+   - ~~**F91 must be fixed first.**~~ **Fixed 2026-08-18.** The cause was misdiagnosed: the
+     transcript was faithful and the subject really was silent, because Claudette narrates file
+     mutations only. Timed-out cells now carry a sealed `END` footer plus `subject_output_bytes` /
+     `subject_last_output_ms`, so silence is recorded as a measurement. The cell still times out.
    - The 65k-headroom-under-real-prefill check is still unrun; at `-c 40960` the 27B sits at
      **15,398 / 16,311 MiB (94.4%, 913 MiB spare)**, fully resident, no CPU offload.
 2. **Quality-per-quant across the 3.06 / 3.53 / 3.97 bpw rungs** — all three are on disk, and F80's
@@ -667,7 +701,8 @@ correction (F70).
 **Medium, and now measured rather than argued, on the base re-validation (F65).** The 2026-08-18
 K-series campaign (F87–F92) replaced the vendor benchmark with 18 diffed cells. It **does not**
 promote the base choice to high, for two stated reasons rather than caution: the arms sat in
-different context regimes (F90), and one task is unfalsifiable until F91 is fixed. What it does
+different context regimes (F90), and one Arm B cell timed out with no verdict (F91 — whose
+*evidence* gap is now fixed, though the timeout itself remains). What it does
 establish is that **the 12.2-point SWE-bench Pro gap did not show up as a verdict gap here** — the
 arms tie at 8/9 — while the 27B costs 5.2× the wall clock. On this evidence the champion stays the
 champion, and that is now a measured position instead of an inherited one.
@@ -677,8 +712,9 @@ did (F87's diff table, F92), but it reads it from three tasks in one regime, and
 show the champion's own verdicts are unstable (`finish_the_cancelled_status` failed once and passed
 twice on identical inputs). Not a ranking instrument yet.
 
-**What would raise it, in order:** (1) fix F91 — no conclusion from this suite is safe while a cell
-can time out silently having worked 40 minutes; (2) close F90 by getting both arms into the same
+**What would raise it, in order:** (1) ~~fix F91~~ — **done**, so a silent cell now says so in its
+own transcript; what is left of it is whether 2400 s is enough for the largest fixture, which only a
+re-run answers; (2) close F90 by getting both arms into the same
 regime, which means growing the fixtures rather than lowering the pin, since the champion's terseness
 and not the fixture size is what keeps it at 33–53%; (3) then re-run for the quality-per-quant ladder
 (item 2), which shares the harness.

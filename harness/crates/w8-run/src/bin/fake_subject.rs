@@ -32,6 +32,8 @@
 //!   `FAKE_LOG`        append every line read from stdin here, prefixed by kind
 //!   `FAKE_NO_BANNER`  print no banner at all — the driver must refuse to measure
 //!   `FAKE_HANG`       accept the turn and never print a turn boundary
+//!   `FAKE_MUTE`       print no reply at all — a subject working with its mouth shut (F91)
+//!   `FAKE_TAIL`       write this to stdout with NO trailing newline, then carry on
 //!   `FAKE_STALL_MS`   sleep this long before the turn boundary
 //!   `FAKE_DIE`        exit immediately after reading the turn
 
@@ -137,8 +139,20 @@ fn main() {
             }
         }
 
-        let _ = writeln!(out, "fake reply to: {turn}");
-        let _ = out.flush();
+        // Muted is not broken. The real subject echoes a line for file *mutations* only
+        // (`tools.rs:962`), so one that spends a whole turn reading emits nothing between the
+        // prompt and the turn boundary — and a harness that cannot reproduce that cannot test
+        // what it does about it (F91).
+        if env("FAKE_MUTE").is_none() {
+            let _ = writeln!(out, "fake reply to: {turn}");
+            let _ = out.flush();
+        }
+        // Bytes on the pipe that will never finish a line. The real subject does this on purpose
+        // with its gate prompt, and by accident whenever it is killed mid-sentence.
+        if let Some(tail) = env("FAKE_TAIL") {
+            let _ = write!(out, "{tail}");
+            let _ = out.flush();
+        }
 
         if env("FAKE_HANG").is_some() {
             // Park forever. The driver's per-cell deadline is what has to end this.

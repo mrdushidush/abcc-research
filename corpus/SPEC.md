@@ -483,6 +483,8 @@ Per cell `(task, variant, subject)`:
 | `iterations` | `iter=` from the same line |
 | `gate_fires`, `gate_fires_after_deny`, `interventions_delivered`, `unscripted_gates` | `gate_fires_after_deny` counts only gates strictly after the first delivered `deny` (§5, F36) |
 | `delivery.mode` / `delivery.transport` / `delivery.faithful` | the mode is `verbatim` or `escape-newlines`; the transport is `line` or `sentinel` (§7). **A wrapped block is still verbatim and still faithful** — the wrapper is how the bytes travelled, not an edit to them |
+| `peak_prompt_tokens` | *derived*: the subject's own end-of-turn context estimate, MAXed over turns, plus `tokens_in_preamble`. A **floor**, never the peak — all four of its limits understate, and it is quantized to 1,024. A validity gate for context-pressure tasks, not a performance number |
+| `subject_output_bytes`, `subject_last_output_ms` | what the subject put on the pipes, and when it last did (session clock, zero = spawn). The **only** metrics that survive a timeout, which is the case they exist for: a subject narrates file mutations but not reads, so a cell can work for 40 minutes in silence and every other metric goes `not_applicable` (F91). The timestamp is the decisive one — the banner alone means the byte count is never zero |
 | `peak_rss_mb` | no probe exists yet (W1/W2 owns building it); the name is reserved |
 
 **Three ways to get token accounting wrong, all silent (F9):**

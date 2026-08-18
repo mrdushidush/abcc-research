@@ -59,6 +59,34 @@ struct Chunk {
     bytes: Vec<u8>,
 }
 
+/// What the pipes actually carried, counted at the chunk rather than at the line.
+///
+/// It exists because the transcript cannot, on its own, answer *"did the subject produce nothing,
+/// or did the harness fail to record it?"* — and getting that backwards is F91. Counting chunks
+/// rather than lines is the whole point: bytes that never finish a line are exactly the ones the
+/// transcript used to drop.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct PipeActivity {
+    /// Indexed like `Session::pending`: 0 is stdout, 1 is stderr.
+    bytes: [u64; 2],
+    pub chunks: u64,
+    /// Arrival of the most recent chunk, on the session clock (zero is the spawn, not the turn).
+    /// `None` means nothing ever arrived, which `await_ready` should have refused to spawn past.
+    pub last_ms: Option<u64>,
+}
+
+impl PipeActivity {
+    pub fn bytes_out(self) -> u64 {
+        self.bytes[0]
+    }
+    pub fn bytes_err(self) -> u64 {
+        self.bytes[1]
+    }
+    pub fn bytes_total(self) -> u64 {
+        self.bytes[0] + self.bytes[1]
+    }
+}
+
 /// What ended a turn.
 #[derive(Debug, Clone)]
 pub enum TurnEnd {
@@ -175,6 +203,7 @@ pub struct Session {
     t0: Instant,
     pending: [Vec<u8>; 2],
     gate_ctx: Vec<String>,
+    activity: PipeActivity,
     transcript: BufWriter<std::fs::File>,
     pub transcript_path: PathBuf,
     gate_marker: String,
@@ -309,7 +338,11 @@ impl Session {
         let mut transcript = BufWriter::new(file);
         let _ = writeln!(transcript, "# w8-run transcript v1 — {label}");
         let _ = writeln!(transcript, "# {bin} in {}", workdir.display());
-        let _ = writeln!(transcript, "# [ms] STREAM text; IN = written to the subject's stdin");
+        let _ = writeln!(
+            transcript,
+            "# [ms] STREAM text; IN = written to the subject's stdin; TAIL = an unterminated \
+             tail flushed at the end; END = what the pipes carried in total"
+        );
 
         let mut s = Session {
             child,
@@ -318,6 +351,7 @@ impl Session {
             t0,
             pending: [Vec::new(), Vec::new()],
             gate_ctx: Vec::new(),
+            activity: PipeActivity::default(),
             transcript,
             transcript_path,
             gate_marker: gate_marker.to_string(),
@@ -383,6 +417,11 @@ impl Session {
             Stream::Out => 0,
             Stream::Err => 1,
         };
+        // Tallied here and not down in the line loop, because the point of the tally is to see
+        // the bytes that never become lines.
+        self.activity.chunks += 1;
+        self.activity.bytes[idx] += chunk.bytes.len() as u64;
+        self.activity.last_ms = Some(chunk.at.as_millis() as u64);
         self.pending[idx].extend_from_slice(&chunk.bytes);
         let mut lines = Vec::new();
         while let Some(pos) = self.pending[idx].iter().position(|b| *b == b'\n') {
@@ -613,17 +652,73 @@ impl Session {
         None
     }
 
+    /// What the pipes carried over the whole session. Valid at any point; `seal` does not move it.
+    pub fn activity(&self) -> PipeActivity {
+        self.activity
+    }
+
+    /// Write what the transcript would otherwise lose, then a footer stating what the pipes did.
+    ///
+    /// Two gaps close here, and F91 is the second one:
+    ///
+    /// 1. `absorb` emits only newline-terminated lines — deliberately, because the gate prompt has
+    ///    no newline and has to stay observable in the tail (trap 1 at the top of this file).
+    ///    Whatever is still sitting in that tail when the session ends has never been written
+    ///    anywhere, so a subject killed mid-sentence loses its last words at the moment they are
+    ///    worth most.
+    /// 2. **Silence is not evidence of idleness, and the transcript could not tell the two apart.**
+    ///    Claudette echoes a `▸` line for file *mutations* only (`tools.rs:962`, `fuzzy_apply.rs`,
+    ///    `git.rs`); a subject reading its way around a repository prints nothing at all. So a
+    ///    timed-out cell whose transcript stops just after the prompt reads as "the model produced
+    ///    nothing" — which is exactly how F91 was first misdiagnosed, against an LM Studio log
+    ///    showing 20 chat completions in the same 40-minute window. The footer makes the
+    ///    distinction readable from the transcript alone. The decisive figure is the SILENCE, not
+    ///    the byte count — the banner alone puts ~180 bytes on stderr, so no real session ever
+    ///    totals zero. A last byte at 99 ms followed by forty minutes of nothing is a subject that
+    ///    worked with its mouth shut, and that is a finding rather than a missing one.
+    ///
+    /// Called on every exit path, so a transcript that lacks an `END` line was truncated by
+    /// something outside this driver — the harness dying, or the disk. That is worth knowing too.
+    fn seal(&mut self, why: &str) {
+        let ms = self.ms();
+        for (idx, stream) in [(0usize, Stream::Out), (1usize, Stream::Err)] {
+            if self.pending[idx].is_empty() {
+                continue;
+            }
+            // No newline can be in here — `absorb` drains up to each one — so this stays one line.
+            let tail = String::from_utf8_lossy(&self.pending[idx]).trim_end().to_string();
+            let _ = writeln!(self.transcript, "[{ms:>8}ms] TAIL  {} {tail}", stream.tag());
+            self.pending[idx].clear();
+        }
+        let a = self.activity;
+        let quiet = match a.last_ms {
+            Some(last) => {
+                format!("last byte at {last}ms, so silent for {}ms", ms.saturating_sub(last))
+            }
+            None => "nothing ever arrived on either pipe".to_string(),
+        };
+        let _ = writeln!(
+            self.transcript,
+            "[{ms:>8}ms] END   {why}; the subject wrote {} bytes ({} stdout, {} stderr) in {} \
+             chunks; {quiet}",
+            a.bytes_total(),
+            a.bytes_out(),
+            a.bytes_err(),
+            a.chunks
+        );
+        let _ = self.transcript.flush();
+    }
+
     /// Close stdin (EOF ends the REPL loop, `repl.rs:115-117`), then reap. Kills on any hang so a
-    /// stuck subject cannot outlive the run.
-    pub fn finish(mut self) -> Option<i32> {
+    /// stuck subject cannot outlive the run. Returns the exit code and the pipe tally — the tally
+    /// comes back rather than being read off the session first because the drain below is where a
+    /// clean exit's last bytes arrive.
+    pub fn finish(mut self) -> (Option<i32>, PipeActivity) {
         drop(self.stdin.take());
         let deadline = Instant::now() + Duration::from_secs(15);
-        loop {
+        let code = loop {
             match self.child.try_wait() {
-                Ok(Some(status)) => {
-                    let _ = self.transcript.flush();
-                    return status.code();
-                }
+                Ok(Some(status)) => break status.code(),
                 Ok(None) if Instant::now() < deadline => {
                     // Keep draining, or a full pipe buffer keeps the child from exiting.
                     while let Ok(chunk) = self.rx.recv_timeout(Duration::from_millis(100)) {
@@ -633,17 +728,33 @@ impl Session {
                 _ => {
                     let _ = self.child.kill();
                     let _ = self.child.wait();
-                    let _ = self.transcript.flush();
-                    return None;
+                    break None;
                 }
             }
-        }
+        };
+        self.seal("stdin closed and the subject reaped");
+        (code, self.activity)
     }
 
+    /// End the session the hard way. This is the timeout path, so it is the one that most needs to
+    /// leave evidence behind.
     pub fn kill(&mut self) {
         let _ = self.child.kill();
         let _ = self.child.wait();
-        let _ = self.transcript.flush();
+        // Drain what is already in flight before sealing. The bytes sitting in the pipe when the
+        // deadline struck are the ones most likely to say what the subject was in the middle of,
+        // and the reaped child means the pumps hit EOF and disconnect rather than block.
+        let drain_until = Instant::now() + Duration::from_millis(500);
+        while Instant::now() < drain_until {
+            match self.rx.recv_timeout(Duration::from_millis(50)) {
+                Ok(chunk) => {
+                    self.absorb(&chunk);
+                }
+                Err(RecvTimeoutError::Timeout) => continue,
+                Err(RecvTimeoutError::Disconnected) => break,
+            }
+        }
+        self.seal("the harness killed the subject");
     }
 }
 

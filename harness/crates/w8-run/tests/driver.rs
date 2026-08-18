@@ -431,6 +431,94 @@ fn a_turn_that_never_ends_becomes_a_timeout_rather_than_hanging_the_run() {
 }
 
 #[test]
+fn a_silent_subject_is_recorded_as_silent_rather_than_as_missing() {
+    // F91. A cell timed out having worked forty minutes and left a 1,887-byte transcript: banner,
+    // prompt, nothing. It was read as "the model produced nothing" — but the server log showed 20
+    // chat completions in that window. The subject really had emitted no bytes, because Claudette
+    // echoes a line for file *mutations* only (`tools.rs:962`) and this one spent its budget
+    // reading. Silence is a measurement; it just has to be written down as one.
+    let d = scratch("silent-hang");
+    let log = log_path(&d);
+    let mut s = spawn(&d, &[("FAKE_LOG", &log), ("FAKE_HANG", "1"), ("FAKE_MUTE", "1")], "silent");
+    let mut t = OperatorTrack::new(&[], None);
+    let run = s.run_turn(&one("read the repo"), &mut t, Instant::now() + Duration::from_millis(1200));
+    assert!(matches!(run.end, TurnEnd::Timeout), "{:?}", run.end);
+    let path = s.transcript_path.clone();
+    let before_kill = s.activity();
+    s.kill();
+    let text = std::fs::read_to_string(&path).unwrap();
+
+    // The positive control for the negative claim: the fake must actually have said nothing, or
+    // "no output was recorded" would be a statement about a subject that had none to give.
+    assert!(
+        !text.contains("fake reply to:"),
+        "FAKE_MUTE must silence the reply, else this tests nothing: {text}"
+    );
+    // The banner is the only thing that ever arrived, so the tally is small but never zero — which
+    // is why the silence, not the byte count, is the load-bearing figure.
+    assert!(before_kill.bytes_total() > 0, "the banner alone puts bytes on stderr");
+    assert_eq!(before_kill.bytes_out(), 0, "a muted subject writes nothing to stdout");
+
+    let end = text
+        .lines()
+        .find(|l| l.contains("] END   "))
+        .unwrap_or_else(|| panic!("the transcript must be sealed with an END line: {text}"))
+        .to_string();
+    assert!(end.contains("the harness killed the subject"), "{end}");
+    let silent_ms: u64 = end
+        .split("silent for ")
+        .nth(1)
+        .and_then(|s| s.split("ms").next())
+        .and_then(|s| s.parse().ok())
+        .unwrap_or_else(|| panic!("the END line must quote the silence: {end}"));
+    // The turn was held for 1,200 ms and the subject spoke only during startup, so the gap has to
+    // span most of the cell. Loose bound: this asserts a real interval, not a clock reading.
+    assert!(silent_ms >= 800, "the silence must be measured, got {silent_ms}ms from {end}");
+}
+
+#[test]
+fn an_unterminated_tail_is_flushed_instead_of_dying_with_the_session() {
+    // `absorb` emits only whole lines, because the gate prompt has no newline and must stay
+    // observable in the tail. The cost is that a subject killed mid-sentence loses its last words,
+    // at the moment they are worth most: they are what it was doing when the clock ran out.
+    let d = scratch("tail-flush");
+    let log = log_path(&d);
+    let mut s = spawn(
+        &d,
+        &[("FAKE_LOG", &log), ("FAKE_HANG", "1"), ("FAKE_MUTE", "1"), ("FAKE_TAIL", "still reading ingest.py")],
+        "tail",
+    );
+    let mut t = OperatorTrack::new(&[], None);
+    let run = s.run_turn(&one("read the repo"), &mut t, Instant::now() + Duration::from_millis(1200));
+    assert!(matches!(run.end, TurnEnd::Timeout), "{:?}", run.end);
+    let path = s.transcript_path.clone();
+    s.kill();
+    let text = std::fs::read_to_string(&path).unwrap();
+    assert!(
+        text.contains("TAIL  OUT still reading ingest.py"),
+        "the unterminated tail must reach the transcript: {text}"
+    );
+}
+
+#[test]
+fn a_clean_session_is_sealed_too_so_a_missing_footer_means_a_truncated_file() {
+    // The seal is on every exit path on purpose. That makes the END line a checksum for the
+    // transcript itself: a file without one was cut off by something outside the driver.
+    let d = scratch("seal-clean");
+    let log = log_path(&d);
+    let mut s = spawn(&d, &[("FAKE_LOG", &log)], "seal");
+    let mut t = OperatorTrack::new(&[], None);
+    let run = s.run_turn(&one("fix calc.py"), &mut t, deadline(30));
+    assert!(matches!(run.end, TurnEnd::Marker { .. }), "{:?}", run.end);
+    let path = s.transcript_path.clone();
+    let (_code, activity) = s.finish();
+    let text = std::fs::read_to_string(&path).unwrap();
+    assert!(text.contains("] END   stdin closed"), "the clean path must seal too: {text}");
+    assert!(activity.bytes_out() > 0, "the fake replies on stdout, so the tally must see it");
+    assert!(activity.last_ms.is_some(), "something arrived, so there is a last arrival");
+}
+
+#[test]
 fn a_subject_that_dies_mid_turn_is_eof_and_not_a_timeout() {
     let d = scratch("die");
     let log = log_path(&d);

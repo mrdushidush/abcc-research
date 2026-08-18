@@ -850,11 +850,14 @@ fn run_cell(
         }
     }
 
-    if matches!(ended, Some(TurnEnd::Timeout)) {
+    // Both arms seal the transcript; the tally is read after that, so it includes whatever the
+    // closing drain picked up.
+    let activity = if matches!(ended, Some(TurnEnd::Timeout)) {
         session.kill();
+        session.activity()
     } else {
-        session.finish();
-    }
+        session.finish().1
+    };
 
     cell.gate_fires = track.gate_fires;
     cell.gate_fires_after_deny = track.gate_fires_after_deny;
@@ -881,6 +884,34 @@ fn run_cell(
     );
     m.insert("wall_clock_s".to_string(), Metric::Measured(wall_ms as f64 / 1000.0));
     m.insert("turns".to_string(), measured(turns_run as u64));
+    // ── What the subject put on the pipes (F91) ─────────────────────────────
+    //
+    // These two exist so a cell that ends WITHOUT a verdict can still say whether it was working.
+    // Claudette echoes a `▸` line for file mutations only (`tools.rs:962`), so a subject that
+    // spends its whole budget reading the repository prints nothing at all — and a timeout with an
+    // almost-empty transcript then looks identical to a hang. It is not: the first cell this hit
+    // had 20 chat completions behind it in the server log, and the transcript was the broken
+    // instrument rather than the model. Every other metric here goes `not_applicable` on a
+    // timeout, which is precisely when these two are the only thing left to read.
+    //
+    // ⚠ Of the two, `subject_last_output_ms` is the decisive one and `subject_output_bytes` is the
+    // corroborating one: the banner alone puts ~180 bytes on stderr, so the total is never zero
+    // and a small total is not by itself a silent cell. And the timestamp is on the SESSION clock
+    // — zero is the spawn, not the turn — so it is not comparable to `wall_clock_s` without adding
+    // the startup back. Read it against the cell's own `timeout_s`: a last byte at 99 ms in a
+    // 2,400 s cell is a subject that never spoke after its banner.
+    m.insert("subject_output_bytes".to_string(), measured(activity.bytes_total()));
+    m.insert(
+        "subject_last_output_ms".to_string(),
+        activity.last_ms.map_or(
+            Metric::NotApplicable {
+                reason: "no chunk ever arrived on either pipe, which the readiness wait should \
+                         have refused to spawn past"
+                    .into(),
+            },
+            measured,
+        ),
+    );
     match last_marker {
         Some((iter, tin, tout)) => {
             m.insert("iterations".to_string(), measured(u64::from(iter)));
