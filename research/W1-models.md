@@ -514,6 +514,112 @@ The tier table also protects the thing §7 cares about: triage on a 4 B model in
 keeps the *feel* fast — recon units that answer instantly — while the slow, expensive builder is
 the one you deploy deliberately. That asymmetry is a game mechanic, not a compromise.
 
+## K-series cross-model comparison — Qwen3.8-27B vs the champion (2026-08-18)
+
+Item 1 below, run. `corpus/suites/k`, `--variant control`, n=3 per arm, subject
+`claudette-af3f804` (force-rebuilt), `--num-ctx 40000` under `lms load … -c 40960 --parallel 1`
+for **both** arms. Held constants read off each fresh `llama-server` command line (F75) and
+matched: `cache-type-k/v q8_0`, `flash-attn on`, `kv-unified`, `batch 2048/ubatch 512`,
+`parallel 1`, `spec-type draft-mtp`, `n-gpu-layers 999999`, `n-cpu-moe 0` — fully GPU-resident on
+both. **Two constants did NOT match and both are recorded rather than hidden:** the quantizations
+differ (champion **IQ3_S 3.06 bpw**, challenger **Q3_K_XL**), and `threads` was 2 vs 4 by LM
+Studio's own choice. So this compares *these two local builds*, not the two architectures.
+
+### F87 — on cells that complete, the two models are level on verdicts and differ in how they fix
+
+Champion **8 pass / 1 fail / 0 timeout**; 27B **8 pass / 0 fail / 1 no-evidence timeout**. The
+score column does not separate them, which is exactly why §11.0 bars deciding on one. Every cell
+was workdir-diffed against `refsol` and `sham`; the separation is in the diffs:
+
+| behaviour | champion (9 cells) | 27B (8 completed) |
+|---|---|---|
+| took the sham | 0 | 0 |
+| destroyed the `other` catch-all (renamed it rather than adding a bucket) | 1 | 0 |
+| fixed at the call site, leaving the defective root function and its wrong docstring | 1 | 0 |
+| **added tests covering the gap the fixture documents as untested** | **0** | **2** |
+| redundant guard at the crash site on `trace_dropped_samples` | 3 of 3 | 3 of 3 |
+
+The champion's one FAIL is **not** the sham: it changed all four correct sites, then *replaced*
+`BUCKETS`' `other` entry with `cancelled`, so an unknown future status would be silently counted as
+cancelled. Its transcript states the choice deliberately ("Replaced `other` with `cancelled`
+everywhere") and then claims `cancelled` is "visible in its own bucket", which is what it did not
+do. A confident, articulate, wrong answer — the failure mode the K-series was built to expose.
+
+The redundant-guard row is the one to *not* read as a differentiator: **both** models bolt
+`if not window.values: continue` onto the sham's site in `stats.py` on top of the correct upstream
+`ingest.py` fix, in every single run. It is dead code once the real fix lands, and in champion r1
+it also deleted the comment documenting the `strict_empty_windows` invariant. Universal behaviour,
+not a model property.
+
+### F88 — the task-level cost of the 27B is far worse than its token-rate ratio, 1.3× to 9.5×
+
+The matched-throughput figures (2.25× prefill, 2.54× decode) understate the agentic cost badly,
+because the 27B also runs longer and does more per cell. Median wall clock per task:
+
+| task | champion | 27B | ratio |
+|---|---|---|---|
+| `finish_the_cancelled_status` | 100.0 s | 947.2 s | **9.5×** |
+| `round_at_the_line_not_the_total` | 181.9 s | 228.5 s | 1.26× |
+| `trace_dropped_samples` | 189.6 s | ~1349 s (n=2) | ~7.1× |
+| whole campaign, 9 cells | **1662 s** | **8681 s** | **5.2×** |
+
+⚠ Champion wall clock is itself wildly variable — `trace_dropped_samples` ran 70 s, 190 s and 629 s
+on identical inputs. Quote the ratio as a range, never a point estimate, and prefer F80's matched
+ladder for anything that needs precision.
+
+### F89 — `timeout_s = 900` was miscalibrated, and a timeout records NO metrics at all
+
+At the suite's original ceiling the 27B scored **5 pass / 4 timeout**. Four of those were an
+artefact: raised to 2400, **four cells that exceed 900 s complete and pass** (907.2, 947.2, 1086.4,
+1957.8 s). One missed the old ceiling by **7.6 seconds**. The champion is unaffected — its slowest
+cell was 629 s, so the ceiling never bound for it, which is why Arm A was not re-run.
+
+The cost of getting this wrong is asymmetric and silent: a timed-out cell emits **no verdict, no
+`iterations`, and no `peak_prompt_tokens`**, so the ceiling converted the slower model's
+thoroughness into missing data rather than a result. `timeout_s` is now 2400 in all three
+`task.toml` files with this rationale inline. Both files already carried the note *"A subject that
+reads the codebase properly must not lose to the clock for doing so"* — the calibration contradicted
+the suite's own stated intent.
+
+### 🚨 F90 — the two models were never in the same context regime, and only the 27B reaches the one the suite exists to test
+
+`peak_prompt_tokens` floors, against the 40,000 pin:
+
+| arm | range | occupancy | auto-compaction events |
+|---|---|---|---|
+| champion | 13,053 – 21,245 | 33–53% | **0 in 9 cells** |
+| 27B | 15,207 – **30,567** | 38–**76%** | 3 across 6 runs |
+
+Claudette's auto-compaction (`hard tier crossed at 20000 tokens`) fires for the 27B and **never**
+for the champion on this corpus. So the K-series' known "fixtures are too small" weakness is only
+half the story: **the champion does not reach the pressure regime because it is terser**, not only
+because the fixtures are small. Growing the fixtures will not by itself put the champion under
+pressure. This is also the first time anything in W1 has exercised the compaction path under
+measurement, and it means the quality comparison above is across two different regimes — a
+confound to close, not a result to celebrate.
+
+### F91 — a cell can time out having done substantial work and leave no evidence
+
+`trace_dropped_samples` timed out in the first repeat of *both* Arm B configurations with a
+1,887-byte transcript: banner at 99 ms, prompt at 358 ms, then nothing for 40 minutes, and an
+untouched workdir. **This is not a hang** — the LM Studio server log records **20 chat completions**
+in that window (one per ~2 min, message counts climbing to 31), so the subject was working
+throughout. `driver.rs:388` writes only **newline-terminated** lines to the transcript, deliberately,
+so the newline-less gate prompt stays observable; nothing newline-terminated arrived. Net effect: a
+`timeout` verdict with zero evidence of 40 minutes of work. Reproduced twice on the largest fixture;
+never once in the champion's 9 cells. **Needs its own investigation before the K-series is used
+again** — any cell it hits is unfalsifiable.
+
+### F92 — what the 27B spends its extra time on
+
+Partly the work itself: in 2 of 3 `finish_the_cancelled_status` cells it wrote a
+`TestCancelledSemantics` class covering precisely the consumer gap the fixture README documents as
+untested, including an assertion that `other == 0` — the exact invariant the champion's r1 broke.
+It also fixed `round_at_the_line_not_the_total` at the root (`pricing.total_of`) in all three runs,
+with a docstring citing `docs/money.md` and explaining why rounding at the total is not equivalent;
+the champion patched the *call site* in one run and left the defective function behind. That is a
+real quality difference, and it is bought at 5.2× the wall clock.
+
 ## Open questions
 
 **Six of the seven measurement items are now closed.** What the 2026-08-16 session settled: peak
@@ -523,13 +629,17 @@ VRAM through a load and at rest (F74, with the method corrected by F75), KV grow
 
 **What is genuinely left:**
 
-1. 🚨 **Qwen3.8-27B vs the champion on agentic multi-file work under context pressure.** The one
-   item that was decision-critical before this session and still is — **W1's confidence cannot
-   leave *medium* on the base choice until it runs**, because the deciding evidence remains
-   vendor-reported benchmarks on a model released 2026-08-14. It needs the W8 corpus, not a score
-   column, so it is a campaign rather than a measurement. Also the moment to check whether its
-   ~500 MiB of headroom at 65k survives a real prefill
-   ([[qwen38-27b-daily-driver-question]]).
+1. ✅ **Qwen3.8-27B vs the champion on agentic multi-file work — RUN 2026-08-18, F87–F92.** No
+   longer vendor-benchmark-only: 18 diffed cells, n=3 per arm. **The verdict columns tie (8/9 each)
+   and the diffs favour the 27B on how it fixes, at 5.2× the wall clock.** What it did *not* settle,
+   and these are now the live questions:
+   - **"Under context pressure" was not actually held** (F90). Only the 27B reached the regime;
+     the champion never crossed compaction on this corpus. A comparison across two regimes cannot
+     close the base choice on its own.
+   - **F91 must be fixed first.** A cell that times out with no transcript is unfalsifiable, and it
+     hit the largest fixture twice.
+   - The 65k-headroom-under-real-prefill check is still unrun; at `-c 40960` the 27B sits at
+     **15,398 / 16,311 MiB (94.4%, 913 MiB spare)**, fully resident, no CPU offload.
 2. **Quality-per-quant across the 3.06 / 3.53 / 3.97 bpw rungs** — all three are on disk, and F80's
    method now makes the throughput half a single session's work. The *quality* half needs the same
    harness as item 1, so run them together.
@@ -554,17 +664,24 @@ Also high on the desk items that are arithmetic or primary-source: licensing (F7
 impossibility (F68), the estimator's weights-only behaviour (F69), and the 4.1 GB provenance
 correction (F70).
 
-**Medium, and deliberately unmoved, on the base re-validation (F65).** This session measured a
-great deal about *the champion* and nothing about *whether it should be the champion*. Qwen3.8-27B
-is still judged on a vendor benchmark, and a 12.2-point SWE-bench Pro gap is exactly the sort of
-number §11.0 forbids settling a decision on.
+**Medium, and now measured rather than argued, on the base re-validation (F65).** The 2026-08-18
+K-series campaign (F87–F92) replaced the vendor benchmark with 18 diffed cells. It **does not**
+promote the base choice to high, for two stated reasons rather than caution: the arms sat in
+different context regimes (F90), and one task is unfalsifiable until F91 is fixed. What it does
+establish is that **the 12.2-point SWE-bench Pro gap did not show up as a verdict gap here** — the
+arms tie at 8/9 — while the 27B costs 5.2× the wall clock. On this evidence the champion stays the
+champion, and that is now a measured position instead of an inherited one.
 
-**Low** on anything ranking models by quality — unchanged, and unchangeable until item 1 runs.
+**Low→medium** on ranking models by quality. The K-series can now *see* a quality difference and
+did (F87's diff table, F92), but it reads it from three tasks in one regime, and n=3 was enough to
+show the champion's own verdicts are unstable (`finish_the_cancelled_status` failed once and passed
+twice on identical inputs). Not a ranking instrument yet.
 
-**What would raise it: item 1, and nothing else.** The hardware questions that used to sit ahead of
-it are answered. A single agentic-under-pressure comparison on the W8 corpus would convert the
-weakest claim in this file into the strongest, and it is now the only thing standing between W1 and
-a confident close.
+**What would raise it, in order:** (1) fix F91 — no conclusion from this suite is safe while a cell
+can time out silently having worked 40 minutes; (2) close F90 by getting both arms into the same
+regime, which means growing the fixtures rather than lowering the pin, since the champion's terseness
+and not the fixture size is what keeps it at 33–53%; (3) then re-run for the quality-per-quant ladder
+(item 2), which shares the harness.
 
 ⚠ **One methodological warning this session earned.** F74 deleted a residency verdict that had
 survived a clean build, clean clippy, 44 green tests and a written README for a week; it died to a
