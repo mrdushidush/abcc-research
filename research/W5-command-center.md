@@ -1,16 +1,17 @@
 # W5 — The command center and the fun layer
 
-**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Two of seven are
+**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Three of seven are
 written:**
 
 1. ✅ **Frontend architecture** (F93–F99) — §11's "big open question". Answered; David accepted the
    recommendation 2026-08-18.
 2. ✅ **What the operator must be able to do** (F100–F106) — §11's "the genuinely new work", and
    where §14 item 3 says W5's extra room should go.
+3. ✅ **The component inventory, new versus inherited** (F107–F113) — the brief's second named
+   deliverable. Corrects `inheritance-map.md` in three places.
 
-The remaining five (component-inventory decisions, what the console must *show*, observability
-prior art, transport + storage, §7's fun research) are stubbed at the bottom with what is already
-known, and are not answered here.
+The remaining four (what the console must *show*, observability prior art, transport + storage,
+§7's fun research) are stubbed at the bottom with what is already known, and are not answered here.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 773–802 — **not** §14 item 3, which is about how to
 spend W5's extra room, not what W5 covers.
@@ -680,27 +681,263 @@ console-side until something proves otherwise.
 
 ---
 
+# Item 3 — the component inventory, new versus inherited
+
+§11: *"What survives from V1's console verbatim, what gets ported, what gets rebuilt. Inventory the
+existing assets, including the 96 Bark voice lines, **before designing new screens**."* This is the
+brief's second named deliverable.
+
+## Question
+
+Of V1's 14,935 lines and 44 MB of assets, what is 2.0 actually inheriting — and what does the brief
+ask for that has no V1 equivalent at all?
+
+## Method
+
+Every component enumerated with `wc -l` from `D:\dev\agent-battle-command-center` at `d5528ea`,
+this session, then read where the verdict depended on behaviour rather than size.
+`prestudy/inheritance-map.md` §8 already carries per-component REUSE/PORT/REFERENCE/DROP verdicts
+from Phase 0; this section is the layer on top that the map defers to W5 — **the decisions** — and
+it corrects the map in three places (F108, F110, F112).
+
+## The inventory
+
+Verdicts: **PORT** = the design and code carry over onto a Rust backend · **REUSE** = copied
+essentially as-is · **REBUILD** = the surface stays, the implementation does not · **REFERENCE** =
+read it, do not carry it · **DROP** · **NEW** = the brief asks for it and V1 has nothing.
+
+### Inherited — identity (the part that makes it ABCC)
+
+| Surface | Lines / size | Verdict | Decision |
+|---|---|---|---|
+| `isometric/` renderer + `isoProjection.ts` | 1,298 / 8 files | **PORT** | The live renderer. Fix on port: pre-blur the firing glow (`filter: blur()` doubles frame cost at N=100) |
+| Art — sprites, backdrops, fonts | 35 MB + 2.3 MB | **REUSE** | Irreplaceable. ⚠ 34.3 MB of the sprites is four attacking GIFs; see OQ-W5-10 |
+| 96 Bark voice lines | 6.7 MB, 3 packs × 32 | **REUSE** | Copy the files. `bark-generate-all.py` REUSE for extending the set |
+| `audioManager.ts` + `voicePacks.ts` | 229 + 271 | **REBUILD** | Queue *policy* is the problem, not the playback (F112) |
+| `themes/` vocabulary map | 105 / 3 files | **PORT** | ~28 lines each, `classic.ts` is the off-switch. Collides with Q8 — see OQ-W5-11 |
+
+### Inherited — surfaces that work and carry over
+
+| Surface | Lines | Verdict | Decision |
+|---|---|---|---|
+| `ToolLog` terminal feed | 205 | **PORT** | The no-dead-air surface that actually ran |
+| `minimap/` — three styles | 616 / 3 | **PORT one, keep two** | Not three abandoned attempts — a user setting (F108) |
+| `SuccessRateChart`, `ComplexityDistribution`, `AgentComparison` | 644 | **PORT** | Hand-rolled `<svg>`, no charting library — keep that instinct |
+| `TaskQueue`, `TaskDetail`, `ActiveMissions`, `TaskCard`, `AgentCard` | 1,543 | **REBUILD** | The shapes are right; the code is welded to V1's REST + socket API |
+| `CodeWindow`, `CodeReviewPanel` | 375 | **PORT** | Feeds W6's gate output |
+| `MemoryApproval` | 205 | **PORT as a pattern** | An async approval *queue* — gates knowledge, not execution (F110) |
+| `AlertPanel`, `ResourceBar` | 190 | **PORT** | Partial answer to "model-server health" |
+| `TopBar`, `Sidebar`, `CommandCenter`, `ThemeSelector` | 744 | **REBUILD** | Layout survives, wiring does not |
+| `useKeyboardShortcuts` + `ShortcutsHelp` | 201 | **PORT** | Cheap, and operator control needs a key map |
+| `useSocket.ts` event taxonomy | 456 | **PORT the taxonomy, break the coupling** | 26 domain events; the feel is fused into the transport |
+| `SettingsModal` | 368 | **REBUILD** | Personality off-switch lives here |
+
+### Inherited — not carried
+
+| Surface | Lines | Verdict | Why |
+|---|---|---|---|
+| `battlefield/` React Three Fiber | 2,133 / 12 | **REFERENCE** | V1 calls it *"legacy"* itself (F96); source of motifs |
+| `chat/` panel, `CTOWelcome`, `MissionProgressTracker` | 904 / 5 | **REFERENCE** | Overlaps the conversational surface Claudette already owns |
+| `TokenBurnLog` | 322 | **REBUILD** | Layout proven, data path never ran — no human has seen it render a real number |
+| `CostDashboard` | 280 | **REBUILD** | Starved by the same dead column; degrades to zeros |
+| `api/client.ts`, `store/uiState.ts`, remaining hooks | 2,646 | **REBUILD** | The V1 backend contract does not survive |
+| BCF `snake.rs` / `space.rs` minigames | — | **REFERENCE** | Right instinct about dead air, wrong answer |
+| BCF macOS `say` voice | — | **DROP** | macOS-only, dead on this hardware |
+
+### NEW — the brief asks for it and V1 has nothing
+
+| Surface | Why it is new |
+|---|---|
+| **Operator control bar** — the eight verbs | Nothing in the family has them; only the terminal has any (F98) |
+| **Permission + redirect modal** | Must carry `Allow \| Deny \| Redirect(String)` (F106) |
+| **Replay transport** — cursor, scrub, fork | Replay is the primary read path (F105); V1 never built a paged read |
+| **Live task DAG** | 🚨 V1 has no dependency edges at all (F109) |
+| **Escalation events** | No routing tier exists to escalate between yet (W4) |
+| **Model-server health / swap cost** | The 23.77 s swap (W1 F79) has to be visible before a re-route commits |
+| **Per-task and per-run cost accounting** | New instrumentation, not a ported metric — the columns were never writable |
+
+## Findings
+
+### F107 — only about an eighth of the console is the thing that makes it ABCC
+
+Of 14,935 lines: `isometric/` 1,298 + `audio/` 500 + `themes/` 105 = **1,903 lines, 12.7%**. The
+other 87% is task CRUD, dashboards, chat, layout, hooks, an API client, and a deprecated 3D
+renderer — most of it coupled to a Node + Postgres + Redis backend that does not survive (F95).
+
+**The irreplaceable asset is not the code, it is the 44 MB.** The art and the voice lines took work
+that cannot be redone cheaply; the CRUD took work that a Rust backend invalidates anyway.
+
+**Consequence for planning:** "port the console" reads like 15k lines of work and is not. It is
+~1.9k lines of identity to port carefully, ~44 MB to copy, and a CRUD layer that should be
+**rebuilt against the new contract rather than ported** — because porting it means preserving V1's
+API shape, which is the one thing 2.0 is deliberately replacing.
+
+### F108 — the three minimaps are a user setting, not three abandoned attempts
+
+`inheritance-map.md` §8 records them as *"Three attempts at one problem. Pick one deliberately in
+W5."* Read in the store this session, that is not what they are:
+
+```ts
+interface Settings {
+  toolLogOpenByDefault: boolean;
+  minimapStyle: 'timeline' | 'grid' | 'flow';
+}
+```
+
+Three deliberate styles over the same data, switchable at runtime, all three reading `tasks` from
+the same store with the same status→colour map. And "flow" does not mean a graph: `FlowMinimap` is
+a **status kanban** — QUEUE / ASSIGNED / ACTIVE / BLOCKED / COMPLETE / FAILED — over tasks from the
+last 24 hours, with `failed` and `aborted` collapsed into one column.
+
+**Decision, and it is settled by F105 rather than by taste:** keep **timeline** as the default,
+because under replay-as-primary the timeline *is* the cursor — the scrub bar and the minimap are
+the same widget. Keep **grid** (the circular radar sweep) as the idle/identity view. **Drop flow**:
+a status kanban is what the task queue already shows, and once there is a real DAG (F109) a kanban
+is the weaker picture of the same thing.
+
+### F109 — 🚨 V1 has no task DAG, and the brief's first "must show" item is therefore new work
+
+The brief's list of what the console must show opens with *"live task DAG"*. The V1 store carries
+`subtaskCount?: number` and **no dependency edges of any kind**; a grep for `depend` / `dependsOn`
+/ `parentTask` across the minimaps and the store returns nothing but that one count. What V1 models
+is a mission fanning out into subtasks — a one-level tree, and only its width is retained.
+
+None of the three minimaps draws edges (F108). So the DAG is **NEW**, it depends on W3's domain
+model carrying real dependency edges, and W5 should say so rather than budgeting it as a port.
+
+### F110 — the console does have a human-approval surface, and it gates knowledge rather than execution
+
+Refines F98 rather than contradicting it. `dashboard/MemoryApproval.tsx` (205 lines) polls
+`/api/memories/pending` and `/api/memories/stats` and lets the operator approve agent-proposed
+memories — `{pattern, solution, errorPattern, keywords, successCount, failureCount, approved,
+proposedByAgent, proposedByTask}`.
+
+That is a real human-in-the-loop surface, but it is **asynchronous and post-hoc**: nothing blocks
+on it, no agent waits, and approving late costs nothing. It is a review queue, not a gate. F98's
+claim stands as stated — no *mid-run* control in the console — and this adds the shape that W6's
+independent-review output should land in, since W6's gate produces exactly this kind of
+"proposed, awaiting a human" record.
+
+### F111 — the edit surface exists and is deliberately partial, in exactly the place F103 predicted
+
+`main-view/EditTaskModal.tsx` (155 lines) edits a task's title and description. Type and required
+agent are rendered `disabled` under the comment *"Type and Agent (read-only for existing tasks)"*.
+
+So of F103's verb table, **"edit a task prompt" is half-inherited** — the surface exists, and it
+edits a queued task's text — while **"re-route to another tier" is absent by construction**: the
+one field that would express it is the one V1 froze after creation. Neither is a mid-run operation.
+
+### F112 — the no-dead-air mechanism has three independent drop policies, and it degrades exactly when there is most to say
+
+This closes the `audioManager.ts` queueing item `verification.md` §3.5i left open, and establishes
+the cause of **both** OOM-fix comments that pass could not explain.
+
+Three bounded queues sit between an event and a voice line:
+
+1. **`useSocket.ts`** — a 3 s anti-overlap window, plus `MAX_PENDING_TIMEOUTS = 5`: *"Track pending
+   audio timeouts to prevent accumulation (OOM fix)"*. Past five, the sound is **dropped**.
+2. **`audioManager.ts`** (229 lines) — a priority queue **capped at 10**: *"Cap queue size to
+   prevent unbounded growth (OOM fix)"*, discarding the lowest-priority entry, then sorting by
+   priority descending.
+3. **Playback is strictly serial** — one `currentAudio`, one sound at a time.
+
+And the second OOM comment's cause, from `store/uiState.ts:7-10`: `MAX_EXECUTION_LOG_BUFFER = 500`
+is *"WebSocket-driven; replaces the 10s HTTP polling pattern that previously caused OOM on the
+frontend."* Both scars are now explained: one from polling, one from audio timers.
+
+**The finding is not that the caps are wrong — they are right.** It is that all three degrade in
+the same direction under the same condition: **the busier the fleet, the more the console goes
+quiet.** §7 asks for no dead air; V1's mechanism produces its worst silence at peak activity, and
+does it in three places with three different policies. 2.0's audio subscriber needs **one** policy,
+stated deliberately — most likely "collapse to a summary line rather than drop", since the operator
+needs to know a burst happened more than they need to hear each event in it.
+
+### F113 — four of the eleven task states have no colour, in three places
+
+`STATUS_COLORS` is defined independently in all three minimaps, covering seven states: `pending`,
+`assigned`, `in_progress`, `needs_human`, `completed`, `failed`, `aborted`. The lifecycle actually
+in use has **eleven** (`verification.md` §3.4g adds `decomposing`, `awaiting_approval`, `reviewing`,
+`approved`).
+
+So four states render with no defined colour, and the mapping from domain state to visual state is
+duplicated three times and owned by no one — the same untyped-lifecycle problem as `verification.md`
+§3.4g, showing up in the view layer. Under Q8's typed enum this becomes one exhaustive `match`, and
+a new state cannot be added without the compiler asking what colour it is. **This is the cheapest
+concrete argument for the Q8 ruling that W5 can offer, so it is worth handing to W3.**
+
+## Recommendation
+
+1. **Copy the 44 MB, port the 1,903 lines of identity, rebuild the CRUD** (F107). Do not treat the
+   line count as the work.
+2. **Minimaps: default timeline, keep grid, drop flow** (F108) — the timeline is the replay cursor,
+   so this decision is downstream of F105 and not a matter of preference.
+3. **Budget the DAG as new work with a W3 dependency** (F109). It is the brief's headline "must
+   show" item and the family has nothing to port.
+4. **One audio policy, stated deliberately, replacing three drop policies** (F112). Collapse-to-
+   summary rather than drop, so a busy fleet gets louder rather than quieter.
+5. **Hand W3 two W5-sourced requirements:** the lifecycle enum must be exhaustively renderable
+   (F113), and it must carry dependency edges (F109).
+6. **Keep `MemoryApproval`'s shape** as the landing surface for W6's independent-review output
+   (F110).
+
+## Rejected alternatives and why
+
+- **Porting `store/uiState.ts` and `api/client.ts`.** Rejected: 1,113 lines whose entire job is
+  speaking V1's backend contract, which 2.0 replaces. Rebuilding is cheaper than adapting.
+- **Keeping all three minimaps because they are already written.** Rejected: three renderings of one
+  data set is three places to update every time the lifecycle changes — F113 shows that cost is
+  already being paid.
+- **Carrying `audioManager`'s queue as-is.** Rejected on F112: the playback singleton is fine, the
+  three-layer drop policy is the bug, and porting it would import the silence-at-peak behaviour.
+- **Rebuilding the isometric renderer "properly" on canvas.** Rejected: §11.0 closed this — DOM
+  sprites are free to ~100 entities, and W2 F83 caps the useful fleet at 2.
+
+## Effect on fun
+
+- **The 44 MB is the fun, and it is the cheapest thing to keep.** Naming that explicitly protects it
+  from being traded away during a rewrite that is mostly about backends.
+- **F112 is a direct fun regression in the inherited design** — the console's personality fades out
+  precisely when the battle is busiest. Fixing the policy is a small change with a large felt effect.
+- **A DAG the operator can see is the difference between a queue and a battle plan** — and it is the
+  one "must show" item that has to be built rather than inherited.
+
+## Open questions
+
+- **OQ-W5-10 — do the four attacking GIFs survive?** 34.3 MB of 35 MB, 242 frames for the building
+  alone. Frame cost measured at zero; **decode memory never measured** (`verification.md` §3.5i). If
+  they stay, 2.0 ships a 44 MB binary or a 44 MB sidecar directory (OQ-W5-4).
+- **OQ-W5-11 — what does the theme off-switch mean after Q8?** `classic.ts` renames vocabulary in a
+  28-line file; an enum variant cannot be renamed by a theme. Labels-only translation over fixed
+  enums, or a cosmetic-only neutral theme.
+- **OQ-W5-12 — does the chat panel come back?** Marked REFERENCE because Claudette owns the
+  conversational surface, but item 1 puts the terminal in that role. If the console has no chat, the
+  operator's "type at it" path is terminal-only by design rather than by omission.
+
+## Confidence: high
+
+Every verdict traces to a file read this session or to an executed Phase 0 pass. The three
+corrections to `inheritance-map.md` (F108, F110, F112) are each backed by the source line that
+contradicts the earlier note. **What would lower it:** OQ-W5-10 — if GIF decode memory turns out to
+be prohibitive, the art inventory changes shape, and that is the one row in this section resting on
+an unmeasured quantity.
+
+---
+
 # Not yet written — the rest of W5
 
 Recorded so the next session starts in the right place, with what is already known attached.
 
-1. **Component inventory, new vs inherited.** Largely already exists as `inheritance-map.md` §8
-   (REUSE / PORT / REFERENCE / DROP per component, with the UI-run corrections). W5 owes the
-   *decisions* on top of it — notably: pick **one** of the three minimaps (190 / 129 / 297 lines,
-   three attempts at one problem), and decide what the theme off-switch means now that Q8 puts the
-   RTS vocabulary in the Rust domain model, where a 28-line theme file cannot rename an enum
-   variant.
-2. **What the console must show.** Live task DAG, per-agent state, queue depth, escalation events,
+1. **What the console must show.** Live task DAG, per-agent state, queue depth, escalation events,
    token + cost per task and per run, model-server health, throughput over time. ⚠ Most of this
    exists in V1 *as layout*; `TokenBurnLog`'s data path has never rendered a real number, so treat
    "V1 already has this surface" as a claim about design, not about behaviour under load.
-3. **Observability prior art** — Langfuse, Arize Phoenix, OpenTelemetry GenAI semantic conventions,
+2. **Observability prior art** — Langfuse, Arize Phoenix, OpenTelemetry GenAI semantic conventions,
    current agent-ops products. The brief pre-judges the UI layer ("a pure adopt-Langfuse answer is
    wrong"), so the live question is what comes free at the tracing and storage layer underneath.
-4. **Transport and storage.** WebSocket vs SSE at 2.0's event volume; PostgreSQL vs SQLite. F95
+3. **Transport and storage.** WebSocket vs SSE at 2.0's event volume; PostgreSQL vs SQLite. F95
    already loads the dice on storage, and `inheritance-map.md` §7 notes Claudette's `recall.sqlite`
    as the precedent. Also in scope: a **paged read path for replay** — V1's store is a 500-row ring
    buffer over a database that holds everything.
-5. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
+4. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
    literature and the good tools actually do, rather than taste. Plus the written position on what
    "fun" means here, concrete enough to test.
