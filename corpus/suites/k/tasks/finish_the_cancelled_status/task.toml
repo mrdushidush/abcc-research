@@ -4,7 +4,14 @@ title     = "a status was added to the vocabulary and to one consumer of six"
 lang      = "python"
 kind      = "bugfix"
 
-timeout_s = 900
+# ⚠ RAISED 900 → 2400 on 2026-08-17 (K-series first cross-model comparison). 900 was
+# calibrated on the champion, whose slowest observed cell was 629 s. Qwen3.8-27B, ~2.5×
+# slower, timed out on 4 of 9 cells while STILL MAKING PROGRESS — last apply_diff at
+# 896 s of 900 — which is exactly the failure the note above says must not happen. A
+# timeout records NO metrics at all (no verdict, no peak_prompt_tokens), so the old
+# ceiling silently converted the slower model's thoroughness into missing data rather
+# than a result. The champion's verdicts are unaffected: its ceiling never bound.
+timeout_s = 2400
 
 [[turn]]
 send_file = "prompt.txt"
