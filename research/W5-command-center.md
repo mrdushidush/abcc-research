@@ -1,6 +1,6 @@
 # W5 — The command center and the fun layer
 
-**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Five of seven are
+**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Six of seven are
 written:**
 
 1. ✅ **Frontend architecture** (F93–F99) — §11's "big open question". Answered; David accepted the
@@ -13,9 +13,11 @@ written:**
    clearly".
 5. ✅ **Observability prior art** (F119–F122) — Langfuse, Phoenix, the OTel GenAI conventions.
    Adopt the vocabulary, own the store, export optionally.
+6. ✅ **Transport and storage** (F123–F126) — SSE + SQLite, and one integer that is the transport
+   cursor, the SQL cursor and the scrub position.
 
-The remaining two (transport + storage, §7's fun research) are stubbed at the bottom with what is
-already known, and are not answered here.
+The remaining one — §7's fun research and the written position on what "fun" means — is stubbed at
+the bottom, and is not answered here.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 773–802 — **not** §14 item 3, which is about how to
 spend W5's extra room, not what W5 covers.
@@ -1321,14 +1323,202 @@ looking like a warning.
 
 ---
 
+# Item 6 — transport and storage
+
+§11: *"Transport for live updates at higher 2.0 event volume: WebSocket versus SSE from a Rust
+backend. Storage: PostgreSQL versus SQLite. SQLite plus a single binary is a dramatically lower
+barrier for a public tool, and worth serious consideration against V1's Postgres dependency."*
+Plus §14 item 3's addition: **a paged read path for replay.**
+
+## Question
+
+Three questions that turn out to be one: what carries live updates, what stores the record, and how
+does the console read a run that already happened?
+
+## Method
+
+Volume arithmetic from measured numbers (W1 F80's throughput ladder, W2 F83's concurrency ceiling),
+file sizes taken from the live `~/.claudette/` store on this machine 2026-08-18, V1's transport read
+in source, and protocol documentation retrieved 2026-08-18.
+
+## Findings
+
+### F123 — the event volume is small, and it is large in exactly one place
+
+"Higher 2.0 event volume" needs a number before it can drive a choice. Two granularities, and they
+differ by orders of magnitude:
+
+**Token granularity.** Decode runs 70.12–75.84 tok/s single-stream (W1 F80) and useful concurrency
+is 2 (W2 F83), so the ceiling is roughly **150 tokens/second**. A 40-minute run — not hypothetical,
+W1 F91 recorded one — is **~360,000 token events**. At even 50 bytes each that is ~18 MB of log for
+one run.
+
+**Action granularity.** Measured on this machine: `~/.claudette/transcript/actions.jsonl` is
+**8,245,526 bytes across 16,150 lines** — ~511 bytes per line, with `input` already capped at 2,000
+chars. That is **months of daily driving**.
+
+**So persisting at token granularity costs more for a single run than the entire action log costs
+over months of real use.** Which settles the design rather than the transport:
+
+- **The broker streams tokens** — they are what makes the feed feel alive and what F115's liveness
+  clock reads. Ephemeral.
+- **The log persists turns, tool calls, state transitions and periodic liveness marks.** Durable.
+- **Replay re-streams stored text; it does not store the stream.** The turn's text is written once;
+  playback re-emits it with synthetic timing. The operator sees the same thing; the disk does not.
+
+One more measurement, because it bounds what replay can promise. In this repo's own W8 runs, a
+completed agentic cell's `transcript.log` is **1.9–4.1 KB** — while `runs/` on this disk totals
+**3.1 GB**, almost all of it working directories and fixtures. **The narration of a task is
+kilobytes; the artifacts of running it are gigabytes.** (Claudette narrates mutations only, so 4 KB
+is a floor for what 2.0 would emit — the order of magnitude is the point.)
+
+So replay reconstructs **what the operator saw, not what the agent touched**. Re-rendering a run is
+cheap and belongs in the log; restoring the workspace it produced is a different feature with three
+orders of magnitude more data behind it, and F102's trash pre-images are the only part of that which
+2.0 inherits.
+
+Neither transport is stressed by 150 events/second. **Throughput is not the axis this decision
+turns on** — which frees it to turn on the axis that matters.
+
+### F124 — SSE's `Last-Event-ID` *is* the replay cursor, and V1 hand-rolled it over WebSocket, badly
+
+The EventSource API reconnects automatically after a drop and sends a **`Last-Event-ID` header so
+the server resumes from where it left off**; events carry IDs for exactly this purpose. It is plain
+HTTP, so it traverses proxies and load balancers with no special handling, and it is the protocol
+behind streaming AI responses generally. WebSocket has no equivalent: reconnection and replay are
+the application's problem.
+([SSE vs WebSockets, Ably](https://ably.com/blog/websockets-vs-sse),
+[SSE vs WebSockets 2026](https://oneuptime.com/blog/post/2026-01-27-sse-vs-websockets/view),
+retrieved 2026-08-18)
+
+Now compare what V1 built. `useSocket.ts` is a WebSocket with 26 domain handlers, and its recovery
+story is hand-rolled: rehydrate the log buffer from REST via `listRecent(200)` on reconnect, into a
+**500-row ring buffer**, while Postgres holds every row (`inheritance-map.md` §8). **That is a
+worse version of `Last-Event-ID`** — bounded, lossy, and a second code path — written because
+WebSocket does not come with the better one.
+
+The usual reason to pay that price is bidirectionality. Here it is nearly worthless: item 2's eight
+verbs are **operator clicks**, a handful per run, and a plain `POST /control` carries them with less
+machinery than a socket. The asymmetry of the two directions — a firehose down, a trickle up — is
+precisely the shape SSE is for.
+
+**One caveat to record rather than discover later:** SSE over HTTP/1.1 inherits the browser's
+~6-connections-per-origin limit, so a console that opens a stream per panel will stall. One stream
+per console, demultiplexed by event type — which is what a single broker subscription is anyway.
+
+### F125 — SQLite, and the numbers are not close
+
+V1 runs PostgreSQL 16 in a container beside Redis and Ollama (F95). The measured alternative, from
+the same machine:
+
+| Store | Size | Shape |
+|---|---|---|
+| `~/.claudette/recall.sqlite` | **708 KB** | cross-session semantic recall, 50k-row FIFO |
+| `~/.claudette/transcript/actions.jsonl` | **7.9 MB** | 16,150 mutating actions, months of use |
+
+At F123's action granularity an event log grows at roughly the second row's rate. A year of heavy
+daily driving is single-digit megabytes. **There is no volume argument for a database server here**,
+and there is a decisive install argument against one (F95): Postgres means a container, and a
+container means the docker-compose 2.0 exists to escape.
+
+The two objections worth stating and answering:
+
+- **Concurrent writers.** SQLite in WAL mode is one writer, many readers. 2.0's backend is a single
+  process and the *only* writer; the console is a reader. This is the configuration SQLite is best
+  at, not the one it struggles with.
+- **Analytical queries for the after-action screen.** F119 noted Langfuse reaches for ClickHouse
+  precisely for OLAP over traces. At single-digit megabytes per year that reach is not justified —
+  but it is the one number to watch, and it is why OQ-W5-9's retention answer matters.
+
+Claudette is the precedent and the proof: a serious agent with cross-session memory, sessions, todos,
+notes and an action journal, and **no database server anywhere** — everything under `~/.claudette/`.
+
+### F126 — one monotonic integer is the transport cursor, the SQL cursor and the scrub position
+
+This is why the three questions are one question.
+
+Give every event a monotonically increasing `seq`. Then:
+
+- **SSE** sends it as the event `id:`, and a reconnecting console returns it as `Last-Event-ID`
+  (F124).
+- **The paged read** is `SELECT … WHERE seq > ? ORDER BY seq LIMIT n` — the paged read path §14
+  item 3 asks for, and the thing V1 never built.
+- **Replay** (F105) positions the cursor at a `seq`; "live" is the cursor pinned to the maximum.
+- **The timeline minimap** (F108) draws that integer as a scrub bar.
+
+Four requirements, one field. Choosing WebSocket means the first bullet needs its own mechanism;
+choosing Postgres changes nothing about the integer but adds a service to hold it. **The
+combination that makes them the same integer is SSE plus SQLite**, and that is the substantive
+reason to choose it — the install story is the bonus, not the argument.
+
+## Recommendation
+
+1. **SSE for the live stream, plain HTTP POST for control.** One stream per console, event `id:` =
+   `seq`, resume via `Last-Event-ID` (F124, F126).
+2. **SQLite as the store of record**, under the 2.0 equivalent of `~/.claudette/` — no server, no
+   container (F125). WAL mode, single writer, console as reader.
+3. **Log at action granularity, stream at token granularity** (F123). Replay re-streams stored text
+   rather than storing the stream.
+4. **`seq` is the project's cursor**, used by the transport, the paged read, replay and the scrub
+   bar. Design it once and do not let a second cursor concept appear.
+5. **Keep WebSocket as a documented fallback**, not a plan: if the terminal surface or a future
+   remote-fleet mode (W10) ever needs genuine bidirectional streaming, the broker contract is
+   transport-agnostic (F99) and only the edge changes.
+
+## Rejected alternatives and why
+
+- **WebSocket as the primary transport.** Rejected on F124: it costs a hand-rolled recovery path to
+  buy a bidirectionality that eight occasional operator clicks do not need — and V1 already paid
+  that price and got a 500-row ring buffer for it.
+- **PostgreSQL.** Rejected on F125 and F95: a service to hold single-digit megabytes, and the exact
+  dependency that makes the install a multi-step operation.
+- **Persisting the token stream.** Rejected on F123's arithmetic — one 40-minute run would out-weigh
+  months of Claudette's action log.
+- **A second cursor for replay** (e.g. wall-clock timestamps for the scrub bar, `seq` for paging).
+  Rejected on F126: two cursors that must agree are two cursors that will not. Timestamps stay as
+  *data* on the event, not as the addressing scheme.
+- **Polling REST for updates**, V1's pre-WebSocket shape. Rejected by V1's own scar tissue: the
+  10-second poll is what caused the frontend OOM the ring buffer was introduced to fix (F112).
+
+## Effect on fun
+
+- **Reconnect stops being a visible event.** The console you left open overnight picks up exactly
+  where it stopped rather than showing the last 200 rows and a gap — which is the difference between
+  a tool you trust and a tool you refresh.
+- **The scrub bar is free.** Because `seq` already exists for three other reasons, dragging back
+  through a run is a query, not a feature that needs building.
+- **The install stays one file.** §7's fun is felt before the first token: a tool that runs from one
+  binary with no services is a tool people actually try.
+- **The risk, named:** SSE plus SQLite is unglamorous, and the temptation later — when a remote rig
+  joins the fleet in W10 — will be to rebuild both. Keeping the broker contract transport-agnostic
+  (F99) is what makes that a swap rather than a rewrite.
+
+## Open questions
+
+- **OQ-W5-19 — where does `seq` live: per run, or global?** Global makes the cursor trivially
+  orderable across runs; per run makes replay addressing shorter and retention simpler. Leaning
+  global with a run column, but it interacts with OQ-W5-9's retention answer.
+- **OQ-W5-20 — how long does the server hold replayable history for a live reconnect?** SSE's resume
+  is only as good as the server's ability to answer from an arbitrary `seq`; if the log is the store
+  of record this is free, which is another argument for not bounding the log in memory the way V1
+  bounded its store.
+- **OQ-W5-21 — does the terminal surface use the same SSE stream?** It should, by F99, but a CLI
+  consuming SSE is slightly unusual and worth a spike before it is assumed.
+
+## Confidence: high
+
+The volume arithmetic uses this project's own measured numbers, the file sizes were taken from disk
+this session, and the protocol behaviours are documented rather than inferred. **What would lower
+it:** OQ-W5-9 landing on very long retention plus a heavily analytical after-action screen, which is
+the one combination where F125's "no volume argument for a server" stops holding — and F119's note
+about ClickHouse becomes the warning rather than the counter-example.
+
+---
+
 # Not yet written — the rest of W5
 
 Recorded so the next session starts in the right place, with what is already known attached.
 
-1. **Transport and storage.** WebSocket vs SSE at 2.0's event volume; PostgreSQL vs SQLite. F95
-   already loads the dice on storage, and `inheritance-map.md` §7 notes Claudette's `recall.sqlite`
-   as the precedent. Also in scope: a **paged read path for replay** — V1's store is a 500-row ring
-   buffer over a database that holds everything.
-2. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
+1. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
    literature and the good tools actually do, rather than taste. Plus the written position on what
    "fun" means here, concrete enough to test.
