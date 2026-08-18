@@ -1,6 +1,6 @@
 # W5 — The command center and the fun layer
 
-**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Three of seven are
+**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Four of seven are
 written:**
 
 1. ✅ **Frontend architecture** (F93–F99) — §11's "big open question". Answered; David accepted the
@@ -9,9 +9,11 @@ written:**
    where §14 item 3 says W5's extra room should go.
 3. ✅ **The component inventory, new versus inherited** (F107–F113) — the brief's second named
    deliverable. Corrects `inheritance-map.md` in three places.
+4. ✅ **What the console must show** (F114–F118) — §11's seven-item list against §7's "six things
+   clearly".
 
-The remaining four (what the console must *show*, observability prior art, transport + storage,
-§7's fun research) are stubbed at the bottom with what is already known, and are not answered here.
+The remaining three (observability prior art, transport + storage, §7's fun research) are stubbed
+at the bottom with what is already known, and are not answered here.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 773–802 — **not** §14 item 3, which is about how to
 spend W5's extra room, not what W5 covers.
@@ -923,21 +925,228 @@ an unmeasured quantity.
 
 ---
 
+# Item 4 — what the console must show
+
+§11's list: *"live task DAG, per-agent state, queue depth, escalation events, token and cost
+accounting per task and per run, model server health, throughput over time. Most of this exists in
+V1 in some form."* Against §7's constraint: *"Legibility over completeness. A dashboard that shows
+six things clearly beats one that shows forty."*
+
+## Question
+
+Those two sentences are in tension — the list has seven items before anything is added for operator
+control or replay. What does the operator see at a glance, what gets demoted, and which of the
+seven turn out to mean something different than they did when the brief was written?
+
+## Method
+
+Each item on §11's list checked against what actually exists: V1's components (item 3), the
+measured hardware numbers from W1 and W2, and this repo's own `harness/crates/hw-probe`. Where the
+brief's phrasing predates a decision that changed its meaning, the decision is named.
+
+## Findings
+
+### F114 — "cost accounting" cannot mean money, because the spend ceiling is zero by decision
+
+§11 asks for *"token and cost accounting per task and per run"*. Q4 (2026-08-07) set the frontier
+spend ceiling at **effectively zero — local only, cloud escalation manual and rare**. So the dollar
+column on a single-player run is **0.00, correctly, forever**, and a cost panel that leads with it
+is a panel that leads with a zero.
+
+This is a different failure from V1's, and worth separating: V1's `CostDashboard` and `TokenBurnLog`
+render zeros because the token, cost and model columns were never writable (`verification.md`
+§3.4h). 2.0 would render an honest zero for a real reason. **Both produce a dead panel.**
+
+What is actually scarce on this hardware, and therefore what "cost" has to mean:
+
+| Resource | Why it is the real cost | Number to show against |
+|---|---|---|
+| **Wall clock** | The only budget the operator personally spends | per task and per run |
+| **Tokens** | Prefill dominates: the workload is ~**27.8:1** prefill:decode (§14 item 2) | in / out, per task |
+| **GPU occupancy** | Useful concurrency is **2** (W2 F83) — a slot is the scarce unit | slot-seconds per task |
+| **Model swaps** | **23.77 s** round trip (W1 F79), and a re-route buys one | count, and seconds lost |
+
+**Consequence:** replace "cost" with **time, tokens, slots and swaps**, and keep a currency column
+only for the rare manual cloud escalation, where it is genuinely non-zero. This also rescues the
+inherited panels — `TokenBurnLog`'s layout is fine, it was starved; feeding it wall-clock and tokens
+gives it something true to render for the first time (item 3 marks it REBUILD for this reason).
+
+And it hands W8 the same reframing: cost-per-task in this family has never been measurable, so it
+is new instrumentation either way — and the version worth instrumenting is the one denominated in
+seconds.
+
+### F115 — 🚨 liveness is not a status field, and this project has already been fooled by silence once
+
+V1 shows agent state as `busy` / `idle` / offline. That is a *state*, and it cannot distinguish
+working from hung — which is the exact mistake this repo already made and recorded.
+
+W1 F91: a cell timed out with an almost-empty transcript and was first read as "the model produced
+nothing". It was not. The fix (`25afec2`) added two fields, and the comment on them is the whole
+lesson:
+
+> *"Claudette echoes a `▸` line for file mutations only, so a subject that spends its whole budget
+> reading the repository prints nothing at all — and a timeout with an almost-empty transcript then
+> looks identical to a hang. It is not: the first cell this hit had 20 chat completions behind it in
+> the server log."*
+
+`subject_last_output_ms` is the decisive field and `subject_output_bytes` the corroborating one —
+and even then the comment warns that the banner alone puts ~180 bytes on stderr, so a small total
+is not by itself a silent cell.
+
+**Two things follow for the console.**
+
+1. **Time-since-last-event is a first-class, always-visible element** — not a tooltip, not a
+   derived value in a chart. §7's "no dead air" is not satisfied by an animation; it is satisfied by
+   a number the operator can trust to distinguish *thinking* from *stuck*.
+2. **2.0 must not repeat the harness's inference.** The harness had to guess liveness from stray
+   bytes on a pipe *because it was outside the process*. The console is inside it: the broker (F99)
+   already carries `ToolCallStart` / `ToolCallDone` / `Token`, so 2.0 can emit an event for reads as
+   well as writes and know liveness rather than infer it. **The inherited limit — narrating
+   mutations only — is a property of watching someone else's binary, not a property of the design.**
+
+### F116 — legibility resolved: two screens, and replay makes the second one nearly free
+
+§11's seven items plus operator control plus replay is far past §7's "six things clearly". The
+resolution is not to cut the list; it is to notice that it contains **two different jobs**.
+
+**The battle screen** answers six questions, and nothing else earns space:
+
+| # | Question | Surface | Source |
+|---|---|---|---|
+| 1 | Is anything happening *right now*? | liveness — time since last event | **NEW** (F115) |
+| 2 | What is it doing, in words? | `ToolLog` feed | PORT |
+| 3 | How much is left? | DAG + queue depth | **NEW** (F109) |
+| 4 | What has it cost me so far? | elapsed, tokens, slots, swaps | **NEW** (F114) |
+| 5 | Is anything wrong or waiting for me? | failures, permission prompts, `needs_human` | PORT + **NEW** |
+| 6 | What can I do about it? | the control bar | **NEW** (item 2) |
+
+**The after-action screen** takes everything else: success rate over time, complexity distribution,
+agent comparison, throughput history, per-run cost. All four inherited charts (item 3) live here,
+and none of them belongs on the battle screen — a chart of historical success rate tells the
+operator nothing about the run in front of them.
+
+**And it is nearly free.** Under F105 replay is the primary read path, so the after-action screen is
+the same renderer with the cursor parked at the end of a finished run. The design does not pay twice.
+
+Note the shape of the table: **four of the six are NEW.** The console 2.0 needs is not mostly a port
+even though the console V1 has is mostly built — which is the same conclusion item 3 reached from
+the other direction (F107).
+
+### F117 — the fleet is two, and the inherited visual grammar already survives that
+
+W2 F83 caps useful concurrency at **N=2**. An RTS console commanding two workers sounds like a
+problem for the identity — an army of two.
+
+It is not, because V1's battlefield does not draw the fleet as the army. Read this session,
+`IsometricBattlefield.tsx` maps **tasks → buildings** and **agents → squads** that target them:
+`buildings.find(b => b.taskId === squad.targetTaskId)`, building size from
+`complexity ?? priority ?? 5`, an explosion spawned per finished task keyed on `task.status ===
+'completed'`, and the backdrop rotating every 10 tasks.
+
+So the battlefield already reads as *a small strike team working a large objective list* — few
+tanks, many buildings — which is exactly the shape of the real workload. **"Per-agent state" is a
+two-row table; the screen space belongs to tasks.** That is a legibility win, not a compromise: the
+thing the operator cares about is the queue, and the inherited art already points the camera there.
+
+### F118 — model-server health is already built, in this repo, and its two documented limits bite a long-running console
+
+§11.0 recorded that nothing in the family measures peak VRAM, peak RAM or temperature — `hw.rs` is
+`nvidia-smi --query-gpu=memory.total`, read once. That gap is **closed**: `harness/crates/hw-probe`
+exists and describes itself as *"peak VRAM, peak system RAM, temperature and throttle, around any
+workload"*, built for §14 item 2. GPU sampling is one long-lived `nvidia-smi -lms N` including
+`temperature.gpu`; host sampling is one long-lived `typeperf` over PDH counters.
+
+So the health panel is **inherited from 2.0's own harness**, not new. Two limits its source
+documents are the ones that matter for a console rather than for a benchmark:
+
+1. **The host series floors at one second** — `-si` takes whole seconds and `-si 0.25` is rejected,
+   so RAM is an order of magnitude coarser than the GPU series. The panel must show two cadences or
+   it lies about one of them.
+2. 🚨 **`typeperf` resolves wildcards once, at start** — `\GPU Process Memory(*)\…` expands to the
+   processes alive when it starts, *"and a process that appears later never gets a column"*. LM
+   Studio spawns a **fresh `llama-server` per load** (W1 F75), so **every model swap invalidates the
+   per-process column** of a probe that started earlier.
+
+Item 2 makes re-route a first-class operator verb, which means swaps happen *on purpose*, mid-run,
+at the operator's command. A health panel that silently loses its per-process column after the
+first re-route is `TokenBurnLog`'s failure mode again — a panel that renders confidently and means
+nothing. **The probe must be restarted around a swap, and the console must show which process the
+numbers belong to.**
+
+## Recommendation
+
+1. **Two screens.** The battle screen answers the six questions in F116 and shows nothing else; the
+   after-action screen is the same renderer with the replay cursor at the end, and it takes all four
+   inherited charts.
+2. **Liveness first.** Time-since-last-event is always on screen, sourced from the broker rather than
+   inferred (F115). If one element survives a redesign, it is this one.
+3. **Cost is time.** Elapsed, tokens (in/out), slot-seconds and swap count — with a currency column
+   only when a manual cloud escalation actually happened (F114).
+4. **Screen space follows tasks, not agents** (F117). Per-agent state is two rows; the queue and the
+   DAG own the canvas.
+5. **Feed health from `hw-probe`, restart it around every swap, and label the process** (F118).
+6. **Escalation events are deferred to W4's shape.** With spend at zero the ladder is local and C10
+   is a manual act, so the console shows *swaps and re-routes*, which are real today, rather than a
+   tier ladder that does not exist yet.
+
+## Rejected alternatives and why
+
+- **One dashboard with everything.** Rejected on §7 and on F116's split: the two jobs have different
+  time horizons, and merging them is how the live screen fills with history.
+- **A dollar-denominated cost panel.** Rejected on F114 — it is a zero by decision, and a panel whose
+  headline number is always zero trains the operator to stop reading it.
+- **Prominent per-agent telemetry.** Rejected on F117: two rows do not deserve the canvas, and V1's
+  own art already points elsewhere.
+- **Reusing `hw.rs` for health.** Rejected: it reads *installed* VRAM once and has no peak, no
+  temperature and no RAM. `hw-probe` supersedes it and is already written.
+- **A "thinking…" spinner as the no-dead-air answer.** Rejected on F115 — a spinner is exactly the
+  animation that cannot tell working from hung, and this project has already paid for that mistake.
+
+## Effect on fun
+
+- **The six-question screen is the "glance and know the front line" test from §7**, made concrete
+  enough to check: if the operator cannot answer all six in one look, the screen has failed.
+- **The liveness number is the anti-dead-air feature**, and it is more honest than the voice lines:
+  it says *something is happening* even when nothing is worth narrating.
+- **Cost in seconds is the number a hobbyist actually feels.** Dollars are someone else's metric on
+  a local rig; "this run has eaten eleven minutes and two model swaps" is the one that changes
+  behaviour.
+- **The after-action screen is where a failed run becomes interesting to look at** — §7 asks for
+  exactly that, and replay-as-primary is what makes it possible.
+
+## Open questions
+
+- **OQ-W5-13 — what is the liveness threshold before the console escalates from quiet to concerned?**
+  W1 F91 saw a genuinely silent 40 minutes of real work. A warning at 60 s would have cried wolf; no
+  warning at all is how a hang hides. Needs a number, ideally learned from W8 runs.
+- **OQ-W5-14 — does the battle screen show one run or the whole fleet?** With N=2 they nearly
+  coincide, but "replay a run" implies a run-scoped view, and a queue implies a global one.
+- **OQ-W5-15 — where does the DAG live on screen?** It is question 3 of six and the most
+  space-hungry element; the isometric battlefield may already *be* the DAG view if buildings gain
+  edges, which would be cheaper and more in character than a second graph widget.
+
+## Confidence: high on the demotions, medium on the six
+
+- **High** on F114, F115, F117, F118 — each rests on a decision already made, a source file read
+  this session, or a measured number from W1/W2.
+- **Medium** on the exact membership of the six (F116). The split into two screens is forced; which
+  six questions make the cut is a design judgement that only Phase 3 use can confirm. **What would
+  raise it:** W8 measuring which surfaces the operator actually looks at, and OQ-W5-13's threshold
+  coming from real runs rather than from taste.
+
+---
+
 # Not yet written — the rest of W5
 
 Recorded so the next session starts in the right place, with what is already known attached.
 
-1. **What the console must show.** Live task DAG, per-agent state, queue depth, escalation events,
-   token + cost per task and per run, model-server health, throughput over time. ⚠ Most of this
-   exists in V1 *as layout*; `TokenBurnLog`'s data path has never rendered a real number, so treat
-   "V1 already has this surface" as a claim about design, not about behaviour under load.
-2. **Observability prior art** — Langfuse, Arize Phoenix, OpenTelemetry GenAI semantic conventions,
+1. **Observability prior art** — Langfuse, Arize Phoenix, OpenTelemetry GenAI semantic conventions,
    current agent-ops products. The brief pre-judges the UI layer ("a pure adopt-Langfuse answer is
    wrong"), so the live question is what comes free at the tracing and storage layer underneath.
-3. **Transport and storage.** WebSocket vs SSE at 2.0's event volume; PostgreSQL vs SQLite. F95
+2. **Transport and storage.** WebSocket vs SSE at 2.0's event volume; PostgreSQL vs SQLite. F95
    already loads the dice on storage, and `inheritance-map.md` §7 notes Claudette's `recall.sqlite`
    as the precedent. Also in scope: a **paged read path for replay** — V1's store is a 500-row ring
    buffer over a database that holds everything.
-4. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
+3. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
    literature and the good tools actually do, rather than taste. Plus the written position on what
    "fun" means here, concrete enough to test.
