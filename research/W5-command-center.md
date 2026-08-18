@@ -1,7 +1,8 @@
 # W5 — The command center and the fun layer
 
-**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Six of seven are
-written:**
+**Status: WRITTEN — all seven items, 2026-08-18.** The file was built one item at a time and reads
+in that order; each item carries its own Question / Method / Findings / Recommendation / Rejected /
+Effect on fun / Open questions / Confidence, per §13.
 
 1. ✅ **Frontend architecture** (F93–F99) — §11's "big open question". Answered; David accepted the
    recommendation 2026-08-18.
@@ -15,9 +16,11 @@ written:**
    Adopt the vocabulary, own the store, export optionally.
 6. ✅ **Transport and storage** (F123–F126) — SSE + SQLite, and one integer that is the transport
    cursor, the SQL cursor and the scrub position.
+7. ✅ **Fun, grounded and made testable** (F127–F130) — the written position, as six queries over the
+   event log.
 
-The remaining one — §7's fun research and the written position on what "fun" means — is stubbed at
-the bottom, and is not answered here.
+**All three of §11's named deliverables exist:** this file, the component inventory (item 3), and
+the written position on what "fun" means (item 7, F129).
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 773–802 — **not** §14 item 3, which is about how to
 spend W5's extra room, not what W5 covers.
@@ -1515,10 +1518,289 @@ about ClickHouse becomes the warning rather than the counter-example.
 
 ---
 
-# Not yet written — the rest of W5
+# Item 7 — fun, grounded and made testable
 
-Recorded so the next session starts in the right place, with what is already known attached.
+§11: *"**The fun research from section 7.** Developer tool ergonomics, flow, feedback latency, and
+what the literature and the good tools actually do. Ground this rather than guessing."* The
+deliverable is *"a written position on what 'fun' means here, concrete enough to test."*
 
-1. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
-   literature and the good tools actually do, rather than taste. Plus the written position on what
-   "fun" means here, concrete enough to test.
+## Question
+
+§7 lists six design constraints and one metric. The metric is *"whether David reaches for this
+instead of Claude Code for a real task, and whether he keeps it open when he does not have to."*
+Is that metric sound, what does the literature actually say about the six, and what would a test
+look like that does not consist of asking someone whether they had fun?
+
+## Method
+
+Two bodies of evidence: the interaction-design literature on response time and attention, and the
+strongest available empirical work on how developers perceive AI coding tools. Both read against
+this project's own measured numbers. Retrieved 2026-08-18.
+
+## Findings
+
+### F127 — the literature gives hard numbers, this hardware already violates the biggest one, and the prescribed fix is the feature the brief already wants
+
+Nielsen's three response-time limits are the durable result here, and they are specific:
+
+- **0.1 s** — the limit for feeling that you are directly manipulating the thing on screen.
+- **1 s** — the limit for the user's *flow of thought* to stay uninterrupted; past it they notice.
+- **10 s** — the limit for keeping attention on the dialogue at all. Past it, users switch to
+  another task, and the interface owes them *"a percent-done indicator as well as a clearly
+  signposted way to interrupt the operation."*
+  ([NN/g, Response Time Limits](https://www.nngroup.com/articles/response-times-3-important-limits/),
+  retrieved 2026-08-18)
+
+Now this project's own numbers. W1 F80, champion resident, single stream:
+
+| prompt tokens | time to first token |
+|---|---|
+| 2,361 | **2.215 s** |
+| 7,440 | **5.920 s** |
+| 18,470 | **11.549 s** |
+
+**At realistic agentic context sizes the model crosses the 10-second attention limit before it
+emits its first token** — and that is the *good* case. W1 F91 recorded a run that was genuinely
+silent for **40 minutes**: 240× the attention limit, on a workload where the operator has nothing
+to look at.
+
+Two things follow, and neither is a matter of taste:
+
+1. **The console owes a percent-done indicator and an interrupt, by the literature's own
+   prescription** — which is item 2's kill/pause verb and item 4's liveness clock, arriving from a
+   1993 usability rule rather than from RTS nostalgia. §7 guessed right; the grounding confirms it.
+2. **The 0–11.5 s window is the console's to fill, not the model's.** The console can acknowledge in
+   well under 1 s — accepting the command, showing the task, showing which model is loading — and
+   that is entirely within 2.0's control because it happens before inference starts. **"Speed where
+   it is felt" is a startup-path property, not an inference property**, which is exactly why item
+   1's terminal entry point matters: it is the shortest possible path to the first visible thing.
+
+### F128 — 🚨 §7's own metric cannot stand alone, because developer perception of these tools is measurably wrong
+
+This is the uncomfortable finding, and it goes to the heart of how the project judges itself.
+
+METR ran a randomized controlled trial with 16 experienced open-source developers across **246 real
+issues** in mature repositories (22,000+ stars, 1M+ lines). When allowed AI tools, they completed
+tasks **19% slower**. They had forecast a **24% speedup**. And *after finishing*, having lived
+through the slowdown, they still estimated AI had made them **20% faster**.
+([METR, July 2025](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/),
+[arXiv:2507.09089](https://arxiv.org/abs/2507.09089), retrieved 2026-08-18)
+
+A roughly **39-point gap between felt and actual**, which survived direct experience of the
+opposite.
+
+**Limits, stated so this is not over-cited:** n=16 developers in one setting with early-2025 models
+and tooling, and METR has since revised its experiment design
+([METR, Feb 2026](https://metr.org/blog/2026-02-24-uplift-update/)). It is one strong study, not a
+law.
+
+But it is directly aimed at this project's metric. §7 proposes to measure success by whether David
+*reaches for* 2.0 — a perception signal, from exactly the population whose perception this study
+found to be off by 39 points in exactly this domain. **That does not invalidate the goal.** ABCC
+2.0's stated purpose is enjoyment, not throughput
+(`abcc-2-lineage-and-intent`: ABCC's contribution is fun, Claudette's is correctness), and choosing
+a tool you enjoy is a legitimate preference even at a time cost.
+
+**What it does mean is that the two must be measured separately and never allowed to proxy for each
+other:**
+
+- **Fun is measured as logged behaviour** — what the operator does, not what they say (F129).
+- **Speed is measured against a baseline** — wall clock per task versus Claude Code on the same
+  work, which is W8's job.
+- **If 2.0 is more fun and slower, that is a legitimate outcome to ship** — but it has to be a
+  *known* one. The failure mode this study describes is shipping it as a speedup and believing it.
+
+### F129 — the written position: what "fun" means here, as six queries over the event log
+
+§7's six constraints become six observables, and item 6's `seq` log is where every one of them
+already lives. This is the deliverable, and it is deliberately written as things a machine can
+compute without asking anyone anything.
+
+| §7 constraint | The observable | Computed from the log as | Bar |
+|---|---|---|---|
+| **No dead air** | longest silence inside a run | max gap between consecutive events | **no gap > 10 s without a liveness mark** (F127); report p50 / p95 / max per run |
+| **Speed where it is felt** | time to first visible thing | first console event − command accepted | **< 1 s**, independent of TTFT (F127) |
+| **Legibility** | surfaces consulted before acting | screen/panel switches between run start and first operator command | fewer is better; no absolute bar, tracked as a trend |
+| **Agency** | intervention rate | control events per run; share of runs with ≥ 1 | **> 0 in a meaningful share of runs** — a control bar nobody touches is decoration |
+| **Personality with an off switch** | whether the switch is used *both ways* | audio/theme setting-change events | turning it off **and later back on** proves it is a preference, not an irritant |
+| **Honest failure** | whether failures are worth re-watching | replay-cursor movement on failed runs ÷ failed runs | a failed run that gets replayed is an interesting one |
+
+And the §16 test itself, made loggable rather than remembered:
+
+- **Unprompted opens per week** — sessions started with no run pending.
+- **Idle-open time** — console open with nothing executing, which is §7's *"keeps it open when he
+  does not have to"* stated as a number.
+- **Abandonment** — runs killed by the operator versus run to completion, split by whether the
+  operator intervened first (an abandoned run after three interventions means something very
+  different from one abandoned in silence).
+
+Paired with it, per F128, the outcome measure that must never be dropped: **wall clock per task
+against the Claude Code baseline**, owned by W8.
+
+**In one sentence, the position:** *fun here means the operator is never uninformed for more than
+ten seconds, can always intervene, and chooses to keep the thing open — and every clause of that is
+a query over the event log, not a feeling anyone is asked to report.*
+
+### F130 — the off-switch after Q8: labels are cosmetic, the enum is not, and that is the honest answer
+
+Closing OQ-W5-11, because it is a personality question rather than a data-model one.
+
+V1's themes are ~28-line **vocabulary maps** — `taskQueue: 'Bounty Board'`, `agents: 'Strike Team'`
+— with `classic.ts` as the neutral off-switch. Q8 (2026-08-07) put the RTS framing **into the Rust
+domain model**, where an enum variant cannot be renamed by a theme file.
+
+The two candidate readings and the one that survives:
+
+- ~~"Off means the domain model goes neutral."~~ Impossible without reversing Q8, and Q8 was chosen
+  deliberately, with §14 item 4 giving it a first job.
+- **"Off means the presentation layer stops translating."** The enum stays military; the theme is a
+  **label map from enum variant to displayed string**, and `classic` is the identity map onto
+  functional names. Exhaustive over the enum (F113), so a new state cannot ship without a label in
+  every theme.
+
+**What this costs, said plainly:** the off-switch is now cosmetic — logs, API field names and any
+error message that quotes a variant stay military. A user who dislikes the framing gets a neutral
+*screen*, not a neutral *system*. That is the real consequence of Q8 and it should be documented in
+the settings UI rather than discovered.
+
+**What it buys:** personality is on by default and one toggle away from off, which is exactly §7's
+*"make it excellent by default and trivially mutable"* — and the 96 voice lines get the same
+treatment, since audio is the loudest half of the personality and the first thing a subset of users
+will disable.
+
+## Recommendation
+
+1. **Adopt the six-row table in F129 as W5's definition of fun**, and hand it to W8 as a first-class
+   evaluation criterion alongside pass rate — which is what §7 asked for in as many words.
+2. **Budget the 0–11.5 s window as a design surface, not a wait** (F127). Sub-second acknowledgement
+   from the console, a percent-done for anything past ten seconds, and an interrupt always visible.
+3. **Never report fun as speed** (F128). Ship wall-clock-versus-baseline next to any claim about how
+   the tool feels, and be willing to say "more fun, slower" out loud if that is the result.
+4. **The theme off-switch is a label map over a fixed enum** (F130), exhaustive by construction, with
+   its cosmetic-only scope documented where the user toggles it.
+5. **Instrument from day one.** Every row in F129 is a query over the `seq` log, so the cost is
+   emitting a handful of extra event types — a decision that is nearly free now and expensive to
+   retrofit.
+
+## Rejected alternatives and why
+
+- **Asking the operator to rate the experience.** Rejected on F128 — the population's self-report in
+  this exact domain was off by 39 points and did not correct after direct experience.
+- **Total wall clock as the speed metric that matters to feel.** Rejected on F127: the felt quantity
+  is time-to-first-visible-thing, and §7 says so independently. Total wall clock stays as the
+  *honesty* metric, not the *feel* metric.
+- **Minigames while you wait** (BCF's `snake.rs` / `space.rs`). Rejected, and the reason is worth
+  keeping: they treat dead air as unavoidable and decorate it. F127's prescription is a percent-done
+  and an interrupt — make the work watchable rather than the wait entertaining.
+- **A neutral "professional mode" that strips the RTS framing everywhere.** Rejected on F130 — it
+  would require reversing Q8, and the honest partial version is better than a promise the type
+  system cannot keep.
+- **Deferring instrumentation until there is something to measure.** Rejected on cost asymmetry: the
+  event types are nearly free to add now and require a schema migration plus a lost history later.
+
+## Effect on fun
+
+This item *is* the fun section, so the honest framing is what it costs rather than what it gives:
+
+- **It makes fun falsifiable**, which is uncomfortable by design. A console that scores badly on the
+  F129 table is not saved by looking good in a screenshot.
+- **It protects the identity from the metric.** Because F128 separates enjoyment from speed, a slower
+  ABCC 2.0 does not have to be argued away — it can be chosen on purpose, with the number stated.
+- **The 10-second rule is the single most actionable thing in this document.** It converts "no dead
+  air" from a value into a threshold with a prescribed remedy, and this hardware crosses it on
+  ordinary work.
+
+## Open questions
+
+- **OQ-W5-22 — what counts as a "liveness mark" for the 10-second bar?** A token is obviously one; a
+  heartbeat with no content is obviously not enough on its own. The line between *informative* and
+  *noise* is the one thing F129's first row leaves to judgement.
+- **OQ-W5-23 — who runs the F129 queries, and where do they surface?** They are the after-action
+  screen's real content (F116), but they are also W8's evaluation criteria, and the two want
+  different presentations of the same numbers.
+- **OQ-W5-24 — is there a baseline run of Claude Code on the same tasks?** F128's paired measure
+  needs one, and W8's corpus does not currently include the incumbent as a subject.
+
+## Confidence: high on the grounding, medium on the bars
+
+- **High** on F127 and F128 — both are published, cited and read against this project's own measured
+  latency numbers.
+- **Medium** on the specific thresholds in F129. The 10-second bar is inherited from the literature
+  and is defensible; the "< 1 s to first visible thing" bar is Nielsen's flow limit applied to a
+  path nobody has built yet; and the agency and abandonment rows have no prior art to calibrate
+  against, in this family or outside it. **What would raise it:** running the queries against real
+  Phase-3 sessions and seeing which rows discriminate between a good day and a bad one.
+- **What would lower it:** if a larger replication of METR's result reverses the sign, F128's
+  separation of fun from speed loses its strongest support — though not its logic.
+
+---
+
+# What W5 hands to other workstreams
+
+W5 is a design workstream, so several of its conclusions are other people's requirements. Collected
+here so they are not lost in the body.
+
+| To | Requirement | From |
+|---|---|---|
+| **W3** | The lifecycle enum must include `Paused` and `Operator`, **each with its reconciliation**, and every non-terminal state must be recoverable | F104 |
+| **W3** | The enum must carry a **checkpoint identity** — retry, edit-prompt and replay are all fork-from-checkpoint | F103 |
+| **W3** | The domain model needs real **dependency edges**; V1 has none, and the DAG is the console's headline element | F109 |
+| **W3** | Enum rendering must be **exhaustive** — four of V1's eleven states have no colour, in three duplicated maps | F113 |
+| **W3 / core** | The worker must **select on a control channel at every step boundary**, not block on a rendezvous | F100 |
+| **W3 / core** | The permission event carries `Allow \| Deny \| Redirect(String)` — the TUI already lost the third branch once | F106 |
+| **W6** | `MemoryApproval`'s async review-queue shape is where independent-review output should land | F110 |
+| **W7** | OTLP export ships as a **non-default feature**, preserving the structural air gap rather than degrading it to a toggle | F121, F122 |
+| **W8** | The six-row fun table is a **first-class evaluation criterion**, alongside pass rate | F129 |
+| **W8** | Cost per task is denominated in **seconds, tokens, slot-seconds and swaps** — not currency | F114 |
+| **W8** | A **Claude Code baseline** on the same tasks, so "more fun" can never be reported as "faster" | F128 |
+| **W12** | Distribution must carry **44 MB of art and audio** in or beside a single binary | F107, OQ-W5-4 |
+| **W4** | The console shows **swaps and re-routes**, which exist, rather than a tier ladder that does not yet | item 4 |
+
+---
+
+# Open questions, consolidated
+
+Answered here: **OQ-W5-1** (David, 2026-08-18 — the narrowing accepted) and **OQ-W5-11**
+(F130 — the off-switch is a label map over a fixed enum).
+
+Still open, in the order they would be cheapest to close:
+
+| # | Question | Waiting on |
+|---|---|---|
+| 2 | The terminal surface's exact floor | a written line, before accretion starts |
+| 3 | Where the permission channel lives with two subscribers | W3's broker design |
+| 4 | Console served, embedded, or both — with 44 MB of assets | W12 |
+| 5 | Whether a Ratatui/Bubbletea/Textual comparison exists beyond the March brief | David |
+| 6 | Does `Paused` release the workspace lock as well as the slot | design call, leaning "keeps it" |
+| 7 | What a disconnected operator does to a running fleet | design call, per verb |
+| 8 | Take-over per task or fleet-wide | design call |
+| 9 | Event-log retention | interacts with 19 and with F125's one caveat |
+| 10 | Do the four 34.3 MB attacking GIFs survive | an unmeasured decode-memory number |
+| 12 | Does the chat panel come back | follows from item 1's terminal role |
+| 13 | The liveness threshold before the console escalates | W8 runs |
+| 14 | Battle screen: one run or the whole fleet | design call |
+| 15 | Where the DAG lives on screen | possibly the battlefield itself, if buildings gain edges |
+| 16 | Which `gen_ai.*` version gets pinned, and where | a line in the docs |
+| 17 | Does optional OTLP ship in the first release | not blocking |
+| 18 | Event-schema versioning and migrations | follows from owning the store |
+| 19 | `seq` per run or global | leaning global with a run column |
+| 20 | How much history the server can resume from | free if the log is the store of record |
+| 21 | Does the terminal surface consume the same SSE stream | worth a spike |
+| 22 | What counts as a liveness mark for the 10-second bar | judgement, then W8 |
+| 23 | Who runs the fun queries and where they surface | overlaps W8 |
+| 24 | Is there a Claude Code baseline run | W8's corpus does not include the incumbent |
+
+**None of them blocks Phase 2.** §16's bar for W5 is a written position, not a running UI; the
+questions above are the shape of the design conversation Phase 2 sequences, not gaps in the answer.
+
+---
+
+# W5 status
+
+**Written and complete as a Phase 1 research deliverable.** Seven items, findings F93–F130, three
+named deliverables produced, one owner ruling narrowed and accepted, three corrections filed against
+`prestudy/inheritance-map.md`, and one previously uncited owner document brought into the record
+(F93).
+
+What W5 deliberately does **not** contain, per §16 and §15: any ABCC 2.0 implementation code. The
+first line of it belongs to Phase 3.
