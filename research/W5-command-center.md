@@ -1,6 +1,6 @@
 # W5 — The command center and the fun layer
 
-**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Four of seven are
+**Status: OPEN, started 2026-08-18.** This file accretes one W5 item at a time. **Five of seven are
 written:**
 
 1. ✅ **Frontend architecture** (F93–F99) — §11's "big open question". Answered; David accepted the
@@ -11,9 +11,11 @@ written:**
    deliverable. Corrects `inheritance-map.md` in three places.
 4. ✅ **What the console must show** (F114–F118) — §11's seven-item list against §7's "six things
    clearly".
+5. ✅ **Observability prior art** (F119–F122) — Langfuse, Phoenix, the OTel GenAI conventions.
+   Adopt the vocabulary, own the store, export optionally.
 
-The remaining three (observability prior art, transport + storage, §7's fun research) are stubbed
-at the bottom with what is already known, and are not answered here.
+The remaining two (transport + storage, §7's fun research) are stubbed at the bottom with what is
+already known, and are not answered here.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 773–802 — **not** §14 item 3, which is about how to
 spend W5's extra room, not what W5 covers.
@@ -1136,17 +1138,197 @@ numbers belong to.**
 
 ---
 
+# Item 5 — observability prior art
+
+§11: *"Prior art on agent observability and control: Langfuse, Arize Phoenix, OpenTelemetry GenAI
+semantic conventions, current agent-ops products. What they give for free at the tracing and storage
+layer. Note that no generic observability tool will ever give the RTS console, so a pure 'adopt
+Langfuse' answer is wrong at the UI layer even if it is right underneath."*
+
+## Question
+
+The brief has already ruled the UI layer. So: **is any of this right underneath?** 2.0 needs an
+event log, a paged read path and per-call token accounting (items 2 and 4). Those are exactly what
+an LLM-observability stack gives away. Does adopting one save real work?
+
+## Method
+
+Vendor documentation and the OpenTelemetry registry, retrieved 2026-08-18, read against two
+constraints this project has already fixed: the hardware (32 GB RAM, 13.6 GB of VRAM already spent
+on a resident model) and the install story (F95 — one verified `.exe`, no docker-compose).
+
+## Findings
+
+### F119 — 🚨 self-hosting Langfuse costs more RAM than the model it would be watching
+
+Langfuse v3 self-hosted is **six services**: `langfuse-web`, `langfuse-worker`, ClickHouse, MinIO
+(S3-compatible blob storage), Redis 7, and PostgreSQL 17, with the worker declaring
+`service_healthy` dependencies on four of them. Recommended resources, per the vendor's own
+infrastructure guide: worker 2 CPU / **4 GiB**, PostgreSQL 2 CPU / **4 GiB**, Redis 1 CPU /
+**1.5 GiB**, ClickHouse 2 CPU / **8 GiB**, MinIO 2 CPU / **4 GiB**.
+([Langfuse self-hosting](https://langfuse.com/self-hosting),
+[docker-compose.yml](https://github.com/langfuse/langfuse/blob/main/docker-compose.yml),
+[ClickHouse guide](https://langfuse.com/self-hosting/deployment/infrastructure/clickhouse),
+retrieved 2026-08-18)
+
+That is **≈21.5 GiB of recommended memory, on a 32 GB box**, to observe an agent whose own budget is
+13.6 GB of VRAM and whose useful concurrency is two (W2 F83). And it is precisely the multi-service
+docker-compose that F95 rules out — the same shape as V1's postgres + redis + ollama stack, which is
+the thing 2.0 is escaping.
+
+**This is not a quality judgement.** Langfuse is built for teams shipping cloud LLM products, and its
+architecture is proportionate to that. It is disproportionate here by roughly the size of the model.
+
+### F120 — Phoenix is right-sized, and still redundant for the same reason
+
+Arize Phoenix is the honest counter-example: `docker run -p 6006:6006 arizephoenix/phoenix:latest`,
+**SQLite by default**, no additional infrastructure, data under `~/.phoenix/` or
+`PHOENIX_WORKING_DIR`. Documented caveats: without a mounted volume a container restart loses the
+data, and concurrent writes are limited.
+([Phoenix hosting + persistence](https://phoenix.arize.com/how-to-host-phoenix-persistence/),
+retrieved 2026-08-18)
+
+One container and a SQLite file is a footprint this project could actually carry — and it still
+should not, for a reason that has nothing to do with weight.
+
+Under F105, **2.0's own event log is the store of record**: replay is the primary read path, and the
+console renders by projecting that log. Adopting Phoenix underneath would create a *second* record
+of the same run, in a different schema, owned by a different process. The console would then either
+read the copy (and diverge from the authority) or read the authority (and make Phoenix decorative).
+**A trace store you do not read from is not infrastructure you adopted; it is a mirror you now
+maintain.**
+
+Where Phoenix does earn a place: as an **optional export target** for someone who wants eval
+tooling, dataset management and a familiar trace UI. That is a feature flag, not a foundation.
+
+### F121 — adopt the vocabulary, not the stack — and the half 2.0 needs most is the least settled
+
+The OpenTelemetry GenAI semantic conventions are the one item on the brief's list that costs nothing
+to adopt, because they are **naming, not software**. Status as of this session:
+
+- As of **v1.42.0 (12 June 2026)** all `gen_ai.*` attributes and spans moved out of the main
+  semantic-conventions repository into a dedicated GenAI conventions repository, giving them their
+  own release cadence.
+- As of **mid-July 2026, every `gen_ai.*` attribute, span, metric and event carries the
+  "Development" stability badge — not one is marked Stable.**
+- Core chat and embedding attributes are considered settled enough to build on; **agent and
+  tool-orchestration conventions are still moving** and should be treated as provisional.
+  ([state of the GenAI conventions, July 2026](https://john-hodge.com/blog/opentelemetry-genai-semantic-conventions/),
+  [OTel GenAI observability](https://opentelemetry.io/blog/2026/genai-observability/), retrieved 2026-08-18)
+
+The attributes worth taking verbatim map one-to-one onto what item 4 already decided to show:
+`gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`,
+`gen_ai.response.finish_reasons`.
+
+**The catch is the ordering.** The settled half is single-call chat telemetry; the unsettled half is
+agents and tool orchestration — which is the half 2.0 is *made of*. So the rule is: **name the
+fields that already have names, pin the convention version in the docs, and do not wait on the
+agent-level conventions to settle before designing the event log.** They will change; 2.0's log
+should not be hostage to that.
+
+### F122 — the Rust side inverts the usual maturity order, and it inverts against this project
+
+Two facts, and together they close the "adopt it underneath" question.
+
+**First, the SDK.** On the 0.32 release line, `opentelemetry-rust` shipped **logs and metrics stable
+before traces** — the reverse of Go, Java and most other languages, where traces stabilised first.
+The ecosystem's bridge is the `tracing` crate: existing `tracing` spans become OTel spans through
+subscriber layers.
+([opentelemetry-rust](https://github.com/open-telemetry/opentelemetry-rust),
+[OTel Rust exporters](https://opentelemetry.io/docs/languages/rust/exporters/), retrieved 2026-08-18)
+**Traces are what a run console is,** so the least-mature component of the Rust implementation is
+the one 2.0 would depend on hardest.
+
+**Second, the donors' posture.** Neither donor carries `tracing` or `opentelemetry` at all.
+Claudette's dependency list is deliberately short (`reqwest`, `serde`, `serde_json`, `chrono`,
+`toml`, `anyhow`, `colored`, …), it ships `default = []` so no cloud code is compiled in, and it
+describes itself as *"privacy-first, air-gapped… single-binary Rust CLI + TUI"*. This repo's own
+harness is stricter still: `w8-import` has **zero** third-party dependencies, `w8-corpus` took `toml`
+as the workspace's *first*, and `w8-run` **hand-rolled an HTTP/1.1 client in ~90 lines** rather than
+take an HTTP dependency.
+
+Adopting the OTel Rust stack would import the immature half of a large dependency tree into a
+project whose two ancestors both treat dependencies as a cost to be argued for. **That is a real
+mismatch, and it is the reason to take the convention and leave the crates.**
+
+## Recommendation
+
+**Adopt the vocabulary. Own the store. Export optionally.**
+
+1. **Name the event log's fields after `gen_ai.*` where a name already exists** (F121), and pin the
+   convention version in the docs so a future rename is a decision rather than a surprise.
+2. **2.0's own event log is the store of record** (F105, F120) — SQLite-shaped, single-binary,
+   readable by the console's paged read path. No second store.
+3. **OTLP export is an optional, non-default feature**, mirroring Claudette's `default = []` air
+   gap: someone who wants Phoenix or a collector gets one, and the default build has no telemetry
+   path compiled in at all. This also keeps W7's structural guarantee intact rather than degrading
+   it to a runtime toggle.
+4. **Do not adopt Langfuse** (F119). Record the reason as arithmetic, not taste, so it is not
+   revisited as a preference: ~21.5 GiB recommended against 32 GB total, on a box where the model
+   already holds 13.6 GB of VRAM.
+5. **Keep Phoenix on the reading list** as the design reference for what an eval + dataset + trace
+   UI looks like when it is right-sized — it is the closest thing on the market to the after-action
+   screen (F116), and worth stealing layout ideas from.
+
+**Sharpened restatement of the brief's own ruling:** the brief said a pure adopt-Langfuse answer is
+wrong at the UI layer even if right underneath. On this hardware it is **also wrong underneath**,
+and the thing that is right underneath is a specification rather than a service.
+
+## Rejected alternatives and why
+
+- **Langfuse self-hosted as the trace store.** F119 — the arithmetic.
+- **Phoenix as the trace store.** F120 — right-sized, but it duplicates the store of record and the
+  console would have to choose which copy to trust.
+- **OTLP as the console's live transport.** Rejected: OTLP is an export protocol shaped for
+  collectors, batching and sampling; a console needs low-latency ordered delivery of *domain* events
+  (F99's broker), not spans. Exporting spans in parallel is fine; reading the console from them is
+  not.
+- **Waiting for the GenAI agent conventions to stabilise.** Rejected on F121 — they are the
+  fastest-moving half and 2.0 cannot be blocked on someone else's release cadence.
+- **A cloud-hosted observability tier.** Rejected on Q4 (spend ≈ zero) and on W7's air-gap posture.
+  Prompts and completions leaving the box by default contradicts what Claudette's users were
+  promised.
+
+## Effect on fun
+
+- **Nothing here is felt directly, and that is the point** — this is the layer that must not cost
+  the operator anything. The felt consequence of getting it wrong is the install: five extra
+  containers is a tool nobody opens on a Sunday.
+- **Owning the log is what makes replay fun** (F105). A borrowed trace store makes the scrub bar
+  someone else's feature with someone else's latency.
+- **`default = []` for telemetry keeps the promise the donor made.** Part of ABCC 2.0's appeal is
+  that it is *yours* and it does not phone home; an observability dependency that quietly changes
+  that would cost more trust than the dashboard is worth.
+
+## Open questions
+
+- **OQ-W5-16 — which `gen_ai.*` version gets pinned, and where is it recorded?** The conventions
+  moved repositories in June 2026 and are pre-stable; the pin belongs somewhere a future reader will
+  actually look.
+- **OQ-W5-17 — does the optional OTLP feature ship at all in the first release?** It costs nothing to
+  design for and something real to test, and nobody has asked for it yet.
+- **OQ-W5-18 — what is 2.0's own event schema versioning story?** Owning the store of record means
+  owning migrations, which V1 outsourced to Prisma and Claudette avoids by keeping files.
+
+## Confidence: high
+
+Every number is from vendor documentation or the OTel registry, retrieved this session with URLs,
+and the two constraints they are judged against (32 GB / 13.6 GB resident; single-binary install)
+are already-settled facts of this project rather than preferences introduced here. **What would
+lower it:** if the console's storage answer (item 6) turns out to need OLAP-shaped queries over
+long histories, ClickHouse's presence in Langfuse's stack stops looking disproportionate and starts
+looking like a warning.
+
+---
+
 # Not yet written — the rest of W5
 
 Recorded so the next session starts in the right place, with what is already known attached.
 
-1. **Observability prior art** — Langfuse, Arize Phoenix, OpenTelemetry GenAI semantic conventions,
-   current agent-ops products. The brief pre-judges the UI layer ("a pure adopt-Langfuse answer is
-   wrong"), so the live question is what comes free at the tracing and storage layer underneath.
-2. **Transport and storage.** WebSocket vs SSE at 2.0's event volume; PostgreSQL vs SQLite. F95
+1. **Transport and storage.** WebSocket vs SSE at 2.0's event volume; PostgreSQL vs SQLite. F95
    already loads the dice on storage, and `inheritance-map.md` §7 notes Claudette's `recall.sqlite`
    as the precedent. Also in scope: a **paged read path for replay** — V1's store is a 500-row ring
    buffer over a database that holds everything.
-3. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
+2. **§7's fun research, grounded.** Developer-tool ergonomics, flow, feedback latency: what the
    literature and the good tools actually do, rather than taste. Plus the written position on what
    "fun" means here, concrete enough to test.
