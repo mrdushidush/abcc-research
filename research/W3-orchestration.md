@@ -10,8 +10,9 @@ Planned items, in the order §14 item 4 dictates:
 1. ✅ **The typed lifecycle and the Q8 vocabulary** (F146–F152) — §14's named first deliverable,
    written 2026-08-19 from a fresh three-repo extraction. Corrects the record in two places: the
    Task lifecycle has **seven** states, not eleven, and v1 *had* a status type — it was decorative.
-2. ☐ **What the family already provides** — the inheritance-map walk: Claudette's engine as the
-   default answer, ABCC's four services as the concern list, BCF as reference.
+2. ✅ **What the family already provides** (F153–F157) — the inheritance walk, verified: the
+   engine copy's real shape, the attempt/turn boundary, and the one intrusive change the engine
+   needs. "Proved twice" turns out to be "threads proved once, tokio never exercised".
 3. ☐ **Durability** — a task must survive a crash, a reboot and a model-server hang. Custom state
    machine over a durable store versus what the ecosystem offers.
 4. ☐ **The control channel and the broker** — where W5's `Allow | Deny | Redirect(String)` event
@@ -486,3 +487,201 @@ on the vocabulary because the names await David's ratification (OQ-W3-6), and on
 the slot semantics of `AwaitingOrders` because both interact with items not yet written (OQ-W3-1,
 OQ-W3-4). What would raise it: David's ruling on the names, and item 3's durability design
 confirming the projection direction holds under SQLite's transaction model.
+
+---
+
+# Item 2 — what the family already provides
+
+## Question
+
+§11 W3's first bullet: *"Start from the inheritance map. What does BattleCommandForge already
+provide, and what does Claudette already provide? The default answer to 'what orchestration
+framework' should be 'the one we already proved twice', and any deviation needs an argument."*
+
+So, precisely: **what is the thing being copied, what did the family actually prove, and what is
+the verified gap list between the copy and an orchestration core?** The answers draw the boundary
+between inherited code and new work — which is the boundary every later item builds on.
+
+## Method
+
+Same extraction pass as item 1 (three parallel repo reads, 2026-08-19), cross-checked against
+`prestudy/inheritance-map.md` §2 and `prestudy/verification.md` §1. This item spends the Claudette
+and BCF halves of the pass that item 1 only sampled.
+
+## Inherited
+
+The inheritance map's §2 rows stand as written — `ConversationRuntime<C,T>` + traits REUSE, the 12
+loop breakers REUSE, compaction REUSE, ABCC's four services PORT, tokio REFERENCE. This item
+verifies what those rows *mean* structurally rather than re-arguing them.
+
+## Findings
+
+### F153 — the engine copy is 93 modules in one crate, and the seam is the part that matters
+
+What "copy Claudette's engine" actually copies: a **single-crate** workspace — 65,519 lines across
+93 files in `crates/claudette/src` — whose former `forge` crate was deliberately folded in at
+v0.5.1 because cargo rejects path-only workspace deps at publish (`Cargo.toml:7-10`). **There is no
+crate boundary to lift.** The engine is a set of modules (`runtime/`, `tools/`, `api.rs`,
+`executor.rs`) inside one `lib.rs`, and 2.0 must draw its own crate lines (item 7, with W12).
+
+The seam the map praises is two one-method traits at `runtime/conversation.rs:141-147`:
+`ApiClient` (`stream(&ApiRequest) -> Result<Vec<AssistantEvent>>`) and `ToolExecutor`
+(`execute(name, input) -> Result<String, ToolError>`), with exactly three implementors each side.
+Everything the family learned the hard way — the 12 loop breakers, empty-turn retry with a
+doubling budget, compaction, the duplicate-edit and unchanged-read suppressions — lives *inside*
+`run_turn_with_images` (`conversation.rs:361-863`) behind that seam, as per-turn local state.
+**The copy's value is the loop's scar tissue plus the seam that makes it testable; the orchestrator
+must wrap it without reaching into it.**
+
+### F154 — "proved twice" is actually "threads proved once, tokio never exercised"
+
+The brief's default-answer rule presumes two proofs. The extraction says otherwise:
+
+- **Claudette** has **zero async** — no `async fn`, no `.await`, no tokio in its code (tokio
+  appears only transitively in the lockfile via `reqwest`'s blocking backend). Concurrency is OS
+  threads and `std::sync::mpsc`, deliberately asymmetric: bounded `sync_channel(512)` toward the
+  UI, unbounded toward the worker, rendezvous `sync_channel::<bool>(0)` for permission
+  (`tui.rs:721-722`, `tui_worker.rs:114`). This is the configuration with daily-driver mileage.
+- **BCF** depends on tokio — and **never exercises it**. Every pipeline stage is a sequential
+  `.await`; grep for `tokio::spawn | join_all | Semaphore` over the pipeline returns nothing (hits
+  are chat streaming, TTS and the easter-egg games). The 5-member "critique panel" is one LLM call
+  (`mission.rs:1624-1625`). It even runs **blocking** `std::process::Command` with a
+  `thread::sleep(200ms)` poll loop directly on the runtime (`sandbox.rs:153`), parking a tokio
+  worker for up to 120 s — the exact anti-pattern the runtime exists to avoid. And it is
+  *deliberately* serial: `offload_model()` (`mission.rs:1749-1762`) evicts the previous model
+  between stages because the design assumes one model resident — which W2's F83 (throughput
+  saturates at N=2) says was the right instinct on this hardware.
+
+**So the family offers one proof for threads-and-channels and zero evidence for async.** The tokio
+question (item 6) therefore starts with the burden of proof on tokio, per the brief's own rule.
+The one honest argument on tokio's side, named now so item 6 argues it properly: **cancellation.**
+Kill-now must sever an in-flight streamed HTTP read, and a thread parked in
+`reader.lines()` (`api.rs:933-941`) cannot be interrupted from outside — whereas dropping an async
+future can. Whether a read-timeout-plus-cancel-flag loop closes that gap cheaply is item 6's to
+measure, along with whether `llama-server` frees its slot on client disconnect (a live test; the
+GPU is available).
+
+### F155 — v1's scheduler is a callback chain with six competing assignment paths
+
+The map's row says ABCC's four services are "the right set of concerns." Verified, with two
+sharpenings the row lacks:
+
+1. **Nothing loops.** The de facto scheduler is `autoAssignNextTask`
+   (`taskExecutor.ts:676-688`), fired only from completion/failure callbacks — **if no task
+   completes, the pending queue is never re-scanned.** A fleet that goes idle stays idle until an
+   HTTP request happens to poke it. The watchdog (30 s) and escalation poller (60 s) are the only
+   timers in the system, and neither assigns work.
+2. **Assignment has six independent implementations with different invariants**: `TaskAssigner`
+   (locks + pre-check), `TaskExecutor.autoAssignNextTask`, `TaskRouter.autoAssignNext` (smart
+   assign — **takes no file locks**), the `queue.ts` routes (one of which acquires the pool slot
+   and abandons the task at `assigned`), `task-planning.ts` (commits `assigned`+`busy` then hands
+   execution back to the HTTP caller as JSON — a half-transition by design), and
+   `OrchestratorService` (skips `assigned` entirely). Each path was added where it was needed;
+   collectively they are why item 1's single-writer rule is a structural fix, not a style
+   preference.
+
+**The concern list is right — assign, execute, watch, escalate — and 2.0 needs exactly one
+implementation of each, plus the one concern v1 lacked: a scheduler that runs because it is a
+loop, not because something else succeeded.**
+
+### F156 — the verified gap list: what the copy does not contain
+
+Consolidated from the pass, the orchestration core's new-work list against the copied engine:
+
+| Gap | Evidence | Lands in |
+|---|---|---|
+| A fleet scheduler loop | F155 | item 3 |
+| A control channel readable mid-turn | `UserInput` consumed at one site, `Quit` queues until turn end (F151) | item 4 |
+| Cancellation of in-flight inference | F154; F103's "nothing in the family has it" confirmed | items 4, 6 |
+| The task store + lifecycle | item 1's enum; Claudette's unit of state is one session | item 3 |
+| Dependency edges | F109 confirmed — `parentTaskId` is hierarchy, ordering is prose in `description` (`orchestratorService.ts:217-219`) | item 3 |
+| Admission as projection | F149 | item 3 |
+| The event log with `seq` | Claudette's `actions.jsonl` is deliberately the wrong shape (mutations only, W5 F102) | item 3 |
+| Multi-model slot management | Claudette assumes one brain; BCF evicts between stages | item 3, W2 |
+| The broker (two subscribers) | OQ-W5-3 | item 4 |
+
+And the inverse — what the copy contains that the orchestrator must not break: the loop breakers,
+compaction, empty-turn recovery, the transcript/undo surface, fail-closed permission. All live
+within a turn. **The clean boundary: the attempt is the orchestrator's unit; the turn is the
+engine's.** The orchestrator schedules attempts, an attempt runs turns, and the engine's scar
+tissue keeps operating unmodified inside each turn.
+
+### F157 — the engine needs exactly one intrusive change, and the hook for it already exists
+
+W5 F100 requires the worker to select on a control channel **at every step boundary**. Step
+boundaries are *inside* the turn — between tool calls — so the orchestrator's control must reach
+into the one place F156 just fenced off. The extraction found the loop already has a door at
+exactly the right spot: the permission gate at `conversation.rs:659-664` runs between every tool
+dispatch, threaded in as `Option<&mut dyn PermissionPrompter>` on `run_turn`'s own signature
+(`conversation.rs:349-355`).
+
+**Generalize that parameter — `PermissionPrompter` becomes a control point that can also answer
+`Pause / Halt / Kill / Redirect(String)` — and the existing gate site becomes the select point,
+with no restructuring of the loop.** The permission prompt becomes one message type among several,
+which is precisely W5 item 2's recommendation restated as a one-trait diff. The rendezvous
+invariants (per-request identity, fail-closed disconnect — F151) carry over to every verb.
+
+This also gives OQ-W3-7 a provisional answer: **the attempt boundary is the registry freeze
+point.** Fleet attempts run a frozen tool registry derived from their stage (W11's stage-to-tools
+mapping), which is what W2 F81's prefix-cache ruling needs; the interactive assistant surface
+keeps Claudette's mutable on-demand groups, where a human is present and cache priming matters
+less. The collision dissolves into two configurations of one mechanism — pending W2's
+confirmation.
+
+## Options compared
+
+| Option | Engine risk | Meets F100/F103 | Divergence cost | Verdict |
+|---|---|---|---|---|
+| Copy as-is, orchestrate strictly outside the turn | none | ✗ — pause/kill wait for turn end, minutes on a local model | none | fails the requirement |
+| **Copy + one intrusive change: generalize the prompter hook into a control point** | one trait, one gate site, both already threaded through | ✅ boundary verbs; kill-now still needs item 6's cancellation answer | small, and mechanical to re-apply when upstream moves | **recommended** |
+| Rebuild the loop natively for orchestration | forfeits the scar tissue and its 1,293-attribute test base | ✅ | total — a fork in all but name | rejected |
+
+## Recommendation
+
+1. **Copy the modules, keep the seam, wrap at the attempt.** The orchestrator owns everything
+   between turns; the engine owns everything within one; the attempt is the contract between them.
+2. **Make the single intrusive change** (F157): the prompter parameter generalizes to a control
+   point answering the control-channel verbs at the existing gate site. Everything else about the
+   turn loop ships untouched.
+3. **One implementation per concern** (F155): one scheduler loop that runs on its own clock, one
+   assignment path, one watchdog reading item 1's contract table, one escalation path through
+   item 1's attempt forks.
+4. **Registries freeze at the attempt boundary** for fleet work, stage-derived; the assistant
+   surface keeps on-demand groups (OQ-W3-7 provisional, W2 to confirm).
+
+## Rejected alternatives and why
+
+- **Treating BCF's tokio as prior art for async orchestration.** It is tokio in the dependency
+  tree, not in the architecture — sequential awaits, blocking subprocess polls on the runtime, and
+  a deliberately serial model policy (F154). Citing it for tokio would repeat the "proved twice"
+  error the extraction just corrected.
+- **Sharing the engine as a crate with upstream Claudette.** Already ruled out by David
+  (2026-08-07): copy, both stay live, fixes stop propagating — and F153 shows there is no crate
+  boundary to share anyway.
+- **A control sidecar thread that kills the worker thread.** Thread murder leaves locks, the
+  registry mutex and the terminal in undefined states; the control point at the gate site gets the
+  same latency for boundary verbs without any of that.
+
+## Effect on fun
+
+- The loop breakers become *events*: every nudge, duplicate-suppression and cap-landing the engine
+  already performs is worth emitting on the `seq` log, because an operator watching a unit get
+  nudged out of a loop is exactly the "failed run as interesting as a successful one" §7 asks for.
+- One scheduler loop means the fleet visibly *idles* when it idles — F155's silent stall becomes a
+  visible state the console can complain about, with a voice line (`systems-nominal` /
+  `ready-for-tasking`) instead of a mystery.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W3-8 | Does `llama-server` free the slot on client disconnect mid-stream? Decides how much cancellation machinery kill-now needs | a live test, item 6 |
+| OQ-W3-9 | Where the crate boundaries fall in the copy (engine / orchestrator / console / shared types) | item 7, W12 |
+| OQ-W3-10 | How the control point composes with spawned sub-agents (`AgentToolExecutor::stateless()` runs with a fixed registry and no prompter today) | item 4 |
+
+## Confidence: high
+
+The findings are grep-level facts verified this session against both checkouts, and the
+recommendation's riskiest element — the intrusive change — modifies a hook that already exists on
+the loop's signature. What would raise it further: OQ-W3-8's live disconnect test, and W2
+confirming the attempt-boundary freeze resolves F81's constraint in practice.
