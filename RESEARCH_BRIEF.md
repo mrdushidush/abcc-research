@@ -1277,11 +1277,19 @@ Answer during or shortly after Phase 0. These change the shape of Phase 1.
    **2.0 copies the engine and both stay live.** No shared crate. W3 is free to reopen the tokio
    decision on its own merits; accepted cost is that fixes stop propagating and the 1,145-test
    suite splits in two.
-5. ~~**Console shape.**~~ **ANSWERED: a full isometric web UI in the style of the original
+5. ~~**Console shape.**~~ ~~**ANSWERED: a full isometric web UI in the style of the original
    Command and Conquer** - what ABCC v1 gestured at, done properly. Not a TUI, not Tauri.
    W5 starts from ABCC's existing `components/isometric/` rather than from a blank page or
    from the React Three Fiber battlefield. BCF's and Claudette's Ratatui work drops to
-   reference-only, except as a possible headless fallback.
+   reference-only, except as a possible headless fallback.~~
+   **RE-ANSWERED 2026-08-19 — David reversed this after W5's findings: the TUI is primary and
+   the web console is dropped for now.** *"next session we run the sixel spike. and test it —
+   i dont care if we are building this from scratch. it will be awesome and our flagship
+   component of this app… we will be the first to ever mix those together."* The
+   C&C-1995-style Ratatui console is the flagship component; the feasibility spike lives at
+   `research/spikes/w5-sixel/`. The Ratatui work this item demoted to reference-only is now
+   the primary surface; the isometric web UI is the deferred half. See
+   `research/W5-command-center.md` for the re-scoping record.
 6. ~~**Single player as primary.**~~ **ANSWERED: yes.** Local-only on 32GB RAM plus 16GB VRAM
    is the mode to design for. Cloud is a future convenience (renting an H100 if ever needed),
    not a design assumption. This reframes the priority order: co-op and multiplayer are
