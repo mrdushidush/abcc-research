@@ -13,8 +13,10 @@ Planned items, in the order §14 item 4 dictates:
 2. ✅ **What the family already provides** (F153–F157) — the inheritance walk, verified: the
    engine copy's real shape, the attempt/turn boundary, and the one intrusive change the engine
    needs. "Proved twice" turns out to be "threads proved once, tokio never exercised".
-3. ☐ **Durability** — a task must survive a crash, a reboot and a model-server hang. Custom state
-   machine over a durable store versus what the ecosystem offers.
+3. ✅ **Durability** (F166–F173) — SQLite event log with `synchronous=FULL`, and the measurement
+   that justifies it: full ACID costs 929 µs per transition here, boot-as-replay 94 ms per 100k
+   events. The ecosystem, live-verified, offers storage engines or servers — not the middle.
+   Answers OQ-W3-2.
 4. ☐ **The control channel and the broker** — where W5's `Allow | Deny | Redirect(String)` event
    lives with two subscribers (OQ-W5-3), select-at-every-boundary, arrival-time contract.
 5. ☐ **Escalation lineage** — worker fails → verification fails → re-scoped by a stronger model →
@@ -795,3 +797,482 @@ Five kill runs plus one control, two paths, three independent witnesses agreeing
 and the early-prefill lag reproduced to within 0.2 s. The mechanism *explanation* in F163 is
 medium — it is a fit, not a source read — and pinned to backend 2.27.1; the bound is what the
 design consumes.
+
+---
+
+# Item 3 — durability
+
+## Question
+
+§11's line is *"a task must survive a crash, a reboot and a model server hang. Compare a custom
+state machine over a durable queue against anything the ecosystem offers."* Item 1 already chose the
+shape of the state — a small enum whose variants carry their evidence, immutable attempts, and
+status as a projection of a `seq`-ordered event log written through one `apply()`. This item asks
+what actually holds that log, what it costs per transition, whether boot-as-replay is affordable,
+and whether the Rust ecosystem already ships the thing rather than the parts.
+
+Three sub-questions, because the brief's three failure modes are not one problem:
+
+- **Crash** (the process dies mid-turn) — a storage-engine question.
+- **Reboot** (the machine restarts, the model server is gone too) — a reconciliation question,
+  mostly answered by item 1's contract table; what is left is the workspace.
+- **Model-server hang** (the socket is open, nothing is coming) — a *detection* question that no
+  storage engine can answer, and the one the family gets wrong three times out of three.
+
+## Method
+
+Three passes, 2026-08-19:
+
+1. **Donor extraction**, same style as items 1 and 2: what each of the three repos actually persists,
+   at what moment, and through which syscall. Every claim below carries file:line.
+2. **A measurement**, because the recommendation turns on a cost nobody in the family ever paid.
+   `research/spikes/w3-durability/append_bench.py` (stdlib only, W2 spike house style) times the
+   `apply()` write path — event append plus status upsert **in one transaction** — across SQLite's
+   two durability knobs, against a control that reproduces the family's current mechanism, plus a
+   boot-as-replay run. Two repeats; the table below reports run 1, and run 2 landed within 2% on
+   every row.
+3. **Live ecosystem verification** against the crates.io API (retrieved 2026-08-19), because §11
+   says *check last commit dates* and a durability dependency is the last place to take a README's
+   word for liveness.
+
+## Inherited
+
+The inheritance map's durability-adjacent rows: the `file_locks` **table** PORT ("the one durable
+piece of ABCC's lifecycle"), the stuck-task watchdog PORT-with-corrections, `ExecutionLog`'s row
+shape PORT. W5 item 6 has already ruled the store: **SSE plus SQLite, WAL, single writer**, and one
+monotonic `seq` serving as transport cursor, SQL cursor and scrub position (F123–F126). This item
+does not reopen that choice — it tests it, tightens one pragma, and supplies the numbers W5 did not
+need but W3 does.
+
+## Findings
+
+### 🚨 F166 — ABCC had a real database and never used it as one: `$transaction` appears once in the whole repo, and it is a read
+
+`prisma.$transaction` occurs exactly once in ABCC's source — `packages/api/src/routes/tasks.ts:57`
+— where it wraps `[findMany, count]` for a paginated list. A read. Every **write** in the lifecycle
+is an independent statement, so every multi-step transition has a crash window in the middle of it.
+
+The clearest case is the watchdog's recovery path (`stuckTaskRecovery.ts:256-334`), the eight-step
+cleanup the inheritance map praises as *"better than most"* — and it is, in coverage. In atomicity
+it is three unrelated writes and an in-memory call:
+
+| Step | What it does | Durable? |
+|---|---|---|
+| 1 | `releaseFileLocks(task.id)` | yes, separate |
+| 2 | `resourcePool.release(task.id)` | **no — process memory** |
+| 3 | `task.update` → `aborted` | yes, separate |
+| 4 | `taskExecution.updateMany` → `failed` | yes, separate |
+| 5 | `agent.update` → `idle`, stats | yes, separate |
+
+A crash between 3 and 5 leaves the task durably `aborted` while its agent stays durably `busy` with
+`currentTaskId` pointing at it — and `getIdleAgents` filters on `status: 'idle'`
+(`agentManager.ts:46`), so that agent is permanently out of the fleet.
+
+The repo does contain one genuinely correct idiom, and it deserves to be carried: the claim at
+`orchestratorService.ts:395-401` is a compare-and-set — `updateMany({where: {id, status: 'idle'}})`
+followed by `if (agentUpdate.count === 0)` — and its own comment calls it *"Atomic agent
+assignment"*. It is. Then `:416-417` writes the task to `in_progress` in a **separate** statement, so
+the pair is not. The idiom is right; the boundary is drawn in the wrong place.
+
+The one remaining transaction in the family is worth naming because of what it teaches: the MCP
+gateway's `conn.transaction()` (`packages/mcp-gateway/src/adapters/postgres.py:136`) is a **batching
+optimisation, not a correctness boundary**. It wraps an arbitrary batch drained from an in-memory
+`deque`, and inside the transaction each statement is wrapped in its own `try/except` that logs and
+continues (`:137-146`) — so a failed write is swallowed and the transaction commits the rest.
+A transaction that cannot fail is not providing atomicity; it is providing throughput while looking
+like atomicity. Same shape as F161's defect class, one layer down.
+
+### 🚨 F167 — nothing reconciles at boot, and the only full recovery path is a button a human presses
+
+`packages/api/src/index.ts:197-225` is the entire startup sequence: connect Prisma, connect the MCP
+bridge, start three timers (`humanEscalation.startChecker`, `scheduler.start`,
+`stuckTaskRecovery.start`), listen. No query of in-flight state, no sweep, no reconciliation.
+
+So after a reboot: the in-memory resource pool comes back empty while the database still says agents
+are `busy`; `in_progress` tasks sit until the 5-minute watchdog aborts them with
+`errorCategory: 'timeout'`, which records a **false cause** (the machine restarted, it did not time
+out); and `assigned` and `needs_human` tasks — which the watchdog's found-set never covers — stay
+stuck forever. The one routine that would fix all of it, `forceRecoverAll`, has exactly one caller
+in the repo: `packages/api/src/routes/agents.ts:389`, an HTTP route. It is the reset button, and it
+only runs when a human presses it.
+
+This is the same defect item 1 recorded from the type side (F147/F149), seen from the durability
+side: **the state was durable and the recovery was not.** 2.0's boot-as-replay is the fix, and the
+per-state contract table's last column is its specification.
+
+### 🚨 F168 — the family's Rust durability is a whole-file rewrite of a mutable document, and a crash *during the save* costs the record
+
+Neither Rust repo has a database in its orchestration path (`rusqlite` is in Claudette's manifest for
+one purpose — the recall vector store, `Cargo.toml:97`). Durable state is JSON documents rewritten
+in place, in four places, all with the same three properties:
+
+| Site | Write | Cadence | On torn file |
+|---|---|---|---|
+| Claudette research progress (`run/research.rs:731-735`) | `std::fs::write` | per batch (`:1474`) | `load` (`:721-729`) returns `Err`, and the caller propagates it with `?` (`:1230`) — **the run refuses to resume** |
+| Claudette findings store (`run/research.rs:780-784`) | `std::fs::write` | per batch (`:1453`) | same |
+| Claudette session autosave (`runtime/session.rs:96` → `secrets.rs:31`) | `truncate(true)` + `write_all` + `flush`, no fsync, no rename (Windows path: plain `std::fs::write`) | **after every turn** (`run.rs:202-203`) | `try_load_session_at` (`run.rs:139-146`) — *"`Err` if it exists but is corrupt"* |
+| BCF mission record (`db.rs:30-38`) | `std::fs::write` | **once, after the mission ends** (`mission.rs:382`, and `let _ =` discards the error) | record simply absent |
+
+`std::fs::write` opens with truncate-then-write, so the window between the two syscalls is a window
+in which the file on disk is shorter than valid JSON. The consequence is not "lose the last update"
+— it is **lose the ability to resume at all**, because in three of the four sites a malformed file
+is a hard error rather than a fallback to the last good state. There is no temp-file-plus-rename
+anywhere in either repo's persistence path.
+
+Three further properties of the same code:
+
+- **Save errors are discarded.** Every `progress.save(...)` in the research driver ends `.ok()`
+  (`:1403`, `:1474`, `:1501`, `:1506`, `:1518`, `:1521`). A full disk produces a run that reports
+  success and cannot be resumed.
+- **There is no atomicity across files.** A batch writes `FINDINGS.md` (`:1442-1450`, itself a
+  read-whole-file-append-write-whole-file), then `findings.json` (`:1453`), then `progress.json`
+  (`:1474`). A crash between the second and third re-runs the batch on resume, and `append_batch`
+  (`:787`) appends the same findings again under fresh ids. **Duplicate findings are the designed
+  behaviour of that crash window.**
+- **BCF has no mid-mission durability at all.** The single save is after the last round; a crash at
+  round 8 of 9 leaves only whatever the codegen already wrote into the output directory.
+
+None of this is sloppiness — it is the correct amount of machinery for a single-user CLI that
+usually finishes. It is the wrong amount for an orchestrator whose whole claim is that a task
+survives the machine restarting.
+
+### F169 — measured: full ACID costs 0.93 ms per transition here, and the family's mechanism is the only one that cannot afford the job
+
+`append_bench.py`, this machine, log on the project's NVMe (D:), 2000 transitions per configuration.
+"Transition" is the real `apply()` shape: an event row appended and the status projection row
+upserted **in the same transaction**.
+
+| Configuration | transitions/s | µs each |
+|---|---|---|
+| `journal=DELETE`, `synchronous=FULL` — SQLite's default, and what `recall.rs:240` opens with | **293** | 3410 |
+| WAL, `synchronous=FULL` | **1076** | 929 |
+| WAL, `synchronous=NORMAL` | **11197** | 89 |
+| WAL, `NORMAL`, event only (no status upsert) | 14443 | 69 |
+| WAL, `NORMAL`, 16 events per transaction | 54637 | 18 |
+
+And the control — the family's mechanism, a mutable status document rewritten whole per update:
+
+| Control: whole-file JSON rewrite | updates/s | µs each |
+|---|---|---|
+| document holding 10 task rows (1 KiB) | 3224 | 310 |
+| document holding 200 task rows (24 KiB) | 597 | 1674 |
+| document holding 2000 task rows (247 KiB) | 68 | 14708 |
+
+Two things fall out, and the second is the one that decides the design.
+
+**The rewrite degrades with the run; the append does not.** Ten rows to two thousand costs the
+rewrite 47× — because it is O(size of everything) per O(1) change. The append is flat. That is not a
+micro-optimisation argument, it is the reason the mechanism cannot be scaled up: 2.0's log is also
+the console's replay source (W5 F123), so it is *designed* to grow.
+
+**Full ACID is affordable, so the usual tradeoff does not bind here.** SQLite's docs are explicit
+(sqlite.org/pragma.html, retrieved 2026-08-19): `NORMAL` in WAL mode is *"durable across application
+crashes"* but *"might roll back following a power loss or system crash"*, while `FULL` *"is atomic,
+consistent, isolated, and durable (ACID) in WAL mode"*. The received wisdom is to take `NORMAL` and
+accept the power-loss window.
+
+Price it against the work being recorded. One decoded token costs ~13–14 ms (70.12–75.84 tok/s, W1
+F80), so a `FULL` transition is ~7% of a *single token* — and W5 F123 already ruled that the log is
+written at **action** granularity, not token granularity, where one event covers a tool call's worth
+of generation: hundreds of tokens, seconds of wall clock. Against that unit, `FULL` is well under a
+tenth of a percent. **Take `FULL`. Nothing on this machine's budget notices it, and it converts
+"survives a crash" into "survives the power cut too."**
+
+Caveat, stated plainly: this is CPython's `sqlite3`, not `rusqlite`. Interpreter overhead inflates
+the cheap rows and is invisible in the expensive ones, which are fsync-bound. The ratios are disk
+behaviour and carry; the absolute rates are a floor.
+
+### F170 — boot-as-replay is free at this scale, and the snapshot threshold is about a million events
+
+Item 1's recommendation makes boot the same code as replay. That is only sound if replay is cheap,
+so the spike built a 100,000-event log and folded it into the projection:
+
+- built in 0.66 s (151,556 events/s at 500 per transaction),
+- **25.1 MiB on disk, 263 bytes per event**,
+- **replayed in 94 ms — 1,059,017 events/s.**
+
+So the projection rebuild at a scale far beyond anything W5 F123 projects (months of real driving is
+~16k action-granularity events) costs under a tenth of a second. **No snapshot mechanism is needed
+for 2.0.** The crossover where replay reaches one second is ~1M events, ~265 MiB — that is the
+number to watch, and it is the same number OQ-W5-9's retention question turns on. Until then, a
+snapshot table would be a cache with no cache miss to justify it.
+
+This also settles the strongest objection to log-primary state: "you will need snapshots, and then
+you will need to keep them consistent with the log." Not at this scale, and the threshold is
+measured rather than assumed.
+
+### F171 — the ecosystem's durable-execution engines all want a server, and its event-sourcing crates are Postgres-shaped
+
+crates.io API, retrieved **2026-08-19**. "Newest" is the most recently published version of any
+kind, so a stable line stalled behind a release candidate shows up as such.
+
+| Crate | Latest stable | Newest published | 90-day downloads | Verdict for this design |
+|---|---|---|---|---|
+| `rusqlite` | 0.40.2 | 0.40.2 @ 2026-08-08 | 29.9M | ✅ **already in the tree** (Claudette `Cargo.toml:97`, `bundled`) |
+| `redb` | 4.2.0 | 4.2.0 @ 2026-08-17 | 4.0M | alive, ACID, pure Rust — but a KV store, no SQL |
+| `fjall` | 3.1.9 | 3.1.9 @ 2026-08-15 | 417k | alive; LSM, same no-SQL objection |
+| `sled` | 0.34.7 | **1.0.0-alpha.124 @ 2024-10-11** | 2.5M | 1.0 stalled ~22 months — not a candidate |
+| `persy` / `heed` / `rocksdb` | 1.8.1 / 0.22.1 / 0.25.0 | 2026-06-30 / 2026-04-07 / 2026-08-16 | 137k / 1.3M / 6.2M | alive; KV or a C++ dependency |
+| `cqrs-es` + `sqlite-es` | 0.5.0 + 0.5.0 | 2025-12-30 + **2026-04-23** | 27.8k + **621** | a real SQLite event-sourcing path — see below |
+| `disintegrate` | 4.0.0 | 4.0.0 @ 2026-02-02 | 2.9k | PostgreSQL only (`disintegrate-postgres`) |
+| `esrs` | 0.18.0 | 0.18.0 @ 2024-11-25 | 7.3k | Postgres; ~21 months since a release |
+| `eventually` / `thalo` | 0.4.0 / 0.8.0 | 2020-10-04 / 2023-11-21 | 87 / 385 | dead |
+| `apalis` (+`apalis-sql`) | 0.7.4 | **1.0.0-rc.9 @ 2026-05-06** | 264k | job queue; `sqlite` feature exists on 0.7.4 but **vanished from the 1.0 rc's feature list** |
+| `underway` | 0.2.0 | 0.2.0 @ 2025-07-16 | 5.5k | Postgres only, ~13 months stale |
+| `restate-sdk` | 0.11.1 | 0.11.1 @ 2026-08-14 | 390k | healthy — and requires a **separate Restate runtime process** |
+| `temporal-sdk-core` | none | **0.1.0-alpha.1 @ 2021-04-22** | 522 | crates.io presence is vestigial; Temporal needs a cluster regardless |
+| `dbos` | 0.1.1 | 0.1.1 @ 2026-07-13 | 39 | brand new, Postgres-backed |
+| `obeli-sk` | 0.5.0 | 0.5.0 @ 2024-10-11 | 63 | ~22 months, 63 downloads |
+
+Three patterns, and each disqualifies a whole category:
+
+1. **Durable execution as a product means a server.** Restate's own SDK README describes services
+   that register with the runtime and are tested against *"a Docker-deployed restate server"*
+   (github.com/restatedev/sdk-rust, retrieved 2026-08-19); Temporal needs a cluster; DBOS needs
+   Postgres. W5 F95/F125 already established that a container is the thing 2.0 exists to escape.
+   This category is out on the install story alone, before any technical comparison.
+2. **Event sourcing in Rust is written for Postgres.** The maintained frameworks ship
+   `-postgres` crates; SQLite appears once, as `sqlite-es`, a separate single-maintainer repo at
+   **621 downloads in 90 days**. That is a real and honest option — it was found by checking rather
+   than assumed away — and it is evaluated in the options table below.
+3. **Job queues are the wrong layer.** `apalis` durably retries *functions*; it has no opinion about
+   a seven-variant lifecycle, per-state watchdog contracts, or an attempt chain. Adopting it would
+   leave every W3 problem unsolved and add a dependency whose stable line is nine months old with
+   the 1.0 in release candidate since May.
+
+**The ecosystem offers storage engines and it offers servers. What it does not offer, for a
+single-binary local-first agent orchestrator, is the middle.**
+
+### 🚨 F172 — three repos, three total-duration timeouts, zero idle-gap timeouts: nothing in the family can tell a hung model from a slow one
+
+The brief's third failure mode is the model server hanging. Every donor bounds the *whole request*
+and none bounds *the gap between bytes*:
+
+| Repo | Bound | Where |
+|---|---|---|
+| Claudette | 300 s total | `api.rs:147` → `.timeout(...)` at `:237` |
+| BCF | **1800 s** total | `llm.rs:133` |
+| ABCC (Python) | 120 s total | `main.py:19` (`litellm.request_timeout`), `chat.py:75`/`:151` (`httpx`) |
+
+A grep for read/idle timeouts across both Rust repos returns exactly one hit —
+`google_auth.rs:548`, the OAuth loopback listener — and nothing in any model path.
+
+The consequence is symmetric and both halves are bad. A **hung** server holds a slot for the full
+bound (30 minutes, in BCF's case) because nothing distinguishes silence from work. A **healthy but
+long** generation is killed at the bound for the crime of being slow — the same defect ABCC has on
+the task clock, where the watchdog measures `assignedAt` instead of last progress.
+
+This is the durability half of item 1's contract table row for `Engaged`, and it confirms that row
+from a second direction: **the liveness clock must be time-since-last-progress, at every level of
+the stack — the task, and the socket.** It also means the hang is not a storage problem at all.
+Recovery is already known to be cheap: F162 measured the slot freeing in ≤0.25 s on a socket close,
+so detection is the entire cost.
+
+### F173 — the log and the workspace are two stores with no shared transaction, and nothing in the family bridges them
+
+The event log can restore, exactly, what the operator saw. It cannot restore what the agent touched.
+W5 F123 measured the gap and it is three orders of magnitude: a task's narration is ~4 KB, while
+this repo's `runs/` directory is 3.1 GB of working directories and fixtures.
+
+So after a crash in `Engaged`, the durable store says "attempt A, progress at `seq` N" while the
+files on disk are in whatever half-edited state the tool calls left them. There is no mechanism in
+any donor that closes this:
+
+- ABCC serialises access with a `file_locks` table but never snapshots content.
+- Claudette's only pre-image mechanism is `transcript::snapshot_to_trash` (`transcript.rs:149`),
+  called per mutated path from `tools/file_ops.rs:284` and `tools/fuzzy_apply.rs:116` and unwound by
+  `/undo` (`commands.rs:492`) — a per-file, per-turn undo, not a workspace marker.
+- Git worktrees appear in the family exactly once, in BCF's SWE-bench harness
+  (`swebench.rs:307-317`), never in the orchestration path.
+
+The mechanism is therefore *proved to run on this machine* and *never wired to the lifecycle*. The
+requirement this generates is stated in the recommendation and the choice of mechanism belongs to
+W6 item 6, which owns per-task isolation and its RAM cost.
+
+## Options compared
+
+Scored against: (A) survives crash, reboot and hang; (B) zero daemons and zero containers (F95/F125);
+(C) expresses item 1's write path — one writer, event and projection in one transaction, boot as
+replay; (D) serves W5 F126's one-integer contract (SSE cursor, paged read, scrub); (E) dependency
+risk, live-verified 2026-08-19; (F) implementation weight.
+
+| Option | A | B | C | D | E | F |
+|---|---|---|---|---|---|---|
+| 1. Port v1: Postgres, mutable rows, statements not transactions | ✗ — F166/F167 are this option's observed behaviour | ✗ container | ✗ | ✓ | low | medium |
+| 2. Keep the family's Rust shape: JSON documents rewritten whole | ✗ — a crash in the save costs the record (F168) | ✅ | ✗ O(n), no transaction | ✗ no paged read | none | low |
+| 3. Embedded KV: `redb` or `fjall` | ✅ | ✅ | ✅ | partial — range scans and secondary indexes hand-rolled | low; both fresh | medium-high |
+| 4. **SQLite event log + projection, `apply()` hand-written** | ✅ | ✅ | ✅ by construction | ✅ the integer *is* the primary key | **lowest — already in the tree** | **medium-low** |
+| 5. `cqrs-es` + `sqlite-es` | ✅ | ✅ | partial — aggregate model, not per-state contracts | ✅ | ⚠ 621 dl/90d, single maintainer, pulls `sqlx` | low |
+| 6. `apalis` over SQLite | partial — retries jobs, not lifecycles | ✅ | ✗ | ✗ | ⚠ stable 9 months old, 1.0 in rc | low |
+| 7. Restate / Temporal / DBOS | ✅ | ✗ **server process** | ✅ | ✗ | varies | high |
+
+## Recommendation
+
+**Option 4**, which is W5 F125's ruling with one pragma tightened and the write path specified.
+
+### 1. The store, and the two pragmas that are not defaults
+
+SQLite under the 2.0 equivalent of `~/.claudette/`, opened by **one writer process**, with:
+
+```
+PRAGMA journal_mode = WAL;          -- not the default; 3.7x on the measured write path
+PRAGMA synchronous  = FULL;         -- not the WAL convention; buys power-loss durability for 929 us
+PRAGMA foreign_keys = ON;           -- not the default either
+PRAGMA busy_timeout = 5000;         -- readers (console) must never see a bare SQLITE_BUSY
+```
+
+`FULL` rather than the usual `NORMAL` is the one place this item overrides received practice, and
+F169 is the reason: the tradeoff everyone else is making assumes the write rate is the bottleneck,
+and here it is three orders of magnitude away from being one. Note also that `recall.sqlite` runs
+today on *neither* pragma (`recall.rs:240` opens with SQLite's defaults, so rollback-journal at
+293 transitions/s) — 2.0's store is a new file and inherits none of that.
+
+### 2. The schema, which is item 1's model with nothing added
+
+```sql
+CREATE TABLE event (                      -- the store of record; append-only, never updated
+  seq        INTEGER PRIMARY KEY AUTOINCREMENT,   -- W5 F126's one integer, four roles
+  task_id    TEXT NOT NULL,
+  attempt_id TEXT,
+  kind       TEXT NOT NULL,
+  payload    TEXT NOT NULL,
+  at_unix_ms INTEGER NOT NULL
+);
+CREATE TABLE task_status (                -- a projection: derivable, rebuilt at boot, never authoritative
+  task_id   TEXT PRIMARY KEY,
+  state     TEXT NOT NULL,                -- the seven-variant enum
+  since_seq INTEGER NOT NULL,             -- every variant's `since`, as a log position
+  evidence  TEXT                          -- the variant's carried data
+);
+CREATE TABLE attempt (...);               -- immutable rows; cause = Fresh|Retry|Rescope|Edit|Replay
+CREATE TABLE depends_on (task, task);     -- first-class edges (F109)
+CREATE TABLE checkpoint (...);            -- fork points, incl. the workspace marker (below)
+CREATE INDEX event_task ON event(task_id, seq);
+```
+
+`task_status` exists for query convenience and for the console's opening screen. It is **not** a
+second source of truth: it is written only by `apply()`, in the same transaction as the event that
+justifies it, and boot verifies it against the log rather than trusting it.
+
+### 3. `apply()` — the whole durability mechanism, in one sentence
+
+`BEGIN IMMEDIATE` → validate the command against the current state (exhaustive `match`, refusal is a
+value) → `INSERT INTO event` → upsert `task_status` → `COMMIT`. That is the 89 µs / 929 µs measured
+above. Everything F166 got wrong is unrepresentable here not because anyone was careful but because
+there is no other function that writes.
+
+The compare-and-set idiom from `orchestratorService.ts:395-401` survives as the shape of admission:
+claims are conditional writes whose zero-row result is a refusal, not an exception. What changes is
+that the claim and the state change are now the same transaction.
+
+### 4. The three failure modes, and what each costs
+
+| Failure | What is lost | Recovery |
+|---|---|---|
+| **Process crash** | the un-checkpointed in-flight generation only | boot replays the log (94 ms/100k, F170); every `Deployed`/`Engaged` task with no live worker gets its contract-table treatment — attempt tombstoned `HardFailure(orphaned)`, task per retry policy |
+| **Reboot** | the same, plus the model server | identical path, with one addition: **re-admission must re-check backend health before any task re-enters `Deployed`**, because the reboot invalidated the assumption every `Deployed` row was made under |
+| **Model-server hang** | nothing durable | not a storage problem — an **idle-gap timeout on the stream** (the family has none, F172) trips the progress clock; the kill is a socket close and the slot frees in ≤0.25 s (F162) |
+
+**The reboot case needs no mechanism the crash case did not already need.** That is the payoff of
+boot-as-replay: there is one recovery path, it runs on every start, and it therefore cannot rot the
+way `forceRecoverAll` did — a routine whose only caller was a button.
+
+### 5. Two requirements this item generates for other workstreams
+
+- **W6 item 6 (per-task isolation):** a `checkpoint` is only meaningful if it names a **workspace
+  state**, not just a `seq`. F173 shows the family has no such marker and that git worktrees already
+  run on this machine in BCF's harness. W6 owns the mechanism and its RAM cost; W3's requirement is
+  narrow: *the checkpoint row must carry an identifier that can restore the workspace, and
+  `Holding`/fork must refuse to promise resumability without one.*
+- **The broker (item 4):** control-channel commands must be durable *before* they are acknowledged
+  to the operator, or a crash between "you pressed pause" and the pause costs the operator their
+  belief about what the system is doing. Arrival time is already part of the contract (F132); this
+  makes durability part of it too.
+
+### 6. What not to build
+
+No job-queue crate, no CQRS framework, no second embedded store, no snapshot table, and no
+retry/backoff library. Every one of them is either a layer 2.0 does not need or a dependency at the
+exact centre of the system's correctness, and F170 shows the snapshot in particular has no
+justification for another two orders of magnitude of growth.
+
+## Rejected alternatives and why
+
+- **`redb` / `fjall` (option 3).** Both are alive and genuinely good, and if the console needed no
+  queries this would be closer. But W5 F126's whole argument is that `seq` is simultaneously the SSE
+  cursor, the SQL cursor and the scrub position; `SELECT … WHERE seq > ? ORDER BY seq LIMIT n` is
+  the paged read the console needs and v1 never built. In a KV store that is a hand-rolled range
+  scan, and every secondary access path — by task, by attempt, by state — is a hand-maintained
+  index, which is exactly the class of hand-maintained derived state F149 caught drifting. Adding a
+  second store beside `recall.sqlite` also doubles the backup and migration story for no gain.
+- **`cqrs-es` + `sqlite-es` (option 5).** The honest near-miss. It rejects on three counts: the
+  SQLite store is one person's separate repository at 621 downloads per 90 days, which is a
+  bus-factor-one dependency holding the system's source of truth; it brings `sqlx` and an async
+  executor into a codebase whose HTTP client is deliberately blocking (`reqwest::blocking`,
+  `egress.rs:279`); and its aggregate/command/event abstraction does not carry the things this
+  design is actually made of — per-state resource contracts, watchdog policy, and the admission pool
+  derived from state. We would implement all of that anyway, inside someone else's traits.
+- **`apalis` (option 6).** Wrong layer, as F171 argues, and its stable line is 0.7.4 from
+  2025-11-18 with 1.0 in release candidate since 2026-05-06 — the `sqlite` feature that makes it
+  daemon-free is present on the old line and absent from the rc's feature list. Adopting a
+  mid-migration dependency for the wrong abstraction is two risks for no benefit.
+- **Restate / Temporal / DBOS (option 7).** These are the right idea at the wrong scale. They solve
+  durable execution properly and they all require a process 2.0 has spent its whole design budget
+  avoiding. Worth revisiting only if W10's multiplayer work ever makes a coordinator unavoidable —
+  and W10 should read Restate's journal-and-replay model before designing its own.
+- **Keeping the JSON-document shape (option 2).** Rejected on F168 and F169 together: it is not
+  crash-safe in the sense the brief requires, and it is the only measured option that gets slower as
+  the thing it records gets bigger.
+- **`synchronous = NORMAL`.** Rejected on measurement rather than principle. It is 10× faster and
+  the speed is worth nothing here, while the thing it costs — surviving a power cut — is exactly
+  what a local-first tool on a desktop machine should not be trading away silently.
+
+## Effect on fun
+
+Three effects, one of them the point of the whole item.
+
+**Replay stops being a feature that rots.** Boot and scrub are the same fold over the same log, so
+the code path behind the timeline minimap is exercised on every single start. Compare v1, where the
+full-recovery routine was reachable only from a button, and W5 F113's four unstyled states, which
+survived because nothing forced them to be handled.
+
+**"Close it and reopen it" becomes true.** The felt property is small and constant: killing the app
+mid-run is not a decision. That is a different relationship with a tool than one where you first
+think about what you will lose — and it is the honest version of the promise ABCC's console made and
+the reset button quietly withdrew.
+
+**No install cost.** SQLite is already in the binary (`bundled`), so the durable store adds a file,
+not a service. The comparison that matters to David is the one W5 already made: v1 wanted Postgres
+and Redis in containers before it would show you a task list.
+
+The one cost worth naming: `FULL` means every transition touches the disk, so a very chatty
+heartbeat granularity (OQ-W3-3) would be felt as disk activity on an idle-looking machine. The
+measurement says that is 929 µs a time and W5 F123 says the log is written at action granularity —
+but if OQ-W3-3 lands on something finer, this is the row to re-measure.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W3-11 | Retention and archival: the log is the console's replay source, so it cannot simply be truncated. Same question as OQ-W5-9 — answer once | W5, W8 volume data |
+| OQ-W3-12 | The workspace checkpoint marker: git worktree, git stash-object, or a copied pre-image tree | **W6 item 6** |
+| OQ-W3-13 | The idle-gap timeout value — what inter-token gap actually means "hung" on this hardware | W8 runs; F172 says the *mechanism* is missing regardless |
+| OQ-W3-14 | Does `attempt` stay a table, or become a second projection of the log? Leaning table: attempts are immutable, so the duplication cannot drift | item 5 (escalation lineage) |
+| ✅ OQ-W3-2 | **ANSWERED here** — `Blocked` is derived from `depends_on` edges, not stored. A stored variant is denormalised state with no writer that owns it, which is F149's drift bug re-created on purpose | — |
+| OQ-W3-4 | Still open (W2's prefix-cache interaction), but durability narrows it: slot occupancy is *derived* from state, so whichever way it lands it is a scheduler policy change, not a schema migration | W2 |
+
+## Confidence: high
+
+The donor findings are grep-level facts with file:line, verified this session in all three
+checkouts. The cost claims are measured on this machine with a script in the repo, repeated twice
+within 2%, and the one place a citation carries load — `NORMAL` versus `FULL` under WAL — is quoted
+from SQLite's own documentation with a retrieval date. The ecosystem verdicts come from the
+crates.io API on 2026-08-19 rather than from reputation, and the check corrected one assumption in
+the process: `sqlite-es` exists, so the CQRS option had to be argued rather than dismissed.
+
+What would lower it: OQ-W3-3 landing on a heartbeat granularity far finer than action-level, which
+would move F169's affordability argument; and W6 item 6 finding that workspace checkpointing is
+expensive enough to change what `Holding` can promise. What would raise it: re-running the spike
+through `rusqlite` once the 2.0 crate exists, to replace CPython's floor with the real number.
+
+---
