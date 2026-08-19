@@ -23,9 +23,10 @@ Plus an **addendum** (F131–F139), added the same day: the Ratatui / Bubble Tea
 §11 wrongly said already existed, run from scratch by four parallel researchers — and the shipped-
 agent evidence around it, which corrects F94 and adds three verbs to item 2.
 
-⚠ **And an OPEN re-scope proposal (F140–F141), raised by David 2026-08-19:** TUI first, skip the web
-console, C&C-1995 style. **Not decided** — item 1 stands as accepted until he rules. See the section
-immediately before the handoff table.
+🚨 **And a DECISION (F140–F141), taken by David 2026-08-19: the TUI is primary and the web console is
+dropped for now — a C&C-1995-style Ratatui console is the flagship component.** This **reverses item
+1's primacy**; see the re-scope section immediately before the handoff table for what it does to
+items 2–7. Next session runs the sixel spike.
 
 **All three of §11's named deliverables exist:** this file, the component inventory (item 3), and
 the written position on what "fun" means (item 7, F129).
@@ -2148,11 +2149,12 @@ next, TUI when the headless case is real.
 
 ---
 
-# ⚠ OPEN RE-SCOPE PROPOSAL — "TUI first, skip the web console for now" (raised by David 2026-08-19)
+# 🚨 RE-SCOPE — "TUI first, skip the web console" — RAISED AND ACCEPTED 2026-08-19
 
-**Status: David's question, my position, no ruling taken.** This would reverse the primacy half of
-item 1, which he accepted on 2026-08-18. Recorded here rather than edited into item 1, so the
-accepted decision and the proposal to change it stay distinguishable.
+**Status: DECIDED.** This **reverses the primacy half of item 1**, which David accepted on
+2026-08-18 and re-scoped a day later. Kept as its own section rather than edited into item 1, so the
+original argument and the decision that changed it both stay readable — item 1's *reasoning* is
+what justified the reversal, so overwriting it would destroy the evidence.
 
 **What he asked:** *"so Ratatui is an option? 256 colors is fine for basic animations. and if we can
 skip the web ui for now it will be great. i imagine a TUI like the old C&C (1995 style)."*
@@ -2247,8 +2249,41 @@ not exist yet. Phase 3 has not started. A 1995-isometric terminal renderer is a 
 right, and it must not become the critical path in front of the thing it is meant to display. The
 spike is also the guard against that — it is an afternoon, and it is reversible.
 
-**⚠ Not decided.** Item 1 stands as accepted until David rules on A. B should not be ruled on at all
-until the spike runs.
+## ✅ DECIDED 2026-08-19 — David ruled on both
+
+His words: *"next session we run the sixel spike. and test it — i dont care if we are building this
+from scratch. it will be awesome and our flagship component of this app… we will be the first to
+ever mix those together."*
+
+- **(A) ACCEPTED.** **The TUI is the primary surface; the web console is dropped for now.** Item 1's
+  primacy is reversed and this section supersedes it. Building the renderer from scratch is
+  explicitly accepted as a cost, not a risk to be mitigated away.
+- **(B) COMMITTED IN INTENT, still gated on the spike** — not as a go/no-go David is neutral about,
+  but as a **feasibility and calibration** test. The C&C-1995 isometric battlefield in sixel is now
+  named as the **flagship component**.
+
+**What this does to the rest of W5, so the next session does not re-derive it.** Items 2–7 largely
+survive, because they were written about a broker, a lifecycle, a log, a set of verbs and a
+definition of fun — not about a browser:
+
+| Item | Under TUI-primary |
+|---|---|
+| 2 — operator control | **Unchanged.** Three mechanisms, and F133's multi-subscriber safety becomes *simpler*, not harder, with one surface |
+| 3 — inventory | **Re-scored.** The 44 MB is now source material to transform, not assets to ship; the 1,298-line isometric renderer drops to REFERENCE; `isoProjection.ts` half-ports |
+| 4 — what to show | **Unchanged in substance**, harder in execution. The six questions still hold; the **DAG is the one genuinely harder element** in a terminal |
+| 5 — observability | **Unchanged.** Adopt the vocabulary, own the store |
+| 6 — transport | **Deferred, not wrong.** With one in-process surface the broker is channels; SSE + `seq` return the moment a second surface does, so keep the contract shape |
+| 7 — fun | **Unchanged, and strengthened** — F129's six queries are surface-agnostic, and F140 makes the palette part of the identity rather than a compromise |
+
+⚠ **`RESEARCH_BRIEF.md` §17 item 5 is now materially out of date** — it rules "a full isometric web
+UI… Not a TUI, not Tauri", and the live decision is close to its inverse. It should be corrected in
+place, dated and quoting David, the same way §11 was. **Left for the next session rather than done
+here, because it deserves the owner's exact words at the moment of the change.**
+
+**The fallback, so it is not read as failure.** If sixel does not work on the real machine, a
+text-and-colour Ratatui console with the radar minimap, the C&C sidebar layout and all 96 voice
+lines is still C&C in every sense except the sprites. Audio is untouched by every version of this,
+and it is half the identity.
 
 ---
 
