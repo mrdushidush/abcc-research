@@ -1,0 +1,5 @@
+target/
+*.out
+*.png
+w5-sixel-bench-results.txt
+
