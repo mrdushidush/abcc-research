@@ -23,6 +23,10 @@ Plus an **addendum** (F131–F139), added the same day: the Ratatui / Bubble Tea
 §11 wrongly said already existed, run from scratch by four parallel researchers — and the shipped-
 agent evidence around it, which corrects F94 and adds three verbs to item 2.
 
+⚠ **And an OPEN re-scope proposal (F140–F141), raised by David 2026-08-19:** TUI first, skip the web
+console, C&C-1995 style. **Not decided** — item 1 stands as accepted until he rules. See the section
+immediately before the handoff table.
+
 **All three of §11's named deliverables exist:** this file, the component inventory (item 3), and
 the written position on what "fun" means (item 7, F129).
 
@@ -2141,6 +2145,110 @@ without adopting the runtime** (F133, F137).
 
 **None of that changes the deferral.** Item 1's ordering stands: terminal entry point now, console
 next, TUI when the headless case is real.
+
+---
+
+# ⚠ OPEN RE-SCOPE PROPOSAL — "TUI first, skip the web console for now" (raised by David 2026-08-19)
+
+**Status: David's question, my position, no ruling taken.** This would reverse the primacy half of
+item 1, which he accepted on 2026-08-18. Recorded here rather than edited into item 1, so the
+accepted decision and the proposal to change it stay distinguishable.
+
+**What he asked:** *"so Ratatui is an option? 256 colors is fine for basic animations. and if we can
+skip the web ui for now it will be great. i imagine a TUI like the old C&C (1995 style)."*
+
+## F140 — the 256-colour ceiling is not a compromise against a 1995 C&C look; it is that look's native constraint
+
+The original Command & Conquer (1995) ran in VGA mode 13h — **320×200 at 256 colours**. Sixel's
+palette ceiling and Codex's RGB332→256-colour reduction (F136) land on **the same constraint the
+source material was authored under.**
+
+This inverts the weakest-looking part of the terminal option. Under item 1's console-primary plan,
+F136 read "palette-reduced sprites are a different medium from the 35 MB of full-colour art." Under
+a TUI-primary plan aimed explicitly at 1995, palette reduction is **period fidelity**, not loss.
+
+The 1995 C&C screen layout also maps onto a terminal unusually well: a right-hand sidebar, a radar
+minimap, a status strip and a main viewport are four rectangles — which is what a TUI is made of.
+V1 already ships the radar (`Minimap`, 190 lines, the circular sweep that occupies the whole left
+column) as one of its three minimap styles (F108).
+
+## F141 — under a TUI-primary plan, F136's own conclusion flips
+
+F136 concluded: the terminal's sprite capability *"exists exactly where the web console is already
+available, and not in the case the TUI is deferred for."* **That reasoning assumed the console
+exists.** If there is no console, sixel on Windows Terminal is not redundant — it is the entire
+visual identity, on the primary machine, where David actually works.
+
+The SSH/tmux limitation then stops being a hole and becomes a **degradation ladder**: sprites
+locally, text over SSH. That is what a headless session wants anyway.
+
+## What the proposal actually buys — and it is more than it looks
+
+| | Console-primary (item 1 as accepted) | TUI-primary (this proposal) |
+|---|---|---|
+| UI codebases | **Two** — F139 says the TUI is a second one whenever it lands | **One** |
+| Inherited code used | 1,298 lines of live renderer, re-hosted; 14,935-line app mostly rebuilt (F107) | **3,011 lines already written**, already past 3 of 4 known hazards (F131) |
+| Transport | SSE + POST + a paged read (item 6) | **None** — an in-process broker is channels; SSE returns only when a second surface does |
+| Install | one binary **+ 44 MB of assets** (OQ-W5-4) | one binary, sprites downscaled and cached |
+| Time-to-first-visible-thing | sub-second console acknowledgement (F127) | **the terminal is already open** |
+| Precedent | V1 | **Codex CLI** — Rust + ratatui + sixel sprites, shipped (F135, F136) |
+
+For a solo project measured at 1–5 commits a day, **halving the UI surface area is the single
+largest schedule lever available in this workstream.**
+
+## What it costs, stated plainly
+
+1. **The 44 MB becomes source material rather than shipped assets.** 280 px sprites → ~75 px sixel
+   is a mechanical downscale, not a redraw — but the four attacking GIFs (34.3 MB, 242 frames for
+   the building alone) need frame extraction, palette reduction and a disk frame cache. Codex built
+   exactly that (F136), so it is known work rather than research, but it is work.
+2. **The isometric renderer does not port, and the projection math only half-ports.**
+   `isoProjection.ts` is pure screen-space arithmetic (`sx=(x−z)·64`, `sy=(x+z)·32`), so the shape of
+   it survives — but it emits *pixels*, and a terminal cell is roughly 8×15 px with its own aspect
+   ratio. Depth sorting and `Z_LAYER` survive; the renderer around them is new.
+3. **Phase 0's frame-budget result is spent.** "Free to ~100 entities, no canvas needed" was measured
+   on the DOM. It says nothing about sixel throughput.
+4. **Sixel on David's actual terminal is unverified.** The research could not test it — no TTY in
+   that environment — and `arewesixelyet.com` still contradicts Microsoft's own release blog (F136).
+   **The entire visual half of this proposal rests on one untested capability on one machine.**
+5. **The DAG is harder in a terminal** than in a browser, and it is the console's headline element
+   (F109, item 4). Charts, tables, sparklines and scrollback are all fine in Ratatui; a graph layout
+   is the one thing that is not.
+
+## Position
+
+**Split the proposal in two, because it is two decisions wearing one coat.**
+
+**A — the shape: TUI primary, web console deferred or dropped. Recommended, and it strengthens the
+project.** It uses the inherited code instead of the rebuilt code, removes a transport, removes a
+second codebase, gives the best possible entry point (F94) and the best install (F95), and it has a
+shipped Rust precedent. Item 1's *reasoning* survives this reversal intact — that argument was
+about the entry point and the daily-use shape, and a TUI-primary plan satisfies it more directly
+than the hybrid did. What changes is which surface carries the identity.
+
+**B — the identity: a C&C-1995 isometric battlefield rendered in sixel. Do not commit to this yet.**
+It is delightful, it is period-coherent (F140), and it rests on an untested capability plus an
+unported renderer. **It should be bought with a spike, not with a plan.**
+
+**The spike, and it is small.** Render one existing ABCC sprite — and then one downscaled frame
+sequence — as sixel in David's Windows Terminal, on the real machine, and look at it. That answers
+questions 4 and 1 together, in an afternoon. §15 permits it explicitly: *"Spikes and benchmark
+harnesses only, clearly marked as throwaway."*
+
+**If the spike looks good**, the C&C TUI is the plan and the web console can be dropped rather than
+merely deferred — and W5's items 2–7 mostly survive, because they were written about a broker, a
+lifecycle, a log and a set of verbs, not about a browser. **If it looks bad**, the fallback is not a
+loss: a text-and-colour Ratatui TUI with the radar minimap, the sidebar and the 96 voice lines is
+still a C&C console in every sense except the sprites — audio is untouched by any of this, and it is
+half the identity.
+
+**One risk to name out loud, because it is the one that kills projects like this:** the agent does
+not exist yet. Phase 3 has not started. A 1995-isometric terminal renderer is a project in its own
+right, and it must not become the critical path in front of the thing it is meant to display. The
+spike is also the guard against that — it is an afternoon, and it is reversible.
+
+**⚠ Not decided.** Item 1 stands as accepted until David rules on A. B should not be ruled on at all
+until the spike runs.
 
 ---
 
