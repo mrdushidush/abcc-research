@@ -383,6 +383,16 @@ cell ran without the flag, the flag changes nothing at this context, so **no W8 
 re-running or re-labelling.** Do not add it to the canonical load command; it costs a config
 divergence and buys noise.
 
+▶ **CORRECTED 2026-08-19 (W3 F165):** the premise "the flag is not silently ignored" is
+unsupported. A no-flag load produces the identical `--spec-type draft-mtp` arguments on the
+server command line — **MTP is LM Studio's default for this model** (the sticky config carries
+no speculative keys; backend 2.27.1). The flagged command line witnessed the default, not the
+flag; the no-flag arm's command line was never captured, so whether this table compared
+MTP-vs-MTP is unknowable — the exact null is what that comparison would produce. Both rulings
+above stand (don't add the flag; no number re-runs — all cells ran the same default). What falls
+is any claim that the baseline runs *without* MTP. Corollary: a command line proves presence,
+not provenance — capture the control's command line too.
+
 ### F79 — a per-gate model swap costs 23.77 s, and W6 can now be costed
 
 F68 made W6's second-opinion reviewer a swap rather than a co-resident model, which made this a

@@ -675,7 +675,7 @@ confirmation.
 
 | # | Question | Waiting on |
 |---|---|---|
-| OQ-W3-8 | Does `llama-server` free the slot on client disconnect mid-stream? Decides how much cancellation machinery kill-now needs | a live test, item 6 |
+| OQ-W3-8 | ✅ **RESOLVED 2026-08-19** — yes: ≤0.25 s mid-decode, ≤~10 s mid-prefill, proxy transparent (F162/F163, live-probe section below). Kill-now is a socket close | — |
 | OQ-W3-9 | Where the crate boundaries fall in the copy (engine / orchestrator / console / shared types) | item 7, W12 |
 | OQ-W3-10 | How the control point composes with spawned sub-agents (`AgentToolExecutor::stateless()` runs with a fixed registry and no prompter today) | item 4 |
 
@@ -683,5 +683,115 @@ confirmation.
 
 The findings are grep-level facts verified this session against both checkouts, and the
 recommendation's riskiest element — the intrusive change — modifies a hook that already exists on
-the loop's signature. What would raise it further: OQ-W3-8's live disconnect test, and W2
-confirming the attempt-boundary freeze resolves F81's constraint in practice.
+the loop's signature. OQ-W3-8's live disconnect test has since run and confirmed the cheap end
+(2026-08-19, F162/F163: kill-now is a socket close). Still open: W2 confirming the
+attempt-boundary freeze resolves F81's constraint in practice.
+
+---
+
+# Live probe — OQ-W3-8: does the slot free on client disconnect? (resolved 2026-08-19)
+
+## Question
+
+Kill-now's entire cost depends on one server behaviour. When the client vanishes mid-request,
+does `llama-server` abort the work and free its only slot (`--parallel 1`), or does the
+generation run to completion with the fleet's one slot held by a ghost? The answer decides
+whether W5's `Kill` verb needs server-side machinery — a cancel endpoint, slot APIs, a watchdog
+restart — or is just a socket close.
+
+## Method
+
+Champion loaded fresh via the canonical command (19.64 s, 12.67 GiB); held constants
+re-verified from pid 22696's command line — `-c 65536`, kv q8_0/q8_0, `--flash-attn on`,
+`--kv-unified`, `--batch-size 2048`, `--parallel 1`, backend
+`llama.cpp-win-x86_64-nvidia-cuda12-avx2-2.27.1` — plus one surprise the command line contained
+(F165). Harness: Python stdlib client, three independent witnesses per run — the `/slots`
+endpoint polled at 4 Hz (`is_processing`), `nvidia-smi` GPU utilization at 1 Hz, and the latency
+of a follow-up request on the same slot. Disconnect = `shutdown(SHUT_RDWR)` + `close`, a plain
+FIN — exactly what a killed client process produces; no RST needed. Two paths (direct to
+llama-server at `127.0.0.1:62284`, and through the LM Studio proxy at `:1234`) × two phases
+(mid-decode: kill 3 s after the first token of a `max_tokens 3000` stream; mid-prefill: a ~35k-token
+prompt whose uninterrupted prefill measures 17.36 s ≈ 2,000 tok/s, killed early and late).
+
+## Findings
+
+### F162 — mid-decode, the slot frees in ≤0.25 s, and the LM Studio proxy is transparent
+
+| path | killed at | slot `is_processing`→false | GPU → 0 % | follow-up request |
+|---|---|---|---|---|
+| direct `:62284` | t=4.50 s | by t=4.70 s poll (**≤0.20 s**) | next 1 Hz sample | **0.37 s**, 200 |
+| proxy `:1234` | t=4.25 s | by t=4.50 s poll (**≤0.25 s**) | next 1 Hz sample | **0.36 s**, 200 |
+
+During decode the server writes a chunk per token (~74 data lines/s observed), so a dead socket
+is discovered at the very next write. **The proxy propagates the disconnect upstream with no
+measurable delay** — timing through `:1234` is identical to direct. Yes: the slot frees itself.
+
+### F163 — mid-prefill, detection is lazy — up to ~8 s observed — but the prefill is always abandoned
+
+Nothing is written to the socket during prompt processing, so the dead connection must be
+noticed some other way. Three kills into the ~17.4 s prefill (prompt ≈35k tokens):
+
+| kill (after prefill start) | slot freed | lag | freed at (after prefill start) |
+|---|---|---|---|
+| +2.6 s | t=11.76 s | **7.76 s** | ~10.3 s |
+| +2.7 s (repeat) | t=11.58 s | **7.56 s** | ~10.3 s |
+| +11.9 s | t=13.51 s | **0.49 s** | ~12.4 s |
+
+The early-kill lag is deterministic, not noise — both runs freed at the same absolute ~10.3 s
+after prefill start. The pattern that fits all three runs: a first connection check ~10 s into
+processing, fine-grained (≤0.5 s) checks after it. That mechanism is an inference and is pinned
+to this backend build; the operational facts are not: **in every run the prefill was abandoned
+before its ~17.4 s completion, generation never started, and the follow-up request ran clean
+(0.24 s)**. Worst observed slot-release lag: **7.8 s**; design bound: **~10 s** when a kill lands
+early in a large prefill. Mid-decode (F162) remains the common case, at ≤0.25 s.
+
+### F164 — two free instruments fell out of the probe
+
+1. **`/slots` is enabled by default** on LM Studio's llama-server: per-slot `is_processing` and
+   `n_ctx`, no flag needed, behind the same API key. That is a real-time occupancy witness the
+   orchestrator gets for free — relevant to the liveness clock (OQ-W3-3) and W5's fleet gauges.
+2. **An oversized request is rejected instantly and precisely**: a 105,009-token prompt against
+   the 65,536 window returned 400 in 0.06 s with
+   `{"type":"exceed_context_size_error","n_prompt_tokens":105009,"n_ctx":65536}` — it never
+   touched the slot. Admission control can lean on this: the rejection is clean, immediate,
+   carries the server's own exact token count, and (used deliberately) is a free tokenizer for
+   budget arithmetic.
+
+### F165 — `--spec-type draft-mtp` appears with no flag passed: it is LM Studio's default for this model
+
+Today's load used the canonical command — **no MTP flag** — yet pid 22696's command line carries
+`--spec-type draft-mtp --spec-draft-n-max 2 --spec-draft-n-min 0 --spec-draft-p-min 0.75`,
+byte-identical to the spec arguments F86 recorded on a *flagged* run. The sticky config
+(`…user-concrete-model-default-config…IQ3_S-3.06bpw.gguf.json`) contains **no speculative keys
+at all** and its mtime is unchanged (2026-08-08 14:59), so the default is LM Studio's own, for a
+GGUF that ships MTP weights.
+
+This breaks F78's premise without touching its rulings. F78 read the flagged command line as
+proof "the flag is not silently ignored" — but the same arguments appear unflagged, so the
+command line witnessed the *default*, not the flag. Whether F78's no-flag arm ran MTP is
+unknowable (the control's command line was never captured); the exact null it measured is
+exactly what MTP-vs-MTP would produce. **What survives: do not add the flag (it remains a
+no-op), and every champion number stands — all cells ran the same default.** What falls: any
+claim that the champion baseline runs *without* MTP. The held-constant rule gains a corollary:
+**a command line proves presence, not provenance — capture the control's command line too.**
+F78 (W1) and F86 (W2) corrected in place, dated.
+
+## Consequences for the design
+
+- **Kill-now is a socket close.** Drop the in-flight HTTP request, write the attempt's tombstone
+  event; the server side cleans itself up with zero machinery. The cancellation problem is
+  therefore **100 % client-side** — which sharpens item 6's tokio question: cancellation was
+  tokio's one honest argument (F154), and this probe shows that argument is sufficient
+  end-to-end, because dropping a future that owns the connection closes the socket and the
+  server provably does the rest. Threads must solve "abort a blocking read" to reach the same place.
+- **Slot re-availability is eventually-consistent, bounded at ~10 s.** The orchestrator should
+  not assume the slot is free the instant it kills; it also need not care — the next request can
+  simply be issued and queues server-side (F83), or `/slots` can be consulted (F164).
+- No server restart, no slot leak, no ghost generation in any of the five runs.
+
+## Confidence: high
+
+Five kill runs plus one control, two paths, three independent witnesses agreeing in every run,
+and the early-prefill lag reproduced to within 0.2 s. The mechanism *explanation* in F163 is
+medium — it is a fit, not a source read — and pinned to backend 2.27.1; the bound is what the
+design consumes.

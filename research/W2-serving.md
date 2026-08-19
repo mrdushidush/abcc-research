@@ -203,6 +203,11 @@ no LM Studio API** — `GET /api/v0/models` returns only id, arch, quantization,
 held; this command line is the only place several of them are visible. **Record it per campaign**
 via `Get-CimInstance Win32_Process -Filter "Name='llama-server.exe'"`.
 
+▶ **Note added 2026-08-19 (W3 F165):** the `--spec-type draft-mtp` block in the command line
+above is **not** the probe's `--speculative-draft-mtp` flag reaching the server — a no-flag load
+produces the identical arguments. It is LM Studio's default for this MTP-bearing GGUF. A command
+line proves presence, not provenance.
+
 It also settles the boundary question in 2.0's favour in a way the dossier could not: underneath
 LM Studio is **stock llama-server on a random localhost port behind an API key**. Everything
 llama.cpp's server can do — GBNF `grammar`, `/infill`, `/props`, slot save/restore — exists one
