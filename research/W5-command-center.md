@@ -386,9 +386,12 @@ reopening it.
 - **OQ-W5-2 — what is the terminal surface's exact floor?** "Entry + stream + permission prompt" is
   a boundary that will be under pressure the first time something is easier to show in the terminal
   than in the console. It needs a written line, or it becomes a second console by accretion.
-- **OQ-W5-3 — where does the permission channel live** once there are two subscribers? Claudette's
-  is a `SyncSender<bool>` owned by the render loop; with two surfaces it has to move behind the
-  broker, and "who answered" becomes part of the event record.
+- ~~**OQ-W5-3 — where does the permission channel live** once there are two subscribers?~~
+  ✅ **ANSWERED 2026-08-19 by W3 item 4 (F180).** It lives in the event log: the request's identity
+  *is* its `seq`, an answer is a conditional write on `in_reply_to`, and `by: OperatorId` and
+  `displayed_at` are required fields. The reason it cannot be a refactor of Claudette's channel is
+  mechanical — the rendezvous' safety properties belong to the channel *object*, and a `SyncSender`
+  cannot be persisted, fanned out, or acknowledged.
 - **OQ-W5-4 — is the console served, embedded, or both?** Serving from the binary means the static
   assets ship in it or beside it, and there are 44 MB of them. Interacts with W12's distribution
   story.
@@ -2334,10 +2337,10 @@ Still open, in the order they would be cheapest to close:
 | # | Question | Waiting on |
 |---|---|---|
 | 2 | The terminal surface's exact floor | a written line, before accretion starts |
-| 3 | Where the permission channel lives with two subscribers | W3's broker design |
+| ~~3~~ | ✅ **ANSWERED 2026-08-19** — W3 item 4, F180: control is durable data on the event log; identity is a `seq` | — |
 | 4 | Console served, embedded, or both — with 44 MB of assets | W12 |
 | 6 | Does `Paused` release the workspace lock as well as the slot | design call, leaning "keeps it" |
-| 7 | What a disconnected operator does to a running fleet | design call, per verb |
+| 7 | What a disconnected operator does to a running fleet | **control plane answered** 2026-08-19 (W3 item 4 §4: a written loss rule per request kind, enforced in `apply()`); the fleet-scheduling half is still open |
 | 8 | Take-over per task or fleet-wide | design call |
 | 9 | Event-log retention | interacts with 19 and with F125's one caveat |
 | 10 | Do the four 34.3 MB attacking GIFs survive | an unmeasured decode-memory number |

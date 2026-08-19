@@ -17,8 +17,10 @@ Planned items, in the order §14 item 4 dictates:
    that justifies it: full ACID costs 929 µs per transition here, boot-as-replay 94 ms per 100k
    events. The ecosystem, live-verified, offers storage engines or servers — not the middle.
    Answers OQ-W3-2.
-4. ☐ **The control channel and the broker** — where W5's `Allow | Deny | Redirect(String)` event
-   lives with two subscribers (OQ-W5-3), select-at-every-boundary, arrival-time contract.
+4. ✅ **The control channel and the broker** (F174–F184) — control is durable data on item 3's log,
+   request identity is a `seq`, and the channel is **two mechanisms**: a boundary select plus a
+   cancel flag in the stream loop. Answers OQ-W5-3 and OQ-W3-10; corrects item 2's "exactly one
+   intrusive change" to two. The family lost the free-text redirect three separate ways.
 5. ☐ **Escalation lineage** — worker fails → verification fails → re-scoped by a stronger model →
    retried, with the whole lineage traceable.
 6. ☐ **Rust ecosystem survey, live-verified** — async runtime (the tokio question), HTTP/SSE,
@@ -610,6 +612,11 @@ tissue keeps operating unmodified inside each turn.
 
 ### F157 — the engine needs exactly one intrusive change, and the hook for it already exists
 
+> ⚠ **Corrected 2026-08-19 by F184 (item 4): it is two.** The gate site is the right door for every
+> *resumable* verb, but reaching it costs one generation plus one tool call — minutes on this
+> hardware. Mid-stream `Halt`/`Kill` need a second change: a cancel flag read between SSE chunks in
+> `api.rs:933`/`:1077`. The rest of this finding stands.
+
 W5 F100 requires the worker to select on a control channel **at every step boundary**. Step
 boundaries are *inside* the turn — between tool calls — so the orchestrator's control must reach
 into the one place F156 just fenced off. The extraction found the loop already has a door at
@@ -679,7 +686,7 @@ confirmation.
 |---|---|---|
 | OQ-W3-8 | ✅ **RESOLVED 2026-08-19** — yes: ≤0.25 s mid-decode, ≤~10 s mid-prefill, proxy transparent (F162/F163, live-probe section below). Kill-now is a socket close | — |
 | OQ-W3-9 | Where the crate boundaries fall in the copy (engine / orchestrator / console / shared types) | item 7, W12 |
-| OQ-W3-10 | How the control point composes with spawned sub-agents (`AgentToolExecutor::stateless()` runs with a fixed registry and no prompter today) | item 4 |
+| ✅ OQ-W3-10 | **ANSWERED in item 4** — a sub-agent gets a *child* control point carrying the parent's grants, refusing to widen them, and naming its lineage through the `attempt_id` chain; fail-closed unchanged | — |
 
 ## Confidence: high
 
@@ -1274,5 +1281,524 @@ What would lower it: OQ-W3-3 landing on a heartbeat granularity far finer than a
 would move F169's affordability argument; and W6 item 6 finding that workspace checkpointing is
 expensive enough to change what `Holding` can promise. What would raise it: re-running the spike
 through `rusqlite` once the 2.0 crate exists, to replace CPython's floor with the real number.
+
+---
+
+# Item 4 — the control channel and the broker
+
+## Question
+
+§11's line is *"human-in-the-loop pause and resume — the single most important capability in the
+list, because it is the one that turns the console from a viewer into a command center."* W5 then
+spent an item on the verbs and handed W3 five requirements: the worker selects on a control channel
+at **every step boundary** (F100); the permission event carries `Allow | Deny | Redirect(String)`
+(F106); an answer must not be accepted if the operator had no chance to read the prompt, so
+**arrival time is part of the contract** (F132); grants are scoped `{session, tool, action, path}`
+(F133); and two verbs the first pass missed — **stop-but-keep-the-work** and
+**queue-while-streaming** (F138). Item 3 added a sixth: a control command must be **durable before
+it is acknowledged**, or a crash between "you pressed pause" and the pause costs the operator their
+belief about what the system is doing.
+
+So, precisely: **where does the control channel live once there are two subscribers, what does it
+carry, and what latency does each verb actually get?** OQ-W5-3 is this item's to answer, and so is
+OQ-W3-10 (how the control point composes with spawned sub-agents).
+
+Three sub-questions, because they have different kinds of answer:
+
+- **Identity and transport** — a design question the donors answer by counter-example.
+- **Arrival, loss and durability** — a rules question; the rules must live somewhere no surface can
+  forget them.
+- **Latency per verb** — an arithmetic question, answerable today from numbers already measured
+  (F80, F162, F169), and the one that decides how many mechanisms the channel is.
+
+## Method
+
+Fourth donor extraction pass, 2026-08-19, same three checkouts as items 1–3: ABCC v1 at
+`D:\dev\agent-battle-command-center` HEAD `d5528ea`, BCF at `D:\dev\battle-command-forge` HEAD
+`d6c1601`, Claudette at `D:\dev\claudette` HEAD `af3f804`. This pass follows one thread end to end
+in each repo — *an operator forms an intention; what reaches the thing doing the work?* — which
+means reading the **callers**, not just the handlers. Every claim carries file:line. No new
+measurement was taken: the latency table is arithmetic over W1 F80, W3 F162/F163 and W3 F169, and
+it is labelled as such.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| Redirect + undo exist in the family | `prestudy/inheritance-map.md` §12 item 3 | true of the CLI only — and F177/F181 show the redirect has now been lost three separate ways |
+| Per-request rendezvous, fail-closed on disconnect | Claudette `tui_worker.rs:88-140` | the **semantics** REUSE; the **mechanism** cannot survive two subscribers (F180) |
+| The permission gate as the loop's existing door | F157, `conversation.rs:659-664` | REUSE, and it is necessary but not sufficient (F184) |
+| `humanEscalation`'s timeout-then-escalate | ABCC `humanEscalation.ts:36-56` | **REUSE** — the family's one correct answer to operator loss (F178) |
+| Kill / abort / recover paths | ABCC `orchestratorService.ts:592`, `taskExecutor.ts:282`, `stuckTaskRecovery.ts:250` | DISCARD — all three are the same database write (F174) |
+
+## Findings
+
+### 🚨 F174 — v1's stop verbs never reach the thing doing the work: four paths, one database write, zero signals
+
+v1 executes a task by POSTing to the Python agent service and awaiting the response
+(`executor.ts:71-76`, `taskExecutor.ts:763`), with a 600-second budget (`EXECUTE_TIMEOUT_MS`,
+`executor.ts:8`). Four different operator- or system-initiated paths stop a task. Traced to their
+ends:
+
+| Path | Entry | What it does |
+|---|---|---|
+| Kill mission | `orchestratorService.ts:592-653` | releases agents + pool slots, writes `status:'aborted'` on every non-terminal task |
+| Abort task / abort agent | `routes/tasks.ts:268`, `routes/agents.ts:320` → `taskQueue.ts:103` → `taskExecutor.ts:282-343` | releases locks + pool slot, writes `status:'aborted'` |
+| Watchdog recovery | `stuckTaskRecovery.ts:250-271` | releases locks + pool slot, writes `status:'aborted'` |
+| Human reject | `taskQueue.ts:154-156` | calls the same `abortTask` |
+
+**Not one of them calls `ExecutorService`.** `taskExecutor.ts` imports it (`:26`) and constructs it
+in exactly one place — the *start* path at `:736`. `abortExecution` exists (`executor.ts:87-102`)
+and has **one caller in the repository**: `routes/execute.ts:114`, an endpoint the console does not
+use.
+
+And that one caller reaches a no-op. `POST /execute/abort` (`agents/src/main.py:592-601`) reads:
+
+```python
+if task_id in execution_state:
+    execution_state[task_id]["status"] = "aborted"
+    del execution_state[task_id]
+return {"aborted": True, "task_id": task_id}
+```
+
+`execution_state` is declared at `main.py:36` and — verified by grep over the whole package — is
+**written nowhere else**. The membership test is always false, the body is unreachable, and the
+endpoint returns `{"aborted": true}` unconditionally. The TypeScript side then treats that `200` as
+success (`executor.ts:99`) and reports `{aborted: success}` to its caller.
+
+So the family's most-cited control verb is, end to end, a status column plus a hard-coded `true`.
+This is the same disease as F158 and F161 — *a default that pretends to be a measurement* — moved
+from the verifier into the control plane, where it is worse: a wrong score misleads, a wrong
+`aborted: true` makes the operator stop watching.
+
+### 🚨 F175 — the abort releases the file locks while the worker is still writing
+
+The lie is not confined to the display. All three internal stop paths perform the same three steps
+in the same order (`taskExecutor.ts:292-299`, `stuckTaskRecovery.ts:256-262`,
+`orchestratorService.ts:604-632`): release file locks, release the resource-pool slot, write
+`aborted`. The POST is still open, the agent is still iterating, and the file locks that the
+inheritance map calls *"the one durable piece of ABCC's lifecycle"* have just been handed back to
+the assigner.
+
+The watchdog case is the sharpest, because it fires **with no operator involved at all**: a task
+that looks stalled for `taskTimeoutMs` has its locks released while its worker keeps editing, and
+the pool slot it held becomes immediately available to a second task that may now be told to edit
+the same files. The concurrency control and the stop verb are wired backwards — locks are released
+on *intent to stop* rather than on *confirmation that work has ceased*.
+
+**Requirement this generates:** resources are released by the **worker's own exit**, or by the
+broker after the worker's death is *observed* — never by the operator's command. Item 3's `apply()`
+already forces the state change and the release into one transaction; F175 says the transaction may
+only be written by the party that knows the work has stopped.
+
+### 🚨 F176 — pause is a status rename, and it collides with the state the watchdog acts on
+
+`agentManager.pauseAgent` (`agentManager.ts:82-110`) writes `status: 'stuck'` with the comment
+`// Using stuck as "paused"`, emits a socket alert of type `agent_stuck` titled *"Agent Paused"*,
+and returns. Nothing is signalled. The agent's task keeps running.
+
+Two consequences the rename creates on its own. First, the agent status `'stuck'` has exactly two
+writers (`agentManager.ts:93`, `taskQueue.ts:120`) and **no reader that acts on it** — pausing an
+agent changes a colour. Second, the task underneath stays `in_progress`, which *is* the watchdog's
+found-set (`stuckTaskRecovery.ts:194`, item 1 F148), so a "paused" agent's task remains on the
+timeout clock and is eventually aborted with `errorCategory: 'timeout'` — through the F174 path, so
+also without stopping. **Pause does not stop the work, and it does not stop the clock either.**
+`resumeAgent` (`agentManager.ts:112`) then restores `busy` on a task that never stopped.
+
+### 🚨 F177 — the operator's instruction is collected, validated, transmitted, and discarded
+
+v1's console renders a human-input panel when a task is `needs_human`
+(`ui/src/components/main-view/TaskDetail.tsx:239-270`): a textarea placeheld *"Enter your input or
+instructions…"* and three buttons — Approve, **Modify**, Reject — where Modify is
+`disabled={loading || !humanInput}`, i.e. **the UI enforces that the operator has typed something
+before it will let them send it**. `handleSubmitInput` (`:55-58`) posts the text. The route accepts
+it, and a second field besides:
+
+```ts
+input: z.string(), action: z.enum(['approve','reject','modify']), modifiedContent: z.string().optional()
+```
+
+(`routes/tasks.ts:238-241`), then calls `taskQueue.provideHumanInput(id, data.input, data.action)`
+— dropping `modifiedContent` at the call site. And the service (`taskQueue.ts:147-186`) **never
+reads `input` at all**: `reject` aborts, while `approve` and `modify` fall through to the identical
+branch that sets the task back to `assigned`.
+
+So the operator types an instruction, the interface validates that they typed it, the wire carries
+it, and the handler resumes the task exactly as if they had clicked Approve. That is the third
+distinct way this family has lost the same verb:
+
+1. **Claudette CLI** — has it, smuggled inside a deny reason (`cli_prompter.rs:127-134`).
+2. **Claudette TUI** — dropped it at the channel type, `SyncSender<bool>` (F106).
+3. **ABCC v1** — renders it, validates it, transmits it, discards it.
+
+Three surfaces, three losses, zero compiler errors. **The redirect is not a feature that keeps
+getting deprioritised; it is a feature that keeps getting *deleted in transit*, because it has never
+once been a variant of a type that something exhaustively matches on.**
+
+### F178 — v1's one real gate is agent-initiated, and its loss rule is the family's only correct one
+
+Worth stating plainly, because items 1–3 have been unkind to this donor and this part is right.
+
+The only producer of `needs_human` in the entire repository is a **tool the model can call**:
+`escalate_task(task_id, reason, urgency)` (`agents/src/tools/cto_tools.py:180-197`) PATCHes the
+task. `taskQueue.requestHumanInput` (`:107`) exists for the same purpose and has no caller. There is
+**no operator-initiated gate and no per-tool-call gate anywhere in v1** — which is the structural
+reason its console is a viewer: the operator can only answer questions the model chose to ask.
+
+But the *loss* rule is written down and it runs. `HumanEscalationService` (`humanEscalation.ts`)
+polls every 60 s for tasks that have been `needs_human` longer than `config.humanTimeoutMinutes` and
+**escalates them to another agent** (`:36-56`). That is F101's requirement — a defined behaviour for
+"the operator never answered" — implemented, in the family, once. It is the shape 2.0 should keep:
+an unanswered control request is not a hang and not a silent default; it is a transition to a
+written state, on a clock, visible.
+
+### F179 — BCF's only gate is at a round boundary on blocking stdin, and its TUI switches it off
+
+BCF has exactly one human-in-the-loop decision point (`mission.rs:517-583`), and it is well shaped
+for what it is: after each fix round it prints the gate score and offers `[a]` accept, `[f]` another
+fix round, `[q]` abort mission, then reads a line. On `q` it writes the report and returns cleanly
+(`:585-597`) — the only place in the family where a stop verb produces a durable artefact.
+
+Three defects, each of which becomes a rule for 2.0:
+
+- **The granularity is a whole round.** Architect → tester → coder → verify runs to completion
+  before the operator is asked anything. There is no mid-round control of any kind: BCF contains no
+  `AtomicBool` and no cancellation token, verified by grep over `src/`.
+- **It reads stdin, blockingly, from inside an `async fn`** (`:573`), parking a tokio worker —
+  F154's "tokio in the dependency tree, not in the architecture", in the one place it is
+  load-bearing.
+- **The TUI hard-codes `runner.auto_mode = true`** (`tui.rs:739-741`), and `auto_mode` replaces the
+  whole gate with a printed `[AUTO]` decision (`mission.rs:519-538`). So from the surface with the
+  display, the gate never appears — **and neither does `[q]`.** The only way to stop a running
+  mission from BCF's TUI is `q`/`Esc` → `should_quit` → exit the process (`tui.rs:1257`).
+
+That is F106's asymmetry a second time, in the other donor, on a different verb: **the surface with
+the better display has the worse control.** Two donors, two independent occurrences, is not an
+accident — it is what happens when control is a property of a surface instead of a property of the
+core.
+
+### 🚨 F180 — Claudette's request identity is a channel, not data — which is exactly why it cannot serve two subscribers
+
+Claudette's mechanism is the good one in the family, and reading it closely shows why it has to be
+replaced rather than extended. `TuiPrompter::decide` (`tui_worker.rs:108-139`) creates a **fresh
+rendezvous channel per request** and ships the sender inside the event; the doc comment above it
+(`:88-97`) states the two properties this buys: a stale answer from an earlier prompt *"can never
+satisfy a later one, by construction"*, and every render-loop exit path drops the sender, so
+`recv()` returns `Disconnected` and the tool is denied rather than hung.
+
+Both properties are real. Both are properties **of the channel object**, not of any data. Look at
+what the request itself carries (`permissions.rs:70-75`):
+
+```rust
+pub struct PermissionRequest { tool_name: String, input: String,
+                               current_mode: PermissionMode, required_mode: PermissionMode }
+```
+
+No request id, no timestamp, no task or attempt identity, no operator. The *only* thing that
+distinguishes this request from the next identical one is which `SyncSender` it arrived with.
+
+A `SyncSender` cannot be written to SQLite, cannot be delivered to two subscribers, cannot be
+acknowledged durably, and cannot be re-offered after a crash. **So the two-subscriber case is not a
+refactor of this mechanism; it is a replacement of it — and item 4's job is to re-create both of its
+safety properties in data.** That is OQ-W5-3's answer, and it is mechanical rather than a matter of
+taste: *the channel must become a row, and the identity must become a `seq`.*
+
+### F181 — the third branch is not in the type, which is why it was droppable
+
+`PermissionPromptDecision` has two variants (`permissions.rs:77-81`):
+
+```rust
+pub enum PermissionPromptDecision { Allow, Deny { reason: String } }
+```
+
+The redirect that F106 calls the family's richest control verb is not one of them. It is a
+*formatting convention inside `Deny.reason`* — `gate_line_decision` (`cli_prompter.rs:118-135`)
+builds the string *"The user declined to run this tool and gave this instruction instead — follow it
+before continuing: {trimmed}"*, and the model recovers the operator's intent by reading English out
+of an error `tool_result`.
+
+This is the mechanical explanation for F106's port defect. The TUI's `SyncSender<bool>` loses the
+third branch **without a single compiler error**, because at the type level there were only ever two
+branches to lose. It is the same class of defect item 1 found in v1's status field (F147: the type
+existed and enforced nothing) — a distinction that lives in a string is a distinction nothing checks.
+
+### F182 — the structured operation that grants need already exists, and is wired to nothing
+
+F133 requires grants scoped `{session, tool, action, path}` — *"don't ask again for this"*, between
+prompt-every-time and a global yolo toggle. That scope needs a structured description of what a tool
+call is about to do. The family has the type. `permissions.rs:16-32` defines
+
+```rust
+pub enum Operation { ReadFile(PathBuf), WriteFile(PathBuf), Execute(Vec<String>), Network(String), Other(String) }
+```
+
+lifted from the `claudettes-forge` scaffold, with `describe()` and a doc comment stating *"Today
+only the prompter consumes it; the policy still keys off the tool name."*
+
+**The prompter does not consume it.** `PermissionRequest` has no `Operation` field, and grep across
+`crates/claudette/src` finds `Operation::` referenced **only inside `permissions.rs`'s own test
+module** (`:530-566`). It is dead code carrying a doc comment that describes a consumer which does
+not exist — F147's pattern once more, this time in the repo 2.0 is copying from.
+
+What survives is the *shape*: those five variants are close to the grant key F133 asks for, and
+building the request around `Operation` rather than around `(tool_name, input_json)` is what makes a
+grant expressible at all. Today the policy keys off tool name only (`permissions.rs:158-164`), so
+the finest grant the family could express is "always allow bash".
+
+### F183 — nothing in the family timestamps a prompt, and the two-surface case makes the naive arrival rule wrong
+
+F132 requires that a control answer be refused if the operator had no chance to read the prompt.
+Searched for across all three repos, the implementation is absent everywhere — and in Claudette's
+gate the *hazard shape* is present: `read_single_key` (`cli_prompter.rs:146-197`) calls
+`enable_raw_mode()` and then `event::read()`, which returns the **oldest keypress the console has
+buffered**. The only thing run beforehand is `status::global().on_prompt()` (`:51`), which
+transitions the spinner phase and drains nothing. A `y` typed ahead while the model was working is
+therefore a candidate to be consumed as `Allow` with zero display time; any other printable
+character is a candidate to open the free-text redirect and swallow the rest of the line.
+
+**Marked derived, not measured.** Whether the console input buffer actually survives the raw-mode
+transition on Windows Terminal is settleable — a ten-line crossterm probe with pre-filled console
+input would do it — and the design does not depend on the answer, because the *mechanism* that would
+enforce the rule is missing regardless. (The TUI narrows the window differently: typing is disabled
+while `app.working` (`tui.rs:1186`), so keystrokes are swallowed by the `_ => {}` arm rather than
+queued in the app — but the modal branch (`tui.rs:812-865`) still reads whatever the terminal has
+buffered, and has no debounce, no timestamp, and no drain.)
+
+The two-surface case then corrects F132's rule. Codex's fix is a one-second delay *while the
+composer is active* — a single-surface rule, because there is one composer. With a console and a
+terminal both subscribed there is no single moment of display: the console may have been closed and
+reopened, the terminal may have been scrolled away. **So arrival must be measured from display, per
+answer, not from request** — every answer carries the `displayed_at` of the surface that produced
+it, and the broker checks that answer against that surface's own display time. A surface that cannot
+honestly report when it displayed a prompt is a surface that may not answer.
+
+### 🚨 F184 — the arithmetic that splits the verb set: boundary-select buys minutes, and kill-now is a socket close
+
+F157 concluded the engine needs *exactly one* intrusive change — generalise the prompter hook at
+`conversation.rs:659-664` into a control point, so the existing gate site becomes the select point.
+That is correct and it is not enough, and the numbers say so without any new measurement.
+
+The gate site sits **between tool calls**. To reach it, the loop must first finish streaming a model
+response. On this hardware the champion decodes **54–76 tok/s** (W1 F80) and the fleet's
+`num_predict` is **8192** (W8 `runmeta.json`), so a maximal generation is **~108–152 s**. Then the
+tool runs: W8's own verify budget is **300 s** (`verify_timeout_s`). And the HTTP client is blocking
+with a **300 s whole-request timeout** and no read timeout (`api.rs:147`, `:237`), reading the
+stream with `for line in reader.lines()` (`api.rs:933`, `:1077`).
+
+| Verb | Where it can land | Latency, this hardware |
+|---|---|---|
+| Allow / Deny / Redirect | the gate itself | operator-bound; the loop is already stopped there |
+| Pause (clean, resumable) | next boundary | up to ~2.5 min of generation **plus** the running tool — minutes |
+| Enqueue (queue-while-streaming) | next model call | same bound, and that is fine — it is a message, not a stop |
+| **Halt (keep the work)** | mid-stream | **≤0.25 s** — abandon the read, drop the response, socket closes (F162) |
+| **Kill (destructive)** | mid-stream | ≤0.25 s mid-decode, ≤~10 s mid-prefill (F162/F163) |
+
+**An operator who presses stop and waits three minutes has not been given a stop button.** So the
+control channel is *two* mechanisms, not one — the same shape W5 found for the eight verbs:
+
+1. **A boundary select** at the generalised gate site, for everything resumable. F157's change.
+2. **A cancel flag read between stream chunks** — one `AtomicBool::load(Relaxed)` per line in the
+   two `reader.lines()` loops — whose only job is to break the loop early. Dropping the blocking
+   `Response` closes the socket, and OQ-W3-8 measured what happens next: the slot frees in ≤0.25 s.
+
+That is a **second** intrusive change to the copied engine, and item 2's "exactly one" is corrected
+here. It is a small one — two call sites, one atomic load at F123's ~150 events/sec — but it is on
+the hot path and must be named now, not discovered later.
+
+One consequence follows immediately, and it is the same gap F172 recorded from the other side: with
+a whole-request timeout and no read timeout, **a hung server parks the worker inside `read`, where
+no flag is checked.** The idle-gap timeout F172 says the family lacks is not a separate feature from
+the abort path — it is what makes the abort path reachable when the model stops talking.
+
+## Options compared
+
+Scored against: (A) two subscribers, neither privileged (F98, OQ-W5-3); (B) stale-answer
+impossibility, preserving F180's property; (C) durable before acknowledged (item 3 §5); (D) carries
+`Redirect(String)` in the type (F181); (E) mid-stream verbs in ≤1 s (F184); (F) survives a crash
+with the operator's answer intact; (G) implementation weight.
+
+| Option | A | B | C | D | E | F | G |
+|---|---|---|---|---|---|---|---|
+| 1. Port Claudette's per-request rendezvous as-is | ✗ one receiver | ✅ by construction | ✗ nothing durable | ✗ needs a new type anyway | ✗ | ✗ | lowest |
+| 2. Rendezvous + a second channel per surface | ⚠ two channels that must agree | ✗ two senders, one slot | ✗ | partial | ✗ | ✗ | low |
+| 3. v1's shape: broadcast events out, HTTP answers in | ✅ | ✗ nothing binds an answer to a request | ✗ | ✗ (F177) | ✗ | ✗ | medium |
+| 4. **Control as events on item 3's log; broker owns delivery; in-memory notify + cancel flag** | ✅ | ✅ conditional write on `in_reply_to` | ✅ 929 µs (F169) | ✅ | ✅ ≤0.25 s (F162) | ✅ replay re-offers | medium |
+| 5. Option 4 + a message-bus crate between broker and worker | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | medium-high, and a dependency at the centre of correctness |
+
+## Recommendation
+
+**Option 4.** The control channel is not a channel — it is **two rows in the log item 3 already
+builds, plus two in-memory wake paths that carry no truth of their own.**
+
+### 1. Control is durable data, and identity is a `seq`
+
+Two event kinds on the one log:
+
+```
+ControlRequest  { seq, task_id, attempt_id, kind, operation, at_unix_ms }   -- the worker asks
+ControlAnswer   { seq, in_reply_to: seq, verb, by: OperatorId, displayed_at, at_unix_ms }
+```
+
+The request's identity **is its own `seq`** — W5 F126's one integer, in a fifth role. F180's
+anti-stale property is preserved exactly, but as a conditional write instead of a consumed channel:
+`apply()` refuses a `ControlAnswer` whose `in_reply_to` is already answered, superseded, or belongs
+to a dead attempt. Refusal is a value, the same compare-and-set shape admission already uses (item 3
+§3). **The channel became a row; the guarantee did not change.**
+
+Fail-closed survives too, and improves: F180's "dropped sender ⇒ deny" becomes "no answer by the
+deadline ⇒ the written loss rule for that verb" — v1's escalation shape (F178), generalised.
+
+### 2. The broker: durable first, notify second, replay as the backstop
+
+One process owns the writer (item 3's single-writer rule). On an operator command it writes the
+`ControlAnswer` through `apply()`, **then** pokes the in-memory `Sender` for that attempt, **then**
+acknowledges to the surface. 929 µs (F169) buys the ordering, which is three orders of magnitude
+below the operator's own reaction time — durability here is free in the only sense that matters.
+
+The in-memory notify is an optimisation, never a source of truth: if it is lost, boot replay
+re-delivers the answer, because the answer is in the log. Workers never poll SQLite.
+
+### 3. The control point: one trait, one method, two boundaries
+
+F157's generalisation, with the verb set the acceptance list demands:
+
+```rust
+enum Control {
+    Proceed,
+    Allow, Deny(String), Redirect(String),   // three variants, in the type (F181's fix)
+    Pause,                                    // boundary; releases the model slot, keeps the workspace lock
+    Halt,                                     // mid-stream; abandon generation, KEEP artefacts (F138)
+    Kill,                                     // mid-stream; destructive, releases everything
+    Enqueue(String),                          // queue-while-streaming; lands at the next model call
+}
+trait ControlPoint { fn check(&mut self, at: Boundary) -> Control; }
+```
+
+`Boundary::BeforeTool { name, operation, input }` is the generalised permission gate — and it
+carries `Operation` (F182's fix), because grants are unexpressible without it.
+`Boundary::BeforeModelCall` is where `Enqueue` lands. `Halt` and `Kill` do **not** arrive through
+this trait: they are the `Arc<AtomicBool>` read in `api.rs:933`/`:1077`, per F184.
+
+### 4. The rules that live in `apply()`, not in a surface
+
+Three, and the placement is the whole point — F106, F177 and F179 are all cases of a surface
+silently declining to implement a rule:
+
+- **Arrival (F132/F183).** An answer carries the `displayed_at` of the surface that produced it, and
+  `apply()` refuses answers where `at_unix_ms - displayed_at < min_read_ms`. A surface that cannot
+  report display time honestly may not answer.
+- **Attribution.** `by: OperatorId` is required, so *"who answered"* is in the record. With two
+  subscribers this stops being a nicety: two operators can answer the same prompt, and the loser
+  must be told they lost.
+- **Loss (F101).** Per verb, written, in a table the watchdog reads — item 1's contract table gains a
+  column rather than the system growing a mechanism.
+
+| Request kind | No answer by deadline | Rationale |
+|---|---|---|
+| Tool permission | `Deny`, reason `operator absent` | matches Claudette's disconnect behaviour; fail closed |
+| Escalation / review | task → the operator-blocked state, then **escalate on a clock** | F178, the family's one correct rule |
+| Pause acknowledgement | none — pause is not a request | the operator does not wait on the fleet |
+
+### 5. Grants (F133), as events
+
+A grant is a `ControlAnswer` variant carrying a scope key `{session, tool, action, path}` derived
+from `Operation`, written to the log like everything else. That makes it durable, listable ("what
+have I allowed this session?"), and **revocable by another event** rather than by a mutable flag —
+the single-writer discipline F149's drift bug argues for. Default scope is the session; a grant
+never outlives the process unless the operator says so.
+
+### 6. Sub-agents (OQ-W3-10, answered)
+
+Today `AgentToolExecutor::stateless()` runs sub-agents with no prompter, so dangerous tools are
+auto-denied (`conversation.rs:659-664` with `prompter == None`). The answer: **a sub-agent gets a
+child control point, not no control point.** It carries the parent's grants, may not widen them, and
+every request it raises names its lineage through the `attempt_id` chain, so the console can show
+*which* unit is asking. The fail-closed default is preserved — a sub-agent whose broker link is gone
+denies, exactly as today — but "the model spawned a helper and the helper went silent" stops being
+invisible.
+
+### 7. What not to build
+
+No second control transport; no per-surface answer channel (option 2 is F180's bug re-created with
+two senders); no message-bus crate; no polling of the log by workers; and **no `Pause` implemented
+as kill-and-restart** — the point of the boundary select is that pause is cheap and resumable, and
+item 3's checkpoint is what makes the promise honest.
+
+## Rejected alternatives and why
+
+- **Porting the rendezvous unchanged (option 1).** Its two safety properties are properties of a
+  channel object (F180), and neither survives a second subscriber, a durable ack, or a crash. Kept as
+  the *specification* of what the row-based mechanism must reproduce.
+- **A channel per surface (option 2).** Two senders into one logical answer slot is precisely the
+  stale-answer hazard the rendezvous was built to make impossible, re-introduced for convenience. It
+  also has nowhere to put "who answered".
+- **v1's shape — broadcast out, HTTP in (option 3).** Worth naming because the *transport* is right:
+  socket.io fan-out plus a point request is a reasonable two-subscriber arrangement, and 2.0's SSE +
+  POST is its descendant. What v1 lacks is any binding between an answer and the request it answers,
+  which is why `provideHumanInput` can accept an instruction for a task and apply nothing (F177).
+  **v1 had the transport and no semantics; Claudette has the semantics and no transport. Item 4 is
+  the join, and neither donor's code carries over — only their lessons.**
+- **A message-bus or actor crate (option 5).** The same argument item 3 made against `cqrs-es`: this
+  is the centre of the system's correctness, the mechanism is a few hundred lines of conditional
+  writes over a table that already exists, and a dependency here buys an abstraction we would have to
+  bend anyway.
+- **Thread-kill for `Kill`.** Already rejected in item 2 for leaving locks and the terminal in
+  undefined states; F184 removes the last reason to want it, since the socket close achieves the same
+  latency (≤0.25 s) with a clean unwind.
+- **Making `Halt` a special case of `Kill` with a flag.** F138's lesson is that *"keeps the work done
+  so far"* is what the operator wants most of the time; a flag on the destructive verb makes the safe
+  path the one you have to remember. Two verbs, two entries in the contract table.
+
+## Effect on fun
+
+**The console gets to be wrong out loud.** Every request, every answer and every refusal is an event
+with an author and a time, so replay shows not just what the fleet did but *what it asked and how
+long you left it waiting*. W5 F129's fun table wanted "how long the operator watched dead air" to be
+measurable; a control request with a `displayed_at` and an answer with an `at_unix_ms` measures it
+exactly, per prompt.
+
+**Steering becomes ordinary.** `Redirect(String)` and `Enqueue(String)` in the type mean the cheap
+version of take-over — type at the fleet while it works, land at the next boundary — is available on
+day one rather than waiting for fork-from-checkpoint. F138 found this is what the most-used agent in
+the world actually ships, and F177 is what it looks like to *promise* it and not have it.
+
+**Stop feels like stop.** The difference between a three-minute pause and a quarter-second halt is
+not a performance number, it is whether the operator believes the button. This is the item where the
+console stops being a viewer, and the felt version is small: you press a key, the unit stops
+mid-sentence, and the work it had already done is still there.
+
+The cost worth naming: three surfaces must each implement `displayed_at` honestly, and a surface that
+fakes it defeats the rule for everyone. That is a code-review item forever, and it is the price of
+the rule living in `apply()` instead of in one screen.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W3-15 | `min_read_ms` — Codex chose 1 s for a single composer; the right value for a console that may have been closed is unknown, and F183's probe would inform it | W5 console build; a ten-line crossterm probe would settle the type-ahead half now |
+| OQ-W3-16 | Two operators, one prompt: first-answer-wins with the loser notified, or an explicit claim? Only matters once W10 exists, but the `by:` field must be in the schema before then | W10 |
+| OQ-W3-17 | Does `Enqueue` land at the next model call or the next tool boundary when a tool is mid-flight? Codex retries rejected steers on the next turn; the cheapest correct rule is unproven here | item 5, W5 console |
+| ✅ OQ-W5-3 | **ANSWERED here** — the permission channel lives in the log; identity is the request's `seq`, delivery is the broker's in-memory notify, and "who answered" is a required field (F180) | — |
+| ✅ OQ-W3-10 | **ANSWERED here** — sub-agents get a child control point carrying the parent's grants and their own lineage; fail-closed unchanged | — |
+| OQ-W3-13 | Unchanged from item 3, and F184 sharpens it: the idle-gap timeout is what makes the cancel flag reachable when the server stops talking, so it is the same mechanism, not a separate feature | W8 runs |
+
+## Confidence: high on the diagnosis and the mechanism, medium on the arrival rule
+
+The donor findings are grep-level facts with file:line, verified this session in all three checkouts,
+and the four stop paths in F174 were traced from route to handler to the far side of the HTTP call
+rather than inferred from names — which is what turned "kill releases resources" into "kill releases
+resources *while the worker keeps writing*". F184's latency table is arithmetic over numbers already
+measured on this machine (F80, F162/F163, F169) and is labelled as arithmetic; no new measurement was
+taken and none is needed to choose between the options.
+
+What is weaker: **F183 is derived, not measured** — the claim that a type-ahead keystroke reaches
+`event::read()` through the raw-mode transition is consistent with how the code is written and is not
+something this pass ran. The design does not turn on it (the enforcement mechanism is absent either
+way), but the `min_read_ms` value in OQ-W3-15 does. And the arrival-from-display rule is this item's
+one genuine invention rather than a port: it is the right generalisation of F132 for two subscribers
+as far as the argument goes, and nobody we have read has shipped it.
+
+What would raise it: the crossterm probe; and W5's console reaching the point where a real
+`displayed_at` can be produced and checked against a real answer.
 
 ---
