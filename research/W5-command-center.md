@@ -2362,3 +2362,77 @@ named deliverables produced, one owner ruling narrowed and accepted, three corre
 
 What W5 deliberately does **not** contain, per §16 and §15: any ABCC 2.0 implementation code. The
 first line of it belongs to Phase 3.
+
+---
+
+# Addendum 2026-08-19 — the sixel spike ran, and all five questions closed YES
+
+The feasibility spike the RE-SCOPE gated on (`research/spikes/w5-sixel/`, commit `cb5aa3a`,
+throwaway per §15) was built and machine-verified in one session, then run by David in his real
+Windows Terminal the same day. Encoder byte-matches Codex's reference implementation (its test
+vectors pass verbatim); results below are from the real terminal, not an emulator or a spec sheet.
+
+## F142 — Windows Terminal answers the cell-size query; the ratatui-image panic is their bug, not a WT gap
+
+Probe results on the stable WT of this machine (1.24, `WT_SESSION` set): DA1 returns
+`?61;4;6;7;14;21;22;23;24;28;32;42;52c` — attribute 4, sixel, advertised outright — and CSI 16t
+answers `10x20 px`, confirmed independently by CSI 14t (1200x600 text area / 120x30 cells). The
+significance: `ratatui-image` issue #69 (the Windows panic in `Picker::from_query_stdio`, the
+spike brief's trap 1) is a defect in that crate's query plumbing, **not** a missing terminal
+capability. The real console does not need a hardcoded font size; it needs the same query with a
+deadline and a fallback — ~60 lines in the spike's `probe.rs`.
+
+## F143 — David's verdicts, in his own terminal: renders, reads as C&C at 75–120 px, animates at native rate, survives Ratatui
+
+The four judgement questions, answered by eye 2026-08-19: **hello** renders (Q1 pass, binary).
+**sprite**: "75px or 120px looks best" — squarely inside the predicted ~3.7× downscale from V1's
+280 px raster, bracketing Codex's 75 px pet size (Q2). **animate**: the 97-frame coder GIF at its
+native 25 FPS — 40 ms/frame, the demanding case — "looks great"; encode side was 0.53 ms/frame,
+18.4 KB/frame at 100x150 px (Q3). **tui**: the composite battlefield inside the Ratatui C&C
+layout "behaves o.k on resize" — redraw, resize and alternate screen all survived (Q4).
+
+## F144 — the throughput ceiling: the screen fills before the pipe does
+
+Q5's number, measured (`w5-sixel-bench-results.txt`, cell 10x20, 120x30 terminal):
+
+| phase     |   N | FPS    | avg ms | p95 ms | enc ms |  MB/s |
+|-----------|-----|--------|--------|--------|--------|-------|
+| sprites   |   1 | 3090.5 |   0.32 |   0.38 |      — |  20.6 |
+| sprites   |  16 |  218.5 |   4.57 |   4.94 |      — |  23.3 |
+| sprites   |  64 |   55.1 |  18.15 |  19.75 |      — |  23.5 |
+| composite |   0 |   28.6 |  34.69 |  36.23 |  10.86 |  13.2 |
+| composite |  16 |   25.6 |  38.79 |  39.94 |  12.53 |  13.3 |
+
+Two regimes, both comfortable. **Per-sprite**: WT ingests a steady ~23.5 MB/s of sixel stream;
+64 pre-encoded 50x75 sprites — the grid capacity of the whole terminal — still run at 55 FPS,
+and the extrapolated 15 FPS ceiling is ~235 sprites, more than three screens' worth. This is the
+sixel analogue of Phase 0's "free to ~100 DOM entities", and it is roomier: **the binding
+constraint is screen area, not throughput.** **Composite** (the flagship architecture, one
+full-viewport sixel per tick, 1200x560 px): 25.6–28.6 FPS end-to-end *including* the 11–12.5 ms
+encode, and near-flat in sprite count (28.6 → 25.6 from 0 to 16 sprites — compositing is ~1 ms;
+the cost is the fixed viewport encode+write). The full-screen battlefield sustains the coder
+GIF's native 25 FPS; at a C&C-style 12–15 FPS tick it uses under half the measured budget, on
+one core, before any dirty-region or caching work.
+
+## F145 — the sprites' alpha is feathered, and it decides where transparency is allowed
+
+Found during the build, confirmed against ground truth: cto-E-idle carries **5,062
+semi-transparent pixels (alpha 1–127) against ~10,000 opaque** — AI-rendered soft alpha across a
+third of the body, not just an anti-aliased rim. Sixel has no alpha channel, so Codex's
+threshold-128 rule punches visible holes in a *floating* sprite on the terminal background. The
+resolution is architectural and already the plan: sprites are alpha-blended onto the opaque
+battlefield composite (the spike's `blit()` does true source-over), where the feathering renders
+correctly and costs nothing. Rule for the real console: **transparent-background sixels are for
+incidental glyphs only; anything from the sprite corpus goes through the composite.**
+
+## Verdict
+
+**The spike passes on all five questions, and the flagship is feasible on the measured machine
+with margin.** The RE-SCOPE's bet is now backed by numbers from the real terminal: a
+C&C-1995-style Ratatui console with a live sixel battlefield runs at native sprite frame rate on
+stable Windows Terminal, and the fallback ladder (text over SSH, F136/F141) remains intact for
+every terminal that answers probe with less. RGB332's look on the battlefield JPEGs is not a
+tax — banding shows only in the sky, and the quantisation reads as period-correct (F140 held).
+Remaining spike-scale unknowns worth one line each: sixel over the *inline* viewport (the spike
+used the alternate screen throughout), and behaviour under WT's canvas renderer versus Direct3D
+on other machines. Neither blocks Phase 2 design.
