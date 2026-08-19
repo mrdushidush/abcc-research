@@ -892,6 +892,13 @@ needs to know a burst happened more than they need to hear each event in it.
 
 ### F113 — four of the eleven task states have no colour, in three places
 
+> ⚠ **Arithmetic corrected 2026-08-19 (W3 item 1, F146):** the four "missing" states are
+> `Mission.status` values (`shared/src/index.ts:390-396`) and were never Task states — the Task
+> lifecycle has **seven**, and `STATUS_COLORS` is exhaustive over all seven. The *requirement* this
+> finding hands W3 — one owned, exhaustive rendering map instead of three duplicates — stands and
+> is strengthened; the count falls. That even the executed verification pass could not tell whose
+> states were whose is itself the sharpest argument for one-vocabulary-per-entity: see W3 item 1.
+
 `STATUS_COLORS` is defined independently in all three minimaps, covering seven states: `pending`,
 `assigned`, `in_progress`, `needs_human`, `completed`, `failed`, `aborted`. The lifecycle actually
 in use has **eleven** (`verification.md` §3.4g adds `decomposing`, `awaiting_approval`, `reviewing`,

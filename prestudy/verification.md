@@ -522,6 +522,15 @@ unambiguously `Task`** — a floor, because `'completed'` and `'failed'` are sha
 `assigned`, `in_progress`, `completed`, `failed`, `aborted`, `needs_human`, `decomposing`,
 `awaiting_approval`, `reviewing`, `approved`.
 
+> ⚠ **Corrected 2026-08-19 (W3 item 1, F146):** the eleven-state list above conflates two
+> entities. `tasks.status` holds **seven** values — `pending`, `assigned`, `in_progress`,
+> `needs_human`, `completed`, `failed`, `aborted`, exactly the `z.enum` at `routes/tasks.ts:33` —
+> while `decomposing`, `awaiting_approval`, `reviewing`, `approved` are **`Mission.status`** values
+> (`shared/src/index.ts:390-396`). One nuance on "no status union type anywhere in `packages/api`":
+> true of `packages/api`, but `packages/shared/src/index.ts:54-61` does declare a `TaskStatus`
+> union — decorative, since no write path enforces it (W3 F147). The substance of this section —
+> no enforcement, the bare-literal counts, no state machine — stands untouched.
+
 There is no state machine — only conventions, which is exactly how (e)'s "nothing polls
 `assigned`" survived. **This is the concrete first job for Q8's "RTS framing into the Rust domain
 model" ruling**: the vocabulary decision and the durability fix are the same piece of work, and a
