@@ -1,0 +1,93 @@
+W3 item 6 runtime probe â€” raw results, 2026-08-20
+host: Windows 11, rustc 1.95.0, reqwest 0.12.28 (same 0.12 line Claudette pins)
+
+########## RUN 1 ##########
+W3 item 6 runtime probe â€” reqwest blocking, no async in the caller
+reqwest version compiled in: see Cargo.lock
+
+=== A. total-duration or per-read? ===
+  gap=1000ms n=6, client timeout=2s -> 7 lines in 5.003s (EOF); total 5.006s
+  VERDICT: PER-READ â€” the 2 s budget restarts on every chunk
+
+=== A2. the same body, one gap longer than the budget ===
+  gap=3000ms n=3, client timeout=2s -> 1 lines, stopped after 2.004s (READ ERROR: error decoding response body)
+
+=== B. the hung server: headers, one line, then silence ===
+  client timeout=3s -> 1 lines, gave up after 3.005s (READ ERROR: error decoding response body)
+
+=== C. cancel from another thread, no runtime ===
+  10 lines then CANCELLED between lines at 1.014s (watchdog fired at 1.000s)
+  server-side FIN observation is in the server log above/below.
+
+=== E. does the same number govern time-to-first-byte? ===
+  head=3000ms, client timeout=2s -> send() failed after 2.006s: error sending request for url (http://127.0.0.1:8731/slowhead?head_ms=3000)
+  VERDICT: ONE knob â€” the same duration bounds TTFB and each read
+  head=1500ms under a 2s budget -> 2 lines (EOF), total 1.516s
+
+=== D. what the blocking stack costs in threads ===
+  process threads before any client: 5
+  after 1 blocking::Client(s): 6 threads
+  after 2 blocking::Client(s): 7 threads
+  after 3 blocking::Client(s): 8 threads
+  after 4 blocking::Client(s): 9 threads
+  after dropping all clients: 5 threads
+
+done
+
+########## RUN 2 ##########
+W3 item 6 runtime probe â€” reqwest blocking, no async in the caller
+reqwest version compiled in: see Cargo.lock
+
+=== A. total-duration or per-read? ===
+  gap=1000ms n=6, client timeout=2s -> 7 lines in 5.002s (EOF); total 5.005s
+  VERDICT: PER-READ â€” the 2 s budget restarts on every chunk
+
+=== A2. the same body, one gap longer than the budget ===
+  gap=3000ms n=3, client timeout=2s -> 1 lines, stopped after 2.015s (READ ERROR: error decoding response body)
+
+=== B. the hung server: headers, one line, then silence ===
+  client timeout=3s -> 1 lines, gave up after 3.013s (READ ERROR: error decoding response body)
+
+=== C. cancel from another thread, no runtime ===
+  10 lines then CANCELLED between lines at 1.004s (watchdog fired at 1.000s)
+  server-side FIN observation is in the server log above/below.
+
+=== E. does the same number govern time-to-first-byte? ===
+  head=3000ms, client timeout=2s -> send() failed after 2.012s: error sending request for url (http://127.0.0.1:8731/slowhead?head_ms=3000)
+  VERDICT: ONE knob â€” the same duration bounds TTFB and each read
+  head=1500ms under a 2s budget -> 2 lines (EOF), total 1.502s
+
+=== D. what the blocking stack costs in threads ===
+  process threads before any client: 5
+  after 1 blocking::Client(s): 6 threads
+  after 2 blocking::Client(s): 7 threads
+  after 3 blocking::Client(s): 8 threads
+  after 4 blocking::Client(s): 9 threads
+  after dropping all clients: 5 threads
+
+done
+
+########## SERVER-SIDE WITNESS (both runs, stderr) ##########
+[server] listening on 127.0.0.1:8731
+[server] /gap n=6 gap_ms=1000 COMPLETED in 5.003s
+[server] /hang first line at 0.000s, now silent
+[server] /hang PEER CLOSED at 3.024s
+[server] /gap WRITE FAILED at 6.001s (ConnectionAbortedError) — client went away
+[server] /firehose WRITE FAILED at 1.215s (ConnectionAbortedError) — client went away
+[server] /slowhead WRITE FAILED at 3.001s (ConnectionAbortedError) — client went away
+[server] /slowhead head_ms=1500 COMPLETED in 1.501s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s
+[server] /gap n=6 gap_ms=1000 COMPLETED in 5.002s
+[server] /hang first line at 0.000s, now silent
+[server] /hang PEER CLOSED at 3.024s
+[server] /gap WRITE FAILED at 6.001s (ConnectionAbortedError) — client went away
+[server] /firehose WRITE FAILED at 1.205s (ConnectionAbortedError) — client went away
+[server] /slowhead WRITE FAILED at 3.000s (ConnectionAbortedError) — client went away
+[server] /slowhead head_ms=1500 COMPLETED in 1.501s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s
+[server] /gap n=1 gap_ms=1 COMPLETED in 0.000s

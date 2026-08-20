@@ -27,8 +27,12 @@ Planned items, in the order §14 item 4 dictates:
    Two of the brief's four verbs turn out to be inert in the donor, and the engine 2.0 is copying
    already contains the family's only correct escalation. Answers OQ-W3-14 and OQ-W3-17's lineage
    half.
-6. ☐ **Rust ecosystem survey, live-verified** — async runtime (the tokio question), HTTP/SSE,
-   persistence, serialization, queue crates; last-commit dates checked, not assumed.
+6. ✅ **Rust ecosystem survey, live-verified** (F197–F205) — the tokio question, settled by
+   measurement rather than argument: **threads own the work, one runtime owns the console edge, and
+   the event log is the only thing that crosses.** Cancellation lands in 4–14 ms on the blocking
+   stack, the idle-gap timeout the family lacks turns out to be a *config value* on a semantic the
+   docs describe backwards, and the only honest argument for tokio is the one nobody made — every
+   maintained Rust HTTP server is async. Answers OQ-W3-13; corrects F154 and F172 in place.
 7. ☐ **Process topology** — one binary or supervisor plus workers, and what that means for W7
    sandboxing and W10's protocol.
 
@@ -573,6 +577,15 @@ future can. Whether a read-timeout-plus-cancel-flag loop closes that gap cheaply
 measure, along with whether `llama-server` frees its slot on client disconnect (a live test; the
 GPU is available).
 
+> ✅ **Both measured, and the cancellation argument is discharged (2026-08-20).** F162: the slot
+> frees in ≤0.25 s on a socket close. F200: the cancel-flag loop lands in **4–14 ms** — the thread
+> parked in `reader.lines()` does not need interrupting, because it wakes on every line and the
+> `Response` it drops closes the socket. F198: the read timeout the gap needed **already exists**
+> as the blocking client's per-read budget. What replaced cancellation as tokio's honest argument
+> is **F203 — the console's HTTP server**, since every maintained Rust server crate is async; and
+> that argument reaches the edge only, never the core. Item 6's ruling: threads in the core, one
+> runtime at the edge.
+
 ### F155 — v1's scheduler is a callback chain with six competing assignment paths
 
 The map's row says ABCC's four services are "the right set of concerns." Verified, with two
@@ -1082,6 +1095,15 @@ from a second direction: **the liveness clock must be time-since-last-progress, 
 the stack — the task, and the socket.** It also means the hang is not a storage problem at all.
 Recovery is already known to be cheap: F162 measured the slot freeing in ≤0.25 s on a socket close,
 so detection is the entire cost.
+
+> ⚠ **Corrected in part by F198 (item 6, 2026-08-20), and only for the Claudette row.** Measured:
+> `reqwest`'s blocking `timeout` is a **per-read** budget on a streamed body, so Claudette's 300 s
+> is an *inter-chunk gap* on both streaming paths and a total only on the `resp.json()` fallback —
+> the same constant meaning two things depending on a response header. The table's *"Bound: total"*
+> is therefore wrong for Claudette's normal path. **What survives is the conclusion, restated about
+> the value rather than the mechanism:** 300 s of silence between tokens tolerates a hang rather
+> than detecting one, and the BCF/Python rows are unaffected. F199 sets the replacement values
+> (champion 90 s, R3 180 s, per request).
 
 ### F173 — the log and the workspace are two stores with no shared transaction, and nothing in the family bridges them
 
@@ -2452,5 +2474,535 @@ has never been run end to end.
 What would raise it: OQ-W3-19's measurement; and the first real chain — three attempts, one
 escalation, one operator re-scope — rendered in W5's console, which is where a lineage design either
 answers its six queries or does not.
+
+---
+
+# Item 6 — the Rust ecosystem survey, live-verified
+
+## Question
+
+The brief asks for a *"Rust ecosystem survey with live verification: async runtime, HTTP and
+WebSocket layer, persistence, serialization, job and queue crates, and whatever agent-specific
+crates are actually maintained today. Check last commit dates."* (§11:713-715)
+
+Persistence was answered in item 3 and is not reopened here (F171, crates.io API, 2026-08-19). Of
+what remains, one question is not a shopping list: **does ABCC 2.0's core run on `tokio`?** Every
+other line on the list follows from it — an async runtime is not a dependency you add beside the
+others, it is a colour that spreads through every function signature that touches it. F154 left the
+burden of proof on tokio and named its one honest argument as **cancellation**. This item either
+discharges that argument or concedes it.
+
+The subordinate questions, in the order they turn out to matter: what serves the console W5 chose;
+what the timeout story actually is on the stack the engine already ships; and which of today's
+agent-specific crates are alive enough to matter.
+
+## Method
+
+1. **Read the manifests and the lockfiles of both Rust donors, then count the async surface** rather
+   than trust the feature list. A `tokio` feature list is a claim; `grep -c "\.await"` is a fact,
+   and the two disagreed in one repo.
+2. **Read the vendored dependency source** for the semantics the design leans on —
+   `~/.cargo/registry/.../reqwest-0.12.28/src/blocking/*` — and then re-read the same files on
+   `master` to check the semantics are not a point-version accident.
+3. **Measure rather than infer.** The claims that decide the item — "you cannot cancel", "you cannot
+   detect a hang" — are cheap to test, so they were tested, against the exact dependency line the
+   engine ships. Spike: `research/spikes/w3-runtime/` (a stdlib Python chunked server, a 200-line
+   Rust probe, two repeats agreeing within milliseconds). Raw output in
+   `w3-runtime-probe-results.txt`.
+4. **crates.io API, live, 2026-08-20** for every crate named here, plus the **GitHub API for last
+   commit dates** on anything whose crates.io row looked stale — the brief asks for commit dates,
+   and a crate can publish rarely while being maintained, or the reverse.
+5. Persistence deliberately **not** re-verified: item 3 did it one day earlier.
+
+## Inherited
+
+- **F154** — "proved twice" is threads proved once; tokio was never exercised. Burden of proof on
+  tokio; its one honest argument is cancellation.
+- **F162–F165** (OQ-W3-8's live probe) — cancellation against `llama-server` is 100% client-side: a
+  socket close frees the slot in ≤0.25 s mid-decode.
+- **F172** — three repos, three total-duration timeouts, zero idle-gap timeouts. Nothing in the
+  family can distinguish a hung model from a slow one.
+- **F184** — the control channel needs two engine changes: a boundary select, and an `AtomicBool`
+  read between SSE lines at `api.rs:933`/`:1077`.
+- **F194** — the expensive stop is a *scheduled fleet pause*, not a race.
+- **W5 Option D** — the isometric web console served by the **same single binary** is the primary
+  view, over **SSE plus `POST /control`** (F124). This is the fact that turns out to decide the item.
+- **W2 F83** — aggregate throughput saturates at **N=2**. The fleet is two workers, not two thousand.
+- **W1 F80** — measured TTFT: 2.2 s at 2.4k tokens, **33.9 s at 55k**; prefill plateaus ~1,600 tok/s;
+  decode 54–76 tok/s.
+- **Item 3 F171** — the persistence ruling and its live table. Not reopened.
+
+## Findings
+
+### 🚨 F197 — the engine being copied contains no async at all, and is already running a tokio runtime
+
+Two facts that sound contradictory and are both true.
+
+**There is no async in the source.** Across 93 modules and 65,519 lines of
+`crates/claudette/src`, the count of `async fn` is **0**, `.await` is **0**, and `tokio::` is **0**.
+The string "tokio" appears exactly once in the entire tree, as an example crate name in a tool's
+JSON schema (`tools/registry.rs:32`). Concurrency is `std::thread` — 11 spawn sites — plus 58 uses
+of `mpsc`/`SyncSender`/`Arc<Mutex>`/`AtomicBool`.
+
+**And tokio 1.52.1 is in its `Cargo.lock`.** It arrives under `reqwest`'s `blocking` feature
+(`crates/claudette/Cargo.toml:57`), and it is not vestigial: `blocking::ClientHandle::new` spawns a
+thread named `reqwest-internal-sync-runtime` running a **current-thread tokio runtime**, then
+forwards every request to it over an unbounded mpsc channel and blocks the caller on a oneshot
+(`blocking/client.rs:1359-1420`). The lock holds 306 crates; `hyper`, `tower`, `mio` and
+`futures-util` are all already there.
+
+Measured cost of that arrangement, from the probe (test D): **exactly one extra OS thread per
+`blocking::Client`, released on drop** — 5 → 6 → 7 → 8 → 9 threads for four clients, back to 5
+after dropping them.
+
+Two consequences, and they point in opposite directions from the usual argument:
+
+- **"Adopt tokio" is not a dependency decision.** The dependency is paid, compiled and shipping in
+  every Claudette binary today. Binary size, compile time and audit surface are already spent.
+  Whatever tokio costs here, it is not that.
+- **It is a code-shape decision**, and the shape it would change is 93 modules that currently have
+  no colour at all. Adding `async` to the engine's call graph is not a `Cargo.toml` line; it is a
+  rewrite of every function between `main` and the HTTP call — which is most of them.
+
+And the shape 2.0 needs is already running: `tui_worker::spawn_worker`
+(`tui_worker.rs:274-282`) spawns a thread whose doc comment reads *"The thread owns the runtime for
+its entire lifetime, processing `UserInput` commands one at a time and firing `TuiEvent`s for every
+interesting state change."* That is one agent, one OS thread, commands in over a channel, events out
+over a channel — the fleet worker, minus the fleet. Going from one to N=2 is arithmetic.
+
+### 🚨 F198 — measured: the blocking timeout is a *per-read* budget, not a total-duration one — so F172's missing idle-gap timeout is a config value, not a mechanism
+
+The probe's first question was whether a streamed body under `reqwest::blocking` shares one budget
+or renews it per chunk. Six lines 1000 ms apart — about five seconds of body — read under a **2 s**
+client timeout:
+
+| test | server | client timeout | result (run 1 / run 2) |
+|---|---|---|---|
+| A | 6 lines, 1000 ms apart | 2 s | **7 lines, completes in 5.003 s / 5.002 s** |
+| A2 | 3 lines, 3000 ms apart | 2 s | **fails at 2.004 s / 2.015 s**, on the first over-budget gap |
+| B | one line, then silence | 3 s | **fails at 3.005 s / 3.013 s** |
+
+The budget restarts on every chunk. The mechanism is in the source: `impl Read for Response` calls
+`wait::timeout(self.body_mut().read(buf), self.timeout)` (`blocking/response.rs:435-441`), and
+`wait::timeout` computes `deadline = Instant::now() + d` **inside the call** (`blocking/wait.rs`),
+parking the thread until the waker fires. A fresh deadline per `read()` is the definition of an
+idle-gap timeout. Verified byte-identical on reqwest `master` (2026-08-20), and the changelog dates
+the behaviour to **v0.11.7** ("Fix `blocking` request-scoped timeout applying to bodies") — it is
+not a 0.12 accident.
+
+**This corrects F172 for the Claudette half of the family, and sharpens it.** Claudette's
+`REQUEST_TIMEOUT_SECS = 300` (`api.rs:147`, applied at `:237`) is not one thing. It is:
+
+- an **inter-chunk gap** budget of 300 s on the streaming path — both of them, Ollama NDJSON via
+  `consume_stream_lines(BufReader::new(resp))` and OpenAI-compat SSE via `consume_sse_lines(...)`
+  (`api.rs:611-638`); and
+- a **total** budget of 300 s on the non-streaming fallback path, `resp.json()` at `api.rs:628`,
+  taken when the server answers a `stream: true` request without an SSE content type.
+
+**The same constant means two different things, and which one you get is decided by a response
+header.** F172's generalisation — *nothing in the family distinguishes a hung model from a slow one*
+— survives as a statement about **the value**, not the mechanism: 300 s of silence between tokens is
+not a hang detector, it is a hang tolerator. But the mechanism 2.0 needs is already under it.
+
+⚠ **One trap to carry forward: the documentation says the opposite.** `RequestBuilder::timeout`'s
+doc comment claims the timeout *"is applied from when the request starts connecting until the
+response body has finished"* (`blocking/request.rs:356-359`) — a total-duration description of a
+per-read implementation. `ClientBuilder::timeout` says *"connect, read and write operations"*, which
+matches the code. A design that leans on the measured behaviour must own a test that pins it, or a
+future release could "fix" the code toward the doc and turn 2.0's hang detector into a wall clock.
+
+### F199 — the same knob also bounds time-to-first-byte, and the measured prefill table sets its floor
+
+Test E, both directions:
+
+- headers delayed **3 s** under a 2 s budget → `send()` fails at **2.006 s / 2.012 s**;
+- headers delayed **1.5 s** under the same 2 s budget → succeeds, and the body then gets its own
+  fresh budget (total 1.516 s / 1.502 s).
+
+So one number bounds *the wait for the first byte* and *each subsequent read* — separately, not
+cumulatively. There is no second knob on the blocking API: `ClientBuilder::read_timeout` was added
+in reqwest **0.12.4** to the **async** builder and is still absent from the blocking one on
+`master`; the blocking builder offers `timeout`, `connect_timeout`, `pool_idle_timeout`,
+`http2_keep_alive_timeout`, `http3_max_idle_timeout` and a Linux-only `tcp_user_timeout`.
+
+For a token stream that is the right shape anyway, and W1 F80 supplies the arithmetic:
+
+| phase | measured | what the budget must clear |
+|---|---|---|
+| TTFB, champion, 2.4k prompt | 2.2 s | — |
+| TTFB, champion, **55k prompt** | **33.9 s** | the daily driver's worst case |
+| TTFB, the 27B rung (R3) | ~76 s derived (33.9 s × the 2.25× prefill ratio, W1 F88) | the escalation rung |
+| inter-token gap, steady decode | 13–18 ms (54–76 tok/s) | three orders of magnitude below |
+
+A single global constant that clears the 27B's cold prefill cannot detect a champion hang in under
+about 90 seconds of waiting — which is why **the budget belongs to the rung, not to the client**.
+`RequestBuilder::timeout` overrides per request on the blocking client
+(`blocking/client.rs:1438`: `req.timeout().copied().or(self.timeout.0)`), so this costs one argument
+at the call site: **champion 90 s, R3 180 s**, both roughly 2.4× their measured worst-case TTFB and
+both an order of magnitude tighter than today's 300 s. That is OQ-W3-13's answer, derived from
+measurement rather than taste; what it still wants is a run of real traffic to confirm nothing
+legitimate sits between 34 s and 90 s.
+
+### 🚨 F200 — measured: stopping a stream from another thread is an `AtomicBool` and a `drop`, and it lands in 3–14 ms
+
+This is the argument F154 left standing, tested end to end on the blocking stack with no runtime in
+the caller. A watchdog thread flips an `AtomicBool` at 1.000 s; the reading thread checks it between
+lines and returns, dropping the `Response`:
+
+- stopped at **1.014 s / 1.004 s** — 14 ms and 4 ms after the flag;
+- the server observed the dead socket at **1.205 s / 1.215 s**, one write cadence later (it was
+  writing every 100 ms), because the first write into a just-closed socket succeeds locally and the
+  second one fails;
+- where the server *polls* its socket instead of writing (test B), it sees the close in **19 ms** —
+  3.024 s against the client's 3.005 s.
+
+That is precisely F184's design — a flag read between SSE lines at `api.rs:933`/`:1077` — working, on
+the stack already in the tree, at a latency three orders of magnitude below the thing being stopped.
+Combined with F162's ≤0.25 s slot release measured against `llama-server` itself, **the cancellation
+argument for adopting tokio in the core is discharged.** It was never a runtime capability; it was a
+socket close, and a socket closes when its owner drops it regardless of who is polling what.
+
+The honest residue: `tokio::select!` would let a worker wait on *the stream and the control channel
+simultaneously*, where the thread design waits on the stream and samples the channel between lines.
+The sampling interval is one SSE line — 13–18 ms at measured decode rates. Against an operator's
+reaction time and a 23.77 s model swap, that difference does not exist.
+
+### F201 — BCF's async is a calling convention, not concurrency, and it blocks the runtime it declares
+
+The other donor is the one that "proved" tokio. What it actually contains, over 33 files and 17,481
+lines:
+
+| | count |
+|---|---|
+| `async fn` | 69 |
+| `.await` | 206 |
+| `tokio::spawn` | **6** |
+| `tokio::select!` / `join!` / `try_join` / `JoinSet` | **0 / 0 / 0 / 0** |
+| `Arc<` | **0** |
+| `spawn_blocking` | **0** |
+| `std::process::Command` vs `tokio::process` | **17 vs 15** |
+| `std::fs::` vs `tokio::fs` | **50 vs 25** |
+
+Zero `Arc<` in seventeen thousand lines is the whole story: **nothing is shared between tasks,
+because there are no concurrent tasks.** Of the six spawns, four are UI or voice; one hands the
+chat call a task so the caller can print tool events beside it (`main.rs:927-932`); and one
+(`cto.rs:249`) launches an entire mission **detached** — no handle, no join, no cancellation, its
+only channel to the world an optional `event_tx`. That last one is what "run a mission from the
+chat agent" means in the donor, and it is exactly the uncancellable background work item 4 rules
+out.
+
+And the pipeline blocks its own runtime. `MissionRunner::attempt_round` is an `async fn`
+(`mission.rs:933`) that calls `verifier::verify_project` — a **synchronous** function
+(`verifier.rs:67`) — at `mission.rs:1006`. That function runs `cargo test`/`go test`/`pytest`
+through `sandbox::run_tool_sandboxed`, whose wait loop is `try_wait()` plus
+`std::thread::sleep(Duration::from_millis(200))` with a **120 s** cap (`sandbox.rs:142-153`). With
+`#[tokio::main]` defaulting to the multi-thread runtime (`main.rs:252`) and `rt-multi-thread` in the
+feature list, **a tokio worker thread is parked in a sleep-poll for up to two minutes per verify,
+and `spawn_blocking` appears nowhere in the repo.** The manifest's own comment says the features
+were narrowed to *"what `grep tokio:: src/` actually exercises"* — `process`, `fs` and `time` are on
+the list while `std::process` and `std::fs` outnumber their tokio equivalents at every call site.
+
+F154's "tokio never exercised" is confirmed and can be stated more strongly: **the async in the
+family's async repo buys nothing that a thread would not, and costs a runtime it then blocks.**
+
+### 🚨 F202 — the family's two child-process runners differ by one detail, and the one inside the async repo can deadlock
+
+Both Rust donors run tools by spawning a child with piped stdout/stderr and polling `try_wait` with
+a sleep. They diverge on what happens to the pipes while they poll:
+
+- **Claudette drains them on background threads** the moment the child starts, with the reason in a
+  comment — *"Drain pipes on background threads so the child can't block writing"*
+  (`test_runner.rs:63`, reader at `:124-134`). On timeout it kills, then joins the readers, so a
+  killed child still returns its partial output.
+- **BCF does not.** `run_tool_with_timeout` pipes both streams, polls `try_wait()` every 200 ms, and
+  calls `read_to_string` **only after the child has exited** (`sandbox.rs:126-134`). A child that
+  writes more than the OS pipe buffer — 64 KiB, routinely exceeded by `cargo test` or
+  `go test ./...` on a real project — blocks on `write`, never exits, and is killed at the 120 s
+  deadline. The verifier then records a **timeout** for a tool that finished its work and was
+  strangled by its own output.
+
+This is a defect in the instrument W6 item 1 already voided on other grounds (F158), so it is
+recorded here and handed on: **W6 item 2 inherits it.** For this item it makes a narrower point.
+The two runners have the same architecture and one is correct; the difference is a design detail
+about pipes, not a runtime capability. Nothing about `tokio::process` would have prevented it
+either — `tokio::process::Child` has the same pipe semantics — and the repo that had the async
+runtime available is the one that got it wrong.
+
+### 🚨 F203 — the console decides the runtime, and it decides it for the edge only
+
+Here is the argument that survives, and it is not the one that was expected.
+
+W5 chose Option D: the isometric web console is the **primary view**, served by the **same single
+binary**, over **SSE plus `POST /control`**. That is an HTTP *server*, and this is where the Rust
+ecosystem genuinely constrains the choice. crates.io + GitHub, both 2026-08-20:
+
+| Server crate | Latest stable | Last commit | 90-day downloads | Model |
+|---|---|---|---|---|
+| `axum` | 0.8.9 @ 2026-04-14 | **2026-08-20** | 107.1M | async (tokio) |
+| `actix-web` | 4.14.1 @ 2026-08-09 | — | 9.6M | async (actix-rt/tokio) |
+| `salvo` | 0.95.2 @ 2026-08-06 | — | 1.1M | async (tokio) |
+| `poem` | 3.1.12 @ 2025-07-28 | — | 688k | async (tokio) |
+| `tiny_http` | 0.12.0 @ **2022-10-06** | **2023-05-16** | 13.4M | blocking, thread-per-connection |
+| `rouille` | 3.6.2 @ **2023-04-24** | 2025-06-17 | 2.9M | blocking |
+| `astra` | 0.4.0 @ 2024-11-07 | — | **989** | blocking, on hyper |
+| `may_minihttp` | 0.1.11 @ 2024-09-22 | — | 1,607 | coroutines (`may`) |
+| `iron` / `nickel` / `simple-server` | 2019 / 2019 / **2018** | — | 187k / 96k / 2k | blocking, abandoned |
+
+**Every maintained Rust HTTP server is async; every blocking one is stale.** `tiny_http`'s 13.4M
+downloads are transitive weight behind a crate whose last commit is three years old, and `astra` —
+the one modern blocking server, by a good author — has 989 downloads in ninety days. Serving a
+long-lived SSE stream plus a control endpoint on `tiny_http` in 2026 means owning that layer.
+
+So tokio enters ABCC 2.0. **At the edge, for the console, and nowhere else** — because the boundary
+it needs to cross is already a *data* boundary, not a call boundary. Items 3 and 4 put the entire
+contract between core and console in the SQLite event log: the console's SSE feed is a **reader of
+the log** positioned by `seq`, and operator control is a **row written to the log**, not a call into
+a worker. Neither direction needs a future to touch a worker's stack frame.
+
+And the pattern for confining a runtime to a thread is already in the binary, written by someone
+else: reqwest's blocking client is a current-thread tokio runtime on a dedicated thread, reached
+only by channel (F197). 2.0's console server is the same trick with the polarity flipped — a
+runtime on its own thread(s), reached only through the log.
+
+### F204 — the survey table, for the layers item 3 did not cover
+
+crates.io API, **2026-08-20**; commit dates from the GitHub API the same day. "Newest" is the most
+recent publication of any kind, so a stable line stalled behind a release candidate shows as such.
+
+| Layer | Crate | Latest stable | 90-day dl | Verdict |
+|---|---|---|---|---|
+| runtime | `tokio` | 1.53.1 @ 2026-07-20 | 205.5M | ✅ **edge only** — already in the lock at 1.52.1 (F197) |
+| runtime | `async-std` | 1.13.2 @ 2025-08-15 | 9.4M | **self-deprecated** — its own description reads *"Deprecated in favor of `smol`"* |
+| runtime | `smol` | 2.0.2 @ **2024-09-07** | 3.8M | alive upstream (commit 2026-08-03), but no server ecosystem to speak of |
+| HTTP client | `reqwest` | **0.13.4** @ 2026-05-25 | 164.1M | ✅ **keep**, on the `blocking` feature; the tree pins `"0.12"` (0.12.28) |
+| HTTP client | `ureq` | 3.4.0 @ 2026-08-08 | 51.5M | real alternative, rejected below |
+| HTTP client | `attohttpc` | 0.31.0 @ 2026-05-25 | 5.9M | smaller, no streaming story worth the switch |
+| HTTP server | `axum` | 0.8.9 @ 2026-04-14 | 107.1M | ✅ **the console**, with `tower-http` 0.7.0 for static assets |
+| SSE, server | `axum::response::sse` | in-tree | — | ✅ event `id:` = `seq`, `Last-Event-ID` is a request header (F124/F126) |
+| SSE, client | `eventsource-client` | 0.18.0 @ 2026-08-10 | 1.4M | alive (commit 2026-08-10) — **not needed**: the engine parses `data:` lines itself (`api.rs:1051-1120`) |
+| SSE, client | `reqwest-eventsource` / `eventsource-stream` | 0.6.0 @ 2024-03-29 / 0.2.3 @ **2022-02-17** | 2.5M / 7.3M | stale; async-only; same conclusion |
+| WebSocket | `tokio-tungstenite` / `tungstenite` | 0.30.0 @ 2026-07-11 | 63.7M / 71.0M | healthy — **kept as W5's documented fallback, not a plan** |
+| serialization | `serde` + `serde_json` | 1.0.229 / 1.0.151 @ 2026-07 | 271M / 276M | ✅ **already in the tree**; the store is JSON columns at 263 B/event (F170) |
+| serialization | `simd-json` / `sonic-rs` | 0.18.0 @ 2026-08-16 / 0.5.8 @ 2026-03-25 | 5.4M / 1.9M | alive, and pointless here — item 3 replays 1.06M events/s already |
+| serialization | `bincode` / `rmp-serde` / `postcard` | 3.0.0 / 1.3.1 / 1.1.3 | 56.4M / 23.8M / 20.2M | binary formats buy nothing a human-readable log wants |
+| config | `toml` | 1.1.4 @ 2026-07-28 | 193.2M | ✅ already in the tree — item 5's ladder is a TOML `Vec<Rung>` |
+| process | `shared_child` | 1.1.1 @ 2025-07-04 | 10.2M | 🚨 **add** — kill a running tool child from the control thread; commit 2026-01-22 |
+| process | `command-group` | 5.0.1 @ **2023-11-18** | 870k | process-group kill; stale (commit 2024-04-21); revisit only if orphans appear |
+| process | `duct` / `subprocess` | 1.1.1 / 1.2.1 | 6.7M / 1.8M | alive; more than a `Command` plus two reader threads needs |
+| assets | `rust-embed` | 8.12.0 @ 2026-07-08 | 13.2M | ✅ **add** — 44 MB of art and 96 voice lines inside one binary |
+| assets | `include_dir` | 0.7.4 @ **2024-06-17** | 14.6M | same job, two years since a release |
+| git | `gix` / `git2` | 0.86.0 @ 2026-07-23 / 0.21.0 @ 2026-05-18 | 9.3M / 15.4M | both alive — **W6 item 6's** call (worktrees, OQ-W3-12), not W3's |
+| observability | `tracing` (+`-subscriber`) | 0.1.44 @ 2025-12-18 | 173.7M | **not** for the run record — that is the event log (item 3). Process diagnostics only |
+| errors | `anyhow` + `thiserror` | 1.0 / 2.0.20 | — / 325.2M | ✅ `anyhow` already in the tree; `thiserror` for the typed domain errors item 1 introduces |
+| job queue | `apalis`, `underway` | see F171 | | ❌ wrong layer, ruled in item 3 |
+| persistence | `rusqlite` `bundled` | 0.40.2 @ 2026-08-08 | 29.9M | ✅ **already in the tree** at 0.39 — ruled in item 3, not reopened |
+
+Two notes the table cannot carry. `notify` (filesystem watching) has been in a **9.0.0-rc since
+2026-05-02** with 8.2.0 stable from 2025-08-03 — relevant to W6/W7, not here. And `rusqlite`'s
+`Connection` is `Send` but not `Sync`: with the thread design it lives behind one `Mutex` and one
+writer, which is item 3's `apply()` verbatim. Under an async core it would have needed
+`tokio-rusqlite` (0.7.0, 518k) or `deadpool-sqlite` (0.13.0, 179k) — an extra crate and an extra
+failure mode to buy back what the thread design has for free.
+
+### F205 — the agent-framework layer exists now, and the one that matters is W10's business
+
+The brief asks what agent-specific crates are *actually maintained*. As of 2026-08-20, unlike the
+last time anyone looked, several are:
+
+| Crate | Latest stable | Last commit | 90-day dl | What it is |
+|---|---|---|---|---|
+| `rmcp` | **3.1.4 @ 2026-08-20** | **2026-08-20** | **10.7M** | the **official** Model Context Protocol Rust SDK |
+| `rig-core` | 0.42.0 @ 2026-08-17 | 2026-08-20 | 1.4M | opinionated LLM-app framework, provider-agnostic |
+| `async-openai` | 0.41.3 @ 2026-07-31 | — | 2.3M | OpenAI-shaped client, alive |
+| `genai` | 0.6.5 @ 2026-06-06 (0.7.0-beta.19 @ 2026-08-18) | — | 114k | multi-provider client |
+| `ollama-rs` | 0.3.6 @ 2026-07-24 | — | 144k | Ollama client |
+| `llm` | 1.3.8 @ 2026-04-19 | — | 30k | multi-backend unifier |
+| `swiftide` | 0.32.1 @ 2025-11-15 | — | **2.1k** | agentic/RAG pipelines |
+| `langchain-rust` | 4.6.0 @ **2024-10-06** | — | 12k | stale |
+| `llm-chain` | 0.13.0 @ **2023-11-15** | — | 6.5k | dead |
+| `kalosm` | 0.4.0 @ 2025-02-09 | — | 1.9k | local-model interface, quiet |
+| `anthropic-sdk` | 0.1.5 @ **2024-07-23** | — | 9.7k | dead |
+| `mcp-core` / `mcp-sdk` | 0.1.50 @ 2025-05-01 / 0.0.3 @ 2025-01-20 | — | 5.5k / 1.2k | superseded by `rmcp` |
+
+The client crates are all solving the problem the engine solved in `api.rs`, against providers 2.0
+does not use, and none of them knows about tool-registry freezing (W2 F81), the reload-retry window
+(`api.rs:675-730`) or a `num_ctx` this project measures in gigabytes. Adopting one would trade a
+measured file for an unmeasured dependency. The framework crates (`rig`, `swiftide`) go further and
+want to own the agent loop — the exact asset §14 says to copy.
+
+**`rmcp` is the exception worth flagging, and it is not W3's decision.** An official SDK, published
+the day of this survey, at 10.7M downloads in ninety days, is the strongest signal in this table
+about where tool interop is going; and MCP is the interop surface **W10** owns. Two facts to hand
+over: it is tokio-based, and by F203 that is affordable — an MCP surface is an edge, and edges get
+runtimes. Recorded, not adopted.
+
+## Options compared
+
+| | Core code shape | Console server | Cancellation | Idle-gap timeout | Cost to the inherited engine |
+|---|---|---|---|---|---|
+| **A. All-tokio core** — rewrite the engine async | every fn between `main` and the socket recoloured | native (axum) | `select!` | `read_timeout` on the async client | 🚨 93 modules, 65.5k lines, and the copy stops tracking upstream |
+| **B. Threads everywhere** — blocking server too | unchanged | `tiny_http` (2023) / `astra` (989 dl) | measured, 3–14 ms (F200) | measured, per-read (F198) | owning an HTTP/SSE server layer nobody maintains |
+| **C. Threads in the core, tokio at the edge** ✅ | unchanged | axum on its own runtime | measured (F200) | measured (F198) | zero — the seam is already the log (items 3, 4) |
+| **D. Threads, no server** — TUI only | unchanged | none | measured | measured | contradicts W5 Option D; deletes the identity (W5's rejected option C) |
+
+## Recommendation
+
+### 1. The rule, in one sentence
+
+**Threads own the work; a runtime owns the edge; the event log is the only thing that crosses.**
+The fleet is OS threads — one per attempt, each owning its state, taking commands from a channel and
+writing events through item 3's single `apply()` — and `tokio` exists in exactly one place: the
+thread that runs the console's HTTP server.
+
+### 2. The thread inventory, counted rather than hand-waved
+
+At W2 F83's measured fleet size of **N=2**:
+
+| Thread | Count | Why |
+|---|---|---|
+| main / supervisor | 1 | admission, watchdog sweep, `apply()` ownership |
+| attempt workers | 2 | one per concurrent attempt (F83's ceiling) |
+| `reqwest-internal-sync-runtime` | 2 | one per `blocking::Client`, measured (F197) |
+| tool child pipe drainers | ≤4 | 2 per running tool, and only while one runs (F202) |
+| console runtime workers | 2–4 | axum's runtime, or `new_current_thread` for one |
+| **total, steady state** | **~8–11** | on a box whose GPU is the scarce resource |
+
+Nothing here is close to the scale at which async's advantage — cheap tasks in the tens of thousands
+— exists. The workload is two GPU-bound conversations and one operator.
+
+### 3. The seam, which items 3 and 4 already built
+
+The console never calls into a worker and a worker never calls into the console:
+
+- **Downstream:** the SSE handler is a **reader** of the event log, positioned by `Last-Event-ID` →
+  `seq`, tailing new rows. Two readers or ten make no difference to a worker.
+- **Upstream:** `POST /control` **writes a `ControlRequest` row** and pokes an in-memory `Sender`
+  (item 4). The poke is a latency optimisation and never the truth; boot replay is the backstop.
+- Therefore the runtime boundary and the data boundary are the same line, and neither side's futures
+  or threads are visible to the other. This is what makes option C cost nothing.
+
+### 4. Timeouts, with the numbers on them
+
+- Per-request, not per-client: `RequestBuilder::timeout`, set from the rung. **Champion 90 s, R3
+  180 s** (F199) — roughly 2.4× each one's measured worst-case TTFB, and 1.7–3.3× tighter than the
+  300 s inherited.
+- Because the budget is per-read on a streamed body (F198), that same number is the **idle-gap**
+  timeout F172 says the whole family lacks. A stream that stalls for 90 s is a hang; the worker
+  records `Stuck{signal: IdleGap}` — item 5's class, not a generic failure — and item 4's recovery
+  applies at F162's ≤0.25 s.
+- The non-streaming fallback path (`api.rs:628`) keeps total-duration semantics. That is correct and
+  should be **commented**, because the constant looks identical at both call sites.
+
+### 5. The dependency list
+
+Everything marked ✅ is already in `crates/claudette/Cargo.toml` and arrives with the copy:
+
+✅ `reqwest` (blocking, rustls-tls, json) · `serde` · `serde_json` · `toml` · `anyhow` · `chrono` ·
+`regex` · `ignore` · `glob` · `rusqlite` (bundled) · `ratatui` + `crossterm` (the deferred TUI) ·
+`scopeguard`
+
+➕ New, and each with one reason: **`axum` + `tower-http`** (the console and its static assets, F203)
+· **`tokio`** (already in the lock; now a direct dependency, features `rt-multi-thread`, `net`,
+`sync` — *not* `full`) · **`rust-embed`** (44 MB of identity inside one binary) ·
+**`shared_child`** (kill a tool child from the control thread) · **`thiserror`** (item 1's typed
+domain errors).
+
+Sixteen direct dependencies against Claudette's nineteen. The bet is that 2.0's core is *smaller* in
+dependencies than the engine it copies, because everything W3 adds is structure, not machinery.
+
+### 6. What not to build, and what not to add
+
+- **No async in the core.** Not "not yet" — the measurements say it buys nothing here.
+- **No agent framework** (F205). The agent loop is the inherited asset.
+- **No LLM client crate.** `api.rs` is measured, retry-hardened and already OpenAI-compatible.
+- **No `tracing` for the run record.** The event log is the record (item 3); `tracing` is for
+  diagnosing the binary, and mixing the two produces two logs that disagree.
+- **No WebSocket** until something needs bidirectional streaming (W5, unchanged).
+
+### 7. Two tests this design owes itself
+
+1. **Pin the per-read semantic.** A test that streams a body with gaps under a short timeout and
+   asserts it completes — because the documentation describes the opposite behaviour (F198) and a
+   future release could align the code to the doc.
+2. **Pin the cancel latency.** A test that sets the flag mid-stream and asserts the reader returns
+   within one line — because F200's 3–14 ms is the number the operator's abort button inherits.
+
+Both are cheap, both run offline, and the spike in `research/spikes/w3-runtime/` is their prototype.
+
+## Rejected alternatives and why
+
+- **An all-tokio core (option A).** Rejected on F197 + F200 + F201: it would recolour 93 modules and
+  65.5k lines to buy `select!` over a 13–18 ms sampling interval, and the family's own async repo
+  demonstrates the failure mode — 69 `async fn`, zero `select!`, zero `Arc<`, and a runtime worker
+  parked in a 200 ms sleep-poll for up to two minutes (F201). It also permanently ends the option of
+  tracking Claudette upstream, which §14's "both stay live" assumes.
+- **A blocking HTTP server (option B),** keeping tokio out entirely. Rejected on F203's dates:
+  `tiny_http`'s last commit is 2023-05-16, `rouille`'s release is from 2023, `astra` has 989
+  downloads in ninety days, `iron`/`nickel` are 2019. A long-lived SSE stream is exactly where an
+  unmaintained server layer becomes the project's problem.
+- **`ureq` instead of `reqwest`,** which would remove tokio from the process entirely — a real
+  option, alive (3.4.0 @ 2026-08-08, 51.5M/90d), with **nine named timeout knobs** where reqwest has
+  one. Rejected on the shape of those knobs: they are phase deadlines (`timeout_recv_response`,
+  `timeout_recv_body`, `timeout_global`), and **none of them is an inter-chunk gap**. For a stream
+  where the body legitimately takes minutes and silence is the failure signal, reqwest's per-read
+  budget is the better instrument — and it is measured (F198), in the tree, and behind the one file
+  that is the engine's contract with the model.
+- **`smol`/`async-std` as a lighter runtime.** `async-std`'s own crates.io description reads
+  *"Deprecated in favor of `smol`"*; `smol` is alive but its last release is 2024-09-07 and no
+  maintained HTTP-server ecosystem sits on it. Choosing it would mean owning the server layer anyway,
+  which is option B with extra steps.
+- **`sqlite-es` / an event-sourcing framework.** Ruled in item 3 (F171); not reopened.
+- **`tokio-rusqlite` / `deadpool-sqlite`.** Only needed by the core shape this item rejects.
+
+## Effect on fun
+
+Three of the project's promises turn out to be latency claims, and this item is where they get their
+numbers.
+
+**The abort button is honest.** F200 measures the whole path an operator's *stop* travels: flag set,
+read between lines, socket dropped, slot free — 4–14 ms of software over a ≤0.25 s server-side
+release (F162). "Stop" that visibly stops is the difference between a command center and a progress
+bar, and it now has a measurement instead of an intention.
+
+**A hung model looks different from a thinking one.** Today, 300 s of silence and 300 s of work are
+the same picture. With a per-rung 90 s idle-gap budget (F199) the console can say *the champion has
+been silent for 41 s* — which is the honest-failure-reporting requirement W6 item 8 will ask for,
+delivered by a config value rather than a subsystem.
+
+**The console is one binary, and the art is inside it.** `rust-embed` and a single `axum` thread mean
+`abcc` with no arguments opens the isometric console with its 44 MB of sprites and 96 voice lines,
+with no second process, no container and no asset directory to lose (W5 F95/F125).
+
+And a quieter one: the core stays **debuggable by reading it**. A stack trace through nine OS
+threads names the function that is stuck. That matters more on a solo project at this cadence than
+any throughput number tokio could offer at a scale of two.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| ✅ OQ-W3-13 | **ANSWERED here** — the idle-gap value is per-rung, from measured TTFB: champion **90 s**, R3 **180 s**, set with `RequestBuilder::timeout`. Confirmation that nothing legitimate sits between 34 s and 90 s is a by-product of the first real runs | — (confirm on W8 traffic) |
+| OQ-W3-21 | Does the console runtime get `new_current_thread` or `rt-multi-thread`? One operator and an SSE tail argue for the former; W10's multiplayer would argue the latter. Deferrable — it is one builder call | W10 |
+| OQ-W3-22 | `reqwest` is pinned `"0.12"` in the copy and 0.13.4 is current. The per-read semantic is unchanged on master (F198), so this is a routine upgrade — but it should be done **with the pinning test in place**, not before | — (do it with test 7.1) |
+| OQ-W3-23 | Does the sampling design need a second control check *inside* a long tool call, or is the tool's own child-kill (F202, `shared_child`) sufficient? Item 4's boundary select covers between-tool; a 10-minute `cargo test` is the gap | W7 (sandboxing), W6 item 6 |
+
+## Confidence: high
+
+The runtime ruling rests on five measurements taken twice, agreeing within milliseconds, against the
+exact dependency line the engine ships — not on a reading of the documentation, which in the decisive
+case (F198) says the opposite of what the code does. The donor counts are `grep` over checked-out
+trees, and the ecosystem rows are the crates.io and GitHub APIs on the day of writing, with last
+commit dates checked wherever a release date looked stale — which is how `tiny_http` (13.4M
+downloads, last commit 2023) and `astra` (maintained, 989 downloads) both got read correctly.
+
+What is weaker: **F199's 90 s and 180 s are derived, not observed in production.** They come from
+W1's measured TTFT table times a margin, and the margin is a judgement. If a legitimate champion
+turn ever takes 91 s to first token, the number is wrong and the run that discovers it will look
+like a hang — which is why the answer is a config value per rung rather than a constant in the
+source. F203's server conclusion also depends on W5's Option D holding; if the console were ever
+descoped to a TUI, tokio would leave the design entirely, and nothing in the core would change.
+
+What would raise it: the two pinning tests in recommendation 7, and the first fleet run where an
+operator presses stop on a real 55k-token turn.
 
 ---
