@@ -21,8 +21,12 @@ Planned items, in the order §14 item 4 dictates:
    request identity is a `seq`, and the channel is **two mechanisms**: a boundary select plus a
    cancel flag in the stream loop. Answers OQ-W5-3 and OQ-W3-10; corrects item 2's "exactly one
    intrusive change" to two. The family lost the free-text redirect three separate ways.
-5. ☐ **Escalation lineage** — worker fails → verification fails → re-scoped by a stronger model →
-   retried, with the whole lineage traceable.
+5. ✅ **Escalation lineage** (F185–F196) — the mechanism was already ruled (fork-from-checkpoint), so
+   this item is the **policy**: classify the failure before escalating, one ladder that is data,
+   every fork from the *best* checkpoint, and lineage as the attempt chain answering six queries.
+   Two of the brief's four verbs turn out to be inert in the donor, and the engine 2.0 is copying
+   already contains the family's only correct escalation. Answers OQ-W3-14 and OQ-W3-17's lineage
+   half.
 6. ☐ **Rust ecosystem survey, live-verified** — async runtime (the tokio question), HTTP/SSE,
    persistence, serialization, queue crates; last-commit dates checked, not assumed.
 7. ☐ **Process topology** — one binary or supervisor plus workers, and what that means for W7
@@ -272,6 +276,10 @@ what the engine's edges look like from the outside:
   variant** (`brain_selector.rs:43-55`). §11 W3 asks that a task survive *exactly* a model-server
   hang; the copied engine treats it as turn death. The lifecycle must catch that death and express
   it as an attempt outcome — which is fine, and much better than teaching the engine to hide it.
+  *(Sharpened by item 5, 2026-08-20: the missing transport variant is deliberate, not an oversight —
+  `diagnose` explicitly declines to escalate on `Err(_)` other than "no content", because a bigger
+  model cannot fix a dead socket. F191 keeps the refusal and puts the recovery in the lifecycle,
+  exactly as this bullet concludes.)*
 
 Two things **are** worth porting verbatim, both confirmed in code: the per-request rendezvous
 channel whose stale answers can never satisfy a later prompt, and fail-closed deny on every
@@ -1800,5 +1808,649 @@ as far as the argument goes, and nobody we have read has shipped it.
 
 What would raise it: the crossterm probe; and W5's console reaching the point where a real
 `displayed_at` can be produced and checked against a real answer.
+
+---
+
+# Item 5 — escalation lineage
+
+## Question
+
+§11's line is a single sentence with four verbs in it: *"worker fails, verification fails, task gets
+re-scoped by a stronger model, retried, and the whole lineage stays traceable."*
+
+Three of those four are already answered. Item 1 ruled attempts **immutable** and made every retry,
+re-scope, edit and replay the same **fork-from-checkpoint carrying `cause`**, so lineage is the
+attempt chain *by construction* and cannot be lost. Item 3 made the chain durable. Item 4 gave the
+operator half — `Redirect(String)` and re-route are control events with `by:` and `displayed_at`.
+
+What is left is the part no previous item touched, and it is the harder half: **the policy.** Who
+decides to escalate, on what evidence, to what, at what price, and what does the record have to
+carry so the decision can be second-guessed later? Precisely:
+
+- **The predicate** — what distinguishes a failure that escalating can fix from one it cannot.
+- **The ladder** — what the rungs are on *this* hardware, and what each costs.
+- **The record** — what an escalation edge carries so that "traceable" means a query, not a story.
+
+OQ-W3-14 is this item's to close (does `attempt` stay a table or become a second projection?), and
+OQ-W3-17's lineage half — when does an operator's steer *land* in the running attempt and when does
+it *fork* a new one — belongs here too.
+
+## Method
+
+Fifth donor pass, 2026-08-20, same three checkouts and same HEADs as items 1–4: ABCC v1 `d5528ea`,
+BCF `d6c1601`, Claudette `af3f804`. Deliberately **not** a re-extraction — items 1–4 and W6 item 1
+already read the lifecycle, the store, the control paths and the verifier, and this pass does not
+re-walk them. It reads one thing they did not: the **decision sites**. Every `if` that chooses to try
+again, every place a rung is selected, every place a failure is classified — and then, the part that
+turns a design into a finding, a grep for the **readers** of each field those decisions write. Every
+claim carries file:line.
+
+No new measurement. The prices in the rung table are arithmetic over numbers already measured on this
+machine (W1 F79 swap, W1 F88 wall-clock ratios, W2 F81 prefix cache, W2 F83 concurrency), and they
+are labelled as arithmetic where they are composed.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| `humanEscalation`'s timeout-then-escalate | ABCC `humanEscalation.ts:37-57` | **shape REUSE** (F178) with all three of its defects fixed (F196) |
+| Surgical fix loop, best-round restore, 0.1 decline breaker, capped rounds | BCF `mission.rs:698-741` | **REUSE** — and F190 promotes best-round restore from nicety to invariant |
+| Feedback that names issues persisting across rounds | BCF `mission.rs:1575-1584` | **REUSE** — the family's best evidence-carrying, and the input to "is this failure stuck or improving" |
+| The four-valued outcome lattice | ABCC `schemas/output.py:11`, kept by item 1 | REUSE as the **verdict**; item 5 adds the failure **class**, which is what decides whether escalating can help at all |
+| Tiered brain fallback | Claudette `brain_selector.rs` | **REUSE the mechanism** — typed trigger, fork-from-checkpoint, append-only lineage (F191). **DISCARD its cost assumption** (F193) |
+| Three ladders + the `preferredModel` blob | ABCC `autoRetryService.ts`, `asyncValidationService.ts`, `codeReviewService.ts` | DISCARD (F185, F186) |
+| The 9.2/8.5/8.0 gate ladder as an escalation trigger | BCF `mission.rs:57-67` | DISCARD — W6 F160 voided the numbers, and F189/F191 show a scalar is the wrong shape anyway |
+
+## Findings
+
+### F185 — v1 escalates four ways down three different ladders, and which one runs is a property of the code path, not of the task
+
+Item 1's F150 counted four retry mechanisms with no lineage. Reading them for their *rungs* rather
+than their writes shows something worse: they do not agree about what the ladder is.
+
+| Mechanism | Rungs | Selected by |
+|---|---|---|
+| `AsyncValidationService.processRetryQueue` (`:206-311`) | local Ollama → **Haiku** | default-on (`ASYNC_VALIDATION_ENABLED !== 'false'`, `index.ts:119`) |
+| `AutoRetryService.validateAndRetry` (`:82-278`) | local Ollama → **remote Ollama** → Haiku | constructed only when async is *absent* (`taskExecutor.ts:55`) |
+| `CodeReviewService.getEscalationTier` (`:461-467`) | `'ollama'` → `'haiku'`; everything else → **`'human'`** | a `switch` on the model **name string** |
+| Iteration retry (`taskExecutor.ts:243-277`) | **none** — same model, same prompt | `currentIteration < maxIterations` |
+
+The exclusivity at `taskExecutor.ts:55` looks like a migration in progress — until you find that
+`orchestratorService.ts:458` and `battleClawService.ts:284` each construct `AutoRetryService`
+directly and unconditionally. **Both ladders are live in one process**, and a task's escalation
+policy is decided by which entry point created it: a mission task gets three rungs and a durable
+`completed`/`failed` write (`orchestratorService.ts:461-470`), an ordinary queued task gets two rungs
+and a verdict that never leaves memory (F187).
+
+For 2.0 this is the argument that **the ladder must be one piece of data read by one policy
+function.** Three hard-coded ladders did not diverge because anyone chose three policies; they
+diverged because each was written at its own call site, where nothing could compare them.
+
+### 🚨 F186 — the brief's "re-scoped by a stronger model" is, in the donor, a JSON blob with no reader
+
+`handleReviewFailure` (`codeReviewService.ts:383-455`) is the one path that looks like §11's
+sentence. On a failed review it sets `status: 'pending'`, clears `assignedAgentId`, increments
+`currentIteration`, and writes into `task.result`: `reviewFailed`, `reviewScore`, `previousModel`,
+**`preferredModel: nextTier`**, and a full `reviewContext { qualityScore, findings, summary,
+hasSyntaxErrors }`.
+
+Grepping the readers across `packages/*/src`:
+
+- **`reviewContext` — zero reads.** Written at `:434` and `:449`, read nowhere.
+- **`previousModel` — zero reads.** Written at `:432`, read nowhere.
+- **`preferredModel` — zero reads of *this* one.** The name is live, but every reader is the
+  *agent's* config: `taskExecutor.ts:701` reads `agentConfig?.preferredModel` and hands it to
+  `resolveModelOverride` (`modelResolver.ts:35`); the agents route validates it
+  (`agents.ts:161-229`); the UI renders it (`AgentCard.tsx:62`). The task's `result.preferredModel`
+  is a different object that nothing consults.
+
+So when the re-scoped task is picked up again, `TaskRouter.routeTask` re-routes it on **complexity**
+(`taskExecutor.ts:697`) — the same rule that chose the model that just failed — and it is executed
+with `taskDescription: pendingTask.description || pendingTask.title` (`:766`): **the identical
+prompt, none of the findings, and no memory that a review rejected it.** The review's whole payload
+is overwritten by the next escalation (F150).
+
+Two of the sentence's four verbs are inert. Stated as a rule, because this is the third time the
+family has done it (F177/F181's redirect, F174's stop paths): **an escalation that is recorded but
+not applied is indistinguishable from one that was applied, from every surface except the model's
+input.** In 2.0 the re-scope *is* the new attempt's prompt — there is nowhere to write it that is not
+the thing that runs.
+
+### 🚨 F187 — the default ladder is unreachable from the console, and its queue does not survive a restart
+
+`AsyncValidationService` is the default (`index.ts:119`). Its escalation ladder is drained by
+`startRetryQueue()` (`:168`), whose **only** caller is `POST /validation/retry`
+(`routes/validation.ts:66`). The UI defines the call — `validationApi.triggerRetry`
+(`ui/src/api/client.ts:658`) — and **never invokes it**: grep over `packages/ui/src` finds
+`validationApi` imported once, in `TaskDetail.tsx:7`, using only `getResult`. Nothing on a timer,
+nothing on mission completion, no other service. **The default escalation ladder in v1 runs only if a
+human sends an HTTP request by hand.** That is F174's shape a third time — the capability exists and
+the console cannot reach it.
+
+Underneath, the state is entirely in memory: `validationResults: Map` and
+`retryQueue: RetryQueueEntry[]` (`:96-97`), with the file's only Prisma call a `findUnique` (`:372`).
+So a restart erases both the verdicts and every pending escalation — and `TaskDetail.tsx:38` renders
+the verdict *from that Map*, which is empty after a reboot. The declared cap
+`MAX_RETRY_QUEUE_SIZE = 100` (`:91`) is never referenced; only `MAX_VALIDATION_RESULTS` is enforced
+(`:127-130`).
+
+This is item 3's ruling arriving in the escalation path: **the queue of things still to be tried is
+exactly as load-bearing as the status of things already done, and it belongs on the same log.** In
+2.0 there is no retry queue — a task whose attempt failed is a task in a state, and the scheduler is
+a projection of the log.
+
+### 🚨 F188 — the trigger fails open where the instrument is absent, and invents a number where it is unparseable
+
+Both ladders open the same way:
+
+```ts
+if (!task || !task.validationCommand) {
+  return { validated: true, phase: 'skipped', attempts: 0 };   // autoRetryService.ts:82-84
+}
+```
+
+and the async twin sets `passed: true` with the comment *"No validation command — auto-pass"*
+(`asyncValidationService.ts:372-380`). `validationCommand` is nullable (`schema.prisma:70`) and has
+exactly one automatic producer — the decomposition tool `cto_tools.py:338`. **A task nobody wrote a
+check for is reported as validated**, and the ladder above it never runs.
+
+The review trigger has the other half of the disease. `checkReviewFailed` (`:360-378`) fires on
+`qualityScore < 6` (`REVIEW_QUALITY_THRESHOLD`, `:60`), any `critical` finding, or `hasSyntaxErrors`
+— reasonable predicates over a number produced like this:
+
+```ts
+qualityScore: Math.min(10, Math.max(0, result.qualityScore || 5)),   // codeReviewService.ts:578
+```
+
+An unparseable or absent score becomes a **measured-looking 5.0**, which is then written onto the
+task as `reviewScore` (`:402`, `:415`, `:431`) and shown in the console. The escalation direction
+happens to be the safe one (5 < 6, so it escalates); the *record* is the casualty — the task now
+carries a review score nobody produced.
+
+This is W6 F161 one layer earlier than W6 found it. F161 fixed the gate; F188 says the same rule
+binds the **trigger**: *absence of measurement is `Uncertain`, and `Uncertain` routes to the operator
+— it is never `Success` and never a midpoint.* A 2.0 task with no verifier does not pass; it finishes
+`Uncertain(no verifier configured)` and says so.
+
+### F189 — v1 classifies its failures at the exact moment it stops caring, and its main classifier always writes `null`
+
+`errorCategory` (`schema.prisma`, *"Error categorization for failures"*) has three writers:
+`orchestratorService.ts:628` (`'killed'`), `stuckTaskRecovery.ts:269` (`'timeout'`), and
+`taskExecutor.ts:308-318`, the general path, via `categorizeError`.
+
+Two facts, both from this pass:
+
+1. **Zero readers.** Grep across `packages/api/src/routes` and all of `packages/ui/src`: nothing
+   reads the column. No policy, no query, no display. The one place v1 tries to learn from failure is
+   `captureTrainingData`, and it fires only when the budget is already spent
+   (`taskExecutor.ts:237-241`).
+2. **The general writer cannot produce a value.** `categorizeError` returns `null` unless the task's
+   status is already `'failed'` or `'aborted'` (`complexityCalculator.ts:75-77`). It is called from
+   `abortTask` (`:308`) against the row read at `:283` — *before* the same function writes
+   `status: 'aborted'` at `:312-320`. Every caller of `abortTask` (`taskExecutor.ts:275`,
+   `taskQueue.ts:103`/`:155`, three routes) passes a task that is `in_progress`, `assigned` or
+   `needs_human`. **So the general path always stores `errorCategory: null`**, and the only non-null
+   values in the whole system are the two hard-coded string literals.
+
+The design consequence is the important one, and it is the centre of this item: **the retry ladder
+cannot tell a model that produced wrong code from a sandbox that never ran** — and the field that
+would have told it exists, is populated by a function that returns null, and would have had no
+readers if it hadn't been. Escalating a `HardFailure` caused by a missing interpreter to a bigger
+model buys nothing but 24 seconds and a larger bill for the same error.
+
+### F190 — one donor assumes retries improve the work; the other measured that they do not
+
+v1's ladder re-reads the file from disk at the head of every phase (`autoRetryService.ts:101`,
+`:159`, `:210`) and the executor writes in place. There is no snapshot, no restore, no comparison:
+**the Haiku rung's starting point is whatever the two Ollama rungs left behind**, and if a rung made
+things worse the next rung inherits the damage.
+
+BCF does the opposite, deliberately. `best_result` / `best_round` track the highest-scoring round;
+the decline breaker stops the loop when `result.final_score < prev_best - 0.1` from round 2 on
+(`mission.rs:698-707`); and after the loop it restores — `codegen::write_files(output_dir,
+&best.files)` under the comment **"Restore best round's files to disk (fix rounds may have
+degraded)"** (`:735-741`). That comment is the finding: someone watched fix rounds make the artefact
+worse and built the machinery to undo it.
+
+For 2.0, with item 1's checkpoints already in the design, this costs nothing to get right and is an
+invariant rather than a feature: **every fork starts from the best checkpoint on the chain, never
+from the last one.** "Last" is only correct when the last attempt is also the best, and the donor
+that measured it says that is not reliably true.
+
+### 🚨 F191 — the engine 2.0 is copying already contains the family's only correct escalation, and it is fork-from-checkpoint with a typed trigger and an append-only lineage log
+
+`crates/claudette/src/brain_selector.rs` — which items 1–4 walked past with a single clause (F151) —
+is a working tiered-model escalation:
+
+- **Typed triggers, chosen from data.** `StuckReason::{EmptyResponse, NoTextAtMaxIter,
+  ToolErrorStreak}` (`:41-56`), each documented with why it fires and what it costs to be wrong:
+  *"False positives waste swap time; false negatives leak bad output. The three signals above are the
+  ones the brain200 transcripts showed produce true-positive escalation candidates."* (`:21-26`)
+- **A pre-turn checkpoint.** `let pre_turn_session: Session = runtime.session().clone();` is taken
+  **before** the primary runs (`:231`), *"so the fallback doesn't see a duplicated user message or a
+  stuck assistant turn"*. The escalation then replays the same input against a runtime built on that
+  snapshot (`:236-256`). That is item 1's fork-from-checkpoint, already implemented, in the engine
+  being copied.
+- **A scoped revert.** After the fallback turn the runtime is rebuilt on the primary and the fallback
+  model is unloaded (`:262-268`) — escalation is per-turn, not sticky, and it pays back the VRAM it
+  borrowed.
+- **An append-only lineage record.** `append_fallback_event` writes one JSON line per escalation to
+  `~/.claudette/fallback.jsonl` — `{ts, prompt_hash, trigger, fallback_succeeded, primary_model,
+  fallback_model}` (`:383-410`) — and the type's doc says why it exists: *"Logged to fallback.jsonl
+  so we can tune the thresholds against real data."* **It is the only append-only durable artefact in
+  the entire family** (F171: everything else rewrites a whole document), and the only place any donor
+  records *why* it escalated and *whether that worked*.
+- **A refusal to escalate on the wrong evidence.** `diagnose` (`:302-326`) returns `None` for
+  `Err(_)` that is not "no content" — *"Transport errors, permission denials — don't escalate"* — and
+  `None` when the turn landed gracefully on the iteration cap, *"don't burn the fallback brain
+  re-running a 40-iteration turn whose tool-error streak is incidental to the cap"*.
+
+Two limits keep it from being 2.0's answer as-is. It is **one rung, one turn**. And **all three
+signals are liveness-shaped**: empty output, no text near the cap, a streak of tool errors. None of
+them means *the code was wrong*. Claudette escalates when the model stops producing usable output;
+v1 escalates when a validation command exits non-zero; BCF does not escalate at all — grep for
+`escalat` over `battle-command-forge/src/` returns **nothing**. Three donors, three disjoint trigger
+classes, and 2.0 needs the union: stuck, wrong, and — per F188 — unmeasured.
+
+### F192 — the escalation threshold that rotted, and the rule it teaches
+
+`brain_selector.rs:70-88` carries its own post-mortem. The `NoTextAtMaxIter` signal was originally an
+absolute count, `11`, written against `max_iterations = 15` — a 73 %-of-budget tripwire. When the cap
+moved to 40 the constant did not, and it silently became a 27 % tripwire *"diagnosing ordinary long
+tool chains as stalls and replaying them wholesale on the bigger brain."* The fix expresses it as a
+margin below the cap actually in force (`MAX_ITER_STUCK_MARGIN: usize = 4`) with an absolute floor
+(`MAX_ITER_STUCK_FLOOR: usize = 11`) so a small cap cannot drive it down to "escalate on the second
+tool call".
+
+The rule, and it is not specific to this constant: **an escalation threshold stated as an absolute
+count of a budgeted quantity decays silently when the budget moves — and it decays in the expensive
+direction**, because a threshold that fires too often still *looks* like a working feature. Every
+threshold in 2.0's ladder is expressed against the budget it measures (a fraction of the attempt's
+iteration budget, a fraction of the idle-gap timeout, a count of *consecutive* failures rather than
+total), or it carries the floor and the margin that make the intent survive a config change.
+
+### 🚨 F193 — Claudette's own skip rule says the tiered fallback is unusable on 2.0's hardware, and it says why in the source
+
+`FallbackSkip` (`brain_selector.rs:95-128`) refuses to escalate in two cases, and the doc comment on
+the enum is written against *this* configuration:
+
+> *"The tiered-brain design assumes Ollama on a small card: escalating pulls a second model into
+> memory for one turn, then evicts it. That assumption breaks badly on the setup the README now
+> recommends for 16 GB — LM Studio with one large model resident — because escalating asks the server
+> to JIT-load a second model, which evicts the brain the user deliberately loaded."*
+
+`SameAsPrimary` skips when the fallback resolves to the primary (*"replay the whole turn against an
+identical brain for an identical result, at double the latency"*); `NotServed` skips when the backend
+is not already serving the fallback. Note the direction of the defaults: a *failed* probe fails
+**open** (`served == None` ⇒ escalate anyway, `:155-160`, argued as *"an unreachable probe must not
+silently disable a working fallback"*) while a *stale cache* can only produce a skipped escalation,
+*"never a surprise model load — the safe direction"*. This is the family's one place where a default
+is chosen by naming the consequence in both directions, and it is the model for how 2.0 argues its
+own defaults.
+
+The consequence for 2.0's ladder is arithmetic:
+
+- The cheap mid-turn escalation the donor implements **only exists where a second model is already
+  served.** On one 5090 with the champion resident it is not; the 27B alone occupies 94.4 % of the
+  card at `-c 40960` (W1).
+- So a model rung costs a **23.77 s round-trip swap** (W1 F79, n=3 each direction, load-dominated and
+  not bandwidth-bound), before the stronger model reads a token.
+- And the stronger model then runs **1.3× to 9.5×** longer per task, 5.2× over the whole K-series
+  campaign (W1 F88) — while fixing better, not scoring better (F87: verdicts tie 8/9).
+- The rung above that — v1's Haiku, priced in dollars by `calculateCost`
+  (`codeReviewService.ts:593-600`) — **does not exist for 2.0 at all** (W5 F114: the spend ceiling is
+  zero by decision).
+
+**2.0's ladder is shorter than every donor's and its one model rung is the most expensive act in the
+system.** That is not a reason to drop it; it is the reason it must be priced, shown and budgeted
+rather than fired automatically the way all three donors fire theirs.
+
+### F194 — escalating one task stops the other one: the model rung is a fleet-wide event (derived, not measured)
+
+Composed from measured numbers, and labelled as composition:
+
+- The 27B at `-c 40960` occupies 94.4 % of the card (W1), so it and the champion **cannot be
+  co-resident**. A model rung is an unload plus a load, not an addition.
+- Useful concurrency is **N=2** (W2 F83: 1→2 buys +69 % prefill / +68 % decode; beyond that nothing,
+  and TTFT degrades from 3.67 s to 10.54 s).
+- Therefore escalating attempt A evicts the model attempt B is mid-turn on. Every other in-flight
+  attempt loses its server for the duration: 23.77 s of swap, plus A's inflated wall clock, plus
+  23.77 s back.
+
+So on this hardware **escalation is a scheduling decision over the whole fleet, not a property of one
+task's ladder** — and with a fleet of two, escalating one task halves the fleet for minutes. The
+mechanism it needs already exists: item 4's `Pause` at a boundary, applied to every other attempt,
+then resume. The rung is implemented as *pause the fleet at boundaries → swap → run the escalated
+attempt → swap back → resume*, which is also why it must be a decision the operator can see coming
+(W5 F104's rule that the price is shown before the verb commits).
+
+One corollary worth stating because it is cheap and non-obvious: a **re-scope** rung — same model,
+restated prompt — is a *cold* prompt by construction. W2 F81 measured that changing one token at the
+front annihilates 79.7 % of the prefix-cache TTFT saving. Re-scoping is therefore never free even
+when the model does not change, and the ladder should prefer *appending* evidence to *rewriting* the
+prompt whenever both would do.
+
+### F195 — the retry budget: one number, read by one of four mechanisms, with a global cap bolted on after an incident
+
+`maxIterations` (default 3, `schema.prisma`; `1..10` at the route, `tasks.ts:16`) is read at exactly
+two sites, both in the iteration-retry path (`taskExecutor.ts:237`, `:243`). Neither validation ladder
+consults or decrements it; neither does the review re-scope, which increments `currentIteration`
+itself (`codeReviewService.ts:429`) — the same counter, from outside the mechanism that owns it.
+
+Inside the sync ladder, a second budget: `MAX_TOTAL_RETRIES = 3` with the comment *"Hard limit:
+prevent infinite retry loops (Mar 2, 2026 fix)"* (`autoRetryService.ts:50-51`), checked four separate
+times (`:108`, `:165`, `:213`, `:225`). It exists because three independent per-phase caps
+(`MAX_OLLAMA_RETRIES`, `MAX_REMOTE_RETRIES`, `MAX_HAIKU_RETRIES`, each defaulting to 1 and each
+independently configurable by env) **cannot bound the total** — a fact discovered in production and
+patched with a fourth counter rather than a single budget.
+
+2.0's rule follows directly, and it is one line in the writer: **one attempt budget per task,
+decremented by every mechanism that consumes an attempt, refused by `apply()` when exhausted.** A
+ladder cannot outlive the budget because a rung *is* an attempt, and attempts are what the budget
+counts. This also makes the budget a thing the operator can *raise* — `+2 attempts` is a control
+event with an author, the same shape as every other control verb (item 4).
+
+### F196 — the family's one correct loss rule has three defects, and each is a one-line rule for 2.0
+
+F178 credited `HumanEscalationService` as the family's only implemented answer to *"the operator
+never answered"*. Read for its policy rather than its existence, it has three defects:
+
+1. **Two clocks for one deadline.** `checkTimeouts` selects on `config.humanTimeoutMinutes`
+   (`humanEscalation.ts:41-43`) — a global env, default 30 (`config.ts:12`) — while
+   `getRemainingTime`, which is what a surface would render as a countdown, computes from
+   **`task.humanTimeoutMinutes`**, a per-task column with its own default of 30 (`:146-149`,
+   `schema.prisma`). They agree only because both defaults are 30; set the per-task column and the
+   displayed deadline stops being the deadline. → *2.0: the clock the watchdog reads and the clock
+   the console renders are the same field, and it is on the event that started it.*
+2. **Escalation happens at most once per task, ever.** The polling query filters
+   `escalatedToAgentId: null` (`:45`). It is a double-escalation guard, and its consequence is that a
+   second timeout — the new agent also stalls, the operator still absent — matches nothing, and the
+   task waits forever holding its slot and its locks. → *2.0: the loss rule is a policy on the state,
+   not a one-shot flag; re-entering the state re-arms it, and the chain records how many times.*
+3. **The target is arbitrary.** `prisma.agent.findFirst({ where: { id: { not: … }, status: 'idle' } })`
+   under the comment *"Find a more capable agent (for now, just find another idle agent)"*
+   (`:71-77`). The one correct loss rule in the family escalates to **someone else, not someone
+   better** — and when no agent is idle it emits an alert and returns `false` (`:79-90`), leaving the
+   task in `needs_human` with the guard still unset, so the same non-escalation is attempted again
+   every minute. → *2.0: the escalation target comes from the same ladder as every other rung, and
+   "no rung available" is a written state, not an alert.*
+
+The shape still stands: an unanswered request is not a hang and not a silent default; it is a
+transition to a written state, on a clock, visible. All three defects are in the *policy*, which is
+this item's subject and exactly why the policy belongs in one place that can be read.
+
+## Options compared
+
+| Option | Trigger | Where policy lives | Verdict |
+|---|---|---|---|
+| 1. Port v1's ladders | validation exit code | hard-coded at each call site | **rejected** — F185: three ladders that disagree, because nothing could compare them |
+| 2. Escalate on the gate score | one scalar crossing a threshold | the gate formula | **rejected** — W6 F160 voided the numbers, and F189/F191 show a scalar cannot separate *wrong* from *stuck* from *never measured*, which is the only distinction that matters |
+| 3. Port `brain_selector` as-is | three liveness signals | the engine, per turn | **rejected as the whole answer, adopted as the core** — right mechanism (F191), wrong scope: one rung, one turn, no correctness trigger, and its cost assumption is false here (F193) |
+| 4. **Classified outcome → a ladder that is data → fork from the best checkpoint → lineage as the attempt chain** | the failure **class**, from the Attempt lattice plus the cause | one policy function over the log | **recommended** |
+| 5. Operator escalates everything | none — every failure asks | the human | **rejected as policy, kept as the floor** — exactly right for `Uncertain` and for an exhausted ladder, wrong as a default: F129's bar wants intervention to be *meaningful*, and a fleet that asks on every failure is a treadmill |
+
+## Recommendation
+
+**Option 4.** Escalation is a **policy function over a classified outcome**, the ladder is **data**,
+every rung is a **fork from the best checkpoint**, and lineage is the **attempt chain** the fork
+already creates. Nothing here is a new mechanism; it is items 1–4's mechanisms with a policy on top.
+
+### 1. Classify before you escalate — the predicate is a class, not a number
+
+The Attempt's `Outcome` (item 1) says *what happened*. Escalation needs a second, orthogonal fact —
+*what kind of failure it was* — because that is what decides whether a different model could help:
+
+```rust
+enum FailureClass {
+    Wrong { evidence: Seq },       // the verifier ran and the work is wrong → a better brain may help
+    Stuck { signal: StuckSignal }, // no usable output: empty, no-text-near-cap, tool-error streak
+    Budget { which: BudgetKind },  // iterations / idle-gap / context exhausted → not a stuck signal
+    Environment { detail: Seq },   // sandbox, transport, missing tool, server down → NEVER escalate
+    Unmeasured { why: String },    // the instrument did not run → operator, per F188 / W6 F161
+}
+```
+
+The mapping to policy is the whole point, and every row of it is a donor's mistake or a donor's
+lesson:
+
+| Class | What the ladder does | Grounded in |
+|---|---|---|
+| `Environment` | **never a model rung.** Retry the same rung if the cause is transient, else fail the task with the cause attached | Claudette's `Err(_) => None` (F191); v1 cannot do this because `errorCategory` has no readers *and* writes null (F189) |
+| `Budget` | not a failure of the model. Escalate only when the budget itself is the binding constraint, and say which | `hit_iteration_cap ⇒ None` (F191); F192's rotted threshold is what happens when this is confused with `Stuck` |
+| `Stuck` | fix-in-place is pointless — the model produced nothing to fix. Go straight to the re-scope or model rung | the three signals, F191 |
+| `Wrong` | fix-in-place **first**, carrying the evidence; escalate the model only when the same defect survives a fix | BCF's persistent-issue tracking (`mission.rs:1575-1584`); F190's best-round restore |
+| `Unmeasured` | **stop and ask.** Never a rung, never a pass | F188, W6 F161 |
+
+`StuckSignal` carries Claudette's three verbatim, because they were selected against real transcripts
+and their false-positive cost is written down.
+
+### 2. The ladder is data, and there is one of it
+
+```rust
+struct Rung {
+    role: RungRole,           // FixInPlace | Rescope | StrongerModel | Operator
+    model: Option<ModelId>,   // None = "whatever the task is already using"
+    budget: AttemptBudget,    // iterations, idle-gap, context — the rung's own limits
+    price: PriceEstimate,     // filled from measurement, shown before the rung is taken
+}
+```
+
+One ordered `Vec<Rung>` in config, one `fn next_rung(chain: &[Attempt], class: FailureClass) ->
+Option<Rung>`, one caller. F185 is the argument: three hard-coded ladders diverged because each was
+written where nothing could compare it. A `Vec` can be printed, diffed, overridden per task, and
+tested without a model in the loop — which is what `diagnose` being a pure function already buys
+Claudette (`brain_selector.rs:302`, *"can be unit-tested without a real Ollama in the loop"*).
+
+### 3. The rungs for this machine, with their prices
+
+| # | Rung | What changes | Price on this box | Enter when |
+|---|---|---|---|---|
+| R0 | first attempt | — | the task's own wall clock (K-series medians 100–190 s/cell, W1 F88) | — |
+| R1 | **fix-in-place** | same model, same chain; feedback carries test errors, verifier issues and **issues that persisted** | one attempt; the prompt grows, the prefix cache mostly survives | `Wrong`, and the defect set is shrinking |
+| R2 | **re-scope** | same model, restated goal, fresh context | one attempt **plus** a cold prompt — W2 F81: one token at the front costs 79.7 % of the TTFT saving | `Stuck`, or `Wrong` with the same defect surviving R1 twice |
+| R3 | **stronger model** | the 27B replaces the champion | **23.77 s swap each way** (W1 F79) + **1.3–9.5×** wall clock (W1 F88) + **the rest of the fleet pauses** (F194) | `Wrong` after R2, and the operator has the budget for it |
+| R4 | **operator** | a human has the keyboard | unbounded; the clock is the loss rule | ladder exhausted, `Unmeasured`, or an explicit gate |
+
+Notes that keep this honest:
+
+- **R3 is a fleet operation, not a task operation** (F194). It pauses every other attempt at a
+  boundary (item 4's `Pause`), swaps, runs, swaps back, resumes. It is the one rung that must be
+  *scheduled*, and W5 F104's rule applies: the console shows the price before the verb commits.
+- **Nothing above R3 exists.** No cloud rung (W5 F114). R4 is the top, which is a much stronger
+  reason to make R4 pleasant than any donor had.
+- **A bare retry — same rung, same prompt, no new evidence — is not in the ladder.** It is v1's
+  mechanism 1 (F185) and it carries no hypothesis about why this time differs. Whether it
+  nevertheless converts failures to passes at a useful rate is unknown and cheaply measurable on W8's
+  harness (OQ-W3-19); until then the ladder always changes *something*, and the thing it changed is
+  on the edge.
+
+### 4. Every fork starts from the best checkpoint on the chain
+
+F190's invariant, and it is one line at the fork site because item 1 already put
+`checkpoint_from: Option<CheckpointId>` on `Attempt`. The chain records each attempt's outcome, so
+"best" is a query over data the log already holds; best is chosen by the outcome lattice first (a
+`Success` beats any `SoftFailure`) and by the verifier's measurement second — never by an LLM judge
+alone (W6 F159).
+
+BCF's decline breaker survives with it: **a rung that produces a worse result than the best on the
+chain ends the ladder and restores**, rather than spending the next rung on a degraded base. What
+does *not* survive is BCF's threshold arithmetic (W6 F160), so the 0.1 is inherited as a *shape* —
+"backwards ends it" — with the number recalibrated on W8's harness.
+
+### 5. The lineage record, and OQ-W3-14 closed
+
+**`attempt` stays a table** — a materialised projection maintained by the same `apply()` writer that
+appends the event, in the same transaction (item 3 §3). The duplication cannot drift, because
+attempts are immutable: a row is written once, at fork time, and never updated except by the terminal
+outcome write. F149's drift bug needs a *mutable* denormalisation to bite; this is not one. The
+alternative — deriving the chain by replaying the log on every query — makes the console's most-used
+view the most expensive one, and boot-as-replay (94 ms per 100k events, F170) already rebuilds it for
+free.
+
+Each attempt row carries what an escalation decision needs to be second-guessed:
+
+```
+Attempt { id, task, parent: Option<AttemptId>, cause, rung, model, checkpoint_from,
+          budget_granted, started: Seq, outcome: Option<Outcome>, class: Option<FailureClass>,
+          evidence: Seq,           -- the verifier event that justified the fork
+          decided_by: Actor,       -- Policy | Operator(OperatorId)   (item 4's `by:`)
+          price_estimated, price_actual }
+```
+
+`cause` is item 1's enum — `Fresh | Retry{of} | Rescope{of} | Edit{of} | Replay{of}` — and an
+operator-initiated re-scope is the *same edge* as an automatic one, differing only in `decided_by`.
+That is item 4's ruling arriving here: `Redirect(String)` is a control event whose effect is a fork,
+so the operator's steering and the policy's escalation share one lineage and one set of queries.
+
+`price_estimated` next to `price_actual` is what makes the ladder self-correcting: the estimate is
+shown before the rung commits (W5 F104), and the gap between the two is the number that recalibrates
+it. Claudette's `fallback.jsonl` exists for exactly this purpose ("tune the thresholds against real
+data", F191) and is a file *next to* the session rather than part of it — F173's two-stores problem
+in miniature. In 2.0 it is a column on the chain.
+
+### 6. "Traceable" means these six queries answer without a story
+
+F129 made *fun* six queries over the event log. Lineage gets the same treatment and the same
+discipline: if a question needs a human to reconstruct it, the record is wrong.
+
+| Question | Query | Why it must be one query |
+|---|---|---|
+| Why did this task take four attempts? | the chain: `parent` walk with `cause`, `class`, `rung`, `evidence` | the answer *is* the chain; nothing to reconstruct |
+| Did escalating help? | per rung: attempts entered ÷ attempts that reached `Success` | the only honest way to defend a ladder — and the number no donor can produce |
+| What did it cost? | `sum(price_actual)` over the chain against R0's wall clock, plus the swap events | R3's price is fleet-wide (F194); the query must include what the *other* tasks lost |
+| Which defect survived? | issue keys present in attempt *n* and *n+1* | BCF computes this in memory per mission (`mission.rs:1575-1584`) and throws it away; durable, it is the R1→R2 predicate |
+| Who re-scoped it, and what did they type? | control events with `by:` and `displayed_at`, joined to the fork edge they caused | F186: the redirect text *is* the new attempt's prompt, so the join is by construction |
+| Should the router have started higher? | for chains ending `Success` at rung *k*, the wall clock spent at rungs < *k* | the counterfactual that prices the routing model |
+
+The last row is worth its own sentence. **W4's data well is dry** — the brief's §11 strikes through
+"start with data you already own" — and the lineage chain is the well refilling itself: every
+escalation is a labelled example of *"the router chose rung 0 and the task needed rung 2"*. v1 knew
+it wanted this and captured only the final frame (`captureTrainingData`, fired once, at max
+iterations, `taskExecutor.ts:237-241`). W4 should be told the data arrives as a by-product, not as a
+collection project.
+
+### 7. Budgets and thresholds
+
+- **One budget per task** (F195), decremented by every mechanism that consumes an attempt, enforced
+  in `apply()`. `+N attempts` is a control event with an author, not a config edit.
+- **Thresholds are expressed against the budget they measure** (F192): a margin below the iteration
+  cap with a floor, a fraction of the idle-gap timeout, a count of *consecutive* failures. Any
+  absolute count of a budgeted quantity is a bug waiting for someone to change the budget.
+- **The idle-gap timeout (F172 / OQ-W3-13) is what makes `Stuck` detectable at all.** Three donors
+  have total-duration timeouts and none has an idle-gap timeout; without one, "the model went quiet"
+  arrives as `Budget`, minutes late, indistinguishable from slow work.
+
+### 8. The operator half, and OQ-W3-17's lineage rule
+
+F196's three fixes: one clock (on the event), a loss rule that re-arms every time the state is
+re-entered, and a target that comes from the ladder rather than from `findFirst`.
+
+And the rule that decides whether an operator's mid-flight instruction *lands* or *forks*:
+
+> **If the instruction changes what "done" means, it forks a new attempt (`cause: Rescope`,
+> `decided_by: Operator`). If it only adds information the current attempt can use, it lands as
+> `Enqueue` at the next model call.**
+
+The test is the acceptance criteria, not the length of the text or where the worker happens to be.
+This answers OQ-W3-17's lineage half — *what an enqueued steer does to the record* — and leaves its
+timing half (does `Enqueue` land at the next model call or the next tool boundary when a tool is
+mid-flight?) to the W5 console, where it is observable. The reason the distinction matters is F186: a
+re-scope that lands as a note on a running attempt is a re-scope the model may never read, and that
+is precisely how the donor lost it.
+
+### 9. What not to build
+
+- **No retry queue.** F187: a task with a failed attempt is a task in a state, and the scheduler is a
+  projection (item 3).
+- **No score-triggered escalation.** A scalar cannot express F189's distinction, and W6 F160 voided
+  the only scalars we have.
+- **No second lineage store.** No `fallback.jsonl`, no training-data table, no per-service log: one
+  chain, one log, six queries.
+- **No automatic model rung.** R3 pauses the fleet (F194); it is scheduled and priced, not fired.
+- **No "escalate on any failure".** `Environment` and `Unmeasured` must not consume the budget that
+  `Wrong` needs.
+
+## Rejected alternatives and why
+
+- **A separate `escalations` table.** It is the attempt chain with extra steps: every row would carry
+  a `from_attempt` and a `to_attempt`, which is the edge the fork already writes. A second table with
+  the same content is F149's drift hazard for no gain.
+- **Escalating by re-writing the task description** (v1's mission retry,
+  `orchestratorService.ts:682-739`, which appends `"\n\nRETRY NOTE: …"` and destroys the original
+  prompt). The prompt of attempt *n* is evidence about attempt *n*; a chain whose earlier prompts
+  have been overwritten cannot answer any of the six queries.
+- **Keeping `brain_selector`'s per-turn scope.** It is right for a single-conversation agent, where
+  the unit of work is a turn. 2.0's unit of control is the **task** (W5 F104), the thing that holds
+  the slot and the locks, so the escalation edge is an attempt, not a turn — and the swap cost (F193)
+  makes per-turn escalation unaffordable here anyway.
+- **A judge deciding when to escalate.** The trigger would then have the same failure mode as the
+  gate it is judging (W6 F159's critique term), and F188 shows what an unparseable judge produces: a
+  measured-looking midpoint. The trigger is a classification over facts the system already has — exit
+  codes, empty output, error streaks, timeouts — and none of them needs a model.
+- **Escalating to a second *instance* of the same model** (N attempts in parallel, majority vote).
+  Tempting on a machine where concurrency is 2 — and W2 F83 is exactly why it fails: two concurrent
+  streams already saturate, so N parallel attempts cost N× wall clock with no throughput gain, and
+  W1 F87 found the two models tie on verdicts, so variance is not obviously the binding constraint.
+  Revisit if OQ-W3-19's measurement says bare retries convert well.
+
+## Effect on fun
+
+**Escalation is the story beat the console has been missing.** Everything before this item is a
+system defending itself: states with contracts, writes that cannot drift, a stop that stops. This is
+the one place the fleet *does something dramatic on purpose* — the champion fails twice, the console
+says "calling in the heavy: 24 seconds to swap, the other unit holds", both units visibly pause, and
+the big model takes the field. That is a set-piece falling out of the scheduler, not a cutscene
+someone wrote.
+
+**It is also where the honest-failure bar (F129) gets its best case.** A failed run worth replaying
+is one where you can watch the fleet *trying different things* — R1's fix, R2's restatement, R3's
+heavy — rather than the same attempt three times. The attempt chain is a replay timeline with
+branches, and "why did this take four attempts" is answerable by scrubbing rather than by reading
+logs.
+
+**And the price tag is the drama.** 23.77 s is long enough to feel and short enough to watch. A verb
+that costs nothing generates no tension; a verb that costs the *other unit's* time is a decision. The
+console showing `R3: ~24 s swap · ~5× wall clock · fleet holds` before the operator commits is
+simultaneously the honest disclosure W5 F104 requires and the most game-like moment in the design.
+
+The cost worth naming: a ladder with real prices will sometimes be *declined*, and the fleet will
+finish a task at `Failed` with three attempts on the chain and a rung it did not take. That is the
+correct outcome and it will feel like a loss. It should — F129's honest-failure clause is that
+failures are worth re-watching, not that they are rare.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| ✅ OQ-W3-14 | **ANSWERED here** — `attempt` stays a **table**, written by `apply()` in the same transaction as the event. Immutability makes the denormalisation undriftable, and the console's most-used view stays cheap | — |
+| OQ-W3-18 | What identifies "the same defect" across attempts? BCF normalises issue strings by substring (`mission.rs:1594-1620`), which is the fragile matching W6 F158 condemns elsewhere. The R1→R2 predicate depends on it | W6 item 2 (verifier output schema) |
+| OQ-W3-19 | How often does a bare retry — same rung, same prompt — convert a failure into a pass? The ladder currently assumes "rarely enough not to bother". Cheap to measure: re-run the K-series failures n times | W8 harness, GPU |
+| OQ-W3-20 | Does R3 pause the fleet automatically or ask? F194 makes it fleet-wide either way; the question is whether consent is per-escalation or a standing policy | W5 console, David |
+| OQ-W3-17 | **Lineage half answered here** (changes the acceptance criteria ⇒ fork; adds information ⇒ lands). Timing half — where `Enqueue` lands when a tool is mid-flight — still open | W5 console |
+| OQ-W3-6 | Unchanged, and item 5 adds the rung names to the list if the ladder is themed (R3 is *"calling in the heavy"* in every voice line the project owns) | David |
+
+## Confidence: high on the diagnosis and the record, medium on the rung ordering
+
+The donor findings are file:line facts from this pass, and the three that matter most were each
+verified by grepping for *readers* rather than by reading the writer — which is what turned "v1
+re-scopes to a stronger model" into F186, "v1 categorises its errors" into F189, and "the ladder
+runs" into F187. F189 in particular was found by tracing the call order inside `abortTask`, not by
+reading `categorizeError`, which looks correct in isolation. That is
+[[verify-claims-against-code-not-docs]] item 18's lesson applied deliberately: a feature can be
+present at every layer but the last.
+
+The record design — attempt chain as a table, edges carrying cause, evidence, actor and price — is a
+direct application of items 1, 3 and 4 and inherits their confidence.
+
+What is weaker: **the rung ordering and the entry conditions are argued, not measured.** That R1
+before R2 before R3 is the right order follows from the prices, which are measured, plus an
+assumption about how often each rung succeeds, which is not. OQ-W3-19 is the cheap experiment that
+would firm it up and W8's harness is the instrument. F194 is explicitly labelled derived — the swap
+cost and the wall-clock ratios are measured, their composition into a fleet-pause is arithmetic that
+has never been run end to end.
+
+What would raise it: OQ-W3-19's measurement; and the first real chain — three attempts, one
+escalation, one operator re-scope — rendered in W5's console, which is where a lineage design either
+answers its six queries or does not.
 
 ---
