@@ -1,9 +1,11 @@
 # W3 — Orchestration core in Rust
 
-**Status: IN PROGRESS — started 2026-08-19.** Built one item at a time in §13 format, same as W5.
-The language is decided (Rust) and the engine is decided (copy Claudette's, both stay live — David,
-2026-08-07), so this workstream is about **structure**: the typed lifecycle, durability, the control
-channel, escalation lineage, and process topology.
+**Status: COMPLETE — started 2026-08-19, all seven items written 2026-08-20 (F146–F212).** Built one
+item at a time in §13 format, same as W5. The language is decided (Rust) and the engine is decided
+(copy Claudette's, both stay live — David, 2026-08-07), so this workstream is about **structure**:
+the typed lifecycle, durability, the control channel, escalation lineage, and process topology.
+The closing summary — one line per item, plus what W3 hands on and still owes — is the last section
+of this file.
 
 Planned items, in the order §14 item 4 dictates:
 
@@ -33,8 +35,12 @@ Planned items, in the order §14 item 4 dictates:
    stack, the idle-gap timeout the family lacks turns out to be a *config value* on a semantic the
    docs describe backwards, and the only honest argument for tokio is the one nobody made — every
    maintained Rust HTTP server is async. Answers OQ-W3-13; corrects F154 and F172 in place.
-7. ☐ **Process topology** — one binary or supervisor plus workers, and what that means for W7
-   sandboxing and W10's protocol.
+7. ✅ **Process topology** (F206–F212) — **one process now, with the worker seam defined as if it
+   were already remote.** The boundary is cheap (10 ms against a 33.9 s TTFB) and buys nothing item 3
+   does not already provide — but it would import W10's protocol early, because the log has exactly
+   one writer. Blast radius is answered instead by `panic = "unwind"` plus a catch at the attempt
+   boundary. And the probe found a live defect in both donors: **the inherited kill orphans the
+   work**, which a job object fixes in 1.8 ms.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 708–730, plus §14 item 4's added requirements and
 the W5 handoff table (`research/W5-command-center.md`, "What W5 hands to other workstreams").
@@ -3004,5 +3010,394 @@ descoped to a TUI, tokio would leave the design entirely, and nothing in the cor
 
 What would raise it: the two pinning tests in recommendation 7, and the first fleet run where an
 operator presses stop on a real 55k-token turn.
+
+---
+
+# Item 7 — process topology
+
+## Question
+
+The brief's last W3 line: *"Process topology: one binary, or a supervisor plus workers? What does
+that mean for sandboxing in W7 and for the multiplayer protocol in W10?"* (§11:727-729)
+
+Item 6 settled the *runtime* shape — threads own the work, one runtime owns the console edge. This
+item settles the *process* shape, which is a different question with different arguments: a thread
+boundary is a compiler construct, a process boundary is an OS construct, and only the second one
+survives a panic, enforces a memory limit, or can be killed unconditionally.
+
+Three sub-questions, in the order the evidence orders them:
+
+1. What did the family's process boundary actually buy? (One donor is eight containers.)
+2. What does a boundary cost here, measured — and what does the *absence* of one cost?
+3. Which of the three things a process boundary is for — blast radius, kill semantics, isolation —
+   can be had without one?
+
+## Method
+
+- **Read v1's topology from its compose file and its service entry points**, then check whether the
+  concurrency the design implies is the concurrency the code can deliver. It is not, and the gap is
+  one line of `uvicorn`.
+- **Measure**, again, rather than argue: spawn cost, and the kill semantics of the mechanism both
+  Rust donors already use. Spike: `research/spikes/w3-topology/orphan_probe.py` (stdlib, ctypes for
+  the Windows half), two runs agreeing exactly. Raw output in `topology-probe-results.txt`.
+- **Read the donors' panic policy as written**, including the lints and the CI that enforces them —
+  because "one panic kills the fleet" is only an argument if panics are actually reachable.
+- Cross-check the two workstreams this item feeds: W7's isolation requirements and W10's remote-rig
+  protocol.
+
+## Inherited
+
+- **Item 6's ruling** — threads in the core, one runtime at the edge, ~8–11 threads at N=2.
+- **Item 3** — one SQLite writer, one `apply()`, boot = replay at 94 ms per 100k events (F170).
+- **Item 4** — control is a row on the log; the stop verbs are a boundary select plus a cancel flag.
+- **F200** — the cancel flag lands in 4–14 ms, *when the worker is somewhere that checks it*.
+- **F151** — the engine's release profile is `panic = "abort"`.
+- **W5 F95/F125** — a container is the thing 2.0 exists to escape; the install story is one binary.
+- **W2 F83** — the fleet is two concurrent attempts.
+- **W1 F80** — a turn begins with 33.9 s of prefill at the daily driver's context.
+
+## Findings
+
+### 🚨 F206 — v1 has eight containers and one event loop: the process boundary bought a network hop, not concurrency
+
+`docker-compose.yml` defines **eight services** — postgres, redis, ollama, api, agents,
+mcp-gateway (profile-gated), ui, backup. That is the shape of a supervisor-plus-workers design.
+Then:
+
+- The `agents` container starts `uvicorn src.main:app --host 0.0.0.0 --port 8000`
+  (`packages/agents/Dockerfile:41`) — **no `--workers`**, so one process, one event loop.
+- `/execute` is declared `async def` (`main.py:236`), so it runs *on* that loop rather than in
+  FastAPI's threadpool.
+- Inside it, `result = crew.kickoff()` (`main.py:381`) — a fully synchronous CrewAI run that takes
+  minutes. There is no `run_in_executor`, no `to_thread`, no `asyncio` anywhere in the file.
+
+**So the entire agent fleet is serialised on one Python event loop, and while a task runs the
+service cannot answer anything at all** — not a second `/execute`, not `/health`.
+
+Now the admission side. `ResourcePoolService` grants `ollama: 1` and `claude: 2` slots, plus
+`grok: 2` and a configurable `remote_ollama: N` when those are enabled
+(`resourcePool.ts:88-118`) — **three to five concurrent tasks admitted** against an executor that
+can run one. The queued ones are not queued anywhere visible: the API has already written
+`status:'in_progress'`, the watchdog clock is running, and the Node side is blocked in
+`fetchWithTimeout(..., EXECUTE_TIMEOUT_MS)` where `EXECUTE_TIMEOUT_MS = 600_000`
+(`executor.ts:8`) — **a fourth total-duration timeout, and the largest of v1's, which F172's
+three-row table missed.** Ten minutes later the task fails with `Execution failed`, attributing to
+the agent a delay that was entirely queueing.
+
+One more detail in the same family as item 5's zero-reader fields: `maxConcurrentTasks` is a
+validated field on the agent PATCH route (`routes/agents.ts:162`) that lands in the Agent's `config`
+JSON — and **grep finds no reader anywhere in `packages/`.** The fleet's size is a setting nobody
+consults, sitting above an executor whose real capacity is one.
+
+**The lesson for 2.0 is not "avoid processes". It is that a process boundary buys nothing unless
+something inside it is concurrent.** v1 paid the boundary's full price — a network hop, a second
+language, a container, serialisation at the edge, and a 600 s timeout to paper over the queue — for
+a fleet of one.
+
+### F207 — measured: a process boundary is nearly free at this workload, so the decision cannot be made on cost
+
+From the probe, two runs agreeing:
+
+| | run 1 | run 2 |
+|---|---|---|
+| spawn only, no wait (`Popen`) | 2.5 ms | 2.4 ms |
+| native binary spawn + exit + reap (`cmd /c exit`) | 10.5 ms | — |
+| interpreted child spawn + exit + reap | 27.8 ms | 26.5 ms |
+
+Against W1's measured **33.9 s** time-to-first-token at the daily driver's context, a 10 ms process
+spawn is **0.03% of one turn** — and an attempt is many turns. Even the most pessimistic reading
+(27.8 ms, which is mostly Python interpreter startup a Rust worker would not pay) does not register.
+
+This cuts both ways and is worth stating plainly: **there is no performance argument for one process
+and no performance argument against workers.** Anyone who reaches for either is arguing from
+something else. The something else is the next three findings.
+
+### 🚨 F208 — measured: the family's kill orphans the work it was told to stop
+
+Both Rust donors stop a tool the same way: `child.kill()` on the handle they hold
+(`test_runner.rs:82`, `sandbox.rs:145`). The probe reproduces exactly that shape — a wrapper process
+that launches the real worker and waits on it — and kills the wrapper:
+
+- **plain `child.kill()`: the grandchild kept running.** Ticking 5 times at the moment of the kill,
+  13 two seconds later, still alive. Identical in both runs.
+- **a Windows Job Object with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`: the tree died in 1.8–1.9 ms**,
+  and creating the job cost **0.04 ms**.
+
+That wrapper shape is not hypothetical, it is the normal path. Claudette's `bash` tool executes
+`powershell -NoProfile -NonInteractive -Command <command>` on Windows and `sh -c <command>`
+elsewhere, through `run_command_with_timeout(program, &args, 30, …)` (`tools/shell.rs:207-221`) —
+**a 30-second timeout**, so any build, test run or install that takes longer than half a minute ends
+with the shell killed and the actual work detached, still writing to the workspace the orchestrator
+believes it has reclaimed. BCF's verifier is the same story one level down: it kills `cargo`, and
+`cargo test`'s test binary is a grandchild.
+
+Two consequences:
+
+- **This is a defect in the inherited tool runner, and it is independent of the topology choice.**
+  In-process workers or worker processes, the tool's own children need a job object (Windows) or a
+  process group (Unix), or "stop" is a lie at the only level where the user can see it.
+- It also **bounds what F200's cancel flag is worth.** The flag stops the model stream in 4–14 ms.
+  It does nothing about a detached `npm install`. Item 4's kill verb is only as good as the tree
+  kill underneath it.
+
+### 🚨 F209 — the engine can start work it has no verb to stop
+
+The shell tool surface is four verbs: `bash`, `bash_background`, `bash_status`, `bash_tail`
+(`tools/shell.rs:75-157`). There is **no `bash_kill`**. `bash_background` writes the child's pid to
+an owner-only meta file, spawns a reaper thread that waits for exit and stamps a `.done` file
+(`shell.rs:589-595`), and returns the job id. From that moment the job is observable — status,
+tail — and unstoppable: nothing in the tool surface, the REPL, or the TUI terminates it.
+
+Combined with F208, **the family's complete answer to "stop that" is "wait for it"**, and the
+operator control bar W5 designed has nothing underneath it at the tool level. 2.0's `Kill` verb
+therefore needs three things, not one: the cancel flag (F200), the tree kill (F208), and a verb that
+reaches background jobs (this).
+
+### F210 — the blast radius of one process is smaller than the profile suggests, because the donor already worked the problem
+
+`panic = "abort"` is in both Rust donors' release profiles, and under `abort` a panic on *any*
+thread takes the process down — no `catch_unwind`, and even `scopeguard::defer!` is skipped. On its
+face that is the strongest argument for worker processes: one bad `unwrap` in attempt A kills
+attempt B.
+
+Except the donor has spent effort making panics unreachable, and it is visible in the source:
+
+- `#![cfg_attr(not(test), deny(clippy::unwrap_used))]` at the top of **both** `lib.rs:22` and
+  `main.rs:22`, annotated *"Production code must not panic via `.unwrap()` … a stray unwrap is a
+  hard process crash, not a catchable error. (Wave F.1 — production unwrap audit.)"*
+- CI enforces it: `cargo clippy --all-targets --no-deps -- -D warnings`, twice (default features and
+  `--all-features`), on an OS matrix (`.github/workflows/ci.yml:56-57`). The 768 `.unwrap()` calls
+  in the tree are therefore, by construction, inside `#[cfg(test)]` — 85 of 93 modules carry inline
+  tests.
+- `unsafe_code = "forbid"` at the crate level.
+- And where an abort would do damage the user could not undo, there is a hook: `run_tui` installs a
+  panic hook that leaves raw mode and the alternate screen *before* the process dies, with a comment
+  explaining that `defer!` does not run under `abort` (`tui.rs:686-709`).
+
+What remains is real but named: **`.expect(` is not linted** (388 occurrences, some of them
+production — `api.rs:239` builds the HTTP client with one), plus slice indexing, arithmetic, and
+panics inside dependencies.
+
+And the cost of an abort is now bounded by item 3. The durable state is the log; a crash loses the
+in-flight turn of each running attempt and nothing else, and boot is replay at 94 ms per 100k
+events. At N=2 that is two turns — expensive in GPU seconds, invisible in correctness.
+
+**Which reframes the question. Blast radius is not "process or no process". It is "does a panic in
+attempt A end attempt B", and there is a third answer.** See recommendation 2.
+
+### F211 — the fleet is new construction either way, so nothing inherited constrains the boundary
+
+The engine builds exactly one conversation: `runtime_build.rs:155` is the only
+`ConversationRuntime::new` outside tests, used by both the REPL and the TUI worker. The
+`OllamaApiClient::new` constructor whose doc comment says *"Used by spawned agents (who have a hard
+tool allowlist) and by tests"* (`api.rs:211-213`) has, on grep, **only test callers** — the spawned
+agents it describes are not in the tree.
+
+And the multi-agent plumbing that does exist is deliberately hollow. `forge/mod.rs:1-20` describes
+itself as *"dormant plumbing for forge-mode"* and lists what survived the fold: a persona loader, a
+role→model map, and three types. *"The standalone crate's `pipeline` module (`pub mod` stubs only)
+did not carry over — it was 36 LoC of empty placeholders"*, and the pipeline vocabulary was
+*"dropped 2026-05-15 after the multi-agent audit."*
+
+So the process-topology decision is genuinely free: there is no inherited fleet whose shape has to be
+respected, in either donor, and W11's stage pipeline will be new code too.
+
+### 🚨 F212 — worker processes force W10's protocol early, because the log has exactly one writer
+
+This is the finding that decides the item, and it comes from item 3 rather than from the OS.
+
+The durability ruling is **one writer**: a single `apply()` that appends the event and updates the
+projection in one transaction (F169). A worker in the same process calls it behind a mutex — the
+cost is a function call. A worker in a *different* process cannot: SQLite would need multi-process
+WAL writers (possible, but it discards the single-writer invariant that makes the design provable),
+or the worker sends its events to the supervisor to write — which is an **IPC protocol carrying
+every state transition, every token-level progress marker and every control answer**.
+
+That protocol is not a small thing bolted on. It is, feature for feature, **W10's remote-rig
+protocol**: a worker that talks to the supervisor over a wire is a remote worker whose wire happens
+to be local. Choosing worker processes today therefore does not add a process boundary; it adds
+W10's design, before W10 has run, to buy isolation that recommendation 2 gets for free.
+
+The inverse is the useful half: **the seam is worth defining now even though the boundary is not
+worth building now.** A worker's entire interface with the rest of the system is two operations —
+read control decisions addressed to me, append events about what I did. Keep it to those two, behind
+a trait, and the local implementation is a function call while the remote implementation is W10's
+protocol, with no third design in between.
+
+## Options compared
+
+| | Concurrency | Blast radius | Kill semantics | Isolation | Install story | Cost now |
+|---|---|---|---|---|---|---|
+| **A. One process, threads** | N=2, real | one panic ends the fleet (F210) | cooperative flag + tree kill | none between attempts | one binary ✓ | zero |
+| **B. Supervisor + worker processes** (same binary, `abcc worker`) | N=2, real | contained per attempt | preemptive, per worker | memory + handles | still one binary ✓ | 🚨 W10's protocol, early (F212) |
+| **C. Supervisor + containers** (v1) | **one**, in practice (F206) | contained | preemptive | strong | ✗ docker-compose (W5 F95) | very high |
+| **D. One process, threads, `panic = "unwind"` + `catch_unwind` per attempt, seam defined** ✅ | N=2, real | **contained per attempt** | cooperative flag + tree kill | none between attempts | one binary ✓ | one profile line |
+
+## Recommendation
+
+### 1. One binary, one process, threads — and the fleet lives inside it
+
+`abcc` is a single process: supervisor, workers, tool children, console runtime. This follows item 6
+and W5 F95, and F207 confirms nothing is being paid for it. Worker *processes* are not rejected
+forever; they are rejected **now**, on F212 — they would import W10's protocol into W3.
+
+### 2. Build with `panic = "unwind"` and catch the panic at the attempt boundary
+
+This is the one place 2.0 should **deviate from the inherited release profile**, and the reason is
+that the inheritance changed shape. Claudette runs one conversation, so `abort` costs exactly the
+thing that panicked, and its arguments — a smaller binary and no unwind tables across an FFI
+boundary — are unopposed. 2.0 runs a fleet, and under `abort` a panic in attempt A ends attempt B,
+the console, and the supervisor.
+
+With unwinding, a panicking worker thread simply ends; `JoinHandle::join()` returns `Err`, the
+supervisor records the attempt as `Failed` with item 5's `FailureClass::Environment{panic}` — a class
+that explicitly never climbs the model ladder, which is right, because a bigger brain does not fix a
+slice index — and the other attempt never notices. The pattern for the one hazard, a poisoned mutex,
+is already in the donor: `Err(poisoned) => poisoned.into_inner()` (`api.rs:182-183`).
+
+Carry the donor's discipline unchanged: `deny(clippy::unwrap_used)` outside tests, enforced by CI
+with `-D warnings`; `unsafe_code = "forbid"`; a panic hook where terminal state is at stake. Consider
+extending the lint to `expect_used` in the worker modules only — F210 names it as the residual.
+
+### 3. Every tool child is born into a job object or a process group
+
+Non-negotiable, and independent of everything above (F208). Measured cost: 0.04 ms to create the
+job, 1.8 ms to kill the tree. Without it, `Kill` stops the shell and not the build, and the
+workspace keeps changing under a task the console shows as stopped.
+
+⚠ **This collides with `unsafe_code = "forbid"`** — `CreateJobObject` via `windows-sys` and `killpg`
+via `libc` are both `unsafe`. Three ways out, and the choice is W7's: a single narrow module with
+`#[allow(unsafe_code)]` and a comment; `command-group` (5.0.1, but last commit 2024-04-21);
+or `process_control` (5.2.0 @ 2025-09-06, 417k dl/90d). On Unix, `Command::process_group(0)` is safe
+std since 1.64 and gets half the job done — the group kill is the part that needs help.
+
+### 4. The missing verb
+
+Add the kill (F209). Every started process — foreground tool, background job, model request — is
+addressable and stoppable, or the operator control bar is decoration. Background jobs already write
+a pid file; that is the registry, it just has no consumer.
+
+### 5. Define the worker seam now, build the boundary later
+
+A worker's interface is exactly two operations:
+
+```
+trait Worker {              // the shape, not the signature
+    fn poll_control(&self, attempt: AttemptId) -> Option<ControlDecision>;  // read the log
+    fn append(&self, event: Event) -> Seq;                                  // one apply(), one writer
+}
+```
+
+Local workers get a direct implementation over item 3's `apply()`. When W10 wants a rig over
+Tailscale, it implements the same two operations over HTTP and nothing else in the system learns
+about it. **The rule that keeps this true: no worker ever touches the store, the console, or another
+worker directly.** That rule costs nothing today and is unrecoverable if broken.
+
+### 6. What this hands to W7 and W10
+
+- **W7 (sandboxing):** the isolation boundary in 2.0 is the **tool child**, not the worker — a worker
+  is trusted code, the tool runs whatever the model wrote. That is where the sandbox belongs, and
+  recommendation 3's job object is also the natural attachment point for a memory cap and a
+  descendant limit. W7 also inherits the unsafe-code question from 3, and F208 as a live defect.
+- **W10 (fleet):** the seam in 5 is the protocol's first draft, and F212 is the reason to design it
+  as if it were remote from the beginning. Also: v1's failure (F206) is the cautionary case — a
+  remote rig that serialises internally is a rig with one slot, whatever its pool advertises.
+
+## Rejected alternatives and why
+
+- **v1's container-per-concern (option C).** Rejected on F206 and W5 F95: eight services whose fleet
+  is one event loop, plus the install story 2.0 exists to escape. The design's own admission control
+  over-promises its executor by 3–5×, and it needed a 600 s timeout to hide the queue.
+- **Worker processes now (option B).** Rejected on F212, not on cost — F207 says the cost is 10 ms.
+  It buys per-attempt blast-radius containment that recommendation 2 provides for one line in
+  `Cargo.toml`, and it charges W10's protocol for it. Revisit exactly when a worker needs to be
+  remote, an OS-enforced memory cap, or a preemptive kill that survives wedged native code.
+- **Keeping `panic = "abort"` because the engine has it.** Rejected on F210's own reasoning: the
+  security argument is about panics crossing an FFI boundary, and 2.0's own code forbids `unsafe`;
+  what changed is that the process now holds more than one attempt.
+- **A thread per tool call with in-process sandboxing.** Rejected as out of scope and probably
+  incoherent — a thread shares the address space with the orchestrator, so it is not a boundary
+  against anything the model writes. That is W7's problem and the child process is its unit.
+- **`spawn_blocking`-style worker pools, work stealing, or any scheduler cleverness.** At N=2 there
+  is nothing to schedule. Item 6's thread inventory is the whole design.
+
+## Effect on fun
+
+**Stop means stop, all the way down.** The measurement that matters here is not the 1.8 ms tree
+kill; it is the 13 ticks the orphan kept writing after being killed. An operator who presses stop and
+watches the file tree keep changing stops trusting the console, and no amount of isometric sprite
+work buys that back. Recommendation 3 is the least glamorous line in this workstream and probably
+the most load-bearing for the feeling of command.
+
+**One attempt can fail without taking the room with it.** Under the inherited profile a stray slice
+index in a tool ends the whole session — every attempt, the console, the operator's place in the
+run. Recommendation 2 turns that into one card going red while the other keeps working, which is
+what a command center looks like when something goes wrong, and it costs a profile line.
+
+**And the install is still one file.** Every argument in this item that pointed at processes pointed
+at more infrastructure, and each one was answered without it. `abcc` stays a binary you can copy to
+a machine and run — which is the property W5 F95 identified as the difference between the thing
+people try and the thing people read about.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W3-24 | How does the tree kill get built without breaking `forbid(unsafe_code)` — narrow `#[allow]` module, `command-group` (stale), or `process_control`? And what is the Unix half, given `Command::process_group(0)` is safe but `killpg` is not? | W7 |
+| OQ-W3-25 | Does `panic = "unwind"` cost anything measurable here — binary size and the release profile's `opt-level="z"`/`lto` interaction? Cheap to measure once 2.0 has a binary | — (build it and check) |
+| OQ-W3-26 | At what point does a worker actually need to be a process — the first remote rig, an OS memory cap, or a wedged tool that ignores the flag? The trigger should be written down before the temptation arrives | W10, W7 |
+| OQ-W3-27 | Background jobs (F209) outlive the attempt that started them by design. Does a job survive its attempt's completion, or is "kill my orphans" part of attempt teardown? | W5 console, W7 |
+
+## Confidence: high on the diagnosis, high on the ruling, medium on recommendation 2's details
+
+F206 and F208–F211 are file:line facts and two agreeing measurements. The orphan result in
+particular is the kind of finding that only appears when you run it: both donors' code reads
+correctly, and the mechanism they share does not do what its call site assumes.
+
+The ruling — one process now, seam defined, boundary deferred — rests on F212, which is an argument
+from item 3's single-writer invariant rather than a measurement. It is a strong argument, but it is
+an argument: if the store ever grew a second writer for another reason, the case against worker
+processes would weaken considerably.
+
+Recommendation 2 is the piece most likely to need adjustment in contact with real code. Unwinding
+across a thread that holds a `MutexGuard` on the SQLite connection is the hazard, and while the
+donor's poisoning idiom handles it, "handles it" here means the next writer sees a poisoned lock and
+must decide whether the projection is intact. That decision has not been designed yet, and it should
+be, before the first panic finds it.
+
+---
+
+# W3 — what the seven items decided
+
+Written 2026-08-20, at the close of the workstream. One line per item, so the next workstream can
+read the rulings without re-reading the arguments.
+
+| # | Item | The ruling | Confidence |
+|---|---|---|---|
+| 1 | Typed lifecycle | One vocabulary per entity, **seven** Task states as data-carrying variants, one write path, attempts immutable, status a projection | high on structure, medium on names (OQ-W3-6) |
+| 2 | Inheritance | 93 modules, one crate; the attempt/turn line is the engine contract; **two** intrusive engine changes | high |
+| 3 | Durability | SQLite event log, WAL + `synchronous=FULL` (929 µs measured), one `apply()`, boot = replay (94 ms/100k) | high |
+| 4 | Control channel | Control is **durable data on that log**; identity is a `seq`; broker writes then pokes; `Redirect(String)` is in the type | high |
+| 5 | Escalation | **Classify before escalating**; one ladder that is data; fork from the *best* checkpoint; R3 pauses the fleet | high on record, medium on rung order |
+| 6 | Ecosystem | **Threads own the work, one runtime owns the edge, the log is the only thing that crosses**; timeouts per rung | high |
+| 7 | Topology | **One process now**, `panic = "unwind"` for per-attempt containment, tree kill for every tool child, worker seam defined as if remote | high |
+
+**The one sentence the workstream reduces to:** *a fleet of OS threads writing an append-only SQLite
+log through a single writer, controlled by rows on that same log, observed through an SSE tail of
+it, escalating by forking immutable attempts, and served to a browser by one runtime confined to the
+edge — in one binary.*
+
+**What W3 still owes, all tracked as open questions:** the variant names (OQ-W3-6, David), retention
+(OQ-W3-11 = OQ-W5-9), the workspace checkpoint marker (OQ-W3-12 → W6 item 6), two-operator arrival
+semantics (OQ-W3-15/16), where `Enqueue` lands mid-tool (OQ-W3-17), defect identity across attempts
+(OQ-W3-18 → W6 item 2), the bare-retry conversion rate (OQ-W3-19 → W8), fleet-pause consent
+(OQ-W3-20, David), the console runtime flavour (OQ-W3-21 → W10), the reqwest upgrade (OQ-W3-22),
+control inside a long tool call (OQ-W3-23 → W7), and item 7's four (OQ-W3-24 through 27).
+
+**What it hands other workstreams, beyond the open questions:** W4 learns that its training data is
+a by-product of escalation, not a project. W6 inherits F202's pipe-buffer deadlock and F161's
+`Uncertain` rule. W7 inherits the tool child as *the* isolation boundary, plus the unsafe-code
+question. W10 inherits the worker seam and v1's cautionary tale about rigs that serialise. W11
+inherits an empty field: no fleet exists in either donor to constrain the stage design.
 
 ---

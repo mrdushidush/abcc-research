@@ -1,0 +1,25 @@
+W3 item 7 topology probe — raw results, 2026-08-20
+host: Windows 11 Pro 26200, python 3.14.5
+
+########## RUN 1 ##########
+platform=win32 python=3.14.5
+[1] child spawn + exit + reap : 27.8 ms mean over 20
+[1] spawn only, no wait       : 2.5 ms mean over 20
+[2] plain child.kill(): grandchild pid 29444 - ticks 5 at kill, 13 two seconds later -> STILL RUNNING
+[3] CreateJobObject + SetInformationJobObject: 0.04 ms
+[3] AssignProcessToJobObject: ok
+[3] closing the job handle killed the tree in 1.9 ms - grandchild 26192: ticks 5 -> 5 -> dead
+
+########## RUN 2 ##########
+platform=win32 python=3.14.5
+[1] child spawn + exit + reap : 26.5 ms mean over 20
+[1] spawn only, no wait       : 2.4 ms mean over 20
+[2] plain child.kill(): grandchild pid 20152 - ticks 5 at kill, 13 two seconds later -> STILL RUNNING
+[3] CreateJobObject + SetInformationJobObject: 0.05 ms
+[3] AssignProcessToJobObject: ok
+[3] closing the job handle killed the tree in 1.8 ms - grandchild 27580: ticks 5 -> 5 -> dead
+
+########## NATIVE-BINARY SPAWN BASELINE ##########
+[1b] native cmd.exe spawn+exit+reap:       10.5 ms mean over 20
+     (the [1] python numbers include ~25 ms of interpreter startup;
+      a Rust worker binary pays the 2.4-2.5 ms spawn, not that.)
