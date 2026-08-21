@@ -7,7 +7,7 @@ assume this table wins."* (`RESEARCH_BRIEF.md:529-531`).
 
 Planned items:
 
-1. ✅ **The reconciliation** (F225–F236) — v1's Coder/QA/CTO against BCF's nine stages against §10's
+1. ✅ **The reconciliation** (F225–F237) — v1's Coder/QA/CTO against BCF's nine stages against §10's
    four, with W6 item 2's four-phase starting taxonomy as the incoming position. Answered: the three
    are not three of the same thing, so the reconciliation separates the axes first and then produces
    **two levels** — Mission (Plan / Integrate / Accept) and Attempt (Localize / Change / Measure /
@@ -24,8 +24,8 @@ Planned items:
    Inherits W6 F223 (the decline breaker that changed meaning) and W3 F195 (the retry budget).
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 949–960, against §10 lines 515–545. Findings continue
-the family numbering — one sequence across all workstreams. **Item 1 took F225–F236, so the next
-free number is F237.** Check the maximum before adding, not the last number in this file
+the family numbering — one sequence across all workstreams. **Item 1 took F225–F237, so the next
+free number is F238.** Check the maximum before adding, not the last number in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
 ---
@@ -59,7 +59,7 @@ Fresh code extraction, 2026-08-21, from all three donors at their current HEADs:
 Method note, per the standing rule (memory: *grep the readers, not the writers*): every taxonomy
 claim below is checked at its **consumption** site, not its declaration. A role that is declared, a
 column that is written, and an event that is emitted are all evidence of intent; only a reader is
-evidence of a mechanism. Four of the twelve findings exist because the declaration and the reader
+evidence of a mechanism. Five of the thirteen findings exist because the declaration and the reader
 disagreed. File:line cites are from this pass.
 
 ## Inherited
@@ -489,9 +489,41 @@ with it — and mission tasks hardcode it to `'code'` anyway (`orchestratorServi
 Prose belongs in the brief, where the Change phase will actually read it. A criterion that no gate
 can run is a comment with a database column.
 
+### F237 — BCF's one piece of evidence against a Plan phase is greenfield-specific, and it left a voice line behind
+
+This is the finding that had to be checked before recommending a mission-level Plan phase, because it
+is the only thing in the family that argues the other way: BCF **built decomposition and removed it**.
+The reason is in the code, at the site where the call used to be (`mission.rs:361-362`):
+
+```rust
+// Run as single task — multi-file extraction handles project structure.
+// Decomposition caused duplicate projects; single-task + good prompts is better.
+```
+
+and twice in its own docs — *"No subtask decomposition — removed because it caused duplicate project
+structures"* (`CLAUDE.md:231`), listed as design decision 3 of 6 (`CLAUDE.md:353`).
+
+**The failure mode does not transfer.** "Duplicate project structures" is what happens when N
+subtasks each generate a project from scratch: every one scaffolds its own `src/`, its own config,
+its own entry point, and the union is a project three times over. That failure requires the project
+structure to be an *output*. In repository work it is an *input* — it already exists, no phase
+generates it, and two tasks editing two files cannot duplicate it. This is the same greenfield/
+repository asymmetry F213 found behind six of BCF's nine stages and F226 found in v1's decomposer
+(flat files under `tasks/`, no nested directories), pointing the same way for the third time.
+
+So the evidence against decomposition is evidence against **greenfield** decomposition, and v1 —
+the only donor whose decomposition survived — is also the only donor that ran the mission level at
+all. BCF's revert is not a counter-example to M1 Plan; it is a constraint on what M1 may emit: **task
+sets over an existing tree, never task sets that each construct a tree.**
+
+The residue is worth one line, because W5's console inherits it. `voice::decomposed(count)` — *"Mission
+decomposed into {} subtasks."* — is still in `voice.rs:68-71` with **zero callers**, an audio asset
+announcing a feature that was deleted. F230's inflation, in the one medium where an unbuilt name is
+still audible.
+
 ## Options compared
 
-Scored against: does it survive the code evidence (F225–F236), does it fit one GPU (W1 F79's 23.77 s
+Scored against: does it survive the code evidence (F225–F237), does it fit one GPU (W1 F79's 23.77 s
 swap, W2 F83's N=2), does every name have a construction site (F230), and does the console get an
 honest cast (W5 F98/F106).
 
@@ -516,7 +548,7 @@ Four axes, named separately, per F225. Two of them are the taxonomy proper; the 
 
 | # | Phase | Kind | Call-sign | Output artifact | Absorbs |
 |---|---|---|---|---|---|
-| M1 | **Plan** | model, read-only tools, once per mission | **Engineering** | the task set, each with **one executable acceptance criterion** | §10 Architecture; v1 `decompose_prompt`; BCF ROUTER's complexity tag |
+| M1 | **Plan** | model, read-only tools, once per mission | **Engineering** | the task set, each with **one executable acceptance criterion**, over an existing tree (F237) | §10 Architecture; v1 `decompose_prompt`; BCF ROUTER's complexity tag |
 | — | *(the task set runs — axis 1, attempt level)* | | | | |
 | M2 | **Integrate** | **no model** — build + test the assembled workspace | *(instrument — no unit)* | `Measured \| Uncertain` per check | BCF `verify_project` over the whole output dir; Claudette `run_build_and_tests` over the mission tree; **absent in v1** (F235) |
 | M3 | **Accept** | human by default; a rung on W3's ladder when unattended | the operator | ship / don't, with reasons | v1 `awaiting_approval` + `approveMission`; W6's Decide |
@@ -668,6 +700,11 @@ can fill that slot, and W8 already measures the inflation at +3.65 median over 3
   It would simplify the port, and it would throw away the one thing v1 got structurally right
   (F226). §10's own justification for the stage list is that "the operator should see where the front
   line is" — the front line is a mission with N tasks on it, not one task.
+- **Following BCF and deleting decomposition**, which is the strongest inherited argument against M1
+  and the reason F237 exists. Checked rather than assumed: BCF's stated cause is *"duplicate project
+  structures"* (`mission.rs:361-362`, `CLAUDE.md:231`), a failure that requires the project structure
+  to be generated output. On 2.0's answered workload it is input, and the failure cannot occur. The
+  revert constrains what M1 emits; it does not remove the phase.
 - **Reviving QA as a unit type** because its persona is the best in the family. F234 is the argument
   for carrying the *prompt*; making it a unit again is what made it unreachable.
 - **Naming the measurement phase "Verifier"** for continuity with both Rust donors. F235: the word
@@ -713,7 +750,7 @@ looked" and the number that means "middling" are the same number.
 
 ## Confidence: high on the axis split and the two levels, medium on the call-sign assignment
 
-High on F225–F236: every one is read at a call site and every one is re-checkable in a line or two,
+High on F225–F237: every one is read at a call site and every one is re-checkable in a line or two,
 and the four that matter most (F228, F229, F231, F232) are absence claims verified by grepping for
 readers rather than by reading intent. The two-level structure is not inferred — v1 documents it in
 its own header comment and its module docstring, and the other two donors confirm it by having no
