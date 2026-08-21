@@ -1,0 +1,20 @@
+W6 item 2 - build/test gate plumbing probe
+Run 2026-08-21 on Windows 11, python 3.14.5. Two runs, identical verdicts.
+
+=== run 1 ===
+W6 item 2 - build/test gate plumbing probe
+platform=win32 python=3.14.5 pipe payload=512 KiB
+
+[1] read-after-exit, child writes 512 KiB: DEADLOCKED - wait() used the whole 8.0 s budget; the child only finished once the parent drained (512 KiB recovered)
+[2] drain-on-threads, same child: completed in 0.03 s (512 KiB captured)
+[3/plain] kill at timeout, grandchild pid 16220 STILL RUNNING: reader join STILL BLOCKED after 11.01 s (budget 10 s)
+[3/job] kill at timeout, grandchild pid 15972 dead: reader join RETURNED after 0.00 s (budget 10 s)
+
+=== run 2 ===
+W6 item 2 - build/test gate plumbing probe
+platform=win32 python=3.14.5 pipe payload=512 KiB
+
+[1] read-after-exit, child writes 512 KiB: DEADLOCKED - wait() used the whole 8.0 s budget; the child only finished once the parent drained (512 KiB recovered)
+[2] drain-on-threads, same child: completed in 0.03 s (512 KiB captured)
+[3/plain] kill at timeout, grandchild pid 28252 STILL RUNNING: reader join STILL BLOCKED after 11.01 s (budget 10 s)
+[3/job] kill at timeout, grandchild pid 21736 dead: reader join RETURNED after 0.00 s (budget 10 s)
