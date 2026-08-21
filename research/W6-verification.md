@@ -12,7 +12,12 @@ Planned items:
    number the verifier produced is reclassified; the 2.0 verifier's requirements follow from the
    diagnosis.
 2. ☐ **The pipeline inheritance** — BCF's nine stages against Claudette's five-phase forge; what
-   carries, what the successor already collapsed. Feeds W11's reconciliation.
+   carries, what the successor already collapsed. Feeds W11's reconciliation. **Also inherits a
+   live defect found in W3 item 6 (F202): BCF's tool runner pipes stdout/stderr and reads them only
+   after the child exits (`sandbox.rs:126-134`), so a child that outwrites the 64 KiB pipe buffer —
+   routine for `cargo test` — blocks forever and is recorded as a *timeout*. Every verifier number
+   produced by a test run large enough to fill a pipe is suspect for a second reason, independent
+   of item 1's.**
 3. ☐ **Who plays the reviewer** — always-on independence on one GPU: same-model-no-history vs
    second-model-swap (23.77 s, W1 F79) vs co-residency; `critic_inflation` as a console metric.
    Gate independence is measured at +3.65 median inflation over 34 missions (W8).
@@ -25,8 +30,10 @@ Planned items:
 8. ☐ **Honest failure reporting** — the design against v1's zero-tests-claimed-passing defect;
    item 1's no-silent-midpoints rule is its first half.
 
-Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering
-(W3 item 2 ended at F157).
+Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
+Item 1 took F158–F161; **W3 then ran to F212 (complete, 2026-08-20), so the next free number here is
+F213.** The numbering is one sequence across all workstreams — check the maximum before adding, not
+the last number in this file.
 
 ---
 
