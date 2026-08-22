@@ -1,0 +1,12 @@
+
+== subject: Claudette, a real Rust workspace, fresh clone (empty target/) ==
+rs  fetch deps (cargo fetch)                    17.54s  rc=0  
+rs  build, COLD (empty target)                  57.13s  rc=0      Finished `dev` profile [unoptimized + debuginfo] target(s) in 57.0
+rs  test compile, cold (--no-run)               19.72s  rc=0    Executable tests\offline_egress.rs (target\debug\deps\offline_egress
+rs  test run, cold                               9.82s  rc=0     Doc-tests claudette
+rs  build, warm (nothing changed)                0.44s  rc=0  Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.36s
+rs  test, warm (nothing changed)                 5.69s  rc=0     Doc-tests claudette
+rs  build, incremental (claudette)               5.13s  rc=0      Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.05
+rs  test, incremental (claudette)               17.13s  rc=0     Doc-tests claudette
+
+wrote D:\dev\ABCC_20_powerd_by_claudette\research\spikes\w11-tier\integrate-results.json

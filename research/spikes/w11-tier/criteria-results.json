@@ -1,0 +1,79 @@
+[
+ {
+  "call": "single r1",
+  "cmd": "cargo check -p claudette",
+  "exit": 0,
+  "verdict": "PASSES-TODAY",
+  "stderr_head": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.33"
+ },
+ {
+  "call": "single r2",
+  "cmd": "cargo test -p claudette",
+  "exit": 0,
+  "verdict": "PASSES-TODAY",
+  "stderr_head": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3"
+ },
+ {
+  "call": "single r3",
+  "cmd": "cargo test --lib usage_tracker_resets_on_resume",
+  "exit": 0,
+  "verdict": "PASSES-TODAY",
+  "stderr_head": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3"
+ },
+ {
+  "call": "multi r1",
+  "cmd": "claudette --help | grep -q \"\\-\\-json\"",
+  "exit": 1,
+  "verdict": "DISCRIMINATES",
+  "stderr_head": ""
+ },
+ {
+  "call": "multi r1",
+  "cmd": "claudette status --json | jq . > /dev/null && claudette doctor --json | jq . > /dev/null && claudette memory --json | jq . > /dev/null && claudette recall --json | jq . > /dev/null",
+  "exit": 255,
+  "verdict": "DISCRIMINATES",
+  "stderr_head": "The system cannot find the path specified."
+ },
+ {
+  "call": "multi r1",
+  "cmd": "cargo test -q -- json_output_stability",
+  "exit": 0,
+  "verdict": "PASSES-TODAY",
+  "stderr_head": "running 0 tests"
+ },
+ {
+  "call": "multi r2",
+  "cmd": "cargo test -p claudette --lib status_json_mode_emits_single_valid_object",
+  "exit": 0,
+  "verdict": "PASSES-TODAY",
+  "stderr_head": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3"
+ },
+ {
+  "call": "multi r2",
+  "cmd": "cargo test -p claudette --lib doctor_json_mode_emits_single_valid_object",
+  "exit": 0,
+  "verdict": "PASSES-TODAY",
+  "stderr_head": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3"
+ },
+ {
+  "call": "multi r3",
+  "cmd": "./target/debug/claudette --help | grep -q \"\\-\\-json\"",
+  "exit": 255,
+  "verdict": "UNCERTAIN",
+  "stderr_head": "'.' is not recognized as an internal or external command,"
+ },
+ {
+  "call": "multi r3",
+  "cmd": "./target/debug/claudette status --json | jq . > /dev/null",
+  "exit": 255,
+  "verdict": "UNCERTAIN",
+  "stderr_head": "'.' is not recognized as an internal or external command,"
+ },
+ {
+  "call": "multi r3",
+  "cmd": "./target/debug/claudette doctor --json | jq . > /dev/null",
+  "exit": 255,
+  "verdict": "UNCERTAIN",
+  "stderr_head": "'.' is not recognized as an internal or external command,"
+ }
+]

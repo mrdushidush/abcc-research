@@ -1,0 +1,45 @@
+12 distinct heads over one ~18000-token body, model qwen3.6-35b-a3b-mtp@iq3_s
+
+-- pass 1: first sight of each head --
+H0 Recon                   ttft  10.584s   prompt_tokens  16865
+H1 Builders                ttft  10.659s   prompt_tokens  16862
+H2 Commandos               ttft  10.678s   prompt_tokens  16869
+H3 Engineering             ttft  10.685s   prompt_tokens  16862
+H4 Sentinel                ttft  10.643s   prompt_tokens  16865
+H5 Quartermaster           ttft  10.666s   prompt_tokens  16879
+H6 Signals                 ttft  10.723s   prompt_tokens  16862
+H7 Sappers                 ttft  10.731s   prompt_tokens  16869
+H8 Artillery               ttft  10.792s   prompt_tokens  16869
+H9 Scouts                  ttft  10.833s   prompt_tokens  16865
+H10 Medics                 ttft  10.745s   prompt_tokens  16870
+H11 Logistics              ttft  10.709s   prompt_tokens  16866
+
+-- pass 2: same heads, same order --
+H0 Recon                   ttft   2.602s   prompt_tokens  16865
+H1 Builders                ttft   2.527s   prompt_tokens  16862
+H2 Commandos               ttft   2.564s   prompt_tokens  16869
+H3 Engineering             ttft   2.533s   prompt_tokens  16862
+H4 Sentinel                ttft   2.525s   prompt_tokens  16865
+H5 Quartermaster           ttft   2.537s   prompt_tokens  16879
+H6 Signals                 ttft   2.588s   prompt_tokens  16862
+H7 Sappers                 ttft   2.537s   prompt_tokens  16869
+H8 Artillery               ttft   2.582s   prompt_tokens  16869
+H9 Scouts                  ttft   2.558s   prompt_tokens  16865
+H10 Medics                 ttft   2.549s   prompt_tokens  16870
+H11 Logistics              ttft   2.600s   prompt_tokens  16866
+
+pass 1 mean (cold)  10.704s
+pass 2 warm heads   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+pass 2 cold heads   []
+  H0: 10.584s ->  2.602s  ( 0.25x)
+  H1: 10.659s ->  2.527s  ( 0.24x)
+  H2: 10.678s ->  2.564s  ( 0.24x)
+  H3: 10.685s ->  2.533s  ( 0.24x)
+  H4: 10.643s ->  2.525s  ( 0.24x)
+  H5: 10.666s ->  2.537s  ( 0.24x)
+  H6: 10.723s ->  2.588s  ( 0.24x)
+  H7: 10.731s ->  2.537s  ( 0.24x)
+  H8: 10.792s ->  2.582s  ( 0.24x)
+  H9: 10.833s ->  2.558s  ( 0.24x)
+  H10: 10.745s ->  2.549s  ( 0.24x)
+  H11: 10.709s ->  2.600s  ( 0.24x)

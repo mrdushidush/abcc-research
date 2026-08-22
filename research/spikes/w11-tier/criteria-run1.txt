@@ -1,0 +1,17 @@
+single r1  exit=0    PASSES-TODAY   cargo check -p claudette                                       Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.33
+single r2  exit=0    PASSES-TODAY   cargo test -p claudette                                        Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3
+single r3  exit=0    PASSES-TODAY   cargo test --lib usage_tracker_resets_on_resume                Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3
+multi r1   exit=1    DISCRIMINATES  claudette --help | grep -q "\-\-json"                      
+multi r1   exit=255  DISCRIMINATES  claudette status --json | jq . > /dev/null && claudette do The system cannot find the path specified.
+multi r1   exit=0    PASSES-TODAY   cargo test -q -- json_output_stability                     running 0 tests
+multi r2   exit=0    PASSES-TODAY   cargo test -p claudette --lib status_json_mode_emits_singl     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3
+multi r2   exit=0    PASSES-TODAY   cargo test -p claudette --lib doctor_json_mode_emits_singl     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.3
+multi r3   exit=255  UNCERTAIN      ./target/debug/claudette --help | grep -q "\-\-json"       '.' is not recognized as an internal or external command,
+multi r3   exit=255  UNCERTAIN      ./target/debug/claudette status --json | jq . > /dev/null  '.' is not recognized as an internal or external command,
+multi r3   exit=255  UNCERTAIN      ./target/debug/claudette doctor --json | jq . > /dev/null  '.' is not recognized as an internal or external command,
+
+PASSES-TODAY   6/11
+UNCERTAIN      3/11
+DISCRIMINATES  2/11
+
+wrote criteria-results.json

@@ -1,0 +1,24 @@
+-- schema-constrained verdict, thinking left on (the default) --
+schema  max_tokens=256         finish=length completion_tok=  256 reasoning_chars=  938 payload_chars=    0 json=NO     5.5s
+schema  max_tokens=512         finish=length completion_tok=  512 reasoning_chars= 1990 payload_chars=    0 json=NO     8.2s
+schema  max_tokens=1024        finish=length completion_tok= 1024 reasoning_chars= 4107 payload_chars=    0 json=NO    15.1s
+schema  max_tokens=2048        finish=length completion_tok= 2048 reasoning_chars= 8599 payload_chars=    0 json=NO    31.6s
+schema  max_tokens=4096        finish=stop   completion_tok= 2718 reasoning_chars= 9640 payload_chars= 1300 json=OK    39.7s
+                                 -> verdict=fail score=2 defects=4
+schema  max_tokens=8192        finish=stop   completion_tok= 2284 reasoning_chars= 8104 payload_chars= 1148 json=OK    33.8s
+                                 -> verdict=fail score=0 defects=3
+
+-- same, with BCF's /no_think prefix --
+/no_think  max_tokens=256      finish=length completion_tok=  256 reasoning_chars= 1035 payload_chars=    0 json=NO     6.0s
+/no_think  max_tokens=512      finish=length completion_tok=  512 reasoning_chars= 2041 payload_chars=    0 json=NO     8.8s
+/no_think  max_tokens=1024     finish=length completion_tok= 1024 reasoning_chars= 3979 payload_chars=    0 json=NO    16.3s
+/no_think  max_tokens=2048     finish=stop   completion_tok= 1956 reasoning_chars= 6972 payload_chars= 1001 json=OK    29.4s
+                                 -> verdict=fail score=2 defects=3
+/no_think  max_tokens=4096     finish=stop   completion_tok= 2306 reasoning_chars= 8422 payload_chars= 1087 json=OK    34.3s
+                                 -> verdict=fail score=0 defects=3
+
+-- no schema, prompt-and-pray (v1 and BCF's actual mechanism) --
+no schema  max_tokens=1024     finish=length completion_tok= 1024 reasoning_chars= 4105 payload_chars=    0 json=NO    15.9s
+no schema  max_tokens=4096     finish=stop   completion_tok= 3914 reasoning_chars=15039 payload_chars= 1069 json=NO    56.2s
+
+wrote verdict-results.json

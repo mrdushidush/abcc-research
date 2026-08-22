@@ -1,0 +1,21 @@
+body ~18000 tokens, model qwen3.6-35b-a3b-mtp@iq3_s
+
+-- head-varying: each phase brings its own system prompt and tools --
+1  A1 head Recon      cold         ttft  10.944s   prompt_tokens  16904   apparent prefill 1544.5 tok/s
+2  A2 head Recon      repeat       ttft   2.398s   prompt_tokens  16908   apparent prefill 7049.8 tok/s
+3  B1 head Builders   transition   ttft  10.857s   prompt_tokens  16947   apparent prefill 1560.9 tok/s
+4  A3 head Recon      back again   ttft   2.770s   prompt_tokens  16904   apparent prefill 6102.1 tok/s
+
+-- head-frozen: one system prompt, phase at the tail --
+5  S1 frozen head    Localize (cold) ttft  10.878s   prompt_tokens  17058   apparent prefill 1568.2 tok/s
+6  S2 frozen head    -> Change     ttft   2.362s   prompt_tokens  17063   apparent prefill 7224.4 tok/s
+7  S3 frozen head    -> Judge      ttft   2.377s   prompt_tokens  17062   apparent prefill 7179.0 tok/s
+8  S4 frozen head    -> Localize   ttft   2.364s   prompt_tokens  17058   apparent prefill 7217.0 tok/s
+
+head-varying: repeat of the same head    2.398s   ( 0.22x of cold)
+head-varying: PHASE TRANSITION          10.857s   ( 0.99x of cold)
+head-varying: return to a used head      2.770s   ( 0.25x of cold)
+head-frozen:  cold                      10.878s
+head-frozen:  PHASE TRANSITIONS          2.362s  2.377s  2.364s
+
+cost of a per-phase head, per transition: +8.495s (4.60x) at ~17058 prompt tokens

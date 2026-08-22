@@ -1,0 +1,27 @@
+tree: 112 .rs files, 4284 chars
+
+-- mission that is plainly ONE task --
+single r1                tasks=   1 runnable_criteria=   1 prompt_tok=1534 completion_tok=2442 reasoning_chars=  9952 ttft=  3.00s wall=  37.6s finish=stop
+                          - Reset token counters on session resume in UsageTracker           | cargo check -p claudette
+single r2                tasks=   1 runnable_criteria=   1 prompt_tok=1534 completion_tok=2676 reasoning_chars= 11158 ttft=  2.26s wall=  40.8s finish=stop
+                          - Reset UsageTracker token counts on session resume to prevent dou | cargo test -p claudette
+single r3                tasks=   1 runnable_criteria=   1 prompt_tok=1534 completion_tok=2520 reasoning_chars= 10281 ttft=  2.27s wall=  36.4s finish=stop
+                          - Reset token counters in `UsageTracker` upon session resume in `c | cargo test --lib usage_tracker_resets_on_resume
+
+-- mission that is plainly MANY tasks --
+multi r1                 tasks=   3 runnable_criteria=   3 prompt_tok=1534 completion_tok=4301 reasoning_chars= 16017 ttft=  2.94s wall=  61.7s finish=stop
+                          - Add `--json` flag to CLI argument parser and update command rout | claudette --help | grep -q "\-\-json"
+                          - Refactor `status`, `doctor`, `memory`, and `recall` modules to r | claudette status --json | jq . > /dev/null && claudette 
+                          - Implement a test suite that validates the emitted JSON schema st | cargo test -q -- json_output_stability
+multi r2                 tasks=   2 runnable_criteria=   2 prompt_tok=1534 completion_tok=2679 reasoning_chars= 10053 ttft=  2.30s wall=  39.1s finish=stop
+                          - Add `--json` flag and JSON emission to the `status` command      | cargo test -p claudette --lib status_json_mode_emits_sin
+                          - Add `--json` flag and JSON emission to the `doctor` command      | cargo test -p claudette --lib doctor_json_mode_emits_sin
+multi r3                 tasks=   3 runnable_criteria=   3 prompt_tok=1534 completion_tok=3758 reasoning_chars= 13585 ttft=  2.27s wall=  53.0s finish=stop
+                          - Add `--json` flag to CLI argument parser and propagate it throug | ./target/debug/claudette --help | grep -q "\-\-json"
+                          - Implement JSON serialization for the `status` command output whe | ./target/debug/claudette status --json | jq . > /dev/nul
+                          - Implement JSON serialization for the `doctor` command output whe | ./target/debug/claudette doctor --json | jq . > /dev/nul
+
+single-task mission -> task counts [1, 1, 1]
+multi-task mission  -> task counts [3, 2, 3]
+wall clock [37.63, 40.82, 36.44, 61.66, 39.05, 53.01]
+wrote plan-results.json

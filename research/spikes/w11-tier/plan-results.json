@@ -1,0 +1,173 @@
+[
+ {
+  "label": "single r1",
+  "n_tasks": 1,
+  "runnable": 1,
+  "wall_s": 37.63,
+  "ttft_s": 3.0,
+  "finish": "stop",
+  "prompt_tokens": 1534,
+  "completion_tokens": 2442,
+  "reasoning_chars": 9952,
+  "tasks": [
+   {
+    "id": "task_1",
+    "title": "Reset token counters on session resume in UsageTracker",
+    "files": [
+     "crates/claudette/src/runtime/usage.rs"
+    ],
+    "acceptance_command": "cargo check -p claudette"
+   }
+  ]
+ },
+ {
+  "label": "single r2",
+  "n_tasks": 1,
+  "runnable": 1,
+  "wall_s": 40.82,
+  "ttft_s": 2.26,
+  "finish": "stop",
+  "prompt_tokens": 1534,
+  "completion_tokens": 2676,
+  "reasoning_chars": 11158,
+  "tasks": [
+   {
+    "id": ", ",
+    "title": "Reset UsageTracker token counts on session resume to prevent double-counting previous session totals.",
+    "files": [
+     "crates/claudette/src/runtime/usage.rs"
+    ],
+    "acceptance_command": "cargo test -p claudette"
+   }
+  ]
+ },
+ {
+  "label": "single r3",
+  "n_tasks": 1,
+  "runnable": 1,
+  "wall_s": 36.44,
+  "ttft_s": 2.27,
+  "finish": "stop",
+  "prompt_tokens": 1534,
+  "completion_tokens": 2520,
+  "reasoning_chars": 10281,
+  "tasks": [
+   {
+    "id": ", ",
+    "title": "Reset token counters in `UsageTracker` upon session resume in `crates/claudette/src/runtime/usage.rs`.",
+    "files": [
+     "crates/claudette/src/runtime/usage.rs"
+    ],
+    "acceptance_command": "cargo test --lib usage_tracker_resets_on_resume"
+   }
+  ]
+ },
+ {
+  "label": "multi r1",
+  "n_tasks": 3,
+  "runnable": 3,
+  "wall_s": 61.66,
+  "ttft_s": 2.94,
+  "finish": "stop",
+  "prompt_tokens": 1534,
+  "completion_tokens": 4301,
+  "reasoning_chars": 16017,
+  "tasks": [
+   {
+    "id": "task_1",
+    "title": "Add `--json` flag to CLI argument parser and update command routing in `crates/claudette/src/main.rs`.",
+    "files": [
+     "crates/claudette/src/main.rs"
+    ],
+    "acceptance_command": "claudette --help | grep -q \"\\-\\-json\""
+   },
+   {
+    "id": "task_2",
+    "title": "Refactor `status`, `doctor`, `memory`, and `recall` modules to return serializable structs instead of printing directly, wiring them to emit JSON on stdout when the flag is set.",
+    "files": [
+     "crates/claudette/src/status.rs",
+     "crates/claudette/src/doctor.rs",
+     "crates/claudette/src/memory.rs",
+     "crates/claudette/src/recall.rs"
+    ],
+    "acceptance_command": "claudette status --json | jq . > /dev/null && claudette doctor --json | jq . > /dev/null && claudette memory --json | jq . > /dev/null && claudette recall --json | jq . > /dev/null"
+   },
+   {
+    "id": "task_3",
+    "title": "Implement a test suite that validates the emitted JSON schema stability and confirms human output suppression across all report commands.",
+    "files": [
+     "crates/claudette/tests/json_output_stability.rs"
+    ],
+    "acceptance_command": "cargo test -q -- json_output_stability"
+   }
+  ]
+ },
+ {
+  "label": "multi r2",
+  "n_tasks": 2,
+  "runnable": 2,
+  "wall_s": 39.05,
+  "ttft_s": 2.3,
+  "finish": "stop",
+  "prompt_tokens": 1534,
+  "completion_tokens": 2679,
+  "reasoning_chars": 10053,
+  "tasks": [
+   {
+    "id": "task_status_json",
+    "title": "Add `--json` flag and JSON emission to the `status` command",
+    "files": [
+     "crates/claudette/src/commands.rs",
+     "crates/claudette/src/status.rs"
+    ],
+    "acceptance_command": "cargo test -p claudette --lib status_json_mode_emits_single_valid_object"
+   },
+   {
+    "id": "task_doctor_json",
+    "title": "Add `--json` flag and JSON emission to the `doctor` command",
+    "files": [
+     "crates/claudette/src/commands.rs",
+     "crates/claudette/src/doctor.rs"
+    ],
+    "acceptance_command": "cargo test -p claudette --lib doctor_json_mode_emits_single_valid_object"
+   }
+  ]
+ },
+ {
+  "label": "multi r3",
+  "n_tasks": 3,
+  "runnable": 3,
+  "wall_s": 53.01,
+  "ttft_s": 2.27,
+  "finish": "stop",
+  "prompt_tokens": 1534,
+  "completion_tokens": 3758,
+  "reasoning_chars": 13585,
+  "tasks": [
+   {
+    "id": "task_1",
+    "title": "Add `--json` flag to CLI argument parser and propagate it through all subcommand handlers.",
+    "files": [
+     "crates/claudette/src/main.rs"
+    ],
+    "acceptance_command": "./target/debug/claudette --help | grep -q \"\\-\\-json\""
+   },
+   {
+    "id": "task_2",
+    "title": "Implement JSON serialization for the `status` command output when `--json` is present, suppressing human-readable terminal output.",
+    "files": [
+     "crates/claudette/src/status.rs"
+    ],
+    "acceptance_command": "./target/debug/claudette status --json | jq . > /dev/null"
+   },
+   {
+    "id": "task_3",
+    "title": "Implement JSON serialization for the `doctor` command output when `--json` is present, suppressing human-readable terminal output.",
+    "files": [
+     "crates/claudette/src/doctor.rs"
+    ],
+    "acceptance_command": "./target/debug/claudette doctor --json | jq . > /dev/null"
+   }
+  ]
+ }
+]

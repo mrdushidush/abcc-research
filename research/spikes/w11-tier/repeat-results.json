@@ -1,0 +1,94 @@
+{
+ "prompt_and_pray": [
+  {
+   "label": "asked-for JSON r1",
+   "finish": "stop",
+   "completion_tokens": 1764,
+   "reasoning_chars": 6545,
+   "payload_chars": 409,
+   "json_ok": true,
+   "wall_s": 24.61,
+   "verdict": "fail",
+   "score": 2
+  },
+  {
+   "label": "asked-for JSON r2",
+   "finish": "stop",
+   "completion_tokens": 2891,
+   "reasoning_chars": 10907,
+   "payload_chars": 442,
+   "json_ok": true,
+   "wall_s": 36.06,
+   "verdict": "fail",
+   "score": 2
+  },
+  {
+   "label": "asked-for JSON r3",
+   "finish": "stop",
+   "completion_tokens": 2409,
+   "reasoning_chars": 9149,
+   "payload_chars": 400,
+   "json_ok": true,
+   "wall_s": 31.94,
+   "verdict": "fail",
+   "score": 2
+  }
+ ],
+ "repeats": [
+  {
+   "label": "repeat r1",
+   "finish": "stop",
+   "completion_tokens": 2780,
+   "reasoning_chars": 9942,
+   "payload_chars": 1245,
+   "json_ok": true,
+   "wall_s": 41.04,
+   "verdict": "fail",
+   "score": 0
+  },
+  {
+   "label": "repeat r2",
+   "finish": "stop",
+   "completion_tokens": 3872,
+   "reasoning_chars": 14257,
+   "payload_chars": 1838,
+   "json_ok": true,
+   "wall_s": 59.3,
+   "verdict": "fail",
+   "score": 2
+  },
+  {
+   "label": "repeat r3",
+   "finish": "stop",
+   "completion_tokens": 2860,
+   "reasoning_chars": 10200,
+   "payload_chars": 1226,
+   "json_ok": true,
+   "wall_s": 42.93,
+   "verdict": "fail",
+   "score": 0
+  },
+  {
+   "label": "repeat r4",
+   "finish": "stop",
+   "completion_tokens": 4006,
+   "reasoning_chars": 14916,
+   "payload_chars": 1442,
+   "json_ok": true,
+   "wall_s": 61.5,
+   "verdict": "fail",
+   "score": 2
+  },
+  {
+   "label": "repeat r5",
+   "finish": "length",
+   "completion_tokens": 4096,
+   "reasoning_chars": 16564,
+   "payload_chars": 0,
+   "json_ok": false,
+   "wall_s": 63.94,
+   "verdict": null,
+   "score": null
+  }
+ ]
+}

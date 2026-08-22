@@ -1,0 +1,145 @@
+[
+ {
+  "label": "schema  max_tokens=256",
+  "finish": "length",
+  "completion_tokens": 256,
+  "reasoning_chars": 938,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 5.47,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "schema  max_tokens=512",
+  "finish": "length",
+  "completion_tokens": 512,
+  "reasoning_chars": 1990,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 8.24,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "schema  max_tokens=1024",
+  "finish": "length",
+  "completion_tokens": 1024,
+  "reasoning_chars": 4107,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 15.12,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "schema  max_tokens=2048",
+  "finish": "length",
+  "completion_tokens": 2048,
+  "reasoning_chars": 8599,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 31.6,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "schema  max_tokens=4096",
+  "finish": "stop",
+  "completion_tokens": 2718,
+  "reasoning_chars": 9640,
+  "payload_chars": 1300,
+  "json_ok": true,
+  "wall_s": 39.74,
+  "verdict": "fail",
+  "score": 2
+ },
+ {
+  "label": "schema  max_tokens=8192",
+  "finish": "stop",
+  "completion_tokens": 2284,
+  "reasoning_chars": 8104,
+  "payload_chars": 1148,
+  "json_ok": true,
+  "wall_s": 33.75,
+  "verdict": "fail",
+  "score": 0
+ },
+ {
+  "label": "/no_think  max_tokens=256",
+  "finish": "length",
+  "completion_tokens": 256,
+  "reasoning_chars": 1035,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 6.02,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "/no_think  max_tokens=512",
+  "finish": "length",
+  "completion_tokens": 512,
+  "reasoning_chars": 2041,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 8.77,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "/no_think  max_tokens=1024",
+  "finish": "length",
+  "completion_tokens": 1024,
+  "reasoning_chars": 3979,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 16.31,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "/no_think  max_tokens=2048",
+  "finish": "stop",
+  "completion_tokens": 1956,
+  "reasoning_chars": 6972,
+  "payload_chars": 1001,
+  "json_ok": true,
+  "wall_s": 29.4,
+  "verdict": "fail",
+  "score": 2
+ },
+ {
+  "label": "/no_think  max_tokens=4096",
+  "finish": "stop",
+  "completion_tokens": 2306,
+  "reasoning_chars": 8422,
+  "payload_chars": 1087,
+  "json_ok": true,
+  "wall_s": 34.28,
+  "verdict": "fail",
+  "score": 0
+ },
+ {
+  "label": "no schema  max_tokens=1024",
+  "finish": "length",
+  "completion_tokens": 1024,
+  "reasoning_chars": 4105,
+  "payload_chars": 0,
+  "json_ok": false,
+  "wall_s": 15.94,
+  "verdict": null,
+  "score": null
+ },
+ {
+  "label": "no schema  max_tokens=4096",
+  "finish": "stop",
+  "completion_tokens": 3914,
+  "reasoning_chars": 15039,
+  "payload_chars": 1069,
+  "json_ok": false,
+  "wall_s": 56.16,
+  "verdict": null,
+  "score": null
+ }
+]

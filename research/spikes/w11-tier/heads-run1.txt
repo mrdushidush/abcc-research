@@ -1,0 +1,27 @@
+6 distinct heads over one ~18000-token body, model qwen3.6-35b-a3b-mtp@iq3_s
+
+-- pass 1: first sight of each head --
+H0 Recon                   ttft  10.795s   prompt_tokens  16865
+H1 Builders                ttft  10.693s   prompt_tokens  16862
+H2 Commandos               ttft  10.737s   prompt_tokens  16869
+H3 Engineering             ttft  10.701s   prompt_tokens  16862
+H4 Sentinel                ttft  10.763s   prompt_tokens  16865
+H5 Quartermaster           ttft  10.727s   prompt_tokens  16879
+
+-- pass 2: same heads, same order --
+H0 Recon                   ttft   2.626s   prompt_tokens  16865
+H1 Builders                ttft   2.600s   prompt_tokens  16862
+H2 Commandos               ttft   2.535s   prompt_tokens  16869
+H3 Engineering             ttft   2.565s   prompt_tokens  16862
+H4 Sentinel                ttft   2.542s   prompt_tokens  16865
+H5 Quartermaster           ttft   2.572s   prompt_tokens  16879
+
+pass 1 mean (cold)  10.736s
+pass 2 warm heads   [0, 1, 2, 3, 4, 5]
+pass 2 cold heads   []
+  H0: 10.795s ->  2.626s  ( 0.24x)
+  H1: 10.693s ->  2.600s  ( 0.24x)
+  H2: 10.737s ->  2.535s  ( 0.24x)
+  H3: 10.701s ->  2.565s  ( 0.24x)
+  H4: 10.763s ->  2.542s  ( 0.24x)
+  H5: 10.727s ->  2.572s  ( 0.24x)

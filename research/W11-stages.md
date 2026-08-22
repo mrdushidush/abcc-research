@@ -14,8 +14,13 @@ Planned items:
    Judge, plus Veto). §10's four unit names all survive, as **call-signs on phases that have
    construction sites**, and §10's table turns out to be missing the only stage that ever stopped
    anything in any of the three donors.
-2. ☐ **Stage-to-tier mapping** backed by W1 and W2 measurements. Now a *phase*-to-tier mapping
-   (item 1's ruling), and one of the phases needs no model at all, which changes the swap arithmetic.
+2. ✅ **The phase-to-tier mapping** (F238–F251) — backed by W1/W2's existing numbers and five probes
+   run for it. Answered: the mapping is **four phases → one tier, three phases → no model**, and
+   "tier" is the wrong axis. What varies per phase is a four-knob runtime profile, sorted by what a
+   change costs: weights and window are frozen, and the head, the tool policy and the output budget
+   are where a phase gets to differ. F79's swap cost turns out to be a floor — a swap also wipes the
+   prompt cache — and the reasoning trace turns out to be an unbounded input to a bounded output
+   budget, which is how a shipping donor's Judge returns an empty string with HTTP 200.
 3. ☐ **Handoff artifact schemas as Rust types**, not conventions. Brief, diff, measurement set,
    verdict — each an event on W3's log.
 4. ☐ **Gate independence** and how it survives single player mode. Overlaps W6 item 3 directly;
@@ -24,8 +29,9 @@ Planned items:
    Inherits W6 F223 (the decline breaker that changed meaning) and W3 F195 (the retry budget).
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 949–960, against §10 lines 515–545. Findings continue
-the family numbering — one sequence across all workstreams. **Item 1 took F225–F237, so the next
-free number is F238.** Check the maximum before adding, not the last number in this file
+the family numbering — one sequence across all workstreams. **Item 1 took F225–F237 and item 2 took
+F238–F251, so the next free number is F252.** Check the maximum before adding, not the last number
+in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
 ---
@@ -762,3 +768,662 @@ same edge and nothing here settles it. Medium on M2 Integrate's affordability: t
 shape and both Rust donors already run something like it, but on a repository-sized workload with one
 GPU its cost is unmeasured (OQ-W11-1), and F220's hung timeout is a warning about what running a
 project's real suite can do to a pipeline that has not planned for it.
+
+---
+
+# Item 2 — the phase-to-tier mapping
+
+## Question
+
+§10 asks it as five words and one demand: *"Tier mapping. Which tier fits each stage, given a
+decided base agent? Recon wants cheap plus long context. Architecture wants the strongest
+reasoning available in the current mode. Building wants parallel throughput. Gate wants
+adversarial capability. **Justify with measurements.**"* (`RESEARCH_BRIEF.md:534-538`).
+
+Item 1 changed the shape of the question twice. The mapping is **phase→tier, not unit→tier**,
+because units turned out to be runtime slots rather than stage types; and **two of the seven
+phases run no model at all**, so the swap arithmetic only binds across M1 Plan → A1 Localize →
+A2 Change → A4 Judge.
+
+The measurements the brief demands mostly exist already — W1 F77–F80 and W2 F81–F86, all taken
+2026-08-16 on this box. What they do not cover is the thing a *pipeline* does that a single agent
+does not: change the prompt, repeatedly, in the same session. That gap is what this item measured.
+
+## Method
+
+Desk work over W1/W2's existing numbers, plus five probes run 2026-08-22
+(`research/spikes/w11-tier/`, README there, raw output committed):
+
+- `phases.py` — what a phase transition costs when the phase brings its own system prompt and
+  tool array, against the same transition with the head frozen and the phase at the tail.
+- `heads.py` — how many distinct prompt heads the server holds warm at once, and whether a model
+  load survives it. Run once at 6 heads, once at 12 after a reload.
+- `verdict.py` + `repeat.py` — what output budget one Judge call needs, against the donor's actual
+  number, with and without BCF's own `/no_think` workaround; then five identical calls for
+  reproducibility, and a fair prompt-and-pray arm.
+- `plan.py` + `criteria.py` — what one Plan call costs, whether it inflates a single-task mission,
+  and whether the acceptance criteria it emits fail on the unfixed tree.
+- `integrate.py` — M2 Integrate's cost on two real projects, cold, warm and incremental (CPU only,
+  no model call in flight).
+
+Held constants per Q56's rule: champion at `-c 65536 --parallel 1`, nothing else resident, and the
+`llama-server` command line captured per F86 — byte-identical to W2's, which is itself a finding
+(F240). Donor claims are read at their **consumption** sites, per the standing rule.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| §10's per-stage model tier column | `RESEARCH_BRIEF.md:517-524` | **collapses to one value** on this box, and is replaced by a four-knob per-phase profile (F238) |
+| F79 — a model swap costs 23.77 s round trip | W1 | **it is a floor, not the price** — the swap also destroys the prompt cache (F241) |
+| F81 — one token at the front annihilates the prefix cache | W2 | ratified and generalised: a whole head does the same, and the fix is a prompt *layout* rule (F239) |
+| F81's consequence, "freeze the tool set per session" | `abcc-2-w1-w2-state` | **sharpened**: freeze is the wrong word. Enumerate. A finite set of heads is affordable; an unbounded one is not (F240) |
+| F83 — concurrency saturates at N=2, KV is a sum not a division | W2 | binding, and now compatible with per-phase heads: two slots do not evict each other (F240) |
+| F87–F88 — the 27B ties on verdicts at 5.2× the wall clock | W1 | binding: "escalate to a bigger local model" has no measurement behind it on this box |
+| F82 — constrained decoding is enforced; the trace is spent first | W2 | ratified, and the trap is worse than F82 could see: the overflow is non-deterministic (F246) |
+| §14 item 0 — C10 stays manual and rare, no routing tier | brief | binding, and item 2 finds the one phase where "manual and rare" is structurally possible (M1) |
+| F218 / F233 — every gate input is `Measured \| Uncertain`, constructed never coalesced | W6, W11 item 1 | ratified, and an empty payload from a length-capped call is now a named instance (F246) |
+| OQ-W11-1, OQ-W11-2 | item 1 | **both answered** (F249, F250) |
+
+## Findings
+
+### 🚨 F238 — the tier axis on this box has one rung, and F79's 23.77 s was the floor of the second rung's price, not its price
+
+The candidates are fixed by arithmetic that is already done. F68: nothing co-resides with the
+champion — the card is 16,311 MiB, the champion holds 14,362–14,820 at ctx 32768 and 15,772 at
+65536, and the smallest model on this disk is 3,759 MiB. So every "second tier" is a **swap**, and
+F79 priced the swap at 23.77 s round trip.
+
+What F79 did not measure is what the swap does to everything the server had learned. It destroys
+it. Measured this session: a prompt head warm at **2.626 s** came back at **10.584 s** after an
+unload and load of the *same* model — a full cold prefill, because LM Studio spawns a fresh
+`llama-server` per load (F75) and the cache lives in that process (F241).
+
+So the price of a tier change is three things, not one:
+
+| component | at ~17k tokens | at the daily driver's ~55k |
+|---|---|---|
+| the swap itself (F79) | 23.77 s | 23.77 s |
+| the arriving model's prefill is cold, not warm | +8.5 s | +26 s (extrapolated) |
+| every head the champion had warm is cold on return | +8.5 s each | +26 s each |
+
+**A per-gate second-opinion reviewer therefore costs ~32–41 s per gate at 17k and ~50–76 s at the
+daily driver's window**, against **zero** for same-model-no-history. The 17k figures are measured;
+the 55k figures extrapolate F80's 33.9 s cold prefill at 54,930 tokens against this session's
+measured restore rate of ~6,700 tok/s. Either way the number W6 item 3 and W11 item 4 have to weigh
+against W8's +3.65 median critic inflation is **roughly double F79's**, and it recurs per attempt
+rather than per mission.
+
+The same arithmetic kills the other direction. §10 wants Recon "cheap plus long context", and W1's
+recommendation 4 nominates `qwen3.5-4b` from the champion's own family for triage. Priced here:
+a 4 B model decodes perhaps 2–3× faster, so a 1,000-token brief saves ~10 s of decode — against
+~12–18 s of swap and at least 8.5 s of destroyed cache, each way. **A cheaper tier costs more than
+it saves for any single call.** It only pays for a long batch of calls at that tier with nothing
+else needing the champion in between, and the retry loop (a failed A3 sends the task back to A2)
+forbids exactly that batching. W1's recommendation stands as written — as advice for the hardware
+variants in its own table, not as an operating point for this box.
+
+### 🚨 F239 — a phase transition costs a full cold prefill if and only if the phase rewrites the prompt head
+
+W2 F81 measured that one token changed at the front of an 18,470-token prompt costs 11.399 s
+against a cold 11.549 s — annihilation, not degradation. The pipeline question is bigger than one
+token: §10 gives every stage its own unit, and the natural implementation gives every phase its own
+system prompt and its own tool array, both of which the chat template renders **ahead of** the
+messages.
+
+Measured at ~16.9k prompt tokens, champion, `--parallel 1`:
+
+| | TTFT | vs cold |
+|---|---|---|
+| A1 head *Recon*, first sight | 10.944 s | 1.00× |
+| A2 same head, different question | 2.398 s | 0.22× |
+| **B1 head *Builders* — a phase transition** | **10.857 s** | **0.99×** |
+| A3 back to head *Recon* | 2.770 s | 0.25× |
+| S1 frozen head, phase at the tail, first sight | 10.878 s | 1.00× |
+| **S2 → Change, frozen head** | **2.362 s** | **0.22×** |
+| **S3 → Judge, frozen head** | **2.377 s** | 0.22× |
+| **S4 → Localize, frozen head** | **2.364 s** | 0.22× |
+
+**A phase transition that rewrites the head costs +8.5 s, 4.60× the frozen-head transition.** Over
+one attempt's three transitions (A1→A2→A3→A4, of which three are model calls) that is 32.6 s of
+prefill against 7.1 s — and at the daily driver's window it is roughly triple that, which starts to
+rival the task itself (F88: 100–190 s median per K-suite task on the champion).
+
+The fix is not a tier and not a model. It is a **prompt layout rule**, and it is stated in
+recommendation 3.
+
+### 🚨 F240 — the server holds at least twelve distinct heads warm, and that is a backend default nobody configured
+
+Step A3 above should not have been warm. With `--parallel 1` there is one slot, head *Builders* had
+just displaced head *Recon* in it, and the two share no prefix beyond a few tokens. Returning to
+*Recon* was warm anyway, at 2.770 s.
+
+Pushed further — twelve distinct heads over the same body, each ~16.9k tokens:
+
+| | pass 1 (first sight) | pass 2 (same twelve, same order) |
+|---|---|---|
+| every head | 10.58 – 10.83 s | **2.53 – 2.60 s** |
+
+No eviction at twelve, and the restore is indistinguishable from a same-prefix hit. Re-prefilling
+16,865 tokens in 2.6 s would be 6,500 tok/s against a measured prefill plateau of ~1,600 (F80), so
+the server is restoring state, not recomputing it.
+
+**It costs host RAM, and the amount is measurable.** `llama-server`'s working set went **988 MiB
+after load, cache empty → 2,879 MiB with four cached states**: **473 MiB per state of ~16.9k
+tokens, ≈ 28.7 KiB per token.** At the daily driver's 61,440 that is ~1.7 GiB for one warm head.
+
+And per F86's rule — the command line is the only complete witness — the flags that would configure
+this are **not on it**: no `--cache-ram`, no `--slot-save-path`. This is llama.cpp b2.27.1's default
+RAM prompt cache, arriving through LM Studio unasked. That is the mirror image of F165's lesson: a
+command line proves presence, not provenance, and an **absent flag does not prove an absent
+feature**.
+
+⚠ **What this does and does not buy, because the tempting reading is wrong.** It does not make
+per-phase heads free. In production the body under the head is *task-specific*, so each
+(phase head, task context) pair is a first sight and pays F239's 8.5 s regardless of how many
+states are held. What the store actually buys is two things, both real:
+
+- **retries are warm.** A failed A3 sends the task back to A2 with the same head and the same
+  context — which is a prompt the server has already seen. The loop that costs the most re-prefills
+  is the one the cache covers.
+- **concurrent attempts do not evict each other.** F83 put the concurrency ceiling at N=2; two slots
+  working on different tasks would thrash a single-prefix cache and do not thrash this one.
+
+So the ruling F81 handed to memory — *"freeze the tool set per session"* — was right, and **freeze
+is the wrong verb**. The correct rule is **enumerate**: a finite, compile-time set of heads is
+affordable in both time (one cold prefill each, once per body) and RAM (473 MiB each at 17k). An
+*unbounded* set — a tool registry that grows on demand, a system prompt carrying a task id or a
+timestamp — is unaffordable twice over, a cold prefill per variant and 473 MiB per variant.
+
+### F241 — the cache is process-local, so a model load is a cache wipe
+
+The evidence is in F238's table and worth isolating because it is the mechanism: head H0, warm at
+**2.626 s**, measured at **10.584 s** immediately after an `lms unload` + `lms load` of the same
+model. Nothing else changed.
+
+The round trip for that same-model reload was **9.20 s** (unload 0.87 s, load 8.33 s) — *faster*
+than any figure in F79's table, which measured 11.42–12.35 s per direction. The difference is the
+OS page cache: F79 alternated two models of 12.67 and 12.4 GiB on a machine whose file cache could
+not hold both, while this reload had just released the weights it then re-read. **F79's 23.77 s
+remains the number for a real tier change**; 9.20 s is the number for "restart the server", which is
+a different operation and worth knowing separately — it is what a 2.0 that needs to clear state
+would pay.
+
+### 🚨 F242 — BCF has two per-role model tables, the live one is not the one you find first, and the dead one is uniform
+
+BCF is the donor that actually built §10's tier column, which makes it the best available evidence
+about whether the column works. It built it twice.
+
+- **`src/models.rs::PresetConfig`** — five roles (architect, tester, coder, reviewer, security) ×
+  three presets. **In all three presets, all five fields hold the same model string**
+  (`models.rs:29-59`): `qwen3-coder-next:q8_0` for premium, `qwen2.5-coder:32b` for balanced,
+  `qwen2.5-coder:7b` for fast. Its module docstring says *"Reads presets from
+  .battlecommand/models.toml"* (`models.rs:3`) and `get_preset` is a hardcoded `match` that reads no
+  file (`models.rs:91-97`). Its only reader in the whole repo is `main.rs:419`, inside a display
+  loop for `models list`.
+- **`src/model_config.rs::ModelConfig`** — eight roles (architect, tester, coder, fix_coder,
+  security, critique, cto, complexity) × four fields each (`model`, `provider`, `context_size`,
+  `max_predict`), with a real resolution order — preset → env → TOML → CLI (`model_config.rs:333-345`).
+  This is the one `mission.rs` reads (`:124-146`, `:214-218`) and the one `main.rs:297-307`
+  constructs.
+
+So the first tier table a reader meets is inert, and it is the uniform one; the live one is
+genuinely heterogeneous. Two consequences. First, **the grep-the-readers rule earns its keep again**
+— a whole preset system, tested (`models.rs:225-232`) and documented, with one reader that prints
+it. Second, the honest reading of the donor evidence is *not* "BCF tried per-stage tiers and made
+them all the same"; it is **F243**.
+
+### 🚨 F243 — the live tier table costs about four model loads per mission, and one of them is the same weights at a different window
+
+`ModelConfig::from_preset(Premium)` (`model_config.rs:169-180`) assigns:
+
+| role | model | window | output cap |
+|---|---|---|---|
+| complexity (router) | `qwen3-coder:30b-a3b-q8_0` | 32768 | 1024 |
+| architect | `qwen2.5-coder:32b` | 32768 | 4096 |
+| tester | **cloud** `claude-opus-4-6` | 200000 | 8192 |
+| coder | `qwen3-coder-next:q8_0` | 65536 | 32768 |
+| security | `qwen3-coder:30b-a3b-q8_0` | 65536 | 1024 |
+| critique | `qwen3-coder:30b-a3b-q8_0` | 65536 | 1024 |
+| cto | **cloud** `claude-sonnet-4-6` | 200000 | 1024 |
+| fix_coder | **cloud** `claude-sonnet-4-6` | 200000 | 16384 |
+
+Four **distinct local (model, window) pairs**, and the nine stages walk them in an order that
+touches each at least once. On this hardware that is four loads per mission at F79's ~12 s each,
+before a single fix round repeats any of them — **~48 s of pure loading per mission**, plus a cold
+prefill after each.
+
+The detail worth the finding number is the last pair. `security`/`critique` and `complexity` are the
+**same weights at two different windows**, and BCF sends the window per request —
+`"options": {"num_ctx": self.context_size, "num_predict": self.max_predict}` (`llm.rs:309, 440,
+581, 979, 1087`). W1 F77 established that the KV cache is allocated **in full at load time**, and
+W2 F84 that the window cannot be changed on the wire at all on the OpenAI-compat path. So a role
+table that varies `context_size` on one model is asking for a reload it does not know it is asking
+for. **A tier is not a model; it is a (model, window) pair**, and 2.0's profile table has to say so
+or it will inherit this.
+
+### 🚨 F244 — every donor's tier ladder is biased upward, and two of them escalate on an infrastructure failure rather than on difficulty
+
+- **v1** (F229, item 1): no idle agent in the pool → return the CTO with `modelTier: 'opus'` and
+  literally `complexity: 10, // High complexity if no agents available`.
+- **BCF**: `if ollama_result.is_err()` → *"Ollama unavailable, falling back to Claude Opus"*
+  (`llm.rs:168-176`, and again at `:262-271` and `:419-428`). The predicate is **any** error from
+  the local call — and `call_ollama` bails on model-not-found as well as on connection failure
+  (`llm.rs:997-1001`). **A mistyped model name in a preset routes the whole mission to a frontier
+  model**, with a 1,800 s client timeout (`llm.rs:132-135`) and no cap.
+- **BCF again, twice more, in defaults**: `preset.parse().unwrap_or(Preset::Premium)`
+  (`main.rs:297-299`) and `get_preset`'s `_ => default_premium()` (`models.rs:92-96`). An
+  unrecognised preset name selects the most expensive one.
+- **BCF's router**, which is otherwise the best-engineered tier decision in the family: when rules
+  and AI agree it takes `((rules + ai) / 2).max(rules)` — a **floor at the rule score**
+  (`router.rs:108-112`); when the AI scores higher by ≥2 it takes the AI's number outright
+  (`:85-94`); only when the rules score higher by ≥2 can the result fall below them, and then only
+  40% of the way (`:95-106`). Every branch rounds toward complexity, and complexity ≥ 7 upgrades the
+  coder to a cloud model (`mission.rs:307-328`).
+
+The one thing in this list to **port rather than avoid** is the router's shape:
+`ai_complexity_score` returns `Option<u32>` and a `None` degrades to the deterministic rule score
+with `ComplexitySource::Rules` recorded (`router.rs:117-121`), and the result carries `source`,
+`rule_score` and `ai_score` alongside the number. That is F218's `Measured | Uncertain` discipline
+arrived at independently. What must not be ported is the direction of every default around it.
+
+**The rule for 2.0:** a tier decision records its source, can go **down**, and treats an unavailable
+tier as `Uncertain` — never as an upgrade. Resource exhaustion is not difficulty (F229), and an
+error from a local server is not a licence to spend.
+
+### 🚨 F245 — the donor's output cap for a judging role returns an empty verdict on this model, and the donor's own workaround for that does not work here
+
+BCF caps `security`, `critique` and `cto` at `max_predict` 1024 (`model_config.rs:174-179`). That
+number was chosen for `qwen2.5-coder`, which does not emit a reasoning trace. Measured on the
+champion with a realistic Judge prompt (745 tokens: brief + diff + measurement set) and a strict
+verdict schema:
+
+| `max_tokens` | finish | completion tokens | reasoning chars | **payload chars** | JSON |
+|---|---|---|---|---|---|
+| 256 | length | 256 | 938 | **0** | — |
+| 512 | length | 512 | 1,990 | **0** | — |
+| **1024 — the donor's number** | **length** | 1,024 | 4,107 | **0** | — |
+| 2048 | length | 2,048 | 8,599 | **0** | — |
+| 4096 | stop | 2,718 | 9,640 | 1,300 | ok |
+| 8192 | stop | 2,284 | 8,104 | 1,148 | ok |
+
+At the donor's production number the endpoint returns **HTTP 200 with an empty string**. W2 F82 saw
+this at 300 tokens and called it a silent failure; here it is a silent failure at the number a
+shipping donor actually uses, on the phase where it matters most.
+
+BCF knows about the trace and works around it: its router prompt begins with `/no_think`
+(`router.rs:327`), a Qwen-family control token. On this model it does nothing measurable — 1,035 /
+2,041 / 3,979 chars of reasoning at 256 / 512 / 1024 against 938 / 1,990 / 4,107 without it, and the
+payload still empty at 1024. **A control token from one Qwen generation is not a mechanism on
+another**, and it should be treated as a measurement per model, never as a portable trick.
+
+### 🚨 F246 — the trace is an unbounded input to a bounded output budget, and the overflow is silent, non-deterministic, and 20% at four times the donor's cap
+
+Five identical calls, identical prompt, `max_tokens: 4096`, `temperature: 0`:
+
+| run | finish | completion tokens | reasoning chars | payload |
+|---|---|---|---|---|
+| r1 | stop | 2,780 | 9,942 | verdict |
+| r2 | stop | 3,872 | 14,257 | verdict |
+| r3 | stop | 2,860 | 10,200 | verdict |
+| r4 | stop | 4,006 | 14,916 | verdict |
+| **r5** | **length** | **4,096** | **16,564** | **empty** |
+
+The trace varies **9,942–16,564 characters on identical input** — a 1.67× spread — and one call in
+five hit the ceiling and returned nothing at a budget four times the donor's. There is no
+`max_tokens` that is safe by construction, because the quantity being bounded is not the answer.
+
+Two consequences, both mandatory rather than advisory:
+
+1. **8192 is the defensible budget for a judging phase on this model** — twice the largest observed
+   successful completion (4,006) — and it costs nothing when unused, since billing here is wall
+   clock and the model stops when it stops.
+2. **`finish_reason == "length"` with an empty payload is `Uncertain(TraceOverran)`, constructed at
+   the site that knows why.** It is not a verdict, it is not a zero, and it is exactly the shape
+   F233's `result.score || 5` destroys. The instrument is free: `usage.completion_tokens_details.
+   reasoning_tokens` is on the wire from this endpoint, so the trace can be logged as a measurement
+   rather than inferred.
+
+### F247 — the verdict's binary is reproducible and its number is not
+
+Across the seven successful Judge calls on identical input (four schema-constrained, three
+prompt-constrained), the verdict was **`fail` 7/7**. The score was **0, 2, 0, 2** in the schema arm
+(stdev 1.15 on a 0–10 scale) and 2, 2, 2 in the other. Defect counts were 3 or 4, and 2.
+
+Temperature was 0.0 in every call; the variation is the model, not the sampler — MoE expert routing
+and speculative decoding are not bit-reproducible. **A gate threshold on the number would flip on
+re-running the same input**; the binary would not. This is item 1's ruling — a model verdict is an
+input to a decision, never a gate — arriving as a measurement rather than an argument, and it is the
+same conclusion W6 F217 reached from the veto side.
+
+### F248 — asked for JSON in the prompt, the unconstrained arm parsed 3/3, so the schema's case is the guarantee and not the hit rate
+
+`verdict.py`'s first no-schema arm had not been told to emit JSON, which measured nothing useful.
+Re-run with the format spelled out in the prompt — which is what v1 and BCF actually do — the
+unconstrained arm returned **valid JSON 3 times out of 3**, at 1,764–2,891 completion tokens, and
+never hit the ceiling.
+
+That refutes the strong version of the argument for `response_format`, and the honest statement of
+the weak version is the one that survives: a schema makes malformation **unrepresentable** rather
+than **unlikely**, which matters because the family's one hard number about output reliability is
+ABCC's 10.5% tool-call malformation rate — a rate, not an impossibility, and one that shows up in
+the tail rather than in a probe of three. Worth recording alongside: the constrained arm produced
+3–4 defects and 1,148–1,838 payload characters against the prompt arm's flat 2 defects and ~420, on
+n=4 and n=3 — suggestive that the schema changed the *content* and not only the shape, and far too
+small to rule on.
+
+### 🚨 F249 — Integrate's cost is the target project's cost, and the workspace-isolation choice multiplies it ~5× (OQ-W11-1)
+
+Item 1 owed one measurement: what M2 Integrate costs on this box. It is not one number, because M2
+runs the *target project's* build and suite, and 2.0 does not choose that project.
+
+| | K-suite Python fixture (15 files) | Claudette (real Rust workspace, ~300 deps) |
+|---|---|---|
+| acceptance criterion alone | 0.17 s cold, 0.06 s warm | — |
+| **fresh workspace** (no build cache) | 1.17 s | **104.2 s** (clone-fetch 17.5 + build 57.1 + test compile 19.7 + run 9.8) |
+| **persistent workspace, nothing changed** | 0.48 s | **6.1 s** |
+| **persistent workspace, one source file touched** | 0.47 s | **22.3 s** (build 5.1 + test 17.1) |
+
+The third row is the one M2 actually faces after a task lands. **22 s on a real Rust repository
+means Integrate after every task is affordable** — against F88's 100–190 s per task, it is 12–22%.
+The first row is the price of workspace isolation: **~4.7× the incremental cost**, per attempt, and
+that is the number W6 item 6 needs for OQ-W3-12 (git worktree vs stash-object vs copied pre-image) —
+a fresh worktree does not share `target/`, so every isolated attempt pays a cold build.
+
+So the policy question item 1 could not settle does not have a fixed answer, and should not be given
+one: **measure the first Integrate, record it on the log, and let the policy follow the number.**
+Cheap project, run it after every task; expensive project, run it at the mission boundary and let
+A3's per-task criterion carry the load in between. The mechanism this needs from W3 item 7 is
+already built — the job object, because a build that hangs is the failure mode Claudette's own gate
+demonstrates (F220: killed the child, joined the reader threads, still blocked at 11 s).
+
+### F250 — Plan does not inflate a one-task mission when it is told not to, so skipping M1 is an optimisation and not a correctness fix (OQ-W11-2)
+
+v1 always decomposes, paying a model call to produce a list of one. The open question was whether
+that is the model's behaviour or v1's. Measured: one Engineering head over a real 112-file Rust
+tree, schema-constrained task set, n=3 per mission, with *"a mission that is one change is one
+task"* in the system prompt.
+
+| mission | tasks emitted | wall clock | prompt / completion tokens |
+|---|---|---|---|
+| plainly one task (`UsageTracker` double-counts on resume) | **1, 1, 1** | 36.4 / 37.6 / 40.8 s | 1,534 / 2,442–2,676 |
+| plainly several (`--json` mode across the CLI) | **3, 2, 3** | 39.1 / 53.0 / 61.7 s | 1,534 / 2,679–4,301 |
+
+So M1 costs **36–62 s per mission**, TTFT 2.3–3.0 s, and it does not manufacture work. Skipping it
+for a single-task mission saves ~40 s against a mission that will run 100–190 s per task — real, but
+an optimisation. And it cannot be skipped outright, because M1 is what emits the executable
+acceptance criterion, which is the only thing in the family that ever bound (F231, F236). **The fast
+path §10 asks for is "one task, one criterion, no decomposition", not "no Plan".**
+
+Two operational notes. The completion sizes (2,442–4,301) put Plan in the same budget class as
+Judge, so **8192 is the output budget for M1 as well** (F246). And the model chose `cargo` commands
+for a Rust tree without being told the language, which is the cheap end of what §10's "fast path"
+triage would otherwise need a router for.
+
+### 🚨 F251 — six of eleven acceptance criteria pass on the unfixed tree, and the one that failed for the right reason tested the wrong binary
+
+The task sets from F250 were the right *size*. Their criteria were run against the unmodified clone
+they were planned over — the tree where every task is by construction **not yet done**, so a real
+criterion must fail:
+
+| | count | examples |
+|---|---|---|
+| **passes today** — exit 0 on the unfixed tree | **6 / 11** | `cargo check -p claudette`; `cargo test -p claudette`; `cargo test --lib usage_tracker_resets_on_resume` |
+| **could not run** | 3 / 11 | `./target/debug/claudette …` (not a command under `cmd.exe`); two needing `jq`, which is not installed |
+| **failed for the right reason** | 2 / 11 | `claudette --help \| grep -q -- --json` |
+
+The middle column is the mechanism worth naming. `cargo test --lib <name>` with a filter that
+matches **nothing** prints `running 0 tests` and **exits 0** — so "write a test called X and make it
+pass" is satisfied by the test's absence. That is F231's defect one level up: not an *absent* gate
+reporting pass, but a *present* gate that never had an opinion. And the two that did fail ran a bare
+`claudette`, which resolves to `C:\Users\david\.cargo\bin\claudette.exe` — the installed daily
+driver, not the tree under test. A criterion that names a bare binary measures whatever is on
+`PATH`, which is F232's disease (grade the artifact, not a proxy for it) in the gate rather than in
+the judge.
+
+None of this is fixed by a tier. It is fixed by a mechanism, and the mechanism is cheap:
+**run the criterion before the change.** If it passes on the unfixed tree it is not a criterion;
+if it cannot run it is `Uncertain`. Recommendation 6.
+
+## Options compared
+
+Scored against: does the mapping survive the measurements (F238–F251), does it fit one GPU and one
+resident model, does every per-phase difference cost something the project can afford, and does the
+console get something honest to show.
+
+| Option | The mapping | Cost | Verdict |
+|---|---|---|---|
+| **A.** §10 as written — a model tier per stage | 4 tiers | 3 swaps per attempt minimum, 23.77 s each plus a wiped cache (F238, F241); on a card that holds one model (F68) | rejected |
+| **B.** BCF's live table — per-role (model, provider, window, cap) | 8 roles, 4 local pairs | ~48 s of loading per mission (F243), an upward-biased ladder (F244), and a cap that returns nothing (F245) | rejected, one part ported |
+| **C.** One tier, one prompt, no per-phase difference at all | 1 profile | throws away the only per-phase knobs that are *free* — tool policy and output budget — and gives A4 the same 32k output budget as A2 | rejected |
+| **D. One tier; per-phase differences confined to the free knobs — head (enumerated), tool policy, output budget, context budget — with three phases running no model** | 1 model, 7 profiles | one cold prefill per (head, body); 473 MiB of host RAM per warm head; nothing else | **recommended** |
+| **E.** D, plus a swapped second model for A4 Judge | 2 models | +32–41 s per gate at 17k, +50–76 s at 61k (F238), recurring per attempt | **deferred to item 4 / W6 item 3** — priced here, not decided here |
+
+## Recommendation
+
+### 1. There is one tier, and "tier" is the wrong axis
+
+The phase→tier mapping on this box is **four phases → one tier, three phases → no model**:
+
+| | phases | tier |
+|---|---|---|
+| model phases | M1 Plan, A1 Localize, A2 Change, A4 Judge | the champion, resident, `-c 61440` under a 65536 load |
+| **no model at all** | **M2 Integrate, A3 Measure, M3 Accept** | — |
+
+Item 1 handed over "two of the seven need no tier". It is **three**: M3 Accept is a human by
+default, and when unattended it is a rung on W3's ladder, which is data on the event log and not a
+model call. Item 1's own text says so; its handoff undercounted.
+
+What replaces §10's tier column is a **per-phase runtime profile of four knobs**, sorted by what it
+costs to change them — which is the only sort order that matters on hardware this tight:
+
+| knob | cost to vary per phase | vary it? |
+|---|---|---|
+| **weights** | 23.77 s + the whole prompt cache (F238, F241) | **no** |
+| **window** (`-c`) | a model load, and VRAM spent at load whether used or not (F77, F243) | **no** — one window for the session |
+| **prompt head** (system prompt + tool array) | one cold prefill per (head, body), +8.5 s at 17k; 473 MiB RAM per warm head (F239, F240) | **yes, from a closed set** |
+| **output budget** (`max_tokens`) | nothing | **yes** |
+| **tool policy** | nothing, if enforced at the executor rather than by editing the head | **yes** |
+
+### 2. The phase profile table — the deliverable
+
+One resident model. Everything below the first column is per phase.
+
+| # | phase | model | head | tools in the head | output budget | measured cost on this box |
+|---|---|---|---|---|---|---|
+| M1 | **Plan** | champion | `Plan` | read-only | **8192** | 36–62 s, 2.4–4.3k completion (F250) |
+| M2 | **Integrate** | **none** | — | — | — | 0.5 s … 22 s incremental; 104 s from a fresh workspace (F249) |
+| M3 | **Accept** | **none** (human, or a W3 ladder rung) | — | — | — | 0 |
+| A1 | **Localize** | champion | `Localize` | read-only | 8192 | not separately measured — same class as M1 |
+| A2 | **Change** | champion | `Change` | full, gated | large; bounded by the loop budget (item 5) | dominates: 100–190 s per task (F88) |
+| A3 | **Measure** | **none** | — | — | — | the project's suite: 0.5 s … 22 s (F249) |
+| A4 | **Judge** | champion | `Judge` | **none** | **8192**, and empty ⇒ `Uncertain` | 25–64 s at a 745-token prompt (F246) |
+
+Concurrency: **two slots** (F83), and F240 says they will not evict each other's context. The KV
+bound is a sum, not a division — Σ(active sequence lengths) ≤ the loaded window — so two attempts in
+flight are budgeted at ~30k each, not 61k each.
+
+### 3. Within an attempt the prompt is append-only
+
+This is F239's ruling and it is the one design rule in this item that will be violated by accident
+if it is not written down.
+
+**Layout:** `[phase head][task context][accumulated artifacts][phase instruction]`, and each phase
+**appends**. Localize appends nothing and asks for a brief; Change reads the brief that Localize
+appended; Judge reads the brief, the diff and A3's measurements, all appended behind it. Nothing
+before the tail is ever rewritten. That is F81's benign case D — measured at 1.30× — rather than its
+case C, measured at 4.85×, and over one attempt it is 7.1 s of prefill instead of 32.6 s.
+
+**Corollary, and it is the awkward one:** if the head must be constant across the phases of one
+attempt, then **per-phase tool arrays cannot live in the head**. Declare the union once and enforce
+the policy at the executor: Localize's `write_file` call is refused by the runtime, not hidden from
+the model, and the refusal is an event on the log like every other. The model sees tools it may not
+use, which costs some prompt discipline and buys 8.5 s per transition at 17k and ~26 s at 61k.
+
+Where per-phase heads *are* wanted — and they may be, since a Judge with no tools in its head is a
+better Judge — the cost is now known rather than guessed, and it is paid per (head, task), not per
+transition. **Enumerate them**: a `PhaseHead` enum resolving to `&'static str`, no interpolation, no
+task id, no timestamp, no registry that grows. F240's 473 MiB per warm head is the budget line.
+
+### 4. When a second tier is worth buying — amortise it, and the answer is M1 or nothing
+
+A tier change is affordable exactly where it is paid **once per mission at a boundary where nothing
+is warm**. There is one such place.
+
+- **M1 Plan qualifies.** It runs once, at mission start, before any head has been prefilled, so the
+  cache-wipe term is zero and the price is F79's 23.77 s against a mission of several tasks at
+  100–190 s each — **4–8% of a three-task mission**. This is also the only phase where §14 item 0's
+  "C10 stays manual and rare" is structurally compatible with the pipeline: one call, at a boundary,
+  that a human can choose to make.
+- **A4 Judge does not qualify.** Once per attempt, mid-context, with heads warm: **32–41 s per gate
+  at 17k, 50–76 s at 61k** (F238). Item 4 and W6 item 3 own that trade against W8's +3.65 median
+  critic inflation; item 2's contribution is the price and the correction that F79 alone understates
+  it by roughly half.
+- **A cheap triage tier does not qualify at all** (F238): it costs more than it saves for any single
+  call, and the retry loop forbids the batching that would amortise it.
+
+And **"up a tier" is not a rung on the failure ladder.** §10 asks "on gate failure, back to build,
+back to architecture, or up a tier?" On this box the only bigger local model is the 27B, which W1
+measured as **level on verdicts at 5.2× the wall clock** (F87, F88) — no measurement supports
+escalating to it, and F244 shows what happens to a ladder whose defaults all point upward. The
+failure ladder is W3's classified-failure ladder over data: retry, re-localize, ask the human.
+
+### 5. Output budgets are per phase, and an empty payload is a measurement of nothing
+
+Set **8192** for every model phase that emits a structured artifact (M1, A4, and A1 by inheritance),
+which is twice the largest completion observed. Then, because F246 shows no budget is safe by
+construction:
+
+```rust
+match (finish_reason, payload.is_empty()) {
+    (FinishReason::Length, true) => GateInput::Uncertain(Why::TraceOverran { reasoning_tokens }),
+    (FinishReason::Length, false) => GateInput::Uncertain(Why::Truncated { reasoning_tokens }),
+    (FinishReason::Stop, false)   => GateInput::Measured(parse(payload)?),
+    (FinishReason::Stop, true)    => GateInput::Uncertain(Why::EmptyPayload),
+}
+```
+
+No `Default`, no `unwrap_or`, no `unwrap_or_default` on that type (F233's rule). Log
+`usage.completion_tokens_details.reasoning_tokens` on every call: it is already on the wire, it is
+the quantity that overran, and without it the failure is invisible in the record.
+
+Use `response_format: json_schema, strict: true` for every structured artifact — but for the reason
+F248 leaves standing, which is that it makes malformation unrepresentable, not that this probe
+caught the unconstrained arm failing. It did not.
+
+### 6. A criterion is validated by running it before the change
+
+F251's mechanism, and it belongs to A3 Measure rather than to M1 Plan, because M1 cannot check its
+own work and A3 already has the runner.
+
+**When a task set arrives, run every criterion once against the unchanged tree.**
+
+- exits non-zero for a reason that is not "cannot run" → the criterion **binds**; record the
+  baseline on the log.
+- exits zero → **not a criterion**. The task is `Uncertain(CriterionDoesNotDiscriminate)` and goes
+  back to M1 with the evidence, which is the command and its exit code.
+- cannot run — binary absent, tool missing, wrong shell → `Uncertain(CriterionUnrunnable)`, never a
+  fail.
+
+Three specifics the measurement produced, each worth encoding: a `cargo test` filter matching
+nothing **exits 0**, so "make this new test pass" is satisfied by the test's absence; a bare binary
+name resolves against `PATH` and not against the workspace, so criteria must name the artifact the
+task builds; and the shell is part of the criterion, so it is recorded with it. v1's four auto-repair
+passes over generated validation commands (`orchestrator.py:223-284`) exist for exactly this reason
+and item 1 already flagged them for porting — F251 is the measurement that says why they are not
+optional.
+
+### 7. What this hands onward
+
+- **To W11 item 3 (artifact schemas):** the task set carries `acceptance: Criterion { command,
+  shell, cwd, baseline: Option<ExitCode> }` — the baseline is F251's red-first check, and its absence
+  is a state, not a default. The verdict artifact carries `reasoning_tokens` and a `finish_reason`,
+  because F246 makes them part of the measurement.
+- **To W11 item 4 / W6 item 3:** the decorrelation price, per gate, on this box: **32–41 s at 17k,
+  50–76 s at 61k**, recurring per attempt, against zero for same-model-no-history — and F247's
+  finding that the binary is reproducible while the score is not, which narrows what a second
+  opinion could even be asked for.
+- **To W11 item 5 (loop budgets):** the per-phase output budget is 8192 and the overrun is a
+  classified failure, not a retry. A retry of A2 is **warm** (F240), which is what makes the loop
+  affordable at all.
+- **To W6 item 6 (OQ-W3-12, workspace checkpoints):** isolation costs **4.7×** on a real Rust
+  project — 104.2 s from a fresh clone against 22.3 s incremental. That is the number the worktree
+  question turns on.
+- **To W5:** the console's per-unit line is *(phase, head, tokens in flight, output budget used)*,
+  and the honest thing to show during a swap — if one is ever bought — is the cache going cold,
+  because that is what the operator is waiting for.
+- **To W2's open question 3** (slot save/restore as an answer to F79): partly answered without
+  running it. The RAM prompt cache is already doing what `--slot-save-path` would do *within* a
+  process (F240); what it cannot do is survive the process (F241). If a swap-per-gate design is ever
+  wanted, `--slot-save-path` is the only thing that would make it affordable, and F241 is the
+  measurement that says why.
+
+## Rejected alternatives and why
+
+- **A tier per stage (§10 as written).** F238 and F241: three swaps per attempt, each 23.77 s plus a
+  wiped cache, on a card that holds one model. The column is not expensive, it is unaffordable.
+- **A cheap triage tier for Recon.** F238's arithmetic: the swap and the destroyed cache cost more
+  than the decode saved, for any single call. Kept in W1's table as advice for other hardware.
+- **Per-phase windows** (BCF's `context_size` per role). F77: the window is VRAM spent at load, and
+  F243 shows a role table that varies it is asking for a reload it did not budget. One window per
+  session.
+- **Per-phase tool arrays in the head, unconditionally.** Not rejected outright — priced (F239) and
+  made a deliberate purchase at 8.5 s per (head, task) at 17k, with the default being the union set
+  and executor-side enforcement.
+- **BCF's `/no_think` as a way to cut the Judge's cost.** F245: no measurable effect on this model.
+  A control token is a per-model measurement, not a portable technique.
+- **A score threshold as a gate.** F247: 0, 2, 0, 2 on identical input at temperature 0. The binary
+  survives re-running; the number does not.
+- **Escalating a failed attempt to a bigger local model.** F87/F88 measured the only candidate as
+  level on verdicts at 5.2× the wall clock, and F244 shows every donor's ladder already leans that
+  way for reasons that are not difficulty.
+
+## Effect on fun
+
+The best thing item 2 found for the console is that **the expensive thing is visible and the cheap
+thing is instant**. A phase transition under recommendation 3 costs 2.4 s; a phase transition that
+rewrites the head costs 10.9 s. That is the difference between a unit that turns to face a new job
+and a unit that has to be re-briefed from scratch, and the operator can feel it. Building the
+pipeline the cheap way is also building the responsive way, which is not usually how those two line
+up.
+
+The unit-as-slot ruling from item 1 gets its counterpart here: **a slot's phase changes for free,
+its weights do not.** That is a game mechanic and it is honest — the map is the card, the resident
+model is the garrison, and swapping it is a costed, visible, 24-second action that also throws away
+everything the unit had learned about the current fight. If a swap is ever bought, the console
+should show the cache going cold, because that is the real price and it is the part a status
+spinner would hide.
+
+And F251 is the one that would have made the game a lie. A mission where every task ships with a
+criterion that passes before the work starts is a mission where the green ticks mean nothing — eleven
+criteria, six of which were satisfied by the tree as it stood. Running them red first is one extra
+second on a Python project and 22 on a Rust one, and it converts the tick from decoration into the
+only thing on the screen that cannot be argued with. §10 wanted the operator to see where the front
+line is; the front line is wherever a measurement last changed its mind.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W11-7 | Does a **bigger model for M1 Plan only** produce a better task set? F250 measured cost and inflation, not quality; F87 says the 27B ties on *fixes* and nothing measures it on *plans*. | one K-series-shaped run over plan quality |
+| OQ-W11-8 | What is the RAM prompt cache's actual capacity and eviction policy? Twelve heads at 16.9k did not evict; the budget is a llama.cpp default this project has not read from source. | cheap: keep adding heads until one comes back cold |
+| OQ-W11-9 | Does the restore rate hold at the daily driver's window? All of F239/F240 is at ~17k; the 55k figures in F238 are extrapolated from F80 and a measured ~6,700 tok/s restore. | one probe at 55k, ~10 minutes |
+| OQ-W11-10 | Is A1 Localize's output budget really 8192? It is assigned by inheritance from M1, not measured. | item 3 or the first real pipeline run |
+| OQ-W11-11 | Does the executor-side tool policy of recommendation 3 cost quality — does a model that can see `write_file` during Localize behave worse than one that cannot? | a comparison run; W6 item 3's harness |
+| OQ-W11-2 | *(from item 1)* Is M1 Plan skippable for a single-task mission? | **answered here** (F250): it does not inflate, so skipping is a ~40 s optimisation, and it cannot be skipped outright because it emits the criterion |
+| OQ-W11-1 | *(from item 1)* What does M2 Integrate cost on this box? | **answered here** (F249): 0.5 s to 22 s incremental, 104 s from a fresh workspace |
+
+## Confidence: high on the arithmetic, medium on what it implies for the head
+
+**High** on everything measured this session, all of it repeatable in minutes from
+`research/spikes/w11-tier/`: the transition cost (F239), the multi-head store and its RAM price
+(F240), the cache wipe (F241), the empty verdict at the donor's cap (F245), the non-deterministic
+overrun (F246), Integrate's cost (F249) and the criteria tally (F251). The donor readings (F242,
+F243, F244) are read at their consumption sites and each is re-checkable with one grep.
+
+**Medium** on three things. F238's 55k figures are extrapolated, not measured (OQ-W11-9). The
+recommendation to enforce tool policy at the executor rather than in the head trades a measured 8.5 s
+against an unmeasured quality effect (OQ-W11-11) — the arithmetic is certain and the trade is not.
+And F251's rate is n=11 from one prompt over one repository: the direction is not in doubt, since the
+system prompt explicitly demanded a criterion that fails today and six still did not, but the number
+is a sample, not a rate.

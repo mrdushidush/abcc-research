@@ -1,0 +1,58 @@
+[
+ {
+  "label": "rs  fetch deps (cargo fetch)",
+  "cmd": "cargo fetch",
+  "secs": 17.54,
+  "rc": 0,
+  "tail": ""
+ },
+ {
+  "label": "rs  build, COLD (empty target)",
+  "cmd": "cargo build --workspace",
+  "secs": 57.13,
+  "rc": 0,
+  "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 57.03s"
+ },
+ {
+  "label": "rs  test compile, cold (--no-run)",
+  "cmd": "cargo test --workspace --no-run",
+  "secs": 19.72,
+  "rc": 0,
+  "tail": "  Executable tests\\offline_egress.rs (target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+ },
+ {
+  "label": "rs  test run, cold",
+  "cmd": "cargo test --workspace",
+  "secs": 9.82,
+  "rc": 0,
+  "tail": "   Doc-tests claudette"
+ },
+ {
+  "label": "rs  build, warm (nothing changed)",
+  "cmd": "cargo build --workspace",
+  "secs": 0.44,
+  "rc": 0,
+  "tail": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.36s"
+ },
+ {
+  "label": "rs  test, warm (nothing changed)",
+  "cmd": "cargo test --workspace",
+  "secs": 5.69,
+  "rc": 0,
+  "tail": "   Doc-tests claudette"
+ },
+ {
+  "label": "rs  build, incremental (claudette)",
+  "cmd": "cargo build --workspace",
+  "secs": 5.13,
+  "rc": 0,
+  "tail": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.05s"
+ },
+ {
+  "label": "rs  test, incremental (claudette)",
+  "cmd": "cargo test --workspace",
+  "secs": 17.13,
+  "rc": 0,
+  "tail": "   Doc-tests claudette"
+ }
+]

@@ -1,0 +1,26 @@
+-- prompt-and-pray, format asked for in the prompt (the donors' mechanism) --
+asked-for JSON r1              finish=stop   completion_tok= 1764 reasoning_chars= 6545 payload_chars=  409 json=OK    24.6s
+                                 -> verdict=fail score=2 defects=2
+asked-for JSON r2              finish=stop   completion_tok= 2891 reasoning_chars=10907 payload_chars=  442 json=OK    36.1s
+                                 -> verdict=fail score=2 defects=2
+asked-for JSON r3              finish=stop   completion_tok= 2409 reasoning_chars= 9149 payload_chars=  400 json=OK    31.9s
+                                 -> verdict=fail score=2 defects=2
+
+-- five identical schema-constrained calls, max_tokens=4096, temperature 0 --
+repeat r1                      finish=stop   completion_tok= 2780 reasoning_chars= 9942 payload_chars= 1245 json=OK    41.0s
+                                 -> verdict=fail score=0 defects=4
+repeat r2                      finish=stop   completion_tok= 3872 reasoning_chars=14257 payload_chars= 1838 json=OK    59.3s
+                                 -> verdict=fail score=2 defects=4
+repeat r3                      finish=stop   completion_tok= 2860 reasoning_chars=10200 payload_chars= 1226 json=OK    42.9s
+                                 -> verdict=fail score=0 defects=3
+repeat r4                      finish=stop   completion_tok= 4006 reasoning_chars=14916 payload_chars= 1442 json=OK    61.5s
+                                 -> verdict=fail score=2 defects=3
+repeat r5                      finish=length completion_tok= 4096 reasoning_chars=16564 payload_chars=    0 json=NO    63.9s
+
+schema arm: 4/5 parsed   verdicts {'fail'}   scores [0, 2, 0, 2]
+            score spread 0-2, stdev 1.15
+            completion tokens [2780, 3872, 2860, 4006, 4096]
+            wall [41.04, 59.3, 42.93, 61.5, 63.94]
+prompt-and-pray: 3/3 parsed, payload_chars [409, 442, 400]
+
+wrote repeat-results.json
