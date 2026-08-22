@@ -32,8 +32,16 @@ Planned items:
    criterion-coverage fraction and the `Uncertain` count (W11 item 4 recommendation 4, closing
    OQ-W6-2). W8's +3.65 median inflation over 34 missions stands as the motivation and not as a
    number 2.0 can reproduce.
-4. ☐ **Verification headroom** — quantify what type checks, linters, generated tests, property
-   tests and sandboxed execution buy over v1's syntax-error auto-retry. Needs GPU runs.
+4. ✅ **Verification headroom** (F297–F310) — quantified over **431 real agent attempts** and 9
+   constructed artifacts. **v1's baseline does not fire**: its syntax check is on the wrong agent's
+   tool list, its validation channel scores a green test suite as a failure, and on default settings
+   the live path auto-passes a task with no validation command and drains its retry queue only when a
+   benchmark script asks it to. Against the suite verifier instead: **a type check caught 0 of 114
+   real failures in two languages, a syntax check 0 of 114, and a linter is strictly dominated by
+   the test suite in both**. What fires is the free structural check — *did the change touch any source
+   file* — at 9 of 12 on repository work with no false positives, and the acceptance test, which
+   costs less than the ladder that decides nothing. Generated tests discriminate 4/9 written before
+   the change and **ratify a wrong change 6/9 written after it**.
 5. ☐ **Language generality** — what in the pipeline is language-specific (item 1 shows: almost
    everything that works) and what generalizes.
 6. ☐ **Worktrees / per-task isolation** — overhead and RAM cost against the 32 GB ceiling.
@@ -43,10 +51,10 @@ Planned items:
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
 Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
-then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284),
-so the next free number is F297.** W11 item 5 (F285–F296) hands item 4 a second headroom result and
-item 8 its anti-pattern. The numbering is one sequence across all workstreams — check the
-maximum before adding, not the last number in this file
+then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284)**;
+item 4 took **F297–F310**, so the next free number is **F311**. W11 item 5 (F285–F296) handed item 4
+a second headroom result and item 8 its anti-pattern. The numbering is one sequence across all
+workstreams — check the maximum before adding, not the last number in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
 ---
@@ -718,3 +726,595 @@ specifically whether **Localize** and **Judge** stay separate calls once 2.0's o
 (a judge that reads the repo is a different, more expensive animal), and whether the fix round
 stays a variant of **Change** or earns its own phase when the surgical-patch idea is re-tested.
 Those are W11's to settle with this as the starting position.
+
+---
+
+# Item 4 — verification headroom
+
+## Question
+
+§11's scope: *"Automated verification is the biggest lever on cheap-model output quality: type
+checks, linters, unit test generation, property-based testing, static analysis, sandboxed
+execution. **Quantify the headroom over V1's syntax-error auto-retry** plus periodic frontier
+review."*
+
+Two halves, and the second is worthless without the first. **What is v1's baseline, on the path it
+actually runs?** And then: **for each instrument, does its verdict move between work the suite's own
+verifier accepts and work it rejects, and what does it cost?**
+
+The frontier-review half of the baseline is already answered and is not repeated here: v1's
+periodic reviewer reads the model's narration rather than the file (W11 item 1, F232), scores a
+zero as a five (`result.score || 5`, F233), and W11 item 4 measured what a reviewer is worth as a
+function of what it is shown (F280–F282). This item is about the deterministic half.
+
+## Method
+
+Two populations, both already in this repository, and ground truth that is a program rather than an
+opinion.
+
+- **Constructed** — for each of the three K tasks, the unfixed fixture, the reference solution and
+  the shipped sham. 9 trees, truth by construction and re-measured.
+- **Real** — every preserved agent workdir under `runs/`: **54 K cells** (repository bugfixes,
+  16–20 files, from the K model comparison and the W11 budget sweeps) and the Rust and Python half
+  of the **Q56** cells (small single-function tasks — v1's own workload shape). These are the
+  mistakes a local model actually made, not mistakes chosen to be interesting.
+
+Each rung runs on a fresh copy of the tree and returns `green | red | error` plus its wall clock.
+The oracle is `verify.sh`, re-run here rather than read off the record. Spike:
+`research/spikes/w6-headroom/`.
+
+The v1 baseline was read from `agent-battle-command-center` HEAD `d5528ea`, 2026-08-22, with
+[[verify-claims-against-code-not-docs]] 19 applied throughout — **grep the readers**. Three of this
+item's five baseline findings are about who calls something, not about what it does. Its
+`/run-validation` rule is six lines long, so it was reimplemented and run rather than reasoned
+about.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| `validate_syntax` as the pre-write check | v1 `tools/code_validation.py` | **DISCARD** — it is on the wrong agent's tool list (F297) |
+| `validationCommand` + the `"PASS" in stdout` rule | v1 `main.py:571` | **DISCARD** — no real instrument can satisfy it (F298) |
+| The four-phase auto-retry ladder | v1 `autoRetryService.ts` | **DISCARD as a baseline** — the live path is the async one, and its retry queue's only caller is a benchmark script (F299) |
+| Linters and type checkers as gate inputs | §11's own list | **DO NOT GATE** — zero yield here, and their delta form is anti-correlated with correctness (F300, F301) |
+| Sandboxed execution | §11's own list | **KEEP, and read the output** — the exit code alone catches only the crash (F303) |
+| The repository's own test suite | Claudette `tools/quality.rs:344` | **KEEP as a regression guard, not as an acceptance test** — green on every tree here (F300), and the inherited detector does not even fire (F304) |
+| Generated tests | BCF's TESTER stage (item 2, F216) | **KEEP, before the change only, and never as a veto** (F305) |
+| Property-based tests | §11's own list | **KEEP where an invariant is written down** — the ceiling is 2 of 3 (F306) |
+
+## Findings
+
+### 🚨 F297 — v1's syntax pre-check is given to the agent that does not write code, and prescribed to the agent that cannot call it
+
+`ValidateSyntaxTool` is real, it works, and it does what it says: it writes the candidate to a temp
+file and runs `python3 -m py_compile` on it (`tools/code_validation.py:16-93`, the validator table
+at `:28`). Then:
+
+- **`CODER_TOOLS_HTTP` does not contain it** (`agents/base.py:58`). `QA_TOOLS_HTTP` does, with the
+  comment `# QA gets validation tool` (`:59`).
+- **The coder's persona instructs it to use it anyway.** `coder.py:42-46` carries a block headed
+  `**Workflow with validation:**` whose step 2 is `validate_syntax(code, language) → Check result`
+  and whose step 4 is *"If error → Fix syntax → Repeat step 2"*. The tool is not in its list.
+- The same persona's own worked examples skip the step: all three `MISSION SUCCESS EXAMPLES` go
+  `file_write` → `shell_run` → done (`coder.py:60-75`).
+
+So the check exists, is advisory where it exists, and is on the wrong agent. This is the
+[[verify-claims-against-code-not-docs]] 18 shape — a feature present at every layer but the last —
+with the twist that the layer it is missing from is the *tool list*, while the prompt telling the
+model to call it is intact.
+
+### 🚨 F298 — v1's validation channel cannot carry a linter, a type checker or a test run: 16 replays, 2 passes, and both of them are blind
+
+`POST /run-validation` (`agents/src/main.py:513-589`) does two things to a `validationCommand`:
+
+1. **Dispatch.** `first_word in ("go","php","python","python3","node","tsx")` → `shlex.split`;
+   otherwise, for `language == "python"`, the whole string is wrapped as `python3 -c "<command>"`
+   (`:534-541`). There is no shell.
+2. **Success.** `success = result.returncode == 0 and "PASS" in result.stdout` (`:571`).
+
+Reimplemented verbatim (`v1_channel.py`) and run against the K task's reference solution and its
+shipped sham:
+
+| candidate | v1 says | exit | what actually happened |
+|---|---|---|---|
+| `python3 -c "import run; print('PASS')"` | **PASS** | 0 | `PASS` — on **both** artifacts |
+| `ruff check .` | FAIL | 1 | `SyntaxError: invalid syntax` — wrapped into `python3 -c` |
+| `mypy .` | FAIL | 1 | `SyntaxError: invalid syntax` |
+| `pytest -q` | FAIL | 1 | `Traceback ... NameError` |
+| `python3 -m ruff check .` | FAIL | 1 | the linter ran and reported findings |
+| `python3 -m mypy .` | **FAIL** | **0** | `Success: no issues found in 13 source files` |
+| `python3 -m pytest -q` | **FAIL** | **0** | `24 passed in 0.26s` |
+| `python3 run.py data/jobs.json` | **FAIL** | **0** | the correct report, in full |
+
+**A clean type check, a green test suite and a correct program run are all scored as validation
+failures**, because none of them prints the word PASS. In v1 that verdict is not inert: it is what
+feeds the retry ladder, so the model is handed its own correct output as an error and told to
+*"Fix the error shown above. Rewrite the ENTIRE file"* (`autoRetryService.ts:362-364`).
+
+The two passes are the same command, and it passes the sham as readily as the reference solution —
+it imports the module and prints a constant. That is not an accident of this probe: **all 40 of
+v1's benchmark validation commands have that shape**, bare Python snippets ending in
+`print('PASS')`, none of them starting with a language binary
+(`scripts/ollama-stress-test-40.js`, 40/40 counted). The rule and the corpus were built for each
+other.
+
+Two consequences for 2.0, and they are cheap: **a verifier's contract is an exit code, not a magic
+word on stdout**, and **the thing that decides pass/fail must be able to express "run the project's
+own suite"** without the operator wrapping it in `&& echo PASS`.
+
+### 🚨 F299 — on default settings the ladder does not run: validation is fire-and-forget after the task is already done, absence of a command is scored a pass, and the retry queue's only caller is a benchmark script
+
+`taskExecutor.ts:54-57` constructs the sync `AutoRetryService` **only if async validation is
+absent**, and `index.ts:119-121` enables async validation unless `ASYNC_VALIDATION_ENABLED` is
+explicitly `'false'`. So the default live path is `AsyncValidationService`, and the four-phase
+ladder in `autoRetryService.ts` — the one `CLAUDE.md` documents and the brief names — is the dead
+one.
+
+On that live path:
+
+- `validateInBackground()` is **fire-and-forget** and is called *after* the agent is released
+  (`asyncValidationService.ts:145-166`, `taskExecutor.ts:207`). The task is recorded complete
+  before anything is checked.
+- **No `validationCommand` → `passed: true`**, under the comment `// No validation command —
+  auto-pass` (`:371-381`). The sync path does the same thing with `validated: true, phase:
+  'skipped'` (`autoRetryService.ts:80-83`), and its caller treats that as success
+  (`taskExecutor.ts:119-131`). This is F161's disease — parse-failure-defaults-to-success — in its
+  third donor location.
+- A failed validation goes into an in-memory `retryQueue` that is drained only by
+  `startRetryQueue()`, whose **single caller in the entire product is an HTTP route**
+  (`routes/validation.ts:66`). The UI's API client defines `validationApi.startRetry`
+  (`client.ts:659`) and **nothing in the UI calls it**. The one caller that does is
+  `scripts/ultimate-100-task-test.js:2864`.
+
+And when the ladder does run, the code it shows the model is located by regexing the task
+*description* for `tasks/<name>.<ext>` and reading that one file out of a hardcoded `tasks/`
+directory (`autoRetryService.ts:320-331`). On any repository task the regex misses, `failedCode` is
+`''`, and the retry prompt says *"rewrite the ENTIRE file"* without naming one.
+
+So the honest baseline for 2.0's target workload — repository work, no operator-authored validation
+command — is **nothing at all**: the task completes, is auto-passed, and no instrument runs. §11's
+"quantify the headroom over v1's syntax-error auto-retry" has the answer that the thing to beat does
+not fire. That is the same shape as W11 item 5's baseline finding (F285), and it is why the rest of
+this item measures instruments against a verifier rather than against v1.
+
+### 🚨 F300 — the deterministic ladder above the syntax check is silent: six rungs, 63 trees, not one verdict that moves with the truth
+
+Every rung on both populations, `green`/`red` against what `verify.sh` says:
+
+| rung | constructed (6 FAIL / 3 PASS) | real K (12 FAIL / 42 PASS) | median ms | reads? |
+|---|---|---|---|---|
+| `syntax` (v1's rung) | green on all 9 | green on all 54 | 135 | **identical** |
+| `ruff` | red on all 9 | red on all 54 | 78 | **identical** |
+| `ruff --select ALL` | red on all 9 | red on all 54 | 80 | **identical** |
+| `mypy` | green on all 9 | green on all 54 | 1,519 | **identical** |
+| `mypy --strict` | red on all 9 | red on all 54 | 1,534 | **identical** |
+| `pytest` (the repo's own suite) | green on all 9 | green on all 54 | 692 | **identical** |
+| `entrypoint` (run the ticket's command) | 1 of 6 wrong | **4 of 12 wrong, 0 of 42 right** | 93 | differs |
+| *the acceptance test* | 6/6, 3/3 | 12/12, 42/42 | **1,081** | — |
+
+Six rungs × 63 trees = 378 runs in which **the instrument's verdict is a constant**. The linter and
+strict typing are red on the reference solutions and on the fixtures themselves; `mypy` and the
+existing suite are green on the shipped shams. The six rungs together cost **4.0 s** per tree and
+decide nothing; the acceptance test decides the question in **1.1 s**. The instrument that reads is
+cheaper than the ladder that does not.
+
+This is not a claim that linters and type checkers are worthless. It is a measurement of **which
+failure class this workload produces**: every K fixture ships a green test suite over a wrong
+program (the T1 fixture's 24 tests assert that `cancelled` is in `ALL`, is terminal and is reachable
+in `TRANSITIONS`, and assert its dashboard label and its notification text — and not one asserts
+what the four consumers that make *decisions* do with it), and every wrong answer is syntactically valid,
+type-clean code that does the wrong thing. A rung that cannot see behaviour cannot see these
+defects — and the local model's real mistakes, measured below, are not the kind a linter catches
+either.
+
+### 🚨 F301 — the delta form is worse than useless: it fires on correct work and never on wrong work
+
+An absolute lint gate is meaningless on a repository that is already red — all three K fixtures are.
+The standard fix is to gate on the *delta*: findings the change added. Measured, against the
+unfixed fixture's finding multiset:
+
+| rung | added findings & the verifier FAILED | added findings & the verifier PASSED |
+|---|---|---|
+| `ruff` | **0 / 12** | 7 / 42 |
+| `ruff --select ALL` | 1 / 12 | 11 / 42 |
+| `mypy --strict` | **0 / 12** | **32 / 42** |
+
+A strict-typing delta gate on this population blocks **76% of the correct changes and 0% of the
+wrong ones**. The mechanism is legible in the data: the added findings are
+`tests/test_jobs.py::no-untyped-def` ×7, `tests/test_jobs.py::no-untyped-call` ×16 — the agents that
+passed **wrote tests**, and every new test function is a new strict-mode finding. One passing cell
+added 18 findings by leaving a scratch file, `_analyze_tmp.py`, in the tree.
+
+The delta is measuring how much work was done, and doing the job properly is what trips it.
+
+### 🚨 F302 — what the failures actually are: of 54 real attempts, exactly one was a substantive change that was substantively wrong
+
+The instrument that fires is the cheapest one available, and it is not on §11's list. `residue.py`
+walks the tree and compares it to the fixture:
+
+| deterministic check | fires on FAIL | fires on PASS |
+|---|---|---|
+| the change touched **no source file at all** | **9 / 12** | **0 / 42** |
+| the change touched fewer source files than the reference solution does | 10 / 12 | 0 / 42 |
+| the change left a new source file behind (`_analyze_tmp.py`) | 1 / 12 | 10 / 42 |
+| the change edited an existing test | 0 / 12 | 5 / 42 |
+| no test was added or changed at all | 12 / 12 | 37 / 42 |
+
+The specificity of the first row is partly tautological — an empty change cannot pass a behaviour
+verifier — and that is exactly why it is worth stating: **the veto is free, it cannot be wrong, and
+it catches most of this population.** The informative number is the recall. Taxonomising the 12
+failures by hand:
+
+- **2** are not behavioural failures at all (F308).
+- **9** of the remaining 10 changed **no source file**: 4 left the tree byte-identical to the
+  crashing fixture, 5 left it identical to a fixture that runs and lies.
+- **1** is a partial change: `w11-b12-r2` fixed `jobs/charges.py` and `jobs/sla.py` and left
+  `summary.py` and `retry.py` alone — two of the four sites.
+
+So on 54 real attempts by two local models, **one** produced code that was substantively wrong in a
+way any of §11's instruments would need to reason about. Everything else either did the work, or did
+not do it. That reframes the headroom question: the thing a gate on this workload must catch is
+mostly **work that did not happen**, and the check for that is a directory walk. It also names the
+one that is left — a change that lands at some of the sites and not all of them — which is precisely
+the regime W11 item 4 measured a Judge in (11/12 reading the diff, F280) and precisely what F290
+asked item 4 for: a coverage fraction. The site list that fraction needs is what the Plan phase
+produces.
+
+### F303 — sandboxed execution buys one failure class if you read the exit code, and a different one if you read the output
+
+`entrypoint` runs the command the ticket itself names (`python3 run.py data/jobs.json`) and believes
+the exit code. It is the only §11 rung with any yield: **4 of 12** real failures, **0 of 42** false
+fails, 93 ms. All four are `trace_dropped_samples` trees left at the crashing fixture — the rung
+catches the crash and nothing else.
+
+What it misses is more interesting than what it catches. On `round_at_the_line_not_the_total` the
+unfixed program **prints its own defect** — eight `linesum_mismatch` lines naming the invoices, then
+eight `export_mismatch` lines — and **exits 0**. The reference solution prints `AUDIT clean`. The
+information needed to fail that tree is on stdout, free, with no test written and no model called;
+the exit code discards it.
+
+So "sandboxed execution" is two instruments wearing one name. Running the program is nearly free and
+catches crashes. *Reading what it printed* is the acceptance test, and it is the one that decides.
+
+### F304 — the inherited build+test gate does not fire on 3 of 3 of this project's own repository tasks
+
+Claudette's `run_build_and_tests` — the deterministic gate item 2 said to inherit — starts with
+`detect_framework(dir)`, and returns `ran: false, build_ok: None, tests_ok: None` with the summary
+*"no test framework detected (no Cargo.toml / package.json / pyproject.toml / go.mod)"*
+(`tools/quality.rs:344-373`).
+
+None of the three K fixtures carries any of those four marker files. All three carry a `tests/`
+directory with a pytest suite that runs green in 0.3 s. So on 100% of 2.0's own repository corpus
+the inherited gate reports `Uncertain`, correctly and uselessly.
+
+Item 2's rule holds up — `Uncertain` loses every comparison it enters, so nothing is silently
+passed — but the detector is wrong: **the marker file is a proxy for a test suite, and the test
+suite is right there.** 2.0's Measure phase should detect by looking for what it intends to run
+(a `tests/` directory, a `test_*.py`, a `#[cfg(test)]`), and fall back to the marker file, not the
+other way round. Note also that this gate is skipped outright under `--offline`
+(`quality.rs:352-362`) — deliberately, and advisory, but it means an air-gapped run has no
+deterministic half at all.
+
+### 🚨 F305 — a generated test is worth something, and *when* it is written decides what it is worth: 4/9, 9/9, and 6/9 in the wrong direction
+
+The champion writing a pytest file, three tasks × three reps per arm, scored red-red-green against
+the unfixed tree, the sham and the reference solution (`gentests.py`):
+
+| arm | what it was shown | discriminates | false-fails the reference solution | passes the sham | empty payload | median wall |
+|---|---|---|---|---|---|---|
+| **tdd** | the ticket and the repository, no change yet | **4/9** | **4/9** | 0/9 | 1/9 | 84 s |
+| **posthoc** | the same, plus the diff of the **correct** change | **9/9** | 0/9 | 0/9 | 0/9 | 58 s |
+| **posthoc_sham** | the same, plus the diff of the **wrong** change | 2/9 | **3/9** | **6/9** | 1/9 | 56 s |
+
+Read from the top:
+
+1. **Generated tests are a much stronger instrument than generated acceptance criteria.** W11 item 3
+   found 5 of 35 generated *criteria* discriminated (F279) and all 5 fell to a comment. Here the
+   worst arm is 4 of 9 and the best is 9 of 9. A test executes; a criterion greps.
+2. **🚨 As a veto, a TDD-time generated test blocks correct work 4 times in 9.** Both mechanisms are
+   the same: the test over-specifies past the stated invariant. On `finish_the_cancelled_status` it
+   asserted a cancelled job may *never* breach its SLA, where the specification says only that its
+   clock stops — so a job that was already late when it was cancelled is a breach, the reference
+   solution keeps it as one, and the test fails it. On `trace_dropped_samples`, 3 reps out of 3
+   demanded that `stats.summarise` survive an empty window, which is the *symptom*; the reference
+   solution fixes the cause four modules upstream so that the empty window never occurs, and
+   `config.STRICT_EMPTY_WINDOWS = True` says an empty window is an error rather than a hole. The
+   generated test encodes the crash site as a requirement — which is the wrong answer this task was
+   built to punish.
+3. **The post-hoc arm's 9/9 is not a better instrument; it is a different one.** It was shown the
+   correct diff. A test written from a diff measures the diff — which is why the third arm exists.
+4. **🚨 Shown a wrong diff and asked for tests, the same model ratifies the wrong answer 6 times in
+   9 and rejects the right one 3 times in 9.** On `trace_dropped_samples` all three reps do both at
+   once: green on the sham, red on the reference solution. This is the shape of "have the coder add
+   tests for its change", and it is a gate that certifies whatever it was shown.
+   The exception is instructive. On `round_at_the_line_not_the_total` the sham is a change that
+   *misdescribes itself* — it rounds the invoice total up and its own docstring claims the total is
+   *"never below the sum of the printed lines"*, which is false for some invoices under it. The
+   generated test asserted the claim and failed the sham 2 of 2. So a post-hoc test catches a change
+   that lies about itself and ratifies one that is honestly partial — the same asymmetry W11 item 4
+   found in the Judge's inputs, where the dangerous completion report was the *true* one (F281).
+5. Two of the 27 generated files were output-budget stops rather than verdicts: one
+   `finish_reason: length` with `completion_tokens: 8192` and an **empty** payload, and one
+   truncated mid-file that pytest could not collect. That is W11 item 4's
+   `Uncertain(OutputBudgetOverrun)` (F282) on the generating side, and the empty one happened on a
+   prompt that had produced a working test file on the previous rep at temperature 0.
+
+### F306 — the property-test rung's ceiling is 2 of 3, and the miss is a property that quotes the module's own docstring
+
+Priced at the ceiling rather than the average: the invariants a competent engineer writes with the
+repository's documentation open and no sight of the reference solution, each quoted in its own
+docstring from a sentence already in the fixture (`properties.py`).
+
+| task | invariant | verdict |
+|---|---|---|
+| `finish_the_cancelled_status` | *"Nothing should be waiting on it, charging for it as if it were still going, or retrying it"* (`status.py`) + *"a status that lands in `other` is a status nobody looks at"* (`summary.py`) | **discriminates** — unfixed 4 failed, sham 3 failed, refsol 4 passed |
+| `round_at_the_line_not_the_total` | *"it must hold for every invoice we issue"* (`invoice.reconciles`) | **discriminates** — 1 failed on unfixed and on the sham, 2 passed on the refsol |
+| `trace_dropped_samples` | *"A silent drop here is the worst failure mode this pipeline has"* (`ingest.py`) → every record is kept or counted | **green on all three** |
+
+The third is the interesting one. The property is correct, it states the exact failure mode the
+module's own docstring names, and it holds before and after the fix — because the lost data was
+**not silently dropped**. Rev B firmware emits `OK`/`WARN` upper-case, the flag comparison is
+case-sensitive, and half the fleet is discarded into `drops["bad_flag"]`, counted, printed, and
+reconciled. The accounting is right and the data is gone.
+
+So the rung is worth building where an invariant is written down — two of three tasks here, at a
+cost of one file each and 1.4 s to run — and the limit is not rigour. It is that a property catches
+the invariant you thought to state, at the stage you thought to state it, and a defect that hides
+inside a legitimate category satisfies every one of them.
+
+### 🚨 F307 — on 377 small-task attempts in two languages the type checker catches nothing, the repository's own tests catch 11 of 102 with no false positives, and the linter fires on correct work more often than on wrong
+
+The K population is repository work. The Q56 population is the other shape — 56 single-function
+tasks, which is v1's own workload — and it is big enough to stratify. The Rust and Python halves
+(29 tasks, **377 preserved attempts**, 102 of them failures) through the same ladder:
+
+| language | rung | red on FAIL | red on PASS | median |
+|---|---|---|---|---|
+| Rust (182 cells) | `cargo check` — the type check *is* the build | **0 / 59** | 0 / 123 | 193 ms |
+| | `cargo clippy -D warnings` | 8 / 59 | **7 / 123** | 236 ms |
+| | `cargo test --lib` — the crate's own visible tests | **8 / 59** | **0 / 123** | 487 ms |
+| Python (195 cells) | `py_compile` — v1's rung | **0 / 43** | 0 / 151 | 90 ms |
+| | `ruff` | 8 / 43 | **29 / 151** | 73 ms |
+| | `mypy` | **0 / 43** | 0 / 151 | 991 ms |
+| | the fixture's own test file | **3 / 43** | **0 / 151** | 645 ms |
+
+Read across both populations — **431 real agent attempts, 114 real failures**:
+
+- **A type check caught 0 of 114**, in a dynamically typed language and in a statically typed one.
+  `cargo check` is green on all 182 Rust attempts including all 59 wrong ones. The most likely
+  reason is that a compile error is visible to the agent *inside its own loop* and is fixed there,
+  so nothing is left for a gate — the rung is consumed before the gate sees the tree. The
+  transcripts cannot confirm that directly (Claudette narrates file mutations only, W1 F91), but
+  whatever the mechanism, the measurement stands: **by the time work reaches a gate, it compiles.**
+  The same argument covers v1's syntax rung, which caught 0 of 114.
+- **The repository's own tests caught 11 of 114, and false-failed 0 of 316 correct trees.** They are
+  worth running and cannot be the acceptance test: 8 of 59 in Rust, 3 of 43 in Python, 0 of 12 on
+  repository work.
+- **A linter carries no information about correctness in either language.** `ruff` is 8 of 43 wrong
+  against **29 of 151 right** — on the Python half a lint gate blocks nearly a fifth of the correct
+  answers to catch a fifth of the wrong ones. `clippy -D warnings` looks better on the raw split
+  (8 of 59 against 7 of 123) and is not: its reds are concentrated in three tasks, they are style
+  complaints — *"this `if` statement can be collapsed"*, *"manual implementation of an assign
+  operation"* — and **the identical lint fires on the passing and the failing version of the same
+  line**. `Q08` passing is `result = result + terms[k + 1]`; `Q08` failing is
+  `result = terms[k] + result`; clippy flags both, at `src/eval.rs:61:28`, with the same message.
+  What it is measuring is which cells used a particular idiom. Its 8 reds are also **disjoint** from
+  the 8 `cargo test` finds, which is what a coincidence looks like.
+- Ground truth reproduced on **376 of 377** cells, which is also a re-validation of the Q56 corpus.
+
+The 377th is the best single illustration in this item. `Q13/deny-first-edit` is a Python attempt
+whose solution **loops forever** on an input the fixture's own test never supplies. Every cheap
+rung is green on it — `py_compile`, `ruff`, `mypy`, and the shipped test file all pass — and the
+acceptance test never returns: 300,137 ms, killed by the bound, no `RESULT:` line. One tree in 431
+hangs the only instrument that can see it, and it is green on every instrument that cannot. That is
+the case F220's plumbing exists for, and it is why a timeout has to be a classified outcome rather
+than an absent one.
+
+### 🚨 F308 — two of the twelve K "failures" are the verifier asserting a print format the ticket never mentioned, and one of them is the champion's only loss in the K comparison
+
+`k-champ-r1` and `w11-b40-r2` on `finish_the_cancelled_status` are recorded FAIL. Re-run here, both
+produce:
+
+```
+COUNTS queued=2 running=2 done=11 failed=5 cancelled=4
+SLA breaches 2          CHARGES total 37615.00p across 13 job(s)          RETRY candidates 7
+```
+
+Every one of the four consumer decisions is correct, and identical to the reference solution's.
+Both agents replaced `"other"` with `"cancelled"` in `summary.BUCKETS`; the verifier requires the
+literal `other=0` to still be printed, and the ticket says nothing about the output format (unlike
+the other two K tickets, which both say *"do not change the output format"*).
+
+Two consequences, and they point in different directions.
+
+- **For W1.** `research/W1-models.md:722` reads the K comparison as showing *"the champion's own
+  verdicts are unstable (`finish_the_cancelled_status` failed once and passed twice on identical
+  inputs)"*. The verdicts were unstable; the **behaviour was not**. All three cells fixed all four
+  consumers; one of the three also tidied the bucket list, and that is what the verdict recorded.
+  The conclusion (keep the champion) is unaffected and if anything strengthened — but "unstable
+  verdicts" should be read as instability in an unstated format detail, not in the fix.
+- **For W6.** This is the acceptance test's own failure mode, and it is the mirror of F305's: an
+  acceptance test that asserts on output detail the ticket never fixed **manufactures failures**,
+  exactly as a generated test that over-specifies does. The only instrument that reads behaviour is
+  also the only one that can be wrong in a way that costs a correct answer, and the discipline that
+  keeps it honest is the corpus's own rule — assert what the ticket asked for, and add positive
+  controls for what must *remain* true.
+
+### F309 — three of five timed-out K attempts had already produced a tree that passes
+
+The five K cells recorded `status: timeout` carry no verdict at all — a timeout records no metrics
+(`corpus/suites/k/tasks/finish_the_cancelled_status/task.toml`, the 900 → 2400 note). Running the
+verifier over the workdirs as they were left: **three PASS, two FAIL**.
+
+The split is exactly along W1's F91. The two that fail are the `trace_dropped_samples` cells F91
+already dissected — untouched workdirs, forty minutes in a read-only tool loop, no bytes on either
+pipe. The other three (`k-27b-r1` on both of the other tasks, `k-27b-r2` on `trace`) had **finished
+the work**: the tree on disk passes the four-consumer verifier, and the deadline threw the result
+away.
+
+So a wall-clock deadline does not merely mismeasure, it **discards finished work** — 3 of 5 here.
+That is W11 item 5's F290 from the other side, and it makes F91's fix only half a fix: sealing the
+transcript records that the subject was silent, and the thing worth recording is that the *tree was
+correct*. The cheap version is one line of policy — **on a kill, run the gate on the workdir before
+discarding the cell** — and it would have shipped three of these five.
+
+### F310 — corpus hygiene, found by reusing the corpus: the verifier leaves its answer key in the workdir
+
+Every preserved Q56 workdir contains the hidden tests the verifier wrote into it during the original
+run (`tests/hidden_gate.rs`, `hidden_gate_test.py`). Any post-hoc instrument that runs "the
+project's tests" over those workdirs is running the oracle and will report a perfect gate. The probe
+here measures the residue instead of guessing it — it runs the verifier against a pristine fixture
+and diffs the tree (`instruments.verifier_residue`) — and deletes exactly those paths before any
+rung runs.
+
+Two smaller ones from the same pass: the K `refsol`/`sham` overlays are CRLF where the fixtures are
+LF, so any byte-level diff of an overlay reports every line of every touched file as changed; and
+the Q56 verifiers take the transcript as a **required** second argument, so calling one with `""`
+produces no `RESULT:` line at all — which is indistinguishable, at the call site, from a verifier
+that ran and could not decide.
+
+## Options compared
+
+Every instrument this item ran, priced on the same two axes — what it catches on real agent output,
+and what it costs to be wrong.
+
+| instrument | cost | catches, on 54 real K attempts | false-fails correct work | verdict |
+|---|---|---|---|---|
+| `py_compile` (v1's rung) | 135 ms | 0 / 12 | 0 / 42 | keep, it is free; expect nothing |
+| `ruff` | 78 ms | 0 (red on everything) | **42 / 42** | **not a gate** |
+| `ruff --select ALL` | 80 ms | 0 (red on everything) | **42 / 42** | **not a gate** |
+| `mypy` | 1.5 s | 0 / 12 | 0 / 42 | not a gate here; language-dependent |
+| `mypy --strict` | 1.5 s | 0 (red on everything) | **42 / 42** | **not a gate** |
+| lint / type **delta** | +1 walk | 0–1 / 12 | 7–32 / 42 | **worse than useless** (F301) |
+| the repository's own suite | 692 ms | 0 / 12 | 0 / 42 | **regression guard, not acceptance** |
+| run the ticket's command, read the exit code | 93 ms | 4 / 12 | 0 / 42 | keep — it catches crashes |
+| **the structural check** (no source file touched) | one walk | **9 / 12** | **0 / 42** | **keep, first, free** |
+| the acceptance test | 1.1 s | 12 / 12 | 2 / 42 by over-assertion (F308) | **the gate** |
+| a generated test, written before the change | 84 s GPU | discriminates 4/9 | **4/9** | advisory only |
+| a generated test, written after the change | 56 s GPU | ratifies the change 6/9 | 3/9 | **never** |
+| a property test, at the ceiling | 1.4 s | 2 of 3 tasks | 0 | keep where an invariant is written |
+
+## Recommendation
+
+**1 — Order the Measure phase cheapest-first, and make the first rung structural.** Before any
+toolchain runs: is the diff empty? did it touch any source file? did it touch the sites the Plan
+phase named? On this corpus that single walk accounts for **9 of the 10 behavioural failures**, at
+no cost and with no possibility of a false positive — an empty change cannot pass a behaviour
+verifier. This is item 2's recommendation 1 (empty diff is a veto) with a number attached, and it is
+the coverage fraction F290 asked this item for. Its denominator is the site list, which means
+**Localize has to emit one** — a requirement on item 2's phase 1, not a new phase.
+
+**2 — The acceptance test is the only `Measured` input; everything else is advisory or a veto.**
+Nothing in the deterministic ladder above `py_compile` moved with the truth on 63 trees. The
+instrument that decides is the one that executes the program and asserts on the behaviour the ticket
+asked about — and it costs less than the ladder that decides nothing (1.1 s against 4.0 s).
+
+**3 — Run the repository's own suite, and call it what it is.** It was green on all 63 trees here,
+including every wrong one, so it cannot *accept*. It can still veto: a change that breaks a test
+that passed before is a regression, which is a different question from whether the ticket is
+done. Detect the suite by **looking for tests** (`tests/`, `test_*.py`, `#[cfg(test)]`) rather than
+for a marker file — the inherited detector finds no marker in 3 of 3 of this project's own fixtures
+and reports `Uncertain` where a runnable suite is sitting in plain sight (F304).
+
+**4 — Do not gate on a linter or a type checker, in either form.** Absolute: red on the fixtures
+themselves. Delta: fires on 32 of 42 correct changes and 0 of 12 wrong ones, because writing tests
+is what adds findings (F301). Keep them exactly where the successor already keeps them — as tools
+the model may call (`tool_groups.rs:135`) — and off the gate.
+
+**5 — Generated tests are advisory, are generated before the change, and never bind.** 4 of 9 TDD-time
+files discriminated and 4 of 9 would have blocked the reference solution; a file generated *after* a
+change ratifies that change 6 times in 9. So: generate at Localize time, show the result to the
+Judge and to the human, and let a human promote one into the acceptance set. Never let one veto, and
+never generate one from the diff. **This answers OQ-W6-6**: a returning TESTER artifact must be
+immutable to the Change phase *and* non-binding on the gate, because at 4/9 false-fails an immutable
+binding artifact is a machine for rejecting correct work.
+
+**6 — Property tests where the repository states an invariant.** Two of three K tasks have an
+invariant written in a module docstring or in `docs/`, and in both cases a property over it
+separates the reference solution from the sham for 1.4 s. The third shows the limit and it is not
+laziness: the drop accounting was *correct* while the data was gone (F306). So the rung is worth its
+cost, and it is not a substitute for an acceptance test.
+
+**7 — A verifier's contract is an exit code and a stream, never a magic word.** v1's channel scores a
+clean type check, a green suite and a correct program run as failures because none of them prints
+`PASS` (F298). 2.0's measurement interface takes `Measured(exit_code, stdout, stderr)` and lets the
+task's own criterion decide.
+
+**8 — Kill the tree, bound the wait, classify the timeout.** This item's own harness reproduced F220
+in the wild: a Q56 verifier's `pytest`, running an agent solution that spins, was orphaned by a
+`subprocess.run` timeout, held the stdout pipe open, and stalled the run for 22 minutes with no
+output. `common.kill_tree` is the two-line version of W3 item 7's job-object seam. Anything 2.0
+executes on behalf of a model needs it, and a timeout has to come back as
+`Uncertain(timeout, partial_output)` rather than as an exception or a zero.
+
+## Rejected alternatives and why
+
+- **"Add a linter to the gate; cheap insurance."** Measured: it is not insurance, it is a tax on
+  correct work. Every K fixture is already red under `ruff` and under `mypy --strict`, and the delta
+  form fires on the changes that *did the job*. The only version that would work is a baseline-diffed
+  gate scoped to the touched hunks, which is a lot of machinery to catch a failure class this corpus
+  does not contain.
+- **Treating "the repository's tests pass" as acceptance.** The T1 fixture ships 24 tests that assert
+  `cancelled` is in `ALL`, is terminal, is reachable in `TRANSITIONS`, and has a dashboard label —
+  and not one that asserts what the four consumers that make decisions do with it. Green suite,
+  wrong program, and the sham passes too.
+- **Having the coder write tests for its own change.** This is the shape most agent frameworks reach
+  for, and it is the worst arm measured here: 6 of 9 ratify a wrong change, 3 of 9 reject the right
+  one. It is F281's asymmetry in test form — the tests catch a change that misdescribes itself and
+  bless the one that is honestly partial.
+- **A second model as the deterministic half.** Priced in W11 item 4 (F284): 26.3 s round trip, 4.6×
+  the decode, and no verdict at all on the correct answer 3 of 3. Nothing in this item changes that.
+- **Quantifying headroom "over v1's auto-retry" as a rate.** There is no rate to beat. On defaults
+  the ladder does not run, absence of a validation command is scored a pass, and the retry queue's
+  only caller is a benchmark script (F299). The honest baseline is zero, so the numbers here are
+  reported against the suite verifier instead.
+
+## Effect on fun
+
+The measurement that matters is also the one that looks like something. A **structural veto fires in
+milliseconds** — before any toolchain, before any model — and it has a line to say: *"nothing was
+touched"*, or *"one of four sites"*. That is a unit reporting a fact about the battlefield, and it
+is the single most common outcome on real runs, which means the console's most frequent event is an
+honest one rather than a spinner.
+
+The coverage fraction is the console object F290 asked for and this item can now size: `1/4 sites`
+is a progress bar that means something, unlike a percentage derived from a weighted average. And the
+acceptance test's output is *already* dramatic in this corpus — the unfixed billing run prints eight
+`linesum_mismatch` lines naming the invoices it got wrong and then exits 0. A console that shows
+what the program said beats one that shows `verifier_score: 7.5`, and it costs nothing because the
+program printed it anyway.
+
+The rejected half matters for fun too. A linter gate would mean the most common console event is a
+red bar over correct work — 42 of 42 here. Nothing kills a command centre faster than an alarm that
+is always on.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W6-6 | *(from item 2)* Does a generated-test artifact return, and what makes it immutable? | **answered here**: yes, TDD-time, advisory, never binding — 4/9 discriminate and 4/9 false-fail (F305) |
+| OQ-W6-8 | Does the coverage fraction bind as a veto, or only as a report? It needs Localize to emit a site list, and the one failure it misses here is a 2-of-4 change | item 5 / W11's Plan phase |
+| OQ-W6-9 | Does the picture change in a language whose type checker is the build? Q56's Rust half is the first evidence (F307); node, typescript and shell are unmeasured | item 5 (language generality) |
+| OQ-W6-10 | Should the K verifier's `other=0` assertion be relaxed, and what does that do to the recorded K comparison? A corpus change invalidates prior cells, so it is a W8 decision, not a W6 one | W8 |
+| OQ-W6-7 | *(from item 2)* Rules-only router, or rules plus a recorded model reading? Does 2.0 scale the bar by complexity? | still open — nothing here bears on it |
+
+## Confidence: high on the negative result, high on the baseline, medium on generality
+
+The negative result is the strongest thing in this item: six instruments over 63 trees produced a
+constant, which is not a subtle statistical claim and does not depend on how the population was
+sampled. The v1 baseline is line-level and re-checkable, and its most load-bearing part — the
+validation channel — was reimplemented and executed rather than read. The failure taxonomy was
+hand-checked cell by cell, which is how the two format-only failures were found.
+
+**Medium on generality**, for three reasons, and each has a named next step. The corpus is three
+tasks and two model families, so "the local model's mistakes are mostly work that did not happen" is
+a claim about *this* subject and *these* fixtures. The languages are Python and Rust; a project in
+TypeScript, where the type checker is the build, may well find `tsc` doing real work (OQ-W6-9). And
+the generated-test arms are n=3 per task per arm, which is enough to show that TDD-time generation
+false-fails often and post-hoc generation ratifies, and not enough to put a confidence interval on
+either rate.
+
+One thing this item does **not** show: that verification is a weak lever. It shows that the *cheap
+deterministic* rungs above a syntax check are a weak lever **on this failure distribution**, and
+that the levers which do move — a structural check on the change, and an acceptance test that
+executes the program — are the two the donors both skipped.

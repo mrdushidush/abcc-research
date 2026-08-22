@@ -1,0 +1,77 @@
+[
+ {
+  "task": "finish_the_cancelled_status",
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "4 failed in 15.36s",
+    "ms": 16142,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "4 passed in 1.48s",
+    "ms": 1995,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "3 failed, 1 passed in 12.03s",
+    "ms": 12851,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "\n\"\"\"Properties for the job-status vocabulary.\n\n  * status.py: \"A job in a terminal status will not change again. Nothing\n    should be waiting on it, charging for it as if it were still going, or\n    retrying it.\"\n  * summary.py: \"Every status the system can produce needs its own bucket -- a\n    status that lands in `other` is a status nobody looks at.\"\n\"\"\"\n\nfrom hypothesis import given, settings as hyp_settings, strategies as gen\n\nfrom jobs import charges, model, retry, sla, status as st, summary\n\nNOW = 100000\n\n\ndef a_job(status_pool=st.ALL):\n    return gen.builds(\n        model.Job,\n        job_id=gen.just(\"J-000\"),\n        customer=gen.just(\"acme\"),\n        kind=gen.sampled_from([\"render\", \"transcode\", \"index\", \"report\", \"train\"]),\n        status=gen.sampled_from(list(status_pool)),\n        queued_at=gen.integers(min_value=0, max_value=90000),\n        started_at=gen.integers(min_value=0, max_value=95000),\n        ended_at=gen.integers(min_value=0, max_value=99000),\n        cpu_seconds=gen.integers(min_value=0, max_value=5000),\n        sla_seconds=gen.integers(min_value=60, max_value=7200),\n        attempts=gen.integers(min_value=1, max_value=4),\n    )\n\n\n@given(a_job())\n@hyp_settings(max_examples=200, deadline=None)\ndef test_a_terminal_job_stops_accruing(job):\n    \"\"\"Nothing should be waiting on a terminal job (status.py).\"\"\"\n    if not job.is_terminal or job.ended_at is None:\n        return\n    assert sla.finished_at(job, NOW) == job.ended_at\n\n\n@given(a_job())\n@hyp_settings(max_examples=200, deadline=None)\ndef test_a_terminal_job_is_not_charged_as_if_running(job):\n    \"\"\"Nothing should be charging for it as if it were still going (status.py).\n\n    The narrow, uncontroversial half: a job the operator cancelled produced\n    nothing the customer asked to keep.\n    \"\"\"\n    if job.status != st.CANCELLED:\n        return\n    assert charges.is_chargeable(job) is False\n\n\n@given(a_job())\n@hyp_settings(max_examples=200, deadline=None)\ndef test_a_terminal_job_is_not_retried(job):\n    \"\"\"Nothing should be retrying it (status.py).\"\"\"\n    if job.status != st.CANCELLED:\n        return\n    assert retry.should_retry(job) is False\n\n\n@given(gen.lists(a_job(), min_size=1, max_size=12))\n@hyp_settings(max_examples=200, deadline=None)\ndef test_every_known_status_has_its_own_bucket(jobs):\n    \"\"\"A status that lands in `other` is a status nobody looks at (summary.py).\"\"\"\n    c = summary.counts(jobs)\n    assert sum(c.values()) == len(jobs)\n    assert c.get(\"other\", 0) == 0\n"
+ },
+ {
+  "task": "round_at_the_line_not_the_total",
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed, 1 passed in 1.55s",
+    "ms": 2075,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "2 passed in 1.45s",
+    "ms": 2004,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "1 failed, 1 passed in 1.11s",
+    "ms": 1683,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "\n\"\"\"Properties for invoice rounding.\n\n  * invoice.py, `reconciles`: \"A customer doing this by hand is the most common\n    source of billing queries, so it must hold for every invoice we issue.\"\n  * the ticket: \"every invoice it prints must be internally consistent -- the\n    per-line amounts it shows must add up to the total it shows.\"\n\"\"\"\n\nfrom hypothesis import given, settings as hyp_settings, strategies as gen\n\nfrom billing import catalog, invoice, money, tax\n\nSKUS = sorted(catalog.CATALOG)\nREGIONS = sorted(tax.RATES)\n\n\ndef an_order():\n    item = gen.fixed_dictionaries({\n        \"sku\": gen.sampled_from(SKUS),\n        \"qty\": gen.integers(min_value=1, max_value=40),\n        \"discount_rate\": gen.sampled_from([0.0, 0.05, 0.1, 0.125, 0.2]),\n    })\n    return gen.fixed_dictionaries({\n        \"number\": gen.just(\"INV-9999\"),\n        \"customer\": gen.just(\"acme\"),\n        \"region\": gen.sampled_from(REGIONS),\n        \"items\": gen.lists(item, min_size=1, max_size=8),\n    })\n\n\n@given(an_order())\n@hyp_settings(max_examples=300, deadline=None)\ndef test_printed_lines_add_up_to_the_printed_total(order):\n    \"\"\"It must hold for every invoice we issue (invoice.py).\"\"\"\n    inv = invoice.build(order)\n    assert inv.reconciles(), (\n        \"lines print %.2f, total prints %.2f\"\n        % (inv.displayed_sum, inv.total)\n    )\n\n\n@given(an_order())\n@hyp_settings(max_examples=300, deadline=None)\ndef test_the_total_is_a_chargeable_amount(order):\n    \"\"\"money.py: to_cents is the only correct way to reduce a computed amount.\"\"\"\n    inv = invoice.build(order)\n    assert abs(inv.total - money.from_cents(money.to_cents(inv.total))) < 1e-9\n"
+ },
+ {
+  "task": "trace_dropped_samples",
+  "scores": {
+   "unfixed": {
+    "verdict": "green",
+    "detail": "2 passed in 1.44s",
+    "ms": 1947,
+    "exit": 0
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "2 passed in 1.27s",
+    "ms": 1781,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "green",
+    "detail": "2 passed in 1.35s",
+    "ms": 1867,
+    "exit": 0
+   }
+  },
+  "discriminates": false,
+  "source": "\n\"\"\"Properties for ingest accounting.\n\n  * ingest.py: \"Every rejection is counted against a reason code ... A silent\n    drop here is the worst failure mode this pipeline has: the numbers\n    downstream stay plausible.\"\n  * the ticket: \"the report it prints must account for every usable sample in\n    the input file -- not merely avoid crashing.\"\n\"\"\"\n\nfrom hypothesis import given, settings as hyp_settings, strategies as gen\n\nfrom pipeline import config, constants, ingest\n\nSETTINGS = config.load()\n\n\ndef a_record():\n    return gen.fixed_dictionaries({\n        \"ts\": gen.integers(min_value=0, max_value=60000),\n        \"channel\": gen.sampled_from(list(constants.KNOWN_CHANNELS) + [\"gremlin\"]),\n        \"value\": gen.floats(min_value=-100, max_value=2000, allow_nan=False,\n                            allow_infinity=False),\n        \"flag\": gen.sampled_from([\"ok\", \"warn\", \"bad\", \"OK\", \"stale\"]),\n    })\n\n\n@given(gen.lists(a_record(), min_size=1, max_size=60))\n@hyp_settings(max_examples=200, deadline=None)\ndef test_every_record_is_either_kept_or_counted(records):\n    \"\"\"A silent drop is the worst failure mode this pipeline has (ingest.py).\"\"\"\n    accepted = ingest.accept(records, SETTINGS)\n    assert len(accepted) + accepted.total_dropped() == len(records), (\n        \"%d in, %d kept, %d counted as dropped\"\n        % (len(records), len(accepted), accepted.total_dropped())\n    )\n\n\n@given(gen.lists(a_record(), min_size=1, max_size=60))\n@hyp_settings(max_examples=200, deadline=None)\ndef test_no_drop_is_filed_under_an_unnamed_reason(records):\n    \"\"\"The report prints these verbatim, so they are part of the contract.\"\"\"\n    accepted = ingest.accept(records, SETTINGS)\n    for reason in accepted.drops:\n        assert reason in constants.DROP_REASONS\n"
+ }
+]

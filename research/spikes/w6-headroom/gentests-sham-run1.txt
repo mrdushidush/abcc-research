@@ -1,0 +1,9 @@
+posthoc_sham finish_the_cancelled_status        r1   60.1s  5018tok unfixed=red    sham=green  refsol=green  disc=False
+posthoc_sham finish_the_cancelled_status        r2   46.2s  3960tok unfixed=red    sham=green  refsol=green  disc=False
+posthoc_sham finish_the_cancelled_status        r3   51.5s  4421tok unfixed=red    sham=green  refsol=green  disc=False
+posthoc_sham round_at_the_line_not_the_total    r1   85.8s  5882tok unfixed=red    sham=red    refsol=green  disc=True
+posthoc_sham round_at_the_line_not_the_total    r2  118.7s  8192tok unfixed=error  sham=error  refsol=error  disc=False
+posthoc_sham round_at_the_line_not_the_total    r3   56.3s  3930tok unfixed=red    sham=red    refsol=green  disc=True
+posthoc_sham trace_dropped_samples              r1   66.9s  4981tok unfixed=red    sham=green  refsol=red    disc=False
+posthoc_sham trace_dropped_samples              r2   38.4s  2839tok unfixed=red    sham=green  refsol=red    disc=False
+posthoc_sham trace_dropped_samples              r3   39.0s  2941tok unfixed=red    sham=green  refsol=red    disc=False

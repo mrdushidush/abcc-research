@@ -1,0 +1,1063 @@
+[
+ {
+  "arm": "tdd",
+  "task": "finish_the_cancelled_status",
+  "rep": 1,
+  "prompt_chars": 27067,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7323,
+   "completion_tokens": 5936,
+   "total_tokens": 13259,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5377
+   }
+  },
+  "wall_s": 79.1,
+  "empty": false,
+  "chars": 1937,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "6 failed, 1 passed in 0.35s",
+    "ms": 802,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "7 passed in 0.23s",
+    "ms": 696,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "4 failed, 3 passed in 0.29s",
+    "ms": 734,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import pytest\nfrom jobs import charges, model, retry, sla, status as st, summary\n\n\ndef _make_job(**kw):\n    base = dict(\n        job_id=\"J-017\",\n        customer=\"ops\",\n        kind=\"render\",\n        status=st.CANCELLED,\n        queued_at=0,\n        started_at=10,\n        ended_at=20,\n        cpu_seconds=50,\n        sla_seconds=3600,\n        attempts=1,\n    )\n    base.update(kw)\n    return model.Job(**base)\n\n\nclass TestCancelledSLASemantics:\n    def test_finished_at_stops_clock_on_cancelled(self):\n        j = _make_job(ended_at=20)\n        # The clock stops at cancellation; finished_at must not be `now`\n        assert sla.finished_at(j, 1_000_000) == 20\n\n    def test_no_sla_breach_for_cancelled_jobs(self):\n        j = _make_job(sla_seconds=60, ended_at=20)\n        # Even if now is far in the future, a cancelled job cannot breach SLA\n        assert not sla.is_breached(j, 999_999), \"Cancelled jobs must never be SLA breaches\"\n\n\nclass TestCancelledCharges:\n    def test_not_chargeable(self):\n        j = _make_job(cpu_seconds=1000)\n        assert not charges.is_chargeable(j), \"Cancelled compute is absorbed, not billed\"\n\n    def test_zero_cpu_also_not_chargeable(self):\n        j = _make_job(cpu_seconds=0)\n        assert not charges.is_chargeable(j)\n\n\nclass TestCancelledRetry:\n    def test_must_not_be_retried(self):\n        j = _make_job(attempts=1, kind=\"render\")\n        assert not retry.should_retry(j), \"Cancellation overrides requeueing\"\n\n\nclass TestSummaryCounts:\n    def test_has_own_bucket(self):\n        c = summary.counts([_make_job()])\n        assert \"cancelled\" in c, \"Cancelled jobs must have their own bucket per spec\"\n        assert c[\"cancelled\"] == 1\n\n    def test_not_folded_into_other_or_failed(self):\n        c = summary.counts([_make_job()])\n        # Folding into failed overstates failure rate; folding into other hides it.\n        assert c.get(\"failed\", 0) == 0\n        assert c.get(\"other\", 0) == 0"
+ },
+ {
+  "arm": "tdd",
+  "task": "finish_the_cancelled_status",
+  "rep": 2,
+  "prompt_chars": 27067,
+  "finish_reason": "length",
+  "usage": {
+   "prompt_tokens": 7323,
+   "completion_tokens": 8192,
+   "total_tokens": 15515,
+   "completion_tokens_details": {
+    "reasoning_tokens": 8192
+   }
+  },
+  "wall_s": 98.9,
+  "empty": true,
+  "chars": 0,
+  "scores": {},
+  "discriminates": false,
+  "source": ""
+ },
+ {
+  "arm": "tdd",
+  "task": "finish_the_cancelled_status",
+  "rep": 3,
+  "prompt_chars": 27067,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7323,
+   "completion_tokens": 6766,
+   "total_tokens": 14089,
+   "completion_tokens_details": {
+    "reasoning_tokens": 6080
+   }
+  },
+  "wall_s": 84.2,
+  "empty": false,
+  "chars": 2384,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "8 failed, 1 passed in 0.36s",
+    "ms": 809,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "red",
+    "detail": "1 failed, 8 passed in 0.31s",
+    "ms": 771,
+    "exit": 1
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "7 failed, 2 passed in 0.31s",
+    "ms": 755,
+    "exit": 1
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom jobs import status as st, charges, retry, sla, summary, model\n\n\ndef make_job(status=st.CANCELLED, **kw):\n    base = dict(\n        job_id=\"J-017\",\n        customer=\"ops\",\n        kind=\"render\",\n        status=status,\n        queued_at=0,\n        started_at=10,\n        ended_at=20,\n        cpu_seconds=50,\n        sla_seconds=3600,\n        attempts=1,\n    )\n    base.update(kw)\n    return model.Job(**base)\n\n\nclass TestCancelledSLA:\n    def test_finished_at_stops_clock_on_cancelled(self):\n        j = make_job(status=st.CANCELLED, ended_at=500)\n        assert sla.finished_at(j, 999_999) == 500\n\n    def test_cancelled_never_breaches_sla(self):\n        # Even if the job ran past its deadline before cancellation, it must not be a breach.\n        j = make_job(status=st.CANCELLED, sla_seconds=60, ended_at=100)\n        assert not sla.is_breached(j, 999_999)\n\n\nclass TestCancelledCharges:\n    def test_cancelled_is_not_chargeable(self):\n        j = make_job(status=st.CANCELLED, cpu_seconds=50)\n        assert not charges.is_chargeable(j)\n\n    def test_cancelled_charge_pence_is_zero(self):\n        j = make_job(status=st.CANCELLED, cpu_seconds=100)\n        assert charges.charge_pence(j) == 0.0\n\n\nclass TestCancelledRetry:\n    def test_cancelled_is_not_retried(self):\n        j = make_job(status=st.CANCELLED, attempts=1, kind=\"render\")\n        assert not retry.should_retry(j)\n\n    def test_cancelled_not_in_candidates(self):\n        j = make_job(status=st.CANCELLED, attempts=1, kind=\"transcode\")\n        assert j not in retry.candidates([j])\n\n\nclass TestCancelledSummary:\n    def test_cancelled_has_own_bucket(self):\n        j = make_job(status=st.CANCELLED)\n        c = summary.counts([j])\n        assert \"cancelled\" in c, f\"'counts' must include a 'cancelled' bucket. Got keys: {list(c.keys())}\"\n        assert c[\"cancelled\"] == 1\n\n    def test_cancelled_not_folding_into_failed_or_other(self):\n        j = make_job(status=st.CANCELLED)\n        c = summary.counts([j])\n        assert c.get(\"failed\", 0) == 0, \"Cancelled jobs must not be counted as failed\"\n        assert c.get(\"other\", 0) == 0, \"Cancelled jobs must not be hidden in 'other'\"\n\n\nclass TestCancelledDashboard:\n    def test_dashboard_does_not_show_unknown(self):\n        from jobs import dashboard\n        label = dashboard.label_for(st.CANCELLED)\n        assert label != \"Unknown\" and label != \"\""
+ },
+ {
+  "arm": "tdd",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 1,
+  "prompt_chars": 39195,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10625,
+   "completion_tokens": 3999,
+   "total_tokens": 14624,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3767
+   }
+  },
+  "wall_s": 58.5,
+  "empty": false,
+  "chars": 883,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "2 failed in 0.33s",
+    "ms": 778,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "2 passed in 0.23s",
+    "ms": 664,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "2 failed in 0.29s",
+    "ms": 715,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import json\nfrom billing import invoice, audit\n\n\ndef test_all_invoices_reconcile():\n    \"\"\"Every invoice must have printed lines that sum to its total.\"\"\"\n    with open(\"data/orders.json\", encoding=\"utf-8\") as fh:\n        orders = json.load(fh)\n    \n    invoices = invoice.build_all(orders)\n    \n    for inv in invoices:\n        assert inv.reconciles(), (\n            f\"Invoice {inv.number} fails reconciliation. \"\n            f\"Total: \u00a3{inv.total:.2f}, Linesum: \u00a3{inv.displayed_sum:.2f}\"\n        )\n\n\ndef test_audit_clean_on_full_batch():\n    \"\"\"The audit must report zero findings for the full batch.\"\"\"\n    with open(\"data/orders.json\", encoding=\"utf-8\") as fh:\n        orders = json.load(fh)\n        \n    invoices = invoice.build_all(orders)\n    findings = audit.audit(invoices)\n    \n    assert not findings, f\"Audit found {len(findings)} finding(s): {[str(f) for f in findings]}\""
+ },
+ {
+  "arm": "tdd",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 2,
+  "prompt_chars": 39195,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10625,
+   "completion_tokens": 4245,
+   "total_tokens": 14870,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3926
+   }
+  },
+  "wall_s": 53.6,
+  "empty": false,
+  "chars": 1274,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "3 failed, 1 passed in 0.30s",
+    "ms": 734,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "4 passed in 0.23s",
+    "ms": 660,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "3 failed, 1 passed in 0.29s",
+    "ms": 715,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import json\nfrom billing import invoice, audit, ledger, money\n\n\ndef load_orders():\n    with open(\"data/orders.json\", \"r\") as f:\n        return json.load(f)\n\n\ndef build_invoices():\n    orders = load_orders()\n    return invoice.build_all(orders)\n\n\nclass TestReconciliationAndAudit:\n    def test_all_invoices_reconcile(self):\n        invoices = build_invoices()\n        for inv in invoices:\n            assert inv.reconciles(), (\n                f\"Invoice {inv.number} fails reconciliation. \"\n                f\"Total: \u00a3{inv.total:.2f}, Linesum: \u00a3{inv.displayed_sum:.2f}\"\n            )\n\n    def test_audit_has_no_findings(self):\n        invoices = build_invoices()\n        findings = audit.audit(invoices)\n        assert not findings, f\"Audit found issues: {findings}\"\n\n    def test_ledger_itemised_matches_single(self):\n        invoices = build_invoices()\n        mismatches = ledger.check_itemised_matches_single(invoices)\n        assert not mismatches, f\"Ledger itemised vs single mismatch for: {mismatches}\"\n\n    def test_totals_are_whole_cents(self):\n        invoices = build_invoices()\n        for inv in invoices:\n            assert money.is_whole_cents(inv.total), (\n                f\"Invoice {inv.number} total is not a whole number of cents: {inv.total}\"\n            )"
+ },
+ {
+  "arm": "tdd",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 3,
+  "prompt_chars": 39195,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10625,
+   "completion_tokens": 3667,
+   "total_tokens": 14292,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3306
+   }
+  },
+  "wall_s": 46.9,
+  "empty": false,
+  "chars": 1338,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "2 failed in 0.32s",
+    "ms": 813,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "2 passed in 0.27s",
+    "ms": 797,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "2 failed in 0.34s",
+    "ms": 856,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import json\nfrom billing import invoice, audit, money\n\n\ndef test_all_invoices_reconcile():\n    \"\"\"Every invoice must have printed line amounts that sum to its total.\"\"\"\n    with open(\"data/orders.json\", encoding=\"utf-8\") as f:\n        orders = json.load(f)\n\n    invoices = invoice.build_all(orders)\n\n    findings = audit.audit(invoices)\n    linesum_findings = [f for f in findings if f.code == \"linesum_mismatch\"]\n    assert not linesum_findings, (\n        f\"Audit found {len(linesum_findings)} invoice(s) with line sum mismatches: \"\n        + \", \".join(f.invoice_number for f in linesum_findings)\n    )\n\n    for inv in invoices:\n        assert inv.reconciles(), (\n            f\"Invoice {inv.number} is inconsistent. Total: \u00a3{inv.total:.2f}, \"\n            f\"Printed lines sum to: \u00a3{inv.displayed_sum:.2f}\"\n        )\n\n\ndef test_total_matches_quantized_lines():\n    \"\"\"pricing.total_of must equal the sum of quantized line totals.\"\"\"\n    with open(\"data/orders.json\", encoding=\"utf-8\") as f:\n        orders = json.load(f)\n\n    invoices = invoice.build_all(orders)\n\n    for inv in invoices:\n        total_cents = money.to_cents(inv.total)\n        linesum_cents = money.to_cents(inv.displayed_sum)\n        assert total_cents == linesum_cents, (\n            f\"{inv.number}: total cents {total_cents} != linesum cents {linesum_cents}\"\n        )"
+ },
+ {
+  "arm": "tdd",
+  "task": "trace_dropped_samples",
+  "rep": 1,
+  "prompt_chars": 38548,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 9933,
+   "completion_tokens": 6932,
+   "total_tokens": 16865,
+   "completion_tokens_details": {
+    "reasoning_tokens": 6550
+   }
+  },
+  "wall_s": 93.2,
+  "empty": false,
+  "chars": 1289,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "3 failed in 0.31s",
+    "ms": 780,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "red",
+    "detail": "1 failed, 2 passed in 0.30s",
+    "ms": 761,
+    "exit": 1
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "2 failed, 1 passed in 0.33s",
+    "ms": 781,
+    "exit": 1
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom pipeline import config, ingest, stats, windowing\n\n\ndef test_ingest_accepts_rev_b_uppercase_flags():\n    \"\"\"Rev B firmware emits UPPER-CASE flags (OK, WARN). They must be accepted.\"\"\"\n    settings = config.load()\n    raw = {\"ts_ms\": 100, \"chan\": \"temp_c\", \"val\": 25.0, \"quality\": \"OK\", \"dev_id\": \"dev-b1\"}\n    accepted = ingest.accept([raw], settings)\n    \n    assert len(accepted.samples) == 1, f\"Expected 1 sample, got {len(accepted.samples)}. Drops: {accepted.drops}\"\n    assert accepted.drops[\"bad_flag\"] == 0\n\ndef test_ingest_accepts_rev_b_warn():\n    \"\"\"Rev B firmware emits UPPER-CASE WARN. It must be accepted and counted as degraded.\"\"\"\n    settings = config.load()\n    raw = {\"ts_ms\": 200, \"chan\": \"pressure_kpa\", \"val\": 100.0, \"quality\": \"WARN\", \"dev_id\": \"dev-b2\"}\n    accepted = ingest.accept([raw], settings)\n    \n    assert len(accepted.samples) == 1\n    assert accepted.drops[\"bad_flag\"] == 0\n    assert accepted.degraded == 1\n\ndef test_stats_summarise_handles_empty_windows():\n    \"\"\"Empty windows from windowing.split must not cause ZeroDivisionError.\"\"\"\n    settings = config.load()\n    w = windowing.Window(\"temp_c\", 0, 10_000)\n    \n    summary = stats.summarise([w], settings)\n    assert len(summary.windows) == 1\n    assert summary.windows[0].n == 0"
+ },
+ {
+  "arm": "tdd",
+  "task": "trace_dropped_samples",
+  "rep": 2,
+  "prompt_chars": 38548,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 9933,
+   "completion_tokens": 8189,
+   "total_tokens": 18122,
+   "completion_tokens_details": {
+    "reasoning_tokens": 7555
+   }
+  },
+  "wall_s": 95.8,
+  "empty": false,
+  "chars": 2262,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "5 failed in 0.36s",
+    "ms": 797,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "red",
+    "detail": "3 failed, 2 passed in 0.29s",
+    "ms": 723,
+    "exit": 1
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "3 failed, 2 passed in 0.30s",
+    "ms": 733,
+    "exit": 1
+   }
+  },
+  "discriminates": false,
+  "source": "import unittest\nfrom pipeline import config, constants, ingest, normalize, stats, windowing, calibration\n\n\nclass TestIngestRevBFlags(unittest.TestCase):\n    def test_uppercase_flags_are_accepted(self):\n        settings = config.load()\n        raw = {\"ts_ms\": 100, \"chan\": \"temp_c\", \"val\": 25.0, \"quality\": \"OK\", \"dev_id\": \"dev-b1\"}\n        accepted = ingest.accept([raw], settings)\n        self.assertEqual(accepted.drops[\"bad_flag\"], 0)\n        self.assertEqual(len(accepted.samples), 1)\n        self.assertEqual(accepted.samples[0][\"flag\"], \"ok\")\n\n    def test_uppercase_warn_is_degraded(self):\n        settings = config.load()\n        raw = {\"ts_ms\": 100, \"chan\": \"temp_c\", \"val\": 25.0, \"quality\": \"WARN\", \"dev_id\": \"dev-b1\"}\n        accepted = ingest.accept([raw], settings)\n        self.assertEqual(accepted.drops[\"bad_flag\"], 0)\n        self.assertEqual(len(accepted.samples), 1)\n        self.assertEqual(accepted.degraded, 1)\n\n\nclass TestStatsEmptyWindow(unittest.TestCase):\n    def test_summarise_handles_empty_windows_gracefully(self):\n        settings = config.load()\n        w = windowing.Window(\"temp_c\", 0, 10_000)\n        summary = stats.summarise([w], settings)\n        self.assertEqual(summary.total_samples, 0)\n        self.assertIsNone(summary.channel_mean(\"temp_c\"))\n\n    def test_summarise_does_not_crash_on_empty_values(self):\n        settings = config.load()\n        w = windowing.Window(\"pressure_kpa\", 10_000, 20_000)\n        stats.summarise([w], settings)\n\n\nclass TestMixedFirmwarePipeline(unittest.TestCase):\n    def test_mixed_firmware_records_pass_through(self):\n        settings = config.load()\n        raws = [\n            {\"t_ms\": 100, \"channel\": \"temp_c\", \"value\": 20.0, \"flag\": \"ok\", \"device\": \"dev-a1\"},\n            {\"ts_ms\": 150, \"chan\": \"temp_c\", \"val\": 21.0, \"quality\": \"OK\", \"dev_id\": \"dev-b1\"},\n        ]\n        accepted = ingest.accept(raws, settings)\n        self.assertEqual(accepted.drops[\"bad_flag\"], 0)\n        self.assertEqual(len(accepted.samples), 2)\n\n        calibrated = calibration.apply(accepted, {})\n        windows = windowing.split(calibrated, settings)\n        summary = stats.summarise(windows, settings)\n        self.assertEqual(summary.total_samples, 2)\n\n\nif __name__ == \"__main__\":\n    unittest.main()"
+ },
+ {
+  "arm": "tdd",
+  "task": "trace_dropped_samples",
+  "rep": 3,
+  "prompt_chars": 38548,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 9933,
+   "completion_tokens": 7666,
+   "total_tokens": 17599,
+   "completion_tokens_details": {
+    "reasoning_tokens": 7146
+   }
+  },
+  "wall_s": 94.7,
+  "empty": false,
+  "chars": 1656,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "3 failed in 0.31s",
+    "ms": 752,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "red",
+    "detail": "2 failed, 1 passed in 0.29s",
+    "ms": 725,
+    "exit": 1
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "2 failed, 1 passed in 0.29s",
+    "ms": 737,
+    "exit": 1
+   }
+  },
+  "discriminates": false,
+  "source": "from pipeline import config, ingest, stats, windowing, calibration\n\n\ndef test_ingest_accepts_rev_b_uppercase_flags():\n    settings = config.load()\n    raw_records = [\n        {\"ts_ms\": 100, \"chan\": \"temp_c\", \"val\": 25.0, \"quality\": \"OK\", \"dev_id\": \"dev-b1\"},\n        {\"t_ms\": 200, \"channel\": \"pressure_kpa\", \"value\": 101.3, \"flag\": \"ok\", \"device\": \"dev-a1\"},\n    ]\n    accepted = ingest.accept(raw_records, settings)\n    \n    assert accepted.drops[\"bad_flag\"] == 0, (\n        f\"Rev-B flags were incorrectly dropped as bad_flag: {accepted.drops}\"\n    )\n    assert len(accepted.samples) == 2\n\n\ndef test_stats_summarise_handles_empty_windows_gracefully():\n    settings = config.load()\n    w = windowing.Window(\"temp_c\", 0, 10_000)\n    assert len(w.values) == 0\n    \n    summary = stats.summarise([w], settings)\n    assert summary.total_samples == 0\n\n\ndef test_mixed_firmware_rollup_counts_all_samples():\n    settings = config.load()\n    raw_records = [\n        {\"ts_ms\": 100, \"chan\": \"temp_c\", \"val\": 20.0, \"quality\": \"OK\", \"dev_id\": \"dev-b1\"},\n        {\"t_ms\": 500, \"channel\": \"temp_c\", \"value\": 21.0, \"flag\": \"ok\", \"device\": \"dev-a1\"},\n        {\"ts_ms\": 800, \"chan\": \"pressure_kpa\", \"val\": 100.0, \"quality\": \"WARN\", \"dev_id\": \"dev-b2\"},\n    ]\n    accepted = ingest.accept(raw_records, settings)\n    \n    cal_table = calibration.load_table(settings)\n    calibrated = calibration.apply(accepted, cal_table)\n    \n    windows = windowing.split(calibrated, settings)\n    summary = stats.summarise(windows, settings)\n    \n    assert summary.total_samples == 3, (\n        f\"Expected 3 samples in summary, got {summary.total_samples}. Drops: {accepted.drops}\"\n    )"
+ },
+ {
+  "arm": "posthoc",
+  "task": "finish_the_cancelled_status",
+  "rep": 1,
+  "prompt_chars": 28892,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7884,
+   "completion_tokens": 5950,
+   "total_tokens": 13834,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5307
+   }
+  },
+  "wall_s": 74.4,
+  "empty": false,
+  "chars": 2252,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "5 failed, 3 passed in 0.32s",
+    "ms": 775,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "8 passed in 0.23s",
+    "ms": 690,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "3 failed, 5 passed in 0.30s",
+    "ms": 730,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import pytest\nfrom jobs import charges, retry, sla, status as st, summary, model\n\n\ndef _make_job(status=st.CANCELLED, **kw):\n    base = dict(\n        job_id=\"J-017\",\n        customer=\"ops\",\n        kind=\"render\",\n        status=status,\n        queued_at=0,\n        started_at=10,\n        ended_at=50,\n        cpu_seconds=20,\n        sla_seconds=3600,\n        attempts=1,\n    )\n    base.update(kw)\n    return model.Job(**base)\n\n\nclass TestChargesCancelled:\n    def test_cancelled_is_not_chargeable(self):\n        j = _make_job(status=st.CANCELLED, cpu_seconds=50)\n        assert not charges.is_chargeable(j), \"Cancelled jobs must not be chargeable\"\n\n    def test_failed_still_not_chargeable(self):\n        j = _make_job(status=st.FAILED, cpu_seconds=50)\n        assert not charges.is_chargeable(j)\n\n\nclass TestRetryCancelled:\n    def test_cancelled_is_not_retried(self):\n        j = _make_job(status=st.CANCELLED, kind=\"render\", attempts=1)\n        assert not retry.should_retry(j), \"Cancelled jobs must never be retried\"\n\n    def test_done_still_not_retried(self):\n        j = _make_job(status=st.DONE)\n        assert not retry.should_retry(j)\n\n\nclass TestSlaCancelled:\n    def test_cancelled_stops_clock_and_does_not_breach_sla(self):\n        j = _make_job(status=st.CANCELLED, sla_seconds=10, queued_at=0, ended_at=5)\n        assert not sla.is_breached(j, 999_999), \"Cancelled job must not breach SLA\"\n\n    def test_finished_at_returns_ended_at_for_cancelled(self):\n        j = _make_job(status=st.CANCELLED, ended_at=42)\n        assert sla.finished_at(j, 999) == 42\n\n\nclass TestSummaryCancelled:\n    def test_cancelled_counts_in_own_bucket(self):\n        jobs = [_make_job(status=st.CANCELLED)]\n        counts = summary.counts(jobs)\n        assert counts.get(\"cancelled\") == 1, \"Cancelled jobs must be in their own bucket\"\n        assert counts.get(\"other\") == 0, \"Cancelled jobs must not fall into 'other'\"\n\n    def test_failure_rate_excludes_cancelled_from_denominator(self):\n        # With 1 done and 1 cancelled, failure rate should be 0.0 (no failures)\n        jobs = [_make_job(status=st.DONE), _make_job(status=st.CANCELLED)]\n        rate = summary.failure_rate(jobs)\n        assert rate == 0.0, \"Cancelled jobs must not inflate failure rate\""
+ },
+ {
+  "arm": "posthoc",
+  "task": "finish_the_cancelled_status",
+  "rep": 2,
+  "prompt_chars": 28892,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7884,
+   "completion_tokens": 4323,
+   "total_tokens": 12207,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3897
+   }
+  },
+  "wall_s": 53.3,
+  "empty": false,
+  "chars": 1514,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "4 failed in 0.31s",
+    "ms": 770,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "4 passed in 0.23s",
+    "ms": 658,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "3 failed, 1 passed in 0.29s",
+    "ms": 721,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import jobs.charges as charges\nimport jobs.retry as retry\nimport jobs.sla as sla\nimport jobs.summary as summary\nfrom jobs import model, status as st\n\n\ndef _make_job(**kw):\n    base = dict(\n        job_id=\"J-TEST\",\n        customer=\"acme\",\n        kind=\"render\",\n        status=st.CANCELLED,\n        queued_at=0,\n        started_at=10,\n        ended_at=20,\n        cpu_seconds=50,\n        sla_seconds=60,\n        attempts=1,\n    )\n    base.update(kw)\n    return model.Job(**base)\n\n\ndef test_cancelled_is_not_chargeable():\n    \"\"\"Cancelled jobs must not be billed regardless of CPU seconds.\"\"\"\n    j = _make_job(cpu_seconds=50)\n    assert charges.is_chargeable(j) is False\n\n\ndef test_cancelled_is_not_retriable():\n    \"\"\"A cancelled job must never be queued again by the scheduler.\"\"\"\n    j = _make_job(attempts=1, kind=\"render\")\n    assert retry.should_retry(j) is False\n\n\ndef test_sla_uses_ended_at_for_cancelled_jobs():\n    \"\"\"SLA measurement for a terminal status like cancelled uses ended_at, not now.\n    With queued_at=0, sla_seconds=60 -> deadline=60.\n    If finished_at returns now (100), it incorrectly breaches.\n    After fix, finished_at is 20, so no breach.\"\"\"\n    j = _make_job(sla_seconds=60, ended_at=20)\n    assert sla.is_breached(j, now=100) is False\n\n\ndef test_summary_has_cancelled_bucket_and_counts():\n    \"\"\"Summary counts must include a dedicated 'cancelled' bucket and count jobs correctly.\"\"\"\n    jobs = [_make_job()]\n    counts = summary.counts(jobs)\n    assert counts.get(\"cancelled\") == 1"
+ },
+ {
+  "arm": "posthoc",
+  "task": "finish_the_cancelled_status",
+  "rep": 3,
+  "prompt_chars": 28892,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7884,
+   "completion_tokens": 5079,
+   "total_tokens": 12963,
+   "completion_tokens_details": {
+    "reasoning_tokens": 4695
+   }
+  },
+  "wall_s": 58.5,
+  "empty": false,
+  "chars": 1403,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "4 failed in 0.31s",
+    "ms": 749,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "4 passed in 0.23s",
+    "ms": 655,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "3 failed, 1 passed in 0.29s",
+    "ms": 723,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "from jobs import charges, model, retry, sla, status as st, summary\n\n\ndef make_job(**overrides):\n    base = dict(\n        job_id=\"J-017\",\n        customer=\"ops\",\n        kind=\"render\",\n        status=st.CANCELLED,\n        queued_at=0,\n        started_at=2,\n        ended_at=4,\n        cpu_seconds=50,\n        sla_seconds=3600,\n        attempts=1,\n    )\n    base.update(overrides)\n    return model.Job(**base)\n\n\nclass TestCancelledSemantics:\n    def test_cancelled_job_is_not_chargeable(self):\n        \"\"\"Charges module must treat cancelled as unbilled.\"\"\"\n        j = make_job(cpu_seconds=100)\n        assert charges.is_chargeable(j) is False\n\n    def test_cancelled_job_is_not_retried(self):\n        \"\"\"Retry policy must never requeue a cancelled job.\"\"\"\n        j = make_job(attempts=1, kind=\"render\")\n        assert retry.should_retry(j) is False\n\n    def test_sla_uses_ended_at_for_cancelled_jobs(self):\n        \"\"\"SLA evaluation must stop the clock at cancellation time.\"\"\"\n        # If finished_at returns `now` (999), deadline(60) -> breached=True incorrectly.\n        j = make_job(sla_seconds=60, ended_at=10)\n        assert sla.is_breached(j, now=999) is False\n\n    def test_summary_has_cancelled_bucket(self):\n        \"\"\"Summary counts must include a dedicated cancelled bucket.\"\"\"\n        jobs = [make_job()]\n        counts = summary.counts(jobs)\n        assert counts.get(\"cancelled\", 0) == 1"
+ },
+ {
+  "arm": "posthoc",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 1,
+  "prompt_chars": 39940,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10836,
+   "completion_tokens": 7549,
+   "total_tokens": 18385,
+   "completion_tokens_details": {
+    "reasoning_tokens": 6862
+   }
+  },
+  "wall_s": 91.0,
+  "empty": false,
+  "chars": 1994,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "2 failed, 1 passed in 0.32s",
+    "ms": 770,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "3 passed in 0.22s",
+    "ms": 667,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "2 failed, 1 passed in 0.28s",
+    "ms": 712,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "from billing import pricing, money\n\n\ndef test_total_of_rounds_each_line_before_summing():\n    \"\"\"Ensure total_of rounds each line individually before summing.\n    \n    The old implementation summed raw totals and quantized once at the end.\n    This caused per-line amounts to not add up to the invoice total when \n    discarded fractions did not cancel out (the penny discrepancy bug).\n    \"\"\"\n    # Two lines with total = 0.004 each.\n    # net = qty * unit_price * (1 - discount_rate) = 1 * 0.02 * 0.2 = 0.004\n    # tax = 0, so line.total = 0.004\n    line1 = pricing.Line(\"SKU\", \"desc\", 1, 0.02, 0.8, 0.0)\n    line2 = pricing.Line(\"SKU\", \"desc\", 1, 0.02, 0.8, 0.0)\n    \n    lines = [line1, line2]\n    \n    # Expected: quantize(0.004) -> 0.00 for each line. Sum of quantized -> 0.00\n    expected = money.sum_amounts([money.quantize(l.total) for l in lines])\n    \n    result = pricing.total_of(lines)\n    assert result == expected, (\n        f\"total_of returned {result}, but sum of quantized lines is {expected}. \"\n        \"Rounding must happen per-line before summation.\"\n    )\n\n\ndef test_total_of_with_non_canceling_fractions():\n    \"\"\"Test case where three lines' fractional cents sum to > 0.5, but individually round down.\"\"\"\n    # Each line total = 0.003 -> quantizes to 0.00\n    # Sum of raw = 0.009 -> quantizes to 0.01 in old code\n    l1 = pricing.Line(\"A\", \"a\", 1, 0.015, 0.8, 0.0) # net = 0.003\n    l2 = pricing.Line(\"B\", \"b\", 1, 0.015, 0.8, 0.0)\n    l3 = pricing.Line(\"C\", \"c\", 1, 0.015, 0.8, 0.0)\n    \n    lines = [l1, l2, l3]\n    expected = money.sum_amounts([money.quantize(l.total) for l in lines]) # 0.00\n    \n    result = pricing.total_of(lines)\n    assert result == expected\n\n\ndef test_total_of_produces_whole_cents():\n    \"\"\"Ensure the total is always a chargeable amount (whole cents).\"\"\"\n    line = pricing.Line(\"SKU\", \"desc\", 1, 0.02, 0.8, 0.0)\n    result = pricing.total_of([line])\n    assert money.is_whole_cents(result), f\"total {result} is not a whole number of cents\""
+ },
+ {
+  "arm": "posthoc",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 2,
+  "prompt_chars": 39940,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10836,
+   "completion_tokens": 5412,
+   "total_tokens": 16248,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5152
+   }
+  },
+  "wall_s": 72.9,
+  "empty": false,
+  "chars": 958,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.29s",
+    "ms": 757,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "1 passed in 0.22s",
+    "ms": 648,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "1 failed in 0.27s",
+    "ms": 708,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import pytest\nfrom billing import pricing, money\n\n\nclass _FakeLine:\n    def __init__(self, total):\n        self.total = total\n\n\ndef test_total_of_rounds_each_line_before_summing():\n    \"\"\"\n    Verify that `pricing.total_of` rounds each line individually before summing.\n\n    The old implementation summed raw floats and quantized once at the end.\n    This caused a penny discrepancy when discarded fractions did not cancel out,\n    making printed per-line amounts fail to add up to the invoice total.\n    \"\"\"\n    lines = [\n        _FakeLine(0.005),  # quantizes to 0.01\n        _FakeLine(0.005),  # quantizes to 0.01\n        _FakeLine(-0.004), # quantizes to 0.00\n    ]\n\n    result = pricing.total_of(lines)\n    \n    expected = money.sum_amounts([money.quantize(l.total) for l in lines])\n    \n    assert result == expected, (\n        f\"total_of returned {result}, but expected {expected}. \"\n        \"Lines were not rounded individually before summing.\"\n    )"
+ },
+ {
+  "arm": "posthoc",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 3,
+  "prompt_chars": 39940,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10836,
+   "completion_tokens": 5147,
+   "total_tokens": 15983,
+   "completion_tokens_details": {
+    "reasoning_tokens": 4715
+   }
+  },
+  "wall_s": 66.1,
+  "empty": false,
+  "chars": 1296,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "3 failed in 0.32s",
+    "ms": 762,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "3 passed in 0.22s",
+    "ms": 646,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "3 failed in 0.28s",
+    "ms": 716,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import pytest\nfrom billing import pricing, money\n\n\nclass _Line:\n    def __init__(self, total):\n        self._total = total\n\n    @property\n    def total(self):\n        return self._total\n\n\ndef test_total_of_rounds_each_line_before_summing():\n    \"\"\"Ensure total_of sums quantized lines rather than rounding the raw sum.\n\n    Three lines at 0.004 each:\n      - Raw sum is 0.012, which rounds to 0.01 (old behavior)\n      - Sum of quantized lines is 0.0 + 0.0 + 0.0 = 0.0 (fixed behavior)\n    \"\"\"\n    lines = [_Line(0.004), _Line(0.004), _Line(0.004)]\n    total = pricing.total_of(lines)\n    assert total == 0.0\n\n\ndef test_total_of_with_half_penny_values():\n    \"\"\"Verify correct half-away-from-zero rounding on individual lines before summing.\"\"\"\n    # quantize(0.005) -> 0.01, quantize(-0.004) -> 0.00\n    # Sum of quantized: 0.02\n    # Raw sum: 0.006 -> rounds to 0.01 (old behavior would return this)\n    lines = [_Line(0.005), _Line(0.005), _Line(-0.004)]\n    total = pricing.total_of(lines)\n    assert total == 0.02\n\n\ndef test_total_of_matches_sum_amounts():\n    \"\"\"total_of must be equivalent to summing quantized line totals.\"\"\"\n    lines = [_Line(1.235), _Line(2.465)]\n    expected = money.sum_amounts([money.quantize(l.total) for l in lines])\n    assert pricing.total_of(lines) == expected"
+ },
+ {
+  "arm": "posthoc",
+  "task": "trace_dropped_samples",
+  "rep": 1,
+  "prompt_chars": 39317,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10125,
+   "completion_tokens": 3528,
+   "total_tokens": 13653,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3264
+   }
+  },
+  "wall_s": 48.2,
+  "empty": false,
+  "chars": 990,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.34s",
+    "ms": 829,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "1 passed in 0.24s",
+    "ms": 728,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "1 failed in 0.30s",
+    "ms": 783,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import pytest\nfrom pipeline import ingest, constants, config\n\n\ndef test_uppercase_flag_is_accepted():\n    \"\"\"Regression: rev B firmware emits upper-case flags (OK/WARN).\n    \n    Before the fix in `pipeline/ingest.py`, raw upper-case flags were compared\n    directly against `constants.VALID_FLAGS` (lower-case), causing them to be\n    silently dropped as bad_flag. The fix folds case via normalize.canonical_flag()\n    before the comparison.\n    \"\"\"\n    settings = config.load()\n    \n    # Rev B style record with upper-case flag\n    raw_records = [\n        {\"t_ms\": 0, \"channel\": \"temp_c\", \"value\": 21.5, \"flag\": \"OK\", \"device\": \"dev-a1\"}\n    ]\n    \n    accepted = ingest.accept(raw_records, settings)\n    \n    assert accepted.drops[constants.DROP_BAD_FLAG] == 0, (\n        f\"Upper-case flag 'OK' was incorrectly dropped as bad_flag. Drops: {accepted.drops}\"\n    )\n    assert len(accepted.samples) == 1, (\n        f\"Expected exactly one accepted sample, got {len(accepted.samples)}\"\n    )"
+ },
+ {
+  "arm": "posthoc",
+  "task": "trace_dropped_samples",
+  "rep": 2,
+  "prompt_chars": 39317,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10125,
+   "completion_tokens": 4222,
+   "total_tokens": 14347,
+   "completion_tokens_details": {
+    "reasoning_tokens": 4024
+   }
+  },
+  "wall_s": 56.3,
+  "empty": false,
+  "chars": 694,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.32s",
+    "ms": 837,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "1 passed in 0.24s",
+    "ms": 735,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "1 failed in 0.31s",
+    "ms": 809,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import pytest\nfrom pipeline import ingest, config\n\ndef test_uppercase_flag_not_dropped_as_bad_flag():\n    \"\"\"Rev B firmware emits upper-case flags (e.g., 'OK'). \n    Ingest must canonicalize them before checking against VALID_FLAGS,\n    otherwise half the fleet is silently dropped as bad_flag.\n    \"\"\"\n    raw = {\n        \"ts_ms\": \"100\",\n        \"chan\": \"temp_c\",\n        \"val\": \"20.5\",\n        \"quality\": \"OK\",\n        \"dev_id\": \"dev-a1\"\n    }\n    \n    accepted = ingest.accept([raw], config.load())\n    \n    assert accepted.drops[\"bad_flag\"] == 0, f\"Expected no bad_flag drops, got {accepted.drops['bad_flag']}\"\n    assert len(accepted.samples) > 0, \"Expected at least one sample to be kept\""
+ },
+ {
+  "arm": "posthoc",
+  "task": "trace_dropped_samples",
+  "rep": 3,
+  "prompt_chars": 39317,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10125,
+   "completion_tokens": 3404,
+   "total_tokens": 13529,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3284
+   }
+  },
+  "wall_s": 46.2,
+  "empty": false,
+  "chars": 404,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.30s",
+    "ms": 753,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "1 passed in 0.23s",
+    "ms": 692,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "1 failed in 0.29s",
+    "ms": 766,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import pytest\nfrom pipeline import ingest, constants, config\n\n\ndef test_uppercase_flag_not_dropped_as_bad_flag():\n    settings = config.load()\n    raw_records = [\n        {\"t_ms\": 0, \"channel\": \"temp_c\", \"value\": 21.5, \"flag\": \"OK\", \"device\": \"dev-a1\"}\n    ]\n    accepted = ingest.accept(raw_records, settings)\n    assert accepted.drops[constants.DROP_BAD_FLAG] == 0\n    assert len(accepted.samples) == 1"
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "finish_the_cancelled_status",
+  "rep": 1,
+  "prompt_chars": 27535,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7464,
+   "completion_tokens": 5018,
+   "total_tokens": 12482,
+   "completion_tokens_details": {
+    "reasoning_tokens": 4556
+   }
+  },
+  "wall_s": 60.1,
+  "empty": false,
+  "chars": 1427,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "2 failed, 2 passed in 0.33s",
+    "ms": 793,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "4 passed in 0.23s",
+    "ms": 682,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "green",
+    "detail": "4 passed in 0.24s",
+    "ms": 691,
+    "exit": 0
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom jobs import sla, status as st, model\n\n\ndef make_job(status=st.CANCELLED, queued_at=0, started_at=10, ended_at=20, cpu_seconds=50, sla_seconds=3600):\n    return model.Job(\n        job_id=\"J-TEST\",\n        customer=\"acme\",\n        kind=\"render\",\n        status=status,\n        queued_at=queued_at,\n        started_at=started_at,\n        ended_at=ended_at,\n        cpu_seconds=cpu_seconds,\n        sla_seconds=sla_seconds,\n        attempts=1,\n    )\n\n\nclass TestCancelledJobSLA:\n    def test_finished_at_returns_ended_at_for_cancelled(self):\n        now = 1000\n        j = make_job(queued_at=0, started_at=10, ended_at=50)\n        assert sla.finished_at(j, now) == 50\n\n    def test_is_breached_false_when_cancelled_before_deadline(self):\n        # Deadline at 100. Cancelled at 50. Now is 200.\n        j = make_job(queued_at=0, started_at=10, ended_at=50, sla_seconds=100)\n        now = 200\n        assert sla.is_breached(j, now) is False\n\n    def test_is_breached_true_when_cancelled_after_deadline(self):\n        # Deadline at 100. Cancelled at 150. Now is 200.\n        j = make_job(queued_at=0, started_at=10, ended_at=150, sla_seconds=100)\n        now = 200\n        assert sla.is_breached(j, now) is True\n\n    def test_finished_at_returns_now_for_running(self):\n        j = make_job(status=st.RUNNING, queued_at=0, started_at=10, ended_at=None)\n        now = 500\n        assert sla.finished_at(j, now) == 500"
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "finish_the_cancelled_status",
+  "rep": 2,
+  "prompt_chars": 27535,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7464,
+   "completion_tokens": 3960,
+   "total_tokens": 11424,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3469
+   }
+  },
+  "wall_s": 46.2,
+  "empty": false,
+  "chars": 1555,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "2 failed, 2 passed in 0.30s",
+    "ms": 754,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "4 passed in 0.24s",
+    "ms": 708,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "green",
+    "detail": "4 passed in 0.23s",
+    "ms": 668,
+    "exit": 0
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom jobs import sla, status as st, model\n\n\ndef make_job(status=st.CANCELLED, queued_at=0, started_at=None, ended_at=None, cpu_seconds=0, sla_seconds=3600):\n    return model.Job(\n        job_id=\"J-TEST\",\n        customer=\"acme\",\n        kind=\"render\",\n        status=status,\n        queued_at=queued_at,\n        started_at=started_at,\n        ended_at=ended_at,\n        cpu_seconds=cpu_seconds,\n        sla_seconds=sla_seconds,\n        attempts=1,\n    )\n\n\nclass TestCancelledSLA:\n    def test_finished_at_returns_ended_at_for_cancelled(self):\n        now = 9999\n        j = make_job(queued_at=0, started_at=10, ended_at=50)\n        assert sla.finished_at(j, now) == 50\n\n    def test_is_breached_false_when_cancelled_before_deadline(self):\n        # Deadline is queued_at + sla_seconds = 3600.\n        # Cancelled at 100. Measured against 100, so not breached.\n        now = 9999\n        j = make_job(queued_at=0, ended_at=100, sla_seconds=3600)\n        assert sla.is_breached(j, now) is False\n\n    def test_is_breached_true_when_cancelled_after_deadline(self):\n        # Deadline is 3600. Cancelled at 4000. Measured against 4000, so breached.\n        now = 9999\n        j = make_job(queued_at=0, ended_at=4000, sla_seconds=3600)\n        assert sla.is_breached(j, now) is True\n\n    def test_running_still_measured_against_now(self):\n        # Running jobs should still be measured against `now`\n        j = make_job(status=st.RUNNING, queued_at=0, started_at=10, ended_at=None, sla_seconds=3600)\n        assert sla.finished_at(j, 500) == 500"
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "finish_the_cancelled_status",
+  "rep": 3,
+  "prompt_chars": 27535,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 7464,
+   "completion_tokens": 4421,
+   "total_tokens": 11885,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3904
+   }
+  },
+  "wall_s": 51.5,
+  "empty": false,
+  "chars": 1634,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "2 failed, 2 passed in 0.29s",
+    "ms": 773,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "4 passed in 0.23s",
+    "ms": 691,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "green",
+    "detail": "4 passed in 0.23s",
+    "ms": 700,
+    "exit": 0
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom jobs import sla, status as st, model\n\n\ndef _make_job(status=st.CANCELLED, **kw):\n    base = dict(\n        job_id=\"J-017\",\n        customer=\"ops\",\n        kind=\"render\",\n        status=status,\n        queued_at=0,\n        started_at=10,\n        ended_at=20,\n        cpu_seconds=50,\n        sla_seconds=3600,\n        attempts=1,\n    )\n    base.update(kw)\n    return model.Job(**base)\n\n\nclass TestCancelledJobSlaSemantics:\n    def test_finished_at_returns_ended_at_for_cancelled(self):\n        \"\"\"SLA clock must stop at cancellation time, not continue ticking to `now`.\"\"\"\n        now = 1000\n        j = _make_job(queued_at=0, started_at=10, ended_at=20)\n        # Before fix: returns `now` (1000). After fix: returns `j.ended_at` (20).\n        assert sla.finished_at(j, now) == 20\n\n    def test_cancelled_job_does_not_breach_sla(self):\n        \"\"\"A cancelled job should never be reported as an SLA breach.\"\"\"\n        now = 1000\n        j = _make_job(queued_at=0, started_at=10, ended_at=20, sla_seconds=3600)\n        # deadline is 3600. finished_at should be 20. margin > 0.\n        assert not sla.is_breached(j, now)\n\n    def test_cancelled_job_with_long_elapsed_time_still_not_breached(self):\n        \"\"\"Even if `now` is far in the future, cancellation stops the clock.\"\"\"\n        now = 999_999\n        j = _make_job(queued_at=0, started_at=10, ended_at=20, sla_seconds=3600)\n        assert not sla.is_breached(j, now)\n\n    def test_cancelled_job_with_no_sla_seconds(self):\n        \"\"\"Jobs without an SLA limit cannot breach.\"\"\"\n        j = _make_job(sla_seconds=None)\n        assert not sla.is_breached(j, 999_999)"
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 1,
+  "prompt_chars": 39777,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10803,
+   "completion_tokens": 5882,
+   "total_tokens": 16685,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5756
+   }
+  },
+  "wall_s": 85.8,
+  "empty": false,
+  "chars": 462,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.35s",
+    "ms": 855,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "1 passed in 0.25s",
+    "ms": 759,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "1 failed in 0.32s",
+    "ms": 834,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import json\nfrom billing import invoice, audit\n\ndef test_all_invoices_reconcile():\n    with open(\"data/orders.json\") as f:\n        orders = json.load(f)\n    \n    invoices = invoice.build_all(orders)\n    findings = audit.audit(invoices)\n    \n    linesum_findings = [f for f in findings if f.code == \"linesum_mismatch\"]\n    assert not linesum_findings, \\\n        f\"Invoice(s) have printed lines that do not sum to the total: {[f.detail for f in linesum_findings]}\""
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 2,
+  "prompt_chars": 39777,
+  "finish_reason": "length",
+  "usage": {
+   "prompt_tokens": 10803,
+   "completion_tokens": 8192,
+   "total_tokens": 18995,
+   "completion_tokens_details": {
+    "reasoning_tokens": 7943
+   }
+  },
+  "wall_s": 118.7,
+  "empty": false,
+  "chars": 955,
+  "scores": {
+   "unfixed": {
+    "verdict": "error",
+    "detail": "1 error in 0.53s",
+    "ms": 971,
+    "exit": 2
+   },
+   "refsol": {
+    "verdict": "error",
+    "detail": "1 error in 0.42s",
+    "ms": 860,
+    "exit": 2
+   },
+   "sham": {
+    "verdict": "error",
+    "detail": "1 error in 0.40s",
+    "ms": 825,
+    "exit": 2
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom billing import invoice, audit, validate\n\n\ndef test_all_invoices_reconcile_with_printed_lines():\n    import json\n\n    with open(\"data/orders.json\", encoding=\"utf-8\") as fh:\n        orders = json.load(fh)\n\n    ok, errors = validate.check_all(orders)\n    assert not errors, f\"Data contains invalid orders: {errors}\"\n\n    invoices = invoice.build_all(orders)\n\n    mismatches = []\n    for inv in invoices:\n        if not inv.reconciles():\n            mismatches.append(\n                f\"Invoice {inv.number}: total={inv.total:.2f}, linesum={inv.displayed_sum:.2f}\"\n            )\n\n    assert not mismatches, (\n        \"The following invoices have per-line amounts that do not sum to the printed total:\\n\"\n        + \"\\n\".join(mismatches)\n    )\n\n\ndef test_audit_returns_no_findings_on_full_batch():\n    import json\n\n    with open(\"data/orders.json\", encoding=\"utf-8\") as fh:\n        orders = json.load(fh)\n\n    ok, errors = validate.check_all("
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "round_at_the_line_not_the_total",
+  "rep": 3,
+  "prompt_chars": 39777,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10803,
+   "completion_tokens": 3930,
+   "total_tokens": 14733,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3752
+   }
+  },
+  "wall_s": 56.3,
+  "empty": false,
+  "chars": 654,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.30s",
+    "ms": 739,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "green",
+    "detail": "1 passed in 0.23s",
+    "ms": 683,
+    "exit": 0
+   },
+   "sham": {
+    "verdict": "red",
+    "detail": "1 failed in 0.29s",
+    "ms": 724,
+    "exit": 1
+   }
+  },
+  "discriminates": true,
+  "source": "import json\nfrom billing import invoice, validate\n\n\ndef test_all_invoices_reconcile():\n    with open(\"data/orders.json\", \"r\") as f:\n        orders = json.load(f)\n\n    ok, errors = validate.check_all(orders)\n    assert not errors, f\"Order validation failed: {errors}\"\n\n    invoices = invoice.build_all(orders)\n    \n    mismatches = []\n    for inv in invoices:\n        if not inv.reconciles():\n            mismatches.append(\n                f\"Invoice {inv.number}: total={inv.total:.2f}, linesum={inv.displayed_sum:.2f}\"\n            )\n\n    assert not mismatches, (\n        \"Per-line amounts do not sum to the printed total:\\n\" + \"\\n\".join(mismatches)\n    )"
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "trace_dropped_samples",
+  "rep": 1,
+  "prompt_chars": 38988,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10062,
+   "completion_tokens": 4981,
+   "total_tokens": 15043,
+   "completion_tokens_details": {
+    "reasoning_tokens": 4658
+   }
+  },
+  "wall_s": 66.9,
+  "empty": false,
+  "chars": 1022,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "2 failed in 0.31s",
+    "ms": 760,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "red",
+    "detail": "2 failed in 0.28s",
+    "ms": 725,
+    "exit": 1
+   },
+   "sham": {
+    "verdict": "green",
+    "detail": "2 passed in 0.23s",
+    "ms": 666,
+    "exit": 0
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom pipeline import stats, windowing, config\n\n\ndef test_summarise_empty_window_does_not_crash():\n    settings = config.load()\n    w = windowing.Window(\"temp_c\", 0, 10_000)\n    \n    # The original code raises ZeroDivisionError here when window.values is empty.\n    summary = stats.summarise([w], settings)\n    \n    assert len(summary.windows) == 1\n    assert summary.windows[0].mean == 0.0\n    assert summary.windows[0].n == 0\n\n\ndef test_summarise_empty_window_with_nonempty_mixed():\n    settings = config.load()\n    empty_w = windowing.Window(\"temp_c\", 0, 10_000)\n    \n    nonempty_w = windowing.Window(\"pressure_kpa\", 0, 10_000)\n    for val in [100.0, 200.0]:\n        nonempty_w.add({\"value\": val, \"device\": \"dev-a1\", \"flag\": \"ok\"})\n        \n    summary = stats.summarise([empty_w, nonempty_w], settings)\n    \n    assert len(summary.windows) == 2\n    assert summary.windows[0].mean == 0.0\n    assert summary.windows[0].n == 0\n    assert summary.windows[1].mean == 150.0\n    assert summary.windows[1].n == 2"
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "trace_dropped_samples",
+  "rep": 2,
+  "prompt_chars": 38988,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10062,
+   "completion_tokens": 2839,
+   "total_tokens": 12901,
+   "completion_tokens_details": {
+    "reasoning_tokens": 2723
+   }
+  },
+  "wall_s": 38.4,
+  "empty": false,
+  "chars": 401,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.29s",
+    "ms": 728,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "red",
+    "detail": "1 failed in 0.28s",
+    "ms": 724,
+    "exit": 1
+   },
+   "sham": {
+    "verdict": "green",
+    "detail": "1 passed in 0.23s",
+    "ms": 670,
+    "exit": 0
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom pipeline import stats, windowing, config\n\n\ndef test_summarise_empty_window_does_not_crash():\n    settings = config.load()\n    w = windowing.Window(\"temp_c\", 0, 10_000)\n    \n    summary = stats.summarise([w], settings)\n    \n    assert summary.total_samples == 0\n    assert len(summary.windows) == 1\n    assert summary.windows[0].mean == 0.0\n    assert summary.windows[0].peak is None"
+ },
+ {
+  "arm": "posthoc_sham",
+  "task": "trace_dropped_samples",
+  "rep": 3,
+  "prompt_chars": 38988,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 10062,
+   "completion_tokens": 2941,
+   "total_tokens": 13003,
+   "completion_tokens_details": {
+    "reasoning_tokens": 2816
+   }
+  },
+  "wall_s": 39.0,
+  "empty": false,
+  "chars": 443,
+  "scores": {
+   "unfixed": {
+    "verdict": "red",
+    "detail": "1 failed in 0.29s",
+    "ms": 736,
+    "exit": 1
+   },
+   "refsol": {
+    "verdict": "red",
+    "detail": "1 failed in 0.28s",
+    "ms": 711,
+    "exit": 1
+   },
+   "sham": {
+    "verdict": "green",
+    "detail": "1 passed in 0.23s",
+    "ms": 663,
+    "exit": 0
+   }
+  },
+  "discriminates": false,
+  "source": "import pytest\nfrom pipeline import stats, windowing, config\n\n\ndef test_summarise_empty_window_does_not_crash():\n    settings = config.load()\n    w = windowing.Window(\"temp_c\", 0, 10_000)\n    \n    # The unfixed code raises ZeroDivisionError here because len(window.values) == 0\n    summary = stats.summarise([w], settings)\n    \n    assert len(summary.windows) == 1\n    assert summary.total_samples == 0\n    assert summary.windows[0].mean == 0.0"
+ }
+]

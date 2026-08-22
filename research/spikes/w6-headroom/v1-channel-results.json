@@ -1,0 +1,133 @@
+{
+ "task": "finish_the_cancelled_status",
+ "rows": [
+  {
+   "artifact": "refsol",
+   "label": "v1 benchmark shape",
+   "command": "python3 -c \"import run; print('PASS')\"",
+   "v1_success": true,
+   "exit_code": 0,
+   "output": "PASS"
+  },
+  {
+   "artifact": "refsol",
+   "label": "linter",
+   "command": "ruff check .",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "File \"<string>\", line 1 ruff check . ^^^^^ SyntaxError: invalid syntax"
+  },
+  {
+   "artifact": "refsol",
+   "label": "type check",
+   "command": "mypy .",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "File \"<string>\", line 1 mypy . ^ SyntaxError: invalid syntax"
+  },
+  {
+   "artifact": "refsol",
+   "label": "tests",
+   "command": "pytest -q",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "Traceback (most recent call last): File \"<string>\", line 1, in <module> pytest -q ^^^^^^ N"
+  },
+  {
+   "artifact": "refsol",
+   "label": "linter, dispatched",
+   "command": "python3 -m ruff check .",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "UP031 Use format specifiers instead of percent format --> jobs\\charges.py:60:14 | 59 | def"
+  },
+  {
+   "artifact": "refsol",
+   "label": "type check, dispatched",
+   "command": "python3 -m mypy .",
+   "v1_success": false,
+   "exit_code": 0,
+   "output": "Success: no issues found in 13 source files"
+  },
+  {
+   "artifact": "refsol",
+   "label": "tests, dispatched",
+   "command": "python3 -m pytest -q",
+   "v1_success": false,
+   "exit_code": 0,
+   "output": "........................ [100%] 24 passed in 0.26s"
+  },
+  {
+   "artifact": "refsol",
+   "label": "the task's runner",
+   "command": "python3 run.py data/jobs.json",
+   "v1_success": false,
+   "exit_code": 0,
+   "output": "JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 cancelled=4 other=0 RATES"
+  },
+  {
+   "artifact": "sham",
+   "label": "v1 benchmark shape",
+   "command": "python3 -c \"import run; print('PASS')\"",
+   "v1_success": true,
+   "exit_code": 0,
+   "output": "PASS"
+  },
+  {
+   "artifact": "sham",
+   "label": "linter",
+   "command": "ruff check .",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "File \"<string>\", line 1 ruff check . ^^^^^ SyntaxError: invalid syntax"
+  },
+  {
+   "artifact": "sham",
+   "label": "type check",
+   "command": "mypy .",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "File \"<string>\", line 1 mypy . ^ SyntaxError: invalid syntax"
+  },
+  {
+   "artifact": "sham",
+   "label": "tests",
+   "command": "pytest -q",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "Traceback (most recent call last): File \"<string>\", line 1, in <module> pytest -q ^^^^^^ N"
+  },
+  {
+   "artifact": "sham",
+   "label": "linter, dispatched",
+   "command": "python3 -m ruff check .",
+   "v1_success": false,
+   "exit_code": 1,
+   "output": "UP031 Use format specifiers instead of percent format --> jobs\\charges.py:58:14 | 57 | def"
+  },
+  {
+   "artifact": "sham",
+   "label": "type check, dispatched",
+   "command": "python3 -m mypy .",
+   "v1_success": false,
+   "exit_code": 0,
+   "output": "Success: no issues found in 13 source files"
+  },
+  {
+   "artifact": "sham",
+   "label": "tests, dispatched",
+   "command": "python3 -m pytest -q",
+   "v1_success": false,
+   "exit_code": 0,
+   "output": "........................ [100%] 24 passed in 0.27s"
+  },
+  {
+   "artifact": "sham",
+   "label": "the task's runner",
+   "command": "python3 run.py data/jobs.json",
+   "v1_success": false,
+   "exit_code": 0,
+   "output": "JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.3"
+  }
+ ]
+}

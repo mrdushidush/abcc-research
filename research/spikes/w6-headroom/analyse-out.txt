@@ -1,0 +1,156 @@
+
+constructed artifacts (K fixtures: unfixed / refsol / sham) — n=9, truth: FAIL=6, PASS=3
+----------------------------------------------------------------------------------------
+instrument      red|FAIL  red|PASS  green|FAIL  error  median ms  reads
+syntax            0/6       0/3         6/6         0        130  IDENTICAL
+ruff              6/6       3/3         0/6         0         85  IDENTICAL
+ruff_all          6/6       3/3         0/6         0         90  IDENTICAL
+mypy              0/6       0/3         6/6         0       1618  IDENTICAL
+mypy_strict       6/6       3/3         0/6         0       1659  IDENTICAL
+pytest            0/6       0/3         6/6         0        819  IDENTICAL
+entrypoint        1/6       0/3         5/6         0         85  differs
+
+real agent workdirs, K suite — n=54, truth: FAIL=12, PASS=42
+------------------------------------------------------------
+instrument      red|FAIL  red|PASS  green|FAIL  error  median ms  reads
+syntax            0/12      0/42       12/12        0        135  IDENTICAL
+ruff             12/12     42/42        0/12        0         78  IDENTICAL
+ruff_all         12/12     42/42        0/12        0         80  IDENTICAL
+mypy              0/12      0/42       12/12        0       1519  IDENTICAL
+mypy_strict      12/12     42/42        0/12        0       1534  IDENTICAL
+pytest            0/12      0/42       12/12        0        692  IDENTICAL
+entrypoint        4/12      0/42        8/12        0         93  differs
+
+real agent workdirs, K suite — delta against the unfixed fixture, not an absolute count
+---------------------------------------------------------------------------------------
+instrument      added>0 & FAIL  added>0 & PASS  removed>0  reads
+ruff                 0/12            7/42               0  differs
+ruff_all             1/12           11/42               3  differs
+mypy_strict          0/12           32/42               0  differs
+
+real agent workdirs, K suite — does the recorded verdict reproduce?
+-------------------------------------------------------------------
+  reproduced 49, disagreed 0, no verdict recorded 5 (re-measured here)
+  cells the run recorded no verdict for:
+    k-27b-r1/finish_the_cancelled_status__control        status=timeout   verifier now says PASS
+    k-27b-r1/round_at_the_line_not_the_total__control    status=timeout   verifier now says PASS
+    k-27b-r1/trace_dropped_samples__control              status=timeout   verifier now says FAIL
+    k-27b-r2/trace_dropped_samples__control              status=timeout   verifier now says PASS
+    k-27b-t2400-r1/trace_dropped_samples__control        status=timeout   verifier now says FAIL
+
+real agent workdirs, Q56 suite (Rust) — n=377, truth: FAIL=102, PASS=274, UNKNOWN=1
+-----------------------------------------------------------------------------------
+instrument      red|FAIL  red|PASS  green|FAIL  error  median ms  reads
+cargo_check       0/102     0/274      59/102       0        193  differs
+cargo_clippy      8/102     7/274      51/102       0        236  differs
+cargo_test        8/102     0/274      51/102       0        487  differs
+syntax            0/102     0/274      43/102       0         90  IDENTICAL
+ruff              8/102    29/274      35/102       0         73  differs
+mypy              0/102     0/274      43/102       0        991  IDENTICAL
+pytest_fixture    3/102     0/274      40/102       0        645  differs
+
+real agent workdirs, Q56 suite (Rust) — does the recorded verdict reproduce?
+----------------------------------------------------------------------------
+  DISAGREE q56/w8-1786552205081/Q13__deny-first-edit: recorded FAIL, now UNKNOWN
+  reproduced 376, disagreed 1, no verdict recorded 0 (re-measured here)
+
+  Q56 variant control — n=116, truth: FAIL=18, PASS=98
+------------------------------------------------------
+instrument      red|FAIL  red|PASS  green|FAIL  error  median ms  reads
+cargo_check       0/18      0/98       12/18        0        197  IDENTICAL
+cargo_clippy      0/18      2/98       12/18        0        238  differs
+cargo_test        0/18      0/98       12/18        0        494  IDENTICAL
+syntax            0/18      0/98        6/18        0         92  IDENTICAL
+ruff              1/18      9/98        5/18        0         73  IDENTICAL
+mypy              0/18      0/98        6/18        0        993  IDENTICAL
+pytest_fixture    0/18      0/98        6/18        0        644  IDENTICAL
+
+  Q56 variant deny-first-edit — n=116, truth: FAIL=48, PASS=67, UNKNOWN=1
+-------------------------------------------------------------------------
+instrument      red|FAIL  red|PASS  green|FAIL  error  median ms  reads
+cargo_check       0/48      0/67       30/48        0        191  differs
+cargo_clippy      5/48      2/67       25/48        0        235  differs
+cargo_test        7/48      0/67       23/48        0        473  differs
+syntax            0/48      0/67       18/48        0         87  IDENTICAL
+ruff              1/48     10/67       17/48        0         73  differs
+mypy              0/48      0/67       18/48        0        993  IDENTICAL
+pytest_fixture    2/48      0/67       16/48        0        645  differs
+
+  Q56 variant gated — n=29, truth: FAIL=3, PASS=26
+--------------------------------------------------
+instrument      red|FAIL  red|PASS  green|FAIL  error  median ms  reads
+cargo_check       0/3       0/26        2/3         0        192  IDENTICAL
+cargo_clippy      0/3       0/26        2/3         0        237  IDENTICAL
+cargo_test        0/3       0/26        2/3         0        494  IDENTICAL
+syntax            0/3       0/26        1/3         0         86  IDENTICAL
+ruff              0/3       3/26        1/3         0         73  differs
+mypy              0/3       0/26        1/3         0        988  IDENTICAL
+pytest_fixture    0/3       0/26        1/3         0        646  IDENTICAL
+
+  Q56 variant redirect-first-edit — n=116, truth: FAIL=33, PASS=83
+------------------------------------------------------------------
+instrument      red|FAIL  red|PASS  green|FAIL  error  median ms  reads
+cargo_check       0/33      0/83       15/33        0        193  IDENTICAL
+cargo_clippy      3/33      3/83       12/33        0        235  IDENTICAL
+cargo_test        1/33      0/83       14/33        0        490  differs
+syntax            0/33      0/83       18/33        0         90  IDENTICAL
+ruff              6/33      7/83       12/33        0         74  IDENTICAL
+mypy              0/33      0/83       18/33        0        991  IDENTICAL
+pytest_fixture    1/33      0/83       17/33        0        648  differs
+
+generated tests — n=27
+----------------------
+arm       task                               rep  unfixed   sham  refsol  disc    tok  wall_s
+tdd       finish_the_cancelled_status          1      red    red   green  True   5936    79.1
+tdd       finish_the_cancelled_status          2        -      -       - False   8192    98.9
+tdd       finish_the_cancelled_status          3      red    red     red False   6766    84.2
+tdd       round_at_the_line_not_the_total      1      red    red   green  True   3999    58.5
+tdd       round_at_the_line_not_the_total      2      red    red   green  True   4245    53.6
+tdd       round_at_the_line_not_the_total      3      red    red   green  True   3667    46.9
+tdd       trace_dropped_samples                1      red    red     red False   6932    93.2
+tdd       trace_dropped_samples                2      red    red     red False   8189    95.8
+tdd       trace_dropped_samples                3      red    red     red False   7666    94.7
+posthoc   finish_the_cancelled_status          1      red    red   green  True   5950    74.4
+posthoc   finish_the_cancelled_status          2      red    red   green  True   4323    53.3
+posthoc   finish_the_cancelled_status          3      red    red   green  True   5079    58.5
+posthoc   round_at_the_line_not_the_total      1      red    red   green  True   7549    91.0
+posthoc   round_at_the_line_not_the_total      2      red    red   green  True   5412    72.9
+posthoc   round_at_the_line_not_the_total      3      red    red   green  True   5147    66.1
+posthoc   trace_dropped_samples                1      red    red   green  True   3528    48.2
+posthoc   trace_dropped_samples                2      red    red   green  True   4222    56.3
+posthoc   trace_dropped_samples                3      red    red   green  True   3404    46.2
+posthoc_sham finish_the_cancelled_status          1      red  green   green False   5018    60.1
+posthoc_sham finish_the_cancelled_status          2      red  green   green False   3960    46.2
+posthoc_sham finish_the_cancelled_status          3      red  green   green False   4421    51.5
+posthoc_sham round_at_the_line_not_the_total      1      red    red   green  True   5882    85.8
+posthoc_sham round_at_the_line_not_the_total      2    error  error   error False   8192   118.7
+posthoc_sham round_at_the_line_not_the_total      3      red    red   green  True   3930    56.3
+posthoc_sham trace_dropped_samples                1      red  green     red False   4981    66.9
+posthoc_sham trace_dropped_samples                2      red  green     red False   2839    38.4
+posthoc_sham trace_dropped_samples                3      red  green     red False   2941    39.0
+
+  posthoc: 9/9 discriminate · 0/9 green on the unfixed tree · 0/9 PASSED THE SHAM · 0/9 red on the reference solution · 0/9 did not run · 0/9 empty payload
+
+  posthoc_sham: 2/9 discriminate · 0/9 green on the unfixed tree · 6/9 PASSED THE SHAM · 3/9 red on the reference solution · 1/9 did not run · 0/9 empty payload
+
+  tdd: 4/9 discriminate · 0/9 green on the unfixed tree · 0/9 PASSED THE SHAM · 4/9 red on the reference solution · 0/9 did not run · 1/9 empty payload
+
+v1's validation channel — can it carry these instruments at all?
+----------------------------------------------------------------
+artifact candidate                 v1 says  exit  what actually happened
+refsol   v1 benchmark shape           PASS     0  PASS
+refsol   linter                       FAIL     1  File "<string>", line 1 ruff check . ^^^^^ SyntaxError: invalid syntax
+refsol   type check                   FAIL     1  File "<string>", line 1 mypy . ^ SyntaxError: invalid syntax
+refsol   tests                        FAIL     1  Traceback (most recent call last): File "<string>", line 1, in <module
+refsol   linter, dispatched           FAIL     1  UP031 Use format specifiers instead of percent format --> jobs\charges
+refsol   type check, dispatched       FAIL     0  Success: no issues found in 13 source files
+refsol   tests, dispatched            FAIL     0  ........................ [100%] 24 passed in 0.26s
+refsol   the task's runner            FAIL     0  JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 cance
+sham     v1 benchmark shape           PASS     0  PASS
+sham     linter                       FAIL     1  File "<string>", line 1 ruff check . ^^^^^ SyntaxError: invalid syntax
+sham     type check                   FAIL     1  File "<string>", line 1 mypy . ^ SyntaxError: invalid syntax
+sham     tests                        FAIL     1  Traceback (most recent call last): File "<string>", line 1, in <module
+sham     linter, dispatched           FAIL     1  UP031 Use format specifiers instead of percent format --> jobs\charges
+sham     type check, dispatched       FAIL     0  Success: no issues found in 13 source files
+sham     tests, dispatched            FAIL     0  ........................ [100%] 24 passed in 0.27s
+sham     the task's runner            FAIL     0  JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other
