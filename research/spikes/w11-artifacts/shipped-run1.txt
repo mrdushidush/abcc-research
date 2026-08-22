@@ -1,0 +1,5 @@
+shipped emission order: ['rationale', 'defects', 'call']
+shipped-1                first_key=rationale   call=fail   comp_tok= 1204 reas=  944  19.8s
+shipped-2                first_key=rationale   call=fail   comp_tok= 1527 reas= 1293  24.2s
+shipped-3                first_key=rationale   call=fail   comp_tok= 1580 reas= 1364  25.7s
+correct(fail) 3/3 with the shipped schema

@@ -1,0 +1,14 @@
+[package]
+name = "artifacts"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }  # without this, serde_json::Map is a BTreeMap and re-sorts the emission order
+schemars = "1"
+
+[[bin]]
+name = "artifacts"
+path = "src/main.rs"

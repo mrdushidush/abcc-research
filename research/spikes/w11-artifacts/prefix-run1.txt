@@ -1,0 +1,13 @@
+-- I: a constant first ({"artifact_version": "v1"}) --
+I-const-first-1          first_key=artifact_version call=pass   comp_tok= 1455 reas= 1345  23.0s
+I-const-first-2          first_key=artifact_version call=pass   comp_tok= 1321 reas= 1209  21.2s
+I-const-first-3          first_key=artifact_version call=pass   comp_tok= 1139 reas= 1012  19.0s
+
+-- J: a neutral list first ({"files_reviewed": [...]}) --
+J-neutral-first-1        first_key=files_reviewed call=fail   comp_tok= 1462 reas= 1345  22.6s
+J-neutral-first-2        first_key=files_reviewed call=pass   comp_tok= 1777 reas= 1650  28.2s   <- field says pass, prose says fail
+J-neutral-first-3        first_key=files_reviewed call=fail   comp_tok= 1809 reas= 1675  29.2s
+
+-- tally (ground truth: fail) --
+  I-const-first      correct(fail) 0/3
+  J-neutral-first    correct(fail) 2/3

@@ -1,0 +1,27 @@
+-- E-call-first-failfirst: keys=['call', 'defects', 'rationale'] enum=['fail', 'pass'] --
+E-call-first-failfirst-1 first_key=call        call=pass   comp_tok= 1256 reas= 1030  20.9s   <- field says pass, prose says fail
+E-call-first-failfirst-2 first_key=call        call=pass   comp_tok=  775 reas=  687  13.4s
+E-call-first-failfirst-3 first_key=call        call=pass   comp_tok= 1386 reas= 1222  22.2s
+E-call-first-failfirst-4 first_key=call        call=pass   comp_tok= 1589 reas= 1409  24.8s
+E-call-first-failfirst-5 first_key=call        call=pass   comp_tok= 1559 reas= 1472  24.4s   <- field says pass, prose says fail
+
+-- F-rat-first-failfirst: keys=['rationale', 'defects', 'call'] enum=['fail', 'pass'] --
+F-rat-first-failfirst-1  first_key=rationale   call=fail   comp_tok= 1108 reas=  896  18.3s
+F-rat-first-failfirst-2  first_key=rationale   call=fail   comp_tok= 1238 reas= 1008  20.5s
+F-rat-first-failfirst-3  first_key=rationale   call=fail   comp_tok= 1394 reas= 1207  21.9s
+
+-- G-defects-then-call-failfirst: keys=['defects', 'call', 'rationale'] enum=['fail', 'pass'] --
+G-defects-then-call-failfirst-1 first_key=defects     call=fail   comp_tok= 2412 reas= 2247  37.1s
+G-defects-then-call-failfirst-2 first_key=defects     call=fail   comp_tok= 1539 reas= 1356  24.3s
+G-defects-then-call-failfirst-3 first_key=defects     call=fail   comp_tok= 1530 reas= 1346  24.0s
+
+-- H-defects-then-call-passfirst: keys=['defects', 'call', 'rationale'] enum=['pass', 'fail'] --
+H-defects-then-call-passfirst-1 first_key=defects     call=fail   comp_tok= 1601 reas= 1470  25.0s
+H-defects-then-call-passfirst-2 first_key=defects     call=fail   comp_tok= 1514 reas= 1345  23.9s
+H-defects-then-call-passfirst-3 first_key=defects     call=fail   comp_tok= 1856 reas= 1639  28.5s
+
+-- tally (ground truth: fail) --
+  E-call-first-failfirst           first_enum=fail correct(fail) 0/5
+  F-rat-first-failfirst            first_enum=fail correct(fail) 3/3
+  G-defects-then-call-failfirst    first_enum=fail correct(fail) 3/3
+  H-defects-then-call-passfirst    first_enum=pass correct(fail) 3/3

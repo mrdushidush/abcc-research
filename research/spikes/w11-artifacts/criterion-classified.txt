@@ -1,0 +1,15 @@
+35 model-generated acceptance criteria, run against the UNCHANGED fixture:
+  behavioural-bind             5
+  textual-proxy                8
+  unrunnable-invented-symbol   0
+  exit-0-on-unfixed-tree       22
+
+behavioural-bind:
+    K2.1 python3 -c "from jobs.sla import is_sla_breach; assert not is_sla_breach('cancelled', 0,
+    K2.2 python3 -c "from jobs.summary import get_status_counts; counts = get_status_counts('data
+    K2.3 python3 -c "from jobs.charges import compute_charge; assert compute_charge('cancelled', 
+    K2.4 python3 -c "from jobs.dashboard import get_dashboard_data; data = get_dashboard_data('da
+    K5.3 python3 run.py data/jobs.json > /tmp/sla_report.txt && grep -q "CANCELLED" /tmp/sla_repo
+
+unrunnable-invented-symbol:
+

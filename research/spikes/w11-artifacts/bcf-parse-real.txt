@@ -1,0 +1,5 @@
+run1                               scores=[4.0, 6.5, 2.0, 9.5, 7.0] avg=5.80  details_found=5
+run2                               scores=[5.0, 7.0, 2.0, 9.5, 7.0] avg=6.10  details_found=5
+run3                               scores=[5.0, 6.0, 0.0, 9.0, 8.0] avg=5.60  details_found=5
+run4                               scores=[4.5, 5.0, 2.0, 9.0, 8.0] avg=5.70  details_found=5
+run5                               scores=[4.5, 5.0, 2.0, 9.0, 8.0] avg=5.70  details_found=5

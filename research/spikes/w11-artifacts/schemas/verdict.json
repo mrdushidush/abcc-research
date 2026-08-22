@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VerdictWire",
+  "description": "No score. W11 F247 measured the binary as reproducible at temperature 0\nand the number as not (0, 2, 0, 2 on identical input), so a numeric score\nis not a field this type is entitled to have.",
+  "type": "object",
+  "properties": {
+    "rationale": {
+      "description": "Why, in one or two sentences. Read by the operator and by the next\nattempt's Change phase.",
+      "type": "string"
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/DefectWire"
+      }
+    },
+    "call": {
+      "$ref": "#/$defs/Call"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "rationale",
+    "defects",
+    "call"
+  ],
+  "$defs": {
+    "Call": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "DefectWire": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Workspace-relative path the defect is in, or `null` when the defect is\nabout the change as a whole.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "severity",
+        "description"
+      ]
+    },
+    "Severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  }
+}

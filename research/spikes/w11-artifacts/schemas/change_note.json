@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ChangeNoteWire",
+  "description": "What the Change phase says about what it did.\n\nThis is deliberately **not** the diff. The diff is read from git by the\nrecorder (`checked::DiffRef`); a model-authored account of its own edits\nis narration, and grading narration is W11 F232. The note exists so the\nmodel can flag what it could not finish — which git cannot tell you.",
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string"
+    },
+    "unresolved": {
+      "description": "Anything the model knows it did not do. Empty is a claim; absent is a\nparse failure.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "unresolved"
+  ]
+}

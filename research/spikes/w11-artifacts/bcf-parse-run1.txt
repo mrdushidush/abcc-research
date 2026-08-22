@@ -1,0 +1,10 @@
+1 exactly as the prompt asks       scores=[8.5, 7.0, 6.5, 9.0, 7.5] avg=7.70  details_found=5
+2 numbered list                    scores=[1.0, 2.0, 3.0, 4.0, 5.0] avg=3.00  details_found=5
+3 markdown bold                    scores=[8.5, 7.0, 6.5, 9.0, 7.5] avg=7.70  details_found=5
+4 bulleted                         scores=[8.5, 7.0, 6.5, 9.0, 7.5] avg=7.70  details_found=5
+5 scores written out of ten        scores=[5.0, 5.0, 5.0, 5.0, 5.0] avg=5.00  <- all-default (BCF warns)  details_found=5
+6 markdown table                   scores=[8.5, 7.0, 6.5, 9.0, 7.5] avg=7.70  details_found=5
+7 a preamble line the prompt forbade scores=[8.5, 7.0, 6.5, 9.0, 7.5] avg=7.70  details_found=5
+8 role names expanded with their briefs scores=[8.5, 7.0, 6.5, 9.0, 7.5] avg=7.70  details_found=5
+9 a reviewer that gives a genuine zero scores=[0.0, 0.0, 0.0, 0.0, 0.0] avg=0.00  details_found=5
+10 the model refused               scores=[5.0, 5.0, 5.0, 5.0, 5.0] avg=5.00  <- all-default (BCF warns)  details_found=0

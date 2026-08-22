@@ -1,0 +1,34 @@
+run1
+DEV: 4.0 | defects: `finished_at` omits `st.CANCELLED`, treating cancelled jobs as in-flight and measuring against `now`; violates spec rule that clock stops at cancellation, causing false SLA breaches.
+ARCH: 6.5 | defects: Hardcoded `(st.DONE, st.FAILED)` tuple ignores new terminal status; contradicts spec warning about default branches swallowing fifth status; lacks extensible status routing or strategy pattern.
+TEST: 2.0 | defects: Zero test coverage provided in snippet; critical paths for `CANCELLED` handling, boundary times, and breach logic are completely untested.
+SEC: 9.5 | defects: No external I/O, secrets, or injection vectors; purely computational with safe string formatting (minor legacy `%` style).
+DOCS: 7.0 | defects: Docstrings are clear but lack inline rationale for status branching or reference to spec's terminal state rules; readability is high but documentation doesn't bridge the architectural gap.
+
+run2
+DEV: 5.0 | defects: Missing `CANCELLED` status handling in `finished_at`; violates spec rule that cancelled jobs are terminal and must not breach SLA; clock continues ticking for cancelled jobs instead of stopping at cancellation time.
+ARCH: 7.0 | defects: Explicit status checks are good but incomplete; lacks centralized status routing or configuration for default SLA; no type hints or dataclasses for job objects.
+TEST: 2.0 | defects: No test suite provided; critical `cancelled` path is untested and broken; missing coverage for edge cases like `ended_at=None`, timezone handling, and boundary deadlines.
+SEC: 9.5 | defects: None. Pure in-memory business logic with no external I/O, secrets, or injection vectors.
+DOCS: 7.0 | defects: Docstrings accurately describe current code but diverge from spec requirements for `cancelled` jobs; lacks type hints and parameter documentation for `now`.
+
+run3
+DEV: 5.0 | defects: `finished_at` ignores `CANCELLED` status, treating it as in-flight and violating spec rule that clock stops at cancellation; will cause incorrect breach detection and margin calculation.
+ARCH: 6.0 | defects: Hardcoded `(st.DONE, st.FAILED)` tuple violates spec warning about swallowing new statuses; fragile branching lacks abstraction for terminal state handling.
+TEST: 0.0 | defects: Zero test coverage provided; missing unit tests for SLA logic, cancelled jobs, edge cases, and report formatting.
+SEC: 9.0 | defects: No security risks identified in this pure business logic module; no external I/O, secrets, or injection vectors present.
+DOCS: 8.0 | defects: Docstrings are clear but fail to document/reflect the spec's `cancelled` semantics; lacks type hints for job objects and attribute expectations.
+
+run4
+DEV: 4.5 | defects: `finished_at` treats `cancelled` as non-terminal (still in-flight), violating spec that clock stops at cancellation; causes false SLA breaches and incorrect margin calculations.
+ARCH: 5.0 | defects: Violates Open/Closed principle with hardcoded status checks (`st.DONE`, `st.FAILED`); lacks a centralized terminal-state classifier, making future status additions error-prone.
+TEST: 2.0 | defects: No test suite provided; critical `cancelled` status path is untested and known to be broken per spec requirements.
+SEC: 9.0 | defects: None relevant; purely internal business logic with no external inputs, secrets, or OWASP attack surface.
+DOCS: 8.0 | defects: Docstrings are clear but lack type hints; module documentation does not reflect the `cancelled` status caveat emphasized in the spec.
+
+run5
+DEV: 4.5 | defects: `finished_at` treats `cancelled` as non-terminal, returning `now` instead of stopping the clock; violates spec and causes false SLA breaches over time.
+ARCH: 5.0 | defects: Hardcoded status checks violate Open/Closed principle; lacks a centralized terminal-state strategy, making future status additions fragile.
+TEST: 2.0 | defects: No test suite provided; critical `cancelled` path is untested and known to be broken per spec requirements.
+SEC: 9.0 | defects: None relevant; purely internal business logic with no external inputs, secrets, or OWASP attack surface.
+DOCS: 8.0 | defects: Docstrings are clear but lack type hints; module documentation does not reflect the `cancelled` status caveat emphasized in the spec.

@@ -1,0 +1,16 @@
+{
+  "approach": "grounded_brief",
+  "restatement": "The SLA report incorrectly flags cancelled jobs as breached because the service treats them as still in-flight, causing their end time to be measured against `now` indefinitely.",
+  "risks": [
+    "False-positive SLA breaches clutter operational dashboards and mask real failures",
+    "SLA margin calculations remain negative for cancelled jobs until they are manually cleaned up"
+  ],
+  "sites": [
+    {
+      "first_line": 23,
+      "last_line": 30,
+      "path": "jobs/sla.py",
+      "why": "`finished_at` decides when an SLA timer stops. It explicitly checks for `st.DONE` and `st.FAILED` but omits `CANCELLED`. Since `CANCELLED` is a terminal status in `jobs/status.py`, it should be grouped with the others so the function returns `job.ended_at` instead of falling through to `return now`."
+    }
+  ]
+}

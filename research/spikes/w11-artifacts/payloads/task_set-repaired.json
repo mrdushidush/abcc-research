@@ -1,0 +1,18 @@
+{
+  "tasks": [
+    {
+      "criterion": {
+        "command": "python3 run.py data/jobs.json",
+        "cwd": ".",
+        "shell": "sh"
+      },
+      "depends_on": [],
+      "intent": "Fix SLA calculation and status-based decision logic to treat CANCELLED as a terminal state, stopping duration timers immediately upon cancellation and excluding completed/cancelled jobs from active SLA windows per docs/status_lifecycle.md.",
+      "title": "Correct SLA reporting for cancelled jobs",
+      "touches": [
+        "jobs/sla.py",
+        "jobs/summary.py"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+run1  reas_tok= 2183  33.8s  first line: DEV: 4.0 | defects: `finished_at` omits `st.CANCELLED`, treating cancelled jobs 
+run2  reas_tok= 2410  35.0s  first line: DEV: 5.0 | defects: Missing `CANCELLED` status handling in `finished_at`; violat
+run3  reas_tok= 2285  33.5s  first line: DEV: 5.0 | defects: `finished_at` ignores `CANCELLED` status, treating it as in-
+run4  reas_tok= 2432  33.3s  first line: DEV: 4.5 | defects: `finished_at` treats `cancelled` as non-terminal (still in-f
+run5  reas_tok= 2315  34.4s  first line: DEV: 4.5 | defects: `finished_at` treats `cancelled` as non-terminal, returning 
+
+-- through BCF's own parser --
+run1                               scores=[4.5, 5.0, 2.0, 9.0, 8.0] avg=5.70  details_found=5
+run1                               scores=[4.5, 5.0, 2.0, 9.0, 8.0] avg=5.70  details_found=5

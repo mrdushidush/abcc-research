@@ -1,0 +1,35 @@
+[
+  {
+    "label": "shipped-1",
+    "first_key": "rationale",
+    "call": "fail",
+    "rationale": "The acceptance criterion measurement (`bash verify.sh .`) explicitly returned a fail status. Per your instructions, 'a measurement that says fail is a fact, not an opinion: a verdict of pass while a required measurement failed is itself a defect.' The diff modifies `finished_at` to include `st.CANCELLED`, but the verification script's assertion (`COUNTS must show cancelled=4`) did not match the actual output (which showed no `cancelled` count), resulting in a hard failure of the acceptance criterion.",
+    "contradicts": false,
+    "completion_tokens": 1204,
+    "reasoning_tokens": 944,
+    "wall_s": 19.84,
+    "raw": "{\n  \"rationale\": \"The acceptance criterion measurement (`bash verify.sh .`) explicitly returned a fail status. Per your instructions, 'a measurement that says fail is a fact, not an opinion: a verdict of pass while a required measurement failed is itself a defect.' The diff modifies `finished_at` to include `st.CANCELLED`, but the verification script's assertion (`COUNTS must show cancelled=4`) did not match the actual output (which showed no `cancelled` count), resulting in a hard failure of the acceptance criterion.\",\n  \"defects\": [\n    {\n      \"path\": \"jobs/sla.py\",\n      \"severity\": \"high\",\n      \"description\": \"Acceptance criterion failed. The verification script asserts that `COUNTS must show cancelled=4`, but the actual output shows no cancelled jobs counted (`done=11 failed=5 running=2 queued=2 other=4`). This indicates the fix in `finished_at` is either incomplete, misaligned with how the SLA report aggregates statuses, or the test expectations need adjustment. Regardless of root cause, the criterion measurement failed.\"\n    }\n  ],\n  \"call\": \"fail\"\n}"
+  },
+  {
+    "label": "shipped-2",
+    "first_key": "rationale",
+    "call": "fail",
+    "rationale": "The acceptance criterion explicitly failed (`Measured(fail)`). The `bash verify.sh .` output shows that the expected `cancelled=4` count was not produced; instead, those jobs appear to be categorized under `other=4`. While the diff correctly addresses the `finished_at` duration calculation for cancelled jobs, it does not fully satisfy the report's counting/categorization logic as verified by the acceptance test. Per your explicit instruction that 'a measurement that says fail is a fact... a verdict of pass while a required measurement failed is itself a defect,' this submission cannot be accepted.",
+    "contradicts": false,
+    "completion_tokens": 1527,
+    "reasoning_tokens": 1293,
+    "wall_s": 24.24,
+    "raw": "{\n  \"rationale\": \"The acceptance criterion explicitly failed (`Measured(fail)`). The `bash verify.sh .` output shows that the expected `cancelled=4` count was not produced; instead, those jobs appear to be categorized under `other=4`. While the diff correctly addresses the `finished_at` duration calculation for cancelled jobs, it does not fully satisfy the report's counting/categorization logic as verified by the acceptance test. Per your explicit instruction that 'a measurement that says fail is a fact... a verdict of pass while a required measurement failed is itself a defect,' this submission cannot be accepted.\",\n  \"defects\": [\n    {\n      \"path\": \"criterion\",\n      \"severity\": \"high\",\n      \"description\": \"Acceptance test `bash verify.sh .` failed. Expected `cancelled=4`, but jobs were categorized as `other=4`. The diff fixes the duration accrual logic but does not align with the report's status categorization expectations.\"\n    }\n  ],\n  \"call\": \"fail\"\n}"
+  },
+  {
+    "label": "shipped-3",
+    "first_key": "rationale",
+    "call": "fail",
+    "rationale": "The acceptance criterion `bash verify.sh .` explicitly failed according to the measurement set (`Measured(fail)`). The output indicates a mismatch in job counts, specifically noting that `cancelled=4` was expected but not found in the results. Per the instructions, a measurement stating fail is a fact, and passing while a required measurement fails constitutes a defect.",
+    "contradicts": false,
+    "completion_tokens": 1580,
+    "reasoning_tokens": 1364,
+    "wall_s": 25.68,
+    "raw": "{\n  \"rationale\": \"The acceptance criterion `bash verify.sh .` explicitly failed according to the measurement set (`Measured(fail)`). The output indicates a mismatch in job counts, specifically noting that `cancelled=4` was expected but not found in the results. Per the instructions, a measurement stating fail is a fact, and passing while a required measurement fails constitutes a defect.\",\n  \"defects\": [\n    {\n      \"path\": \"jobs/sla.py\",\n      \"severity\": \"high\",\n      \"description\": \"The acceptance criterion failed. The verification script `bash verify.sh .` returned exit code 0 but the output indicates a logic error or missing count for cancelled jobs (expected `cancelled=4`, got counts without it). While the diff attempts to fix how `finished_at` handles cancelled jobs, the report generation or assertion logic appears incomplete or incorrect based on the test failure.\"\n    }\n  ],\n  \"call\": \"fail\"\n}"
+  }
+]

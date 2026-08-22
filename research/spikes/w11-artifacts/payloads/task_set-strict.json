@@ -1,0 +1,19 @@
+{
+  "tasks": [
+    {
+      "criterion": {
+        "command": "python3 -m pytest tests/test_jobs.py -v",
+        "cwd": ".",
+        "shell": "sh"
+      },
+      "depends_on": [],
+      "intent": "Fix all status-dependent decision points in `jobs/sla.py`, `jobs/summary.py`, and `jobs/model.py` to explicitly handle `CANCELLED` as a terminal state. Duration timers must halt at the cancellation timestamp, and jobs must be excluded from active SLA breach calculations or counted with actual runtime per `docs/status_lifecycle.md`.",
+      "title": "Align status logic with lifecycle specification",
+      "touches": [
+        "jobs/sla.py",
+        "jobs/summary.py",
+        "jobs/model.py"
+      ]
+    }
+  ]
+}

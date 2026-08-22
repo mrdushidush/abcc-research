@@ -1,0 +1,10 @@
+old event on the log : {"call":"fail","rationale":"criterion failed","defects":[]}
+new event on the log : {"call":"fail","rationale":"criterion failed","defects":[],"decisive_check":"criterion"}
+
+-- today's reader against yesterday's event --
+  strict   v2 <- v1  FAIL missing field `decisive_check` at line 1 column 59
+  default  v2 <- v1  OK   decisive_check=""  <- the forbidden fix
+
+-- yesterday's reader against today's event (replay after a downgrade) --
+  strict   v1 <- v2  FAIL unknown field `decisive_check`, expected one of `call`, `rationale`, `defects` at line 1 column 75
+  open     v1 <- v2  OK   VerdictV1Open { call: Fail, rationale: "criterion failed" }  <- unknown field silently dropped

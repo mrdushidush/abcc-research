@@ -1,0 +1,79 @@
+-- runner self-test --
+  ok  exit 0 is seen as 0          want=does-not-discriminate got=does-not-discriminate exit=0 
+  ok  exit 1 is seen as non-zero   want=binds                 got=binds                 exit=1 
+  ok  the fixture is really there  want=does-not-discriminate got=does-not-discriminate exit=0 
+  ok  posix tools work             want=does-not-discriminate got=does-not-discriminate exit=0 
+  ok  python3 absent unshimmed     want=unrunnable            got=unrunnable            exit=49 Python was not found; run without arguments to ins
+  ok  python3 works shimmed        want=does-not-discriminate got=does-not-discriminate exit=0 Python 3.14.5
+  ok  the fixture suite is green   want=does-not-discriminate got=does-not-discriminate exit=0 ........................                          
+
+host python: C:\Users\david\AppData\Local\Programs\Python\Python314\python.EXE
+criteria to re-run: 35
+
+K1.1  as-written=binds                 shimmed=binds                 exit=1     grep -q "is_terminal\|CANCELLED" jobs/sla.py
+K1.2  as-written=binds                 shimmed=binds                 exit=1     grep -q "is_terminal\|CANCELLED" jobs/summary.py
+K1.3  as-written=binds                 shimmed=binds                 exit=1     grep -q "is_terminal\|CANCELLED" jobs/charges.py
+K1.4  as-written=does-not-discriminate shimmed=does-not-discriminate exit=0     grep -q "is_terminal\|CANCELLED" jobs/dashboard.py
+        -> 
+K2.1  as-written=unrunnable            shimmed=binds                 exit=1     python3 -c "from jobs.sla import is_sla_breach; assert not i
+K2.2  as-written=unrunnable            shimmed=binds                 exit=1     python3 -c "from jobs.summary import get_status_counts; coun
+K2.3  as-written=unrunnable            shimmed=binds                 exit=1     python3 -c "from jobs.charges import compute_charge; assert 
+K2.4  as-written=unrunnable            shimmed=binds                 exit=1     python3 -c "from jobs.dashboard import get_dashboard_data; d
+K3.1  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json && echo "SLA logic corrected"
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+K3.2  as-written=binds                 shimmed=binds                 exit=1     grep -q "is_terminal\|CANCELLED" jobs/charges.py && echo "Ch
+K3.3  as-written=binds                 shimmed=binds                 exit=1     grep -q "is_terminal\|CANCELLED" jobs/retry.py && echo "Retr
+K3.4  as-written=binds                 shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json > /dev/null 2>&1 && python3 -m
+        -> ........................                                                 [100%] 24 passed in 0.03s
+K4.1  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+K4.2  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+K4.3  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+K5.1  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json > /tmp/sla_report.txt && ! gre
+        -> 
+K5.2  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json > /tmp/sla_report.txt && ! gre
+        -> 
+K5.3  as-written=unrunnable            shimmed=binds                 exit=1     python3 run.py data/jobs.json > /tmp/sla_report.txt && grep 
+L1.1  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 -m pytest tests/test_jobs.py
+        -> ============================= test session starts ============================= platform win32 -- Python 3.14.5, pytest-9.1.1, plu
+L1.2  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 -m pytest tests/test_jobs.py
+        -> ============================= test session starts ============================= platform win32 -- Python 3.14.5, pytest-9.1.1, plu
+L1.3  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 -m pytest tests/test_jobs.py
+        -> ============================= test session starts ============================= platform win32 -- Python 3.14.5, pytest-9.1.1, plu
+L2.1  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json | grep -q "J-017.*over its SLA
+        -> 
+L2.2  as-written=binds                 shimmed=does-not-discriminate exit=0     python3 -c "from jobs import charges; assert not getattr(cha
+        -> 
+L2.3  as-written=binds                 shimmed=does-not-discriminate exit=0     python3 -c "from jobs import retry; assert not getattr(retry
+        -> 
+L2.4  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json > /tmp/service_verify.txt && !
+        -> All status decisions correctly handle CANCELLED.
+L3.1  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+L3.2  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 -c "import jobs.summary; print('summary module loads
+        -> summary module loads cleanly
+L3.3  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 -c "import jobs.dashboard; print('dashboard module l
+        -> dashboard module loads cleanly
+L3.4  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json && echo "EXIT_CODE: $?"
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+L4.1  as-written=unrunnable            shimmed=binds                 exit=1     python3 -c "assert 'is_terminal' in open('jobs/sla.py').read
+L4.2  as-written=unrunnable            shimmed=binds                 exit=1     python3 -c "assert all(any(x in open(f).read() for x in ['is
+L4.3  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+L5.1  as-written=unrunnable            shimmed=does-not-discriminate exit=0     python3 run.py data/jobs.json
+        -> JOBS 24 at now=100000 COUNTS queued=2 running=2 done=11 failed=5 other=4 RATES failure=0.312 completion=0.688 SLA breaches 6   J-0
+L5.2  as-written=binds                 shimmed=binds                 exit=1     grep -q "CANCELLED" jobs/summary.py && echo "pass" || exit 1
+L5.3  as-written=does-not-discriminate shimmed=does-not-discriminate exit=0     grep -r "is_terminal\|CANCELLED" jobs/model.py jobs/charges.
+        -> 5
+
+-- tally --
+  K-criterion-first    as_written  n=18  binds=6  does-not-discriminate=1  unrunnable=11
+  K-criterion-first    shimmed     n=18  binds=10  does-not-discriminate=8  unrunnable=0
+  L-criterion-last     as_written  n=17  binds=3  does-not-discriminate=1  unrunnable=13
+  L-criterion-last     shimmed     n=17  binds=3  does-not-discriminate=14  unrunnable=0
+
+-- of the criteria that could be run at all --
+  K-criterion-first    binds 10/18
+  L-criterion-last     binds 3/17

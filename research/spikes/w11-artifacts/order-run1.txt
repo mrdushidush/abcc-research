@@ -1,0 +1,32 @@
+-- enforcement control: an enum the model would never volunteer --
+control-enum             first_key=call        call=affirmative comp_tok= 1399 reas= 1222  23.3s
+
+-- A: schemars order (call before rationale) --
+A-call-first-1           first_key=call        call=pass   comp_tok= 1596 reas= 1505  25.7s
+A-call-first-2           first_key=call        call=pass   comp_tok= 1270 reas= 1102  20.8s
+A-call-first-3           first_key=call        call=pass   comp_tok= 1556 reas= 1356  24.9s
+A-call-first-4           first_key=call        call=pass   comp_tok= 1256 reas= 1030  21.2s   <- field says pass, prose says fail
+A-call-first-5           first_key=call        call=pass   comp_tok=  775 reas=  687  13.7s
+
+-- B: same names, rationale moved ahead of call --
+B-reordered-1            first_key=rationale   call=fail   comp_tok= 1399 reas= 1222  22.7s
+B-reordered-2            first_key=rationale   call=fail   comp_tok= 1268 reas= 1141  19.8s
+B-reordered-3            first_key=rationale   call=fail   comp_tok=  994 reas=  800  16.4s
+B-reordered-4            first_key=rationale   call=fail   comp_tok= 1347 reas= 1177  22.0s
+B-reordered-5            first_key=rationale   call=fail   comp_tok= 1108 reas=  896  18.2s
+
+-- C: rationale renamed `assessment`, so it sorts first --
+C-renamed-1              first_key=assessment  call=fail   comp_tok= 1215 reas= 1008  20.4s
+C-renamed-2              first_key=assessment  call=fail   comp_tok= 1164 reas= 1028  19.5s
+C-renamed-3              first_key=assessment  call=fail   comp_tok=  849 reas=  732  14.4s
+
+-- D: no response_format at all --
+D-prompt-1               first_key=call        call=fail   comp_tok= 1472 reas= 1349  22.6s
+D-prompt-2               first_key=call        call=fail   comp_tok= 1540 reas= 1394  23.2s
+D-prompt-3               first_key=call        call=fail   comp_tok= 1402 reas= 1336  20.8s
+
+-- tally (ground truth: fail; the criterion returned RESULT: FAIL) --
+  A-call-first   correct(fail) 0/5   field-contradicts-prose 1/5
+  B-reordered    correct(fail) 5/5   field-contradicts-prose 0/5
+  C-renamed      correct(fail) 3/3   field-contradicts-prose 0/3
+  D-prompt       correct(fail) 3/3   field-contradicts-prose 0/3

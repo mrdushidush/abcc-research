@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BriefWire",
+  "type": "object",
+  "properties": {
+    "restatement": {
+      "description": "The task, restated in the model's own words. Grading input, not prose.",
+      "type": "string"
+    },
+    "sites": {
+      "description": "Where the change goes. At least one; an empty brief is not a brief.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/SiteWire"
+      }
+    },
+    "risks": {
+      "description": "What could go wrong. May be empty; may not be absent.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "approach": {
+      "description": "How the change should be made, in prose. The Change phase reads this.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "restatement",
+    "sites",
+    "risks",
+    "approach"
+  ],
+  "$defs": {
+    "SiteWire": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Workspace-relative path. A string here; a `RepoPath` only after the\nrecorder has checked it against the tree (see `checked::Site`).",
+          "type": "string"
+        },
+        "first_line": {
+          "description": "Optional line span. `null` means \"the whole file\", not \"line 0\".",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "last_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "why": {
+          "description": "Why this site is in the brief.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "first_line",
+        "last_line",
+        "why"
+      ]
+    }
+  }
+}

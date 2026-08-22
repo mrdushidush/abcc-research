@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BriefWire",
+  "approach": "In jobs/sla.py, update the finished_at function to recognize CANCELLED as a terminal state by checking against st.TERMINAL instead of hardcoding DONE and FAILED. This ensures cancelled jobs are measured at their ended_at time rather than accruing indefinitely against now. Review is_breached and report to ensure they align with this correction. Systematically audit all other modules in the jobs/ directory that branch on job status (e.g., charging, dashboard filtering, retry logic) to replace ad-hoc status checks with st.TERMINAL and st.ACTIVE references, guaranteeing consistent treatment of cancelled jobs across the service.",
+  "restatement": "The SLA report incorrectly flags cancelled jobs as breached because sla.py treats them as still in-flight, measuring their duration against the current time instead of their cancellation time. The task requires correcting this by treating CANCELLED as a terminal status everywhere the service branches on job status, ensuring accurate SLA calculations and preventing incorrect downstream behaviors like charging or retrying.",
+  "risks": [
+    "If ended_at is not reliably populated for cancelled jobs in all environments, relying on it could introduce None-handling regressions; explicit fallbacks or guards may be needed.",
+    "Treating all terminal statuses identically in SLA calculations assumes DONE and FAILED share the same business rules as CANCELLED regarding finish times, which might not hold if they have different lifecycle semantics.",
+    "Other modules may have implicitly relied on the buggy behavior (e.g., charging for cancelled jobs was a known workaround), so fixing status branching could surface latent assumptions or require broader logic adjustments."
+  ],
+  "sites": [
+    {
+      "path": "jobs/sla.py",
+      "why": "Contains the finished_at and is_breached functions that incorrectly measure cancelled jobs against now, causing false SLA breaches. Must be updated to use st.TERMINAL or explicitly handle CANCELLED."
+    },
+    {
+      "path": "jobs/charges.py",
+      "why": "Likely contains logic for billing jobs; must verify it does not charge for cancelled jobs and correctly treats them as terminal."
+    },
+    {
+      "path": "jobs/dashboard.py",
+      "why": "Probably filters or displays job statuses; needs to ensure cancelled jobs are categorized correctly and excluded from active metrics if intended."
+    },
+    {
+      "path": "jobs/model.py",
+      "why": "May define job data structures or validation rules; should confirm it handles CANCELLED status without breaking downstream assumptions."
+    },
+    {
+      "path": "jobs/notify.py",
+      "why": "Likely sends alerts based on job state; must ensure cancelled jobs do not trigger unnecessary notifications or are handled gracefully."
+    },
+    {
+      "path": "jobs/queue.py",
+      "why": "Manages job scheduling and execution; should verify it does not attempt to re-queue or process cancelled jobs."
+    },
+    {
+      "path": "jobs/retry.py",
+      "why": "Handles failed job retries; must explicitly exclude CANCELLED from retry logic, as terminal statuses should not be retried."
+    },
+    {
+      "path": "jobs/status.py",
+      "why": "Defines the status vocabulary and transitions; already correctly marks CANCELLED as TERMINAL, serving as the source of truth for other modules to reference."
+    },
+    {
+      "path": "jobs/summary.py",
+      "why": "Aggregates job data; should ensure cancelled jobs are accounted for in summaries without skewing active or breached counts."
+    },
+    {
+      "path": "jobs/validate.py",
+      "why": "Checks job integrity before processing; must accept CANCELLED as a valid terminal state and skip further validation if appropriate."
+    }
+  ]
+}

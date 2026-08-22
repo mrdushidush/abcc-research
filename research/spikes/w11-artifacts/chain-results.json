@@ -1,0 +1,110 @@
+[
+  {
+    "label": "brief-strict",
+    "kind": "brief",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 1627,
+    "reasoning_tokens": 1418,
+    "bytes": 725,
+    "json_ok": true,
+    "serde": "PARSE ok    brief  738 chars  BriefWire { restatement: \"The SLA report incorrectly flags recently cancelled jobs as breached because `finished_at` in",
+    "wall_s": 25.93
+  },
+  {
+    "label": "brief-repaired",
+    "kind": "brief",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 2444,
+    "reasoning_tokens": 2201,
+    "bytes": 861,
+    "json_ok": true,
+    "serde": "PARSE ok    brief  876 chars  BriefWire { restatement: \"The SLA report incorrectly flags cancelled jobs as breached because the service treats them as",
+    "wall_s": 36.13
+  },
+  {
+    "label": "brief-prompt",
+    "kind": "brief",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 5298,
+    "reasoning_tokens": 4428,
+    "bytes": 3849,
+    "json_ok": true,
+    "serde": "PARSE FAIL  brief  unknown field `$schema`, expected one of `restatement`, `sites`, `approach`, `risks` at line 2 column 11",
+    "wall_s": 69.19
+  },
+  {
+    "label": "task_set-strict",
+    "kind": "task_set",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 3455,
+    "reasoning_tokens": 3254,
+    "bytes": 710,
+    "json_ok": true,
+    "serde": "PARSE ok    task_set  728 chars  TaskSetWire { tasks: [TaskWire { title: \"Align status logic with lifecycle specification\", intent: \"Fix all status-depen",
+    "wall_s": 54.82
+  },
+  {
+    "label": "task_set-repaired",
+    "kind": "task_set",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 2666,
+    "reasoning_tokens": 2496,
+    "bytes": 574,
+    "json_ok": true,
+    "serde": "PARSE ok    task_set  591 chars  TaskSetWire { tasks: [TaskWire { title: \"Correct SLA reporting for cancelled jobs\", intent: \"Fix SLA calculation and sta",
+    "wall_s": 42.55
+  },
+  {
+    "label": "task_set-prompt",
+    "kind": "task_set",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 4347,
+    "reasoning_tokens": 3753,
+    "bytes": 2488,
+    "json_ok": false,
+    "serde": "-",
+    "wall_s": 61.78
+  },
+  {
+    "label": "verdict-strict",
+    "kind": "verdict",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 1516,
+    "reasoning_tokens": 1415,
+    "bytes": 386,
+    "json_ok": true,
+    "serde": "PARSE ok    verdict  390 chars  VerdictWire { call: Pass, rationale: \"The acceptance criterion `bash verify.sh .` measured as **fail**. Per your explici",
+    "wall_s": 24.71
+  },
+  {
+    "label": "verdict-repaired",
+    "kind": "verdict",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 1667,
+    "reasoning_tokens": 1561,
+    "bytes": 413,
+    "json_ok": true,
+    "serde": "PARSE ok    verdict  416 chars  VerdictWire { call: Pass, rationale: \"The acceptance criterion measured as `fail`. Per your instructions, 'a measurement",
+    "wall_s": 24.83
+  },
+  {
+    "label": "verdict-prompt",
+    "kind": "verdict",
+    "http": 200,
+    "finish": "stop",
+    "completion_tokens": 1904,
+    "reasoning_tokens": 1790,
+    "bytes": 456,
+    "json_ok": true,
+    "serde": "PARSE FAIL  verdict  unknown field `$schema`, expected one of `call`, `rationale`, `defects` at line 1 column 10",
+    "wall_s": 26.61
+  }
+]

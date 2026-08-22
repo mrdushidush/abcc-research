@@ -1,0 +1,44 @@
+fixture: D:\dev\ABCC_20_powerd_by_claudette\corpus\suites\k\tasks\finish_the_cancelled_status\fixture
+tree: 16 files;  Localize prompt 4069 chars, Plan 2538 chars, Judge 1236 chars
+
+-- brief --
+brief-strict           http=200 finish=stop   comp_tok= 1627 reas_tok= 1418 bytes=  725 json=OK    25.9s
+                         PARSE ok    brief  738 chars  BriefWire { restatement: "The SLA report incorrectly flags recently cancelled jobs as breached because `finished_at` in
+brief-repaired         http=200 finish=stop   comp_tok= 2444 reas_tok= 2201 bytes=  861 json=OK    36.1s
+                         PARSE ok    brief  876 chars  BriefWire { restatement: "The SLA report incorrectly flags cancelled jobs as breached because the service treats them as
+brief-prompt           http=200 finish=stop   comp_tok= 5298 reas_tok= 4428 bytes= 3849 json=OK    69.2s
+                         PARSE FAIL  brief  unknown field `$schema`, expected one of `restatement`, `sites`, `approach`, `risks` at line 2 column 11
+
+-- task_set --
+task_set-strict        http=200 finish=stop   comp_tok= 3455 reas_tok= 3254 bytes=  710 json=OK    54.8s
+                         PARSE ok    task_set  728 chars  TaskSetWire { tasks: [TaskWire { title: "Align status logic with lifecycle specification", intent: "Fix all status-depen
+task_set-repaired      http=200 finish=stop   comp_tok= 2666 reas_tok= 2496 bytes=  574 json=OK    42.6s
+                         PARSE ok    task_set  591 chars  TaskSetWire { tasks: [TaskWire { title: "Correct SLA reporting for cancelled jobs", intent: "Fix SLA calculation and sta
+task_set-prompt        http=200 finish=stop   comp_tok= 4347 reas_tok= 3753 bytes= 2488 json=NO    61.8s
+
+-- verdict --
+verdict-strict         http=200 finish=stop   comp_tok= 1516 reas_tok= 1415 bytes=  386 json=OK    24.7s
+                         PARSE ok    verdict  390 chars  VerdictWire { call: Pass, rationale: "The acceptance criterion `bash verify.sh .` measured as **fail**. Per your explici
+verdict-repaired       http=200 finish=stop   comp_tok= 1667 reas_tok= 1561 bytes=  413 json=OK    24.8s
+                         PARSE ok    verdict  416 chars  VerdictWire { call: Pass, rationale: "The acceptance criterion measured as `fail`. Per your instructions, 'a measurement
+verdict-prompt         http=200 finish=stop   comp_tok= 1904 reas_tok= 1790 bytes=  456 json=OK    26.6s
+                         PARSE FAIL  verdict  unknown field `$schema`, expected one of `call`, `rationale`, `defects` at line 1 column 10
+
+-- grounding: schema-valid is not grounded --
+brief-strict:
+  exists    jobs/sla.py
+GROUND  1/1 paths exist under D:\dev\ABCC_20_powerd_by_claudette\corpus\suites\k\tasks\finish_the_cancelled_status\fixture
+brief-repaired:
+  exists    jobs/sla.py
+GROUND  1/1 paths exist under D:\dev\ABCC_20_powerd_by_claudette\corpus\suites\k\tasks\finish_the_cancelled_status\fixture
+brief-prompt:
+GROUND  n/a  payload did not parse as brief or task_set
+task_set-strict:
+  exists    jobs/sla.py
+  exists    jobs/summary.py
+  exists    jobs/model.py
+GROUND  3/3 paths exist under D:\dev\ABCC_20_powerd_by_claudette\corpus\suites\k\tasks\finish_the_cancelled_status\fixture
+task_set-repaired:
+  exists    jobs/sla.py
+  exists    jobs/summary.py
+GROUND  2/2 paths exist under D:\dev\ABCC_20_powerd_by_claudette\corpus\suites\k\tasks\finish_the_cancelled_status\fixture

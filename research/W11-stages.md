@@ -21,16 +21,24 @@ Planned items:
    are where a phase gets to differ. F79's swap cost turns out to be a floor — a swap also wipes the
    prompt cache — and the reasoning trace turns out to be an unbounded input to a bounded output
    budget, which is how a shipping donor's Judge returns an empty string with HTTP 200.
-3. ☐ **Handoff artifact schemas as Rust types**, not conventions. Brief, diff, measurement set,
-   verdict — each an event on W3's log.
+3. ✅ **Handoff artifact schemas as Rust types** (F252–F269) — five types written, compiling, with
+   their schemas emitted and tested, plus eight probes. Answered: each artifact is **two** types, a
+   wire type the model fills and a checked type the recorder converts it into, because a schema
+   guarantees shape and only a check against the workspace guarantees reference. §10's premise
+   survives — a schemars-derived schema with `$defs`, `$ref` and nullable unions reaches the model
+   and comes back as bytes `serde` accepts. Two things it did not survive: **the emission order of a
+   schema's fields is causal for the answer** (a Judge asked for its verdict as the first key was
+   wrong 14 times out of 14 and right 17 out of 17 with the reasoning in front), and **of 35
+   generated acceptance criteria, none is both red on the unfixed tree and green on the reference
+   solution.**
 4. ☐ **Gate independence** and how it survives single player mode. Overlaps W6 item 3 directly;
    whichever runs first owns the measurement, the other cites it.
 5. ☐ **Loop budgets and circuit breakers per stage**, benchmarked against v1's existing behaviour.
    Inherits W6 F223 (the decline breaker that changed meaning) and W3 F195 (the retry budget).
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 949–960, against §10 lines 515–545. Findings continue
-the family numbering — one sequence across all workstreams. **Item 1 took F225–F237 and item 2 took
-F238–F251, so the next free number is F252.** Check the maximum before adding, not the last number
+the family numbering — one sequence across all workstreams. **Item 1 took F225–F237, item 2 took
+F238–F251 and item 3 took F252–F269, so the next free number is F270.** Check the maximum before adding, not the last number
 in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
@@ -1427,3 +1435,831 @@ against an unmeasured quality effect (OQ-W11-11) — the arithmetic is certain a
 And F251's rate is n=11 from one prompt over one repository: the direction is not in doubt, since the
 system prompt explicitly demanded a criterion that fails today and six still did not, but the number
 is a sample, not a rate.
+
+---
+
+# Item 3 — the handoff artifacts as Rust types
+
+## Question
+
+§10 asks for "schemas for what moves between stages" and makes a claim while asking:
+*"Rust's type system should make these contracts enforceable rather than hopeful, which is a real
+advantage over V1's JSON-by-convention approach"* (`RESEARCH_BRIEF.md:541-545`). Item 1 named the
+five artifacts — brief, task set, diff, measurement set, verdict — and said each is an event on W3's
+log, addressed by `seq`. Item 2 added two required fields and one new type (`Criterion` with a
+baseline).
+
+So this item owes three things, and the middle one is the one nobody has checked:
+
+1. The five types, written down, in Rust.
+2. **Whether the claim is true.** "Enforceable" is a chain — Rust type → JSON Schema → the server's
+   grammar → the model's bytes → `serde_json::from_str` back into the type — and a chain is worth
+   what its worst link is worth. Every link but the first is outside Rust.
+3. What an **append-only** log does to a typed payload, since W3 item 3 made boot *be* replay
+   (F170): every artifact version ever written has to stay readable, forever.
+
+And §10's own worry to settle: *"Context packs and task DAGs are the contract and the place context
+bloat accumulates. Research compaction between stages."*
+
+## Method
+
+Two halves, and the desk half went first so the probes had something to be about.
+
+**Desk.** Read each donor at the **consumption** site rather than the production site — the standing
+rule from `verify-claims-against-code-not-docs` item 19, which is what turned up F228/F229 in item 1.
+For each of the five artifacts: what type carries it, what happens when it does not parse, what
+happens when it is absent, and who reads it. Three donors: `agent-battle-command-center` (v1,
+TypeScript + Python), `battle-command-forge` (Rust), `claudette` (Rust).
+
+**Probes**, in `research/spikes/w11-artifacts/`, all re-runnable from the repository with no
+scratchpad clone — the fixture is `corpus/suites/k/tasks/finish_the_cancelled_status`, 16 files,
+~9.4k tokens, a real four-site bug with one correct decoy consumer and a reference solution that the
+suite's own verifier accepts. Held constants as W11 item 2: champion `qwen3.6-35b-a3b-mtp@iq3_s`,
+`-c 65536 --parallel 1`, LM Studio on `:1234`, temperature 0.
+
+| script | question | raw |
+|---|---|---|
+| `artifacts/` (Rust crate) | the five types, their schemas, and the tests that hold the rules | `schemas/*.json` |
+| `chain.py` | does a schemars-derived schema survive to the model and back? | `chain-run1.txt` |
+| `order.py` | why did the constrained Judge contradict itself? | `order-run1.txt` |
+| `enumbias.py` | is it the field order or the enum's own value order? | `enumbias-run1.txt` |
+| `prefix.py` | does *any* field in front fix it, or only one that argues? | `prefix-run1.txt` |
+| `criterion.py` + `reclassify.py` | what does a generated acceptance criterion actually measure? | `criterion-run*.txt` |
+| `convention.py` | does BCF's prose contract survive on this model? | `convention-run1.txt` |
+| `artifacts evolve` | append-only log vs. a type that changed | `evolve-run1.txt` |
+
+Two of those probes had to be thrown away and rebuilt before they were allowed to report anything,
+which is recorded in F266 rather than hidden: the first criterion runner called `python3`, which on
+this host is the Microsoft Store shim, and the second called `bash`, which on this host is WSL's.
+Both produced a complete table of confident nonsense in which every criterion "bound".
+`reclassify.py` now carries a seven-check self-test and refuses to print numbers if it fails.
+
+## Inherited
+
+- **Item 1 §6**: a gate-input type has no `Default`, and `unwrap_or` / `unwrap_or_default` /
+  `unwrap_or_else` on one are the same bug as `result.score || 5` (F233). Every `Uncertain` is built
+  at the site that knows why, and carries the why.
+- **Item 1 §5**: one criterion per task, executable or it does not exist (F236); absent is not pass
+  (F231).
+- **Item 2 §7**: the task set carries `Criterion { command, shell, cwd, baseline }` — the baseline is
+  F251's red-first check — and the verdict carries `reasoning_tokens` and `finish_reason`, because
+  F246 makes them part of the measurement.
+- **Item 2 §5**: `response_format: json_schema, strict: true` for every structured artifact, for the
+  reason F248 leaves standing — it makes malformation unrepresentable, not that the unconstrained
+  arm was measured failing.
+- **W3 item 3**: the log is `event(seq, task_id, attempt_id, kind, payload, at_unix_ms)`, append-only,
+  never updated, and **boot is replay**.
+- **W6 F217**: a veto is never a weight.
+
+## Findings
+
+### F252 — the one donor with a type system had the artifact types, and deleted them as unreachable
+
+`claudette/crates/claudette/src/forge/types.rs:1-11`, verbatim:
+
+> *Originally ported verbatim from `claudettes-forge/crates/core/src/types.rs` at the `rc1-final`
+> tag. The pipeline-vocabulary types (`Mission`, `Subtask`, `MissionId`, `Complexity`, `ToolCall`,
+> `ToolResult`) were duplicates of types claudette's runtime owns elsewhere and **never reached the
+> live orchestrator in `run.rs`**; they were dropped 2026-05-15 after the multi-agent audit.*
+
+What survived the audit is `Role`, `ModelMap`, `ProviderKind` — configuration. What moves between
+the stages is `String`: the Planner returns `Ok(extract_assistant_text(&summary))`
+(`forge_run.rs:1247-1267`), the diff is `Option<String>` from `git diff` (`:1203-1214`), and the
+Verifier's payload is a `format!` of the three of them (`:1290-1298`).
+
+This is not a criticism of the deletion — the types were dead and deleting dead code is right. It is
+the observation that **an artifact type only exists if something is forced through it**, which is
+F147's finding about `TaskState` arriving at the artifacts: v1 *had* the type and enforced nothing;
+Claudette had the type and nothing constructed it. Both are the same absence with different
+paperwork. The 2.0 consequence is in the recommendation: the type has to be the only way to get the
+value onto the log, or it will be `String` again within a release.
+
+### F253 — a brief that is a `String` can only be validated by guessing which words are paths
+
+Claudette is the only donor that tries to check its brief at all, and the shape of the check is the
+finding. `warn_if_brief_paths_missing` (`forge_run.rs:1073-1115`) splits the plan on whitespace and
+eleven punctuation characters, trims six more off each token, keeps anything containing `/` or `\`
+or having a 1–5 character extension, and then:
+
+```rust
+let any_exist = candidates.iter().any(|c| { … abs.exists() });
+if !any_exist { eprintln!("  ∘ planner localization check: none of the {} path(s) …") }
+```
+
+Three consequences follow from the artifact being prose, and all three are forced:
+
+- **The check is `any`, not `all`.** One real path suppresses the warning for fifty invented ones.
+  It cannot be `all`, because the tokeniser's candidate list contains things that were never meant
+  to be paths — a version number, `e.g.`, an `x.y` in prose.
+- **It can only warn.** A heuristic that can misfire cannot be a gate, so a brief that localises to
+  nothing at all prints a dim `∘` and the pipeline proceeds.
+- **It is per brief, not per path.** The one path that does not exist is exactly the fact the
+  Change phase needs, and it is the fact the check throws away.
+
+With `sites: Vec<Site>` and a `RepoPath` whose only constructor takes the workspace root, all three
+invert: every path is checked individually, the failure is a value naming the path, and there is
+nothing to tokenise. That is the smallest complete example of what §10 meant by "enforceable rather
+than hopeful", and it is worth noticing that the donor's author clearly wanted it — the check exists,
+it is careful, and the prose artifact is what made it a warning.
+
+### F254 — the measurement set is collapsed into one float, and the float adds an opinion to a measurement
+
+BCF is the only donor with a measurement-set type at all: `ProjectReport { file_reports,
+tests_passed, tests_failed, tests_run, avg_score, test_errors }` (`verifier.rs:26-36`). It is
+structured, it is serialisable, and by the time anything reads it, it is one `f32`.
+
+```rust
+let final_score = critique_avg * 0.4 + verifier_score * 0.6;   // mission.rs:1139
+```
+
+That is a **weighted sum of a model's opinion and an instrument's reading**, which is exactly what
+W6 F217 refused, and the second term is not clean either. `verifier_score` is the mean of per-file
+scores that `calculate_score` builds from content heuristics (`verifier.rs:741-763`):
+
+```rust
+let mut score: f32 = 5.0;
+if report.syntax_valid { score += 1.5; }   // syntax_valid := content.len() > 50
+if report.lint_passed  { score += 1.0; }   // true unless a linter ran AND found something
+if report.has_tests    { score += 1.0; }
+if report.has_docstring{ score += 0.5; }   // generic files: contains "//" or "#" or "/*"
+```
+
+and only then is the real measurement folded in, as an adjustment bounded to ±2.0
+(`verifier.rs:100-108`): 100% of tests passing is +2.0, 0% is −2.0. So a project whose entire test
+suite fails starts at 5.0, collects up to +5.0 for being longer than fifty bytes and containing a
+comment, and loses 2.0 for the tests. **A file that has never been run can outscore a file whose
+tests all fail**, and `lint_passed` is `true` when no linter is installed — F231's "absent is pass",
+at the file level, worth a full point.
+
+Two more sentinels in the same file: `avg_score` is `5.0` when there are no file reports at all
+(`verifier.rs:95-96`), and `tests_run: bool` exists — the tri-state is there in spirit — but is
+consumed as `if tests_run && … { adjust } else { avg_score }`, so "the suite did not run" and "there
+is no suite" and "the suite passed exactly half" all land within a point of each other.
+
+### F255 — one absent measurement, four different readings, in one code path
+
+`attempt_round` has an early return for a fix round that produced no files and left nothing on disk
+(`mission.rs:963-981`). It is a real path — a coder round that emits nothing is the failure BCF's
+own `surgical_or_regen` exists to handle. What the rest of the system then believes:
+
+| reader | what it makes of the same absence |
+|---|---|
+| the gate | `final_score: 0.0` → below every rung of `quality_gate`, so: fail |
+| the round report | `critique_scores.len() < 5`, so `dev/arch/test/sec/docs = 7.0` (`:862-871`) |
+| the security field | `sec_passed = !"".to_uppercase().contains("FAIL")` → **`true`** (`:874`) |
+| the CTO field | `cto_approved = "".to_uppercase().contains("APPROVE")` → `false` (`:873`) |
+| the console | `println!("[FIX] No files on disk — returning previous round score")` — it returns `0.0` |
+
+Five readings, four different, and the printed one describes behaviour that does not happen. The
+security row is the one that matters: **an empty security verdict passes the security check**, because
+the check is a negated substring test and the empty string contains nothing. Absence is pass, arrived
+at by punctuation.
+
+### F256 — the verdict's polarity is a substring test on English, and neither verdict has a reader in the gate
+
+The two model verdicts in BCF's pipeline are `String`, and they are interpreted like this
+(`mission.rs:873-874`):
+
+```rust
+let cto_approved = result.cto_verdict.to_uppercase().contains("APPROVE");
+let sec_passed  = !result.security_verdict.to_uppercase().contains("FAIL");
+```
+
+`"DO NOT APPROVE"` contains `"APPROVE"`. `"I would not approve this"` contains `"APPROVE"`. On the
+other side, `"no failures found"` contains `"FAIL"` and fails; `"CRITICAL: SQL injection on line 40"`
+contains no `"FAIL"` and passes. Both polarities are wrong in both directions on ordinary English,
+and the CTO's is wrong in the direction that ships.
+
+Then the part that makes it moot and worse: **grep the readers.** `cto_approved` and `sec_passed`
+appear exactly once each, both populating `CtoReport`/`SecurityReport` for the JSON report
+(`:906-921`). The gate is `result.final_score >= min_score` (`:496-497`) and the CTO's verdict is not
+in `final_score`. Stage 8 of 9, the most expensive rung of the model ladder (F243), and its output
+reaches a display field via a substring test. The report also keeps only `verdict.lines().next()` —
+the first line of a reasoning model's answer, which on this model is frequently blank.
+
+### F257 — BCF's report has five stage durations and writes `0.0` into all five
+
+`RoundReport` is the persisted artifact — `Serialize + Deserialize`, written per round
+(`report.rs:110-121`). It carries an `LlmStageReport` per stage with `duration_secs`, `token_count`,
+`tok_per_sec`. At the only construction site (`mission.rs:878-921`) every one of the five is written
+as `0.0` / `0`, with a comment: `// timing captured at LLM level`.
+
+The numbers exist. `LlmCallStats` carries real ones (`llm.rs:89-97`), and two of the nine stages do
+record them, because those two call a different function: `run_architect_with_stats` and
+`run_tester_with_stats` (`mission.rs:431, 454`). The round report calls the variants that do not
+return stats, so the artifact that most needs provenance is built from the path that discards it.
+And `impl Default for LlmStageReport` (`report.rs:95-105`) produces the identical zeros, so "never
+filled" and "default" are the same bytes on disk.
+
+**For 2.0:** provenance is not a field the producer of an artifact is asked to fill. It is added by
+the recorder, from the response, and the artifact type should not have a slot the producer cannot
+honestly complete — which is also the argument for the wire/checked split in the recommendation.
+
+### F258 — `5.0` is the family's `Uncertain`, spelled as a passing-ish score, and one donor broke the pattern at exactly one site
+
+Every place a model verdict fails to arrive, in every donor, produces a number in the same domain as
+a real verdict:
+
+| donor | site | value on failure |
+|---|---|---|
+| BCF | LLM call errored (`mission.rs:1645-1649`) | the literal string `"DEV: 5.0\nARCH: 5.0\n…"` |
+| BCF | empty response (`:1650-1653`) | `vec![5.0f32; 5]` |
+| BCF | parse extracted nothing (`:1656`) | `vec![5.0f32; 5]` — the array's initialiser |
+| BCF | no files to score (`verifier.rs:95-96`) | `avg_score = 5.0` |
+| BCF | round report, critique missing (`mission.rs:862-871`) | `7.0` ×5 |
+| v1 | sentinel review (`codeReviewService.ts:322`) | `result.score \|\| 5` |
+| v1 | mission review (`:578`) | `Math.min(10, Math.max(0, result.qualityScore \|\| 5))` |
+| Claudette | verdict unparseable (`forge_run.rs:1327-1331`) | **`score: 0, pass: false`** |
+
+Claudette is the exception and its comment says why: *"Abstention default — fail, with a score of 0
+so it can never win best-round restore by masquerading as a clean 10."* The fix is known in this
+family. It was applied once, at one artifact, by one author, after a roast — and the same repository
+still has `unwrap_or("")` on the feedback field two lines below.
+
+BCF even detects its own case: `if scores.iter().all(|&s| s == 5.0) { eprintln!("WARNING: Critique
+parser extracted no scores…") }` (`:1689-1695`). It is an `eprintln!`, the 5.0s flow into
+`critique_avg` regardless, and — F269 — the detector cannot fire on the failure that matters.
+
+**For 2.0:** this is the argument for putting the rule in the *type* rather than at the site. Eight
+sites, seven wrong, one right, all written by people who understood the problem. A `GateInput<T>`
+with no `Default` moves the decision from "did this author remember" to "does this compile".
+
+### F259 — v1's task set is `list[dict[str, Any]]`: a cast that checks nothing, and a cap that drops the tail
+
+Two defects, one type.
+
+**The cast.** `const parsed = JSON.parse(jsonMatch[0]) as HaikuAssessment`
+(`complexityAssessor.ts:102`). TypeScript's `as` is a compile-time assertion with no runtime
+component. Run for real: a model that answers `{"complexity": "high"}` produces
+`Math.max(1, Math.min(10, "high"))` = **`NaN`**, and every downstream comparison on it is `false`, so
+the dual-assessment logic silently takes its last branch. There is no error, no log line, and the
+declared interface is satisfied.
+
+**The cap.** The decomposer *does* validate — five required fields per subtask, raising on any that
+is missing (`orchestrator.py:223-228`), and four regex auto-repairs to keep the criterion pointing at
+the right file (`:236-284`, item 1 already flagged these for porting). Then:
+
+```python
+MAX_SUBTASKS = 7
+if len(subtasks) > MAX_SUBTASKS:
+    print(f"[Orchestrator] WARNING: {len(subtasks)} subtasks exceeds cap of {MAX_SUBTASKS}, truncating")
+    subtasks = subtasks[:MAX_SUBTASKS]
+```
+
+The prompt orders subtasks by dependency, earlier before later (`:143`), so the truncation drops the
+*last* tasks — the ones that assemble what the earlier ones built. A mission decomposed into ten
+tasks ships seven and reports success. The warning is a `print` on the Python service's stdout; the
+mission record carries no note that its task set was cut.
+
+The defect list gets the same treatment one file over: `findings: (result.findings || []) as unknown
+as undefined` (`codeReviewService.ts:320`, and again at `:227`) — a double cast that erases the type
+of the richest artifact in the pipeline on the way into the database.
+
+### F260 — the diff is truncated honestly for the human and not at all for the Judge
+
+Claudette caps the diff at 600 lines for the approval prompt and returns the omitted count so the
+operator knows (`forge_run.rs:144-155, 182`). The Verifier — the only correctness gate before a PR —
+gets `format!("… --- git diff HEAD ---\n{diff}\n--- end diff ---")` with no cap at all
+(`:1290-1298`), from a `capture_git_diff` that returns whatever `git diff` produced (`:1203-1214`).
+
+The human is protected from a diff that would scroll off the screen; the gate is not protected from
+a diff that will not fit in the window. Measured on the donor's own history — 30 commits of
+`claudette`, `git show` bytes: **median 7,276, p90 21,228, max 31,795**, and cumulative
+`HEAD~20..HEAD` is **178,009 bytes**, roughly 50k tokens at this model's ratio, against a 61,440-token
+window.
+
+That is also §10's compaction question, answered by measurement rather than by worry. The structured
+artifacts are **not** where context accumulates:
+
+| artifact | measured size (this fixture) |
+|---|---|
+| brief (schema-constrained) | 725–861 bytes |
+| task set (schema-constrained) | 574–710 bytes |
+| verdict (schema-constrained) | 386–413 bytes |
+| **one commit's diff** | **7,276 bytes median, 31,795 max** |
+| a twenty-commit mission's diff | 178,009 bytes |
+
+§10 guessed that "context packs and task DAGs" were the bloat site. The task DAG is 700 bytes. The
+bloat is the diff and the instrument output, which are the two artifacts nobody typed — and both are
+the ones that should be *references* rather than payloads.
+
+### F261 — the chain holds: a derived schema survives to the model and back, and the grammar is enforced
+
+The claim in `RESEARCH_BRIEF.md:543` has five links, and W11 item 2's evidence covered only the last
+two — `verdict.py`'s schema was hand-written to be easy: flat, no `$ref`, no `$defs`, no nullable
+field, every property required. That is not what a Rust type produces. `schemars` derives `$defs` +
+`$ref` for every named struct and enum, `type: ["string","null"]` for `Option<T>`, and leaves
+`Option` fields **out of `required`** — which is precisely what OpenAI's strict mode forbids.
+
+Sent verbatim, unmodified, at `strict: true`, three artifacts × three arms (`chain-run1.txt`):
+
+| arm | HTTP | JSON parses | `serde_json::from_str` into the real type |
+|---|---|---|---|
+| schemars output, verbatim | 200 ×3 | 3/3 | **3/3** |
+| the same, every property forced into `required` | 200 ×3 | 3/3 | **3/3** |
+| no `response_format`, schema pasted into the prompt | 200 ×3 | 2/3 | **1/3** |
+
+And the grammar is genuinely applied, not politely ignored: a control schema whose `call` enum held
+`["affirmative","negative"]` — words this model would never volunteer — came back
+`{"call": "affirmative", …}` (`order-run1.txt`).
+
+**The link nobody had tested is sound.** `$defs`, `$ref`, nullable unions and the `required` omission
+all pass through llama.cpp's grammar converter and come back as bytes `serde` accepts, including
+under `#[serde(deny_unknown_fields)]`. §10's premise survives contact with an actual derived schema,
+which was not a foregone conclusion and is the reason the rest of this item can be about types at all.
+
+### F262 — the convention arm fails at the *type*, not at the JSON, and every donor's parser is built not to notice
+
+F248 measured prompt-and-pray as parsing 3/3 once the format was properly asked for, and concluded
+the schema's case is the guarantee rather than the hit rate. Correct, and it understates it, because
+`json.loads` is not the test that matters.
+
+Of three prompt-only arms: one produced text that is not JSON at all (task set, 2,488 bytes), and
+**two produced JSON that parses and is not the type**:
+
+```
+PARSE FAIL  brief    unknown field `$schema`, expected one of `restatement`, `sites`, `approach`, `risks`
+PARSE FAIL  verdict  unknown field `$schema`, expected one of `call`, `rationale`, `defects`
+```
+
+The model copied the schema's own `$schema` and `title` keys into its answer — a failure mode
+available *only* to the arm that has to show the model the schema. `json.loads` says OK.
+`serde_json::from_str` into a type with `deny_unknown_fields` says no.
+
+And all three donors would have shipped it. v1 pulls fields out of an `any`
+(`codeReviewService.ts:311-322`), BCF walks `serde_json::Value` by index (`router.rs:342-345`),
+Claudette walks `serde_json::Value` by key (`forge_run.rs:1347-1367`). Every one of them reads `call`
+and `rationale` correctly out of that payload and never mentions the two extra keys. **Their
+tolerance is not robustness; it is the absence of the check** — the same payload that fails loudly
+here passes silently there, and the field they would have silently dropped could as easily have been
+a defect list.
+
+### 🚨 F263 — the order of a schema's fields decides the answer: 0/14 with the verdict first, 17/17 with it last
+
+`chain.py`'s Judge arms came back with this, twice, at temperature 0:
+
+```json
+{"call": "pass", "defects": [],
+ "rationale": "The acceptance criterion measurement failed. A verdict of pass while a
+  required measurement fails is itself a defect. Therefore, the only valid verdict is FAIL."}
+```
+
+The two fields of one object contradict each other, and **the field the gate reads is the wrong one**.
+The unconstrained arm, same prompt, answered `fail`.
+
+Isolated over 37 further calls, ground truth `fail` (the acceptance criterion returned
+`RESULT: FAIL`), everything else held:
+
+| arm | first key of the object | enum order | correct |
+|---|---|---|---|
+| A | `call` | `["pass","fail"]` | **0/5** |
+| E | `call` | `["fail","pass"]` | **0/5** |
+| control | `call` | `["affirmative","negative"]` | 0/1 — argued negative, emitted affirmative |
+| I | `artifact_version` (a constant) | `["pass","fail"]` | **0/3** |
+| J | `files_reviewed` (a neutral list) | `["pass","fail"]` | 2/3 |
+| B | `rationale` | `["pass","fail"]` | **5/5** |
+| C | `assessment` | `["pass","fail"]` | **3/3** |
+| F | `rationale` | `["fail","pass"]` | **3/3** |
+| G | `defects` | `["fail","pass"]` | **3/3** |
+| H | `defects` | `["pass","fail"]` | **3/3** |
+| D | *(no `response_format` at all)* | — | 3/3 |
+
+Three things fall out, and the second is why the confound had to be chased before any of this was
+worth writing down.
+
+- **It is not the enum's value order.** Reversing it changed nothing in either direction (A vs E,
+  G vs H). That is consistent with how constrained decoding works — the grammar masks, the logits
+  choose — but it was indistinguishable from the field-order story until it was run.
+- **It is not "any key in front".** A zero-information constant (`{"artifact_version":"v1"}`) does
+  not help: 0/3. A neutral list of filenames is unstable: 2/3.
+- **It is specifically the reasoning.** Every arm whose first emitted field carries the argument —
+  `rationale`, `assessment`, or the defect list itself — is correct, 17 for 17. Every arm where the
+  decision is emitted before any argument is wrong, 14 for 14.
+
+The mechanism is a hypothesis and is not needed for the rule: the model has a full reasoning trace
+(687–1,675 tokens in the failing arms) and it does not carry the decision across into the constrained
+payload. What is measured is that **the object's emission order is causal for the object's content**,
+and therefore that emission order is part of an artifact schema's correctness, not its formatting.
+
+### F264 — and two layers destroy that order, the first being a `serde_json` feature nobody names
+
+`VerdictWire` was declared `call, rationale, defects`, because that is the order a person writes a
+verdict down in. That alone puts the decision first. But the emitted schema was alphabetical —
+`call, defects, rationale` — and the obvious culprit is wrong.
+
+**`schemars` preserves declaration order. `serde_json`'s default `Map` is a `BTreeMap`.** Without
+the `preserve_order` feature, every JSON object the crate builds is re-sorted alphabetically on
+serialisation, including one that was just deliberately ordered. Proof from the same type: with
+`preserve_order` on, `SiteWire` emits `path, first_line, last_line, why` — its declaration order,
+where alphabetical would be `first_line, last_line, path, why`.
+
+So the emission order has to survive two layers that are both silent:
+
+1. a **default feature set** on a dependency, invisible on the `Cargo.toml` line, with no warning and
+   no compile error if you never enable it — the mirror image of
+   `verify-claims-against-code-not-docs` item 23's absent-flag trap;
+2. **declaration order itself**, which is a prose habit and now demonstrably a correctness property.
+
+`emit.rs` in the spike carries the fix as code rather than as advice: an explicit emission order per
+artifact, a declared decision key per artifact, and a test —
+`a_decision_key_is_never_the_first_emitted_field` — that fails the build if a regenerated schema puts
+one first. Run end to end, the shipped `schemas/verdict.json` (derived from the Rust type, reordered,
+written to disk, sent to the model) answers `fail` **3/3**.
+
+### F265 — constraining the output is 2–3× cheaper, and the trace is 87–97% of every structured artifact
+
+Free from `chain.py`, same prompts, same task:
+
+| artifact | constrained | prompt-only |
+|---|---|---|
+| brief | 1,627 completion tokens, 725 bytes | 5,298 completion tokens, 3,849 bytes |
+| task set | 3,455 / 710 | 4,347 / 2,488 |
+| verdict | 1,516 / 386 | 1,904 / 456 |
+
+And the split within the completion, which is F246's mechanism per artifact rather than in the
+abstract: brief 1,418 of 1,627 tokens are reasoning (87%), verdict 1,415 of 1,516 (93%), the
+smallest observed payload 101 tokens against 1,415 of trace (**93%**), and the largest ratio seen
+across all arms is 97%. The output budget is not being spent on the artifact. Item 2's 8192 stands,
+and the reason it has to be that large for a 400-byte answer is now visible as a number.
+
+### 🚨 F266 — of 35 model-generated acceptance criteria, zero are red before the change and green after it
+
+Item 2 recommendation 6 says to validate a criterion by running it against the unchanged tree, and
+F251 measured six of eleven exiting 0. This ran 35 criteria — ten M1 Plan calls over the K-suite
+fixture, two schema orderings — through a runner with a self-test, and then classified them by *why*
+they exit what they exit:
+
+| | n |
+|---|---|
+| exits 0 on the unfixed tree — measures nothing | **22** |
+| textual proxy (`grep -q CANCELLED jobs/sla.py`, `'is_terminal' in open(f).read()`) | 8 |
+| non-zero because the model invented a symbol — **unrunnable, never a fail** | 4 |
+| behavioural, red on the unfixed tree | 1 |
+
+The last row does not survive either. `K5.3` is
+`python3 run.py … && grep -q "CANCELLED" out && ! grep -q "SLA breach\|over SLA" out` — it requires
+the report to contain no SLA-breach line at all. Applied to the **reference solution**, which the
+suite's own verifier accepts (`RESULT: PASS cancelled is handled at all four sites, and the genuine
+breaches and retries survive`), it is **still red**: the correct fix leaves `SLA breaches 2`, the two
+genuinely late jobs. It is satisfiable only by deleting the SLA feature, which is the exact failure
+the K-suite's positive controls exist to catch.
+
+The four "behavioural" ones are worth naming because they are the most convincing-looking of the
+lot — `python3 -c "from jobs.sla import is_sla_breach; assert not is_sla_breach('cancelled',0,120)"`
+and three siblings. Every one raises `ImportError`. The real names are `is_breached`, `charge_pence`,
+`counts`; the model invented plausible ones. Under item 2's own classification an `ImportError` is
+`CriterionUnrunnable`, never a fail — and a runner that does not make that distinction (mine did not,
+twice) reports all four as binding.
+
+Two more measurements on the same set:
+
+- **Red-first is necessary and not sufficient**, demonstrated rather than argued: appending the single
+  line `# CANCELLED is handled elsewhere` to `jobs/sla.py` flips `grep -q "is_terminal\|CANCELLED"
+  jobs/sla.py` from exit 1 to exit 0, while the report still says `other=4` and `SLA breaches 6`. The
+  criterion goes green; nothing was fixed.
+- **14 of 35 carry an explicit escape hatch**: five have an `||` branch that exits 0
+  (`… assert … 2>/dev/null && echo "PASS" || python3 run.py data/jobs.json`), four are a negated grep
+  for a string the output never contains, three discard stderr, two call
+  `getattr(mod, 'name', lambda s: True)`. The model writes `unwrap_or` into its own acceptance
+  criterion. One of them, on the wholly unfixed tree, prints
+  `All status decisions correctly handle CANCELLED.` and exits 0.
+
+### F267 — the ordering rule does not transfer to the criterion, and the arm that should have been better was worse
+
+The obvious next move after F263 was to apply it to M1 Plan: `criterion` sorts before `intent`,
+`title` and `touches`, so the model picks the command that grades the work before it writes down what
+the work is. Predicted improvement; measured the opposite.
+
+| arm | behavioural | textual proxy | unrunnable | exits 0 |
+|---|---|---|---|---|
+| criterion **first** (n=18) | 1 | 5 | 4 | 8 |
+| criterion **last** (n=17) | 0 | 3 | 0 | 14 |
+
+Moving the criterion behind the prose made it *worse* — 14 of 17 satisfied before the work starts,
+against 8 of 18. Reading the commands says why without settling it: emitted first, the model writes
+narrow syntactic checks (`grep -q CANCELLED jobs/x.py`) that happen to be red; emitted after the
+prose, it writes broad gestures (`python3 run.py data/jobs.json`, `pytest tests/`) that happen to be
+green. Neither is a criterion. The order changed the *kind* of command and not its quality.
+
+Recorded as a negative because it is one, and because it constrains the rule F263 bought: the
+finding is about a **decision** field — a bounded choice the model commits to — and a criterion is a
+generated artifact, not a choice among alternatives. F251's own probe is the control that keeps this
+honest: its schema already put `acceptance_command` last (`w11-tier/plan.py:82-87`) and it still
+measured 6 of 11 non-discriminating, so ordering was never the explanation there and must not be
+quoted as if it were.
+
+### F268 — an append-only log and "no `Default`" collide, and versioned kinds are the only thing that satisfies both
+
+W3 item 3 made boot *be* replay (F170), which means every artifact ever written must stay readable by
+every later binary. Item 1 §6 forbids `Default` on anything a gate reads. Those two are in direct
+conflict and the collision is one field wide (`evolve-run1.txt`):
+
+```
+old event on the log : {"call":"fail","rationale":"criterion failed","defects":[]}
+new event on the log : {"call":"fail","rationale":"criterion failed","defects":[],"decisive_check":"criterion"}
+
+-- today's reader against yesterday's event --
+  strict   v2 <- v1  FAIL missing field `decisive_check` at line 1 column 59
+  default  v2 <- v1  OK   decisive_check=""      <- the forbidden fix
+-- yesterday's reader against today's event (replay after a downgrade) --
+  strict   v1 <- v2  FAIL unknown field `decisive_check`
+  open     v1 <- v2  OK   VerdictV1Open { … }    <- unknown field silently dropped
+```
+
+Adding one required field breaks the replay of every event already on the log. The remedy every serde
+tutorial gives is `#[serde(default)]`, and `#[serde(default)]` on a gate input **is**
+`result.score || 5` — it manufactures a value at the read site for an event that never carried one,
+six months after the fact, with nobody present who knows what it should have been. Dropping
+`deny_unknown_fields` instead buys forward compatibility by silently discarding fields, which is
+F262's failure mode chosen deliberately.
+
+### F269 — BCF's prose contract survives on this model 5/5, and the one format that breaks it breaks silently
+
+The case for typed artifacts is not that the model will not comply. Run with BCF's system prompt
+verbatim, five identical calls over the fixture's most defective module, its ported parser reading
+the output (`convention-run1.txt`):
+
+```
+run1  scores=[4.0, 6.5, 2.0, 9.5, 7.0] avg=5.80  details_found=5
+run2  scores=[5.0, 7.0, 2.0, 9.5, 7.0] avg=6.10  details_found=5
+run3  scores=[5.0, 6.0, 0.0, 9.0, 8.0] avg=5.60  details_found=5
+run4  scores=[4.5, 5.0, 2.0, 9.0, 8.0] avg=5.70  details_found=5
+run5  scores=[4.5, 5.0, 2.0, 9.0, 8.0] avg=5.70  details_found=5
+```
+
+Five of five, every score extracted, every defect string found. The format holds on this model, and
+F247's non-determinism shows up again in the numbers (DEV 4.0–5.0, ARCH 5.0–7.0 on identical input at
+temperature 0) rather than in the parsing.
+
+The problem is what happens on the formats it does not hold for. Ten plausible model outputs through
+the same parser (`bcf-parse-run1.txt`): six alternate layouts parse correctly — markdown bold,
+bullets, a markdown table, a forbidden preamble, expanded role names. Two collapse to the 5.0
+sentinel, and BCF warns about both. And one is silently, confidently wrong:
+
+```
+2 numbered list    scores=[1.0, 2.0, 3.0, 4.0, 5.0] avg=3.00   details_found=5
+```
+
+A model that numbers its five lines has its list indices read as its scores, because the score scan
+starts at the beginning of the line and `"1."` parses as `1.0` in Rust. `avg` goes 7.70 → 3.00, all
+five defect strings are extracted correctly so the output looks complete, and **BCF's own detector
+cannot fire** — it triggers on `scores.iter().all(|&s| s == 5.0)`, and these are 1, 2, 3, 4, 5.
+
+Run 3 above is the other half of the same argument: a genuine `TEST: 0.0`. In BCF's array a real zero
+and a parse failure sit five points apart in the same `Vec<f32>` with nothing to tell them apart —
+F258, on live output.
+
+## Options compared
+
+| | what it is | why not |
+|---|---|---|
+| **1. JSON by convention** (v1) | `dict`/`any`, fields picked out at each reader | F259: the cast checks nothing and `NaN` propagates; F258: each reader invents its own default |
+| **2. Prose by convention** (BCF) | `String` between stages, regex/line scanners | F269: survives on this model and fails silently on one plausible format; F256: polarity by substring |
+| **3. Typed, tolerant parse** (Claudette) | `serde_json::Value` walked by key, fail-closed | the best in the family and still per-site: F262's `$schema` field would be silently dropped |
+| **4. One type per artifact** | `#[derive(Deserialize)]`, schema-constrained | the schema constrains shape and nothing else — a schema-valid path can still not exist |
+| **5. Wire type + checked type** | the model fills the wire type; the recorder converts it against the world | **recommended** — the conversion is the only place `Uncertain` can be constructed honestly |
+
+## Recommendation
+
+### 1. Two types per artifact, and the conversion is where the truth check lives
+
+A schema guarantees **shape**. Only a check against the workspace guarantees **reference**. Those are
+different guarantees and they need different types.
+
+```rust
+// wire: exactly what the model is asked for, all strings, no provenance
+pub struct SiteWire { pub path: String, pub first_line: Option<u32>,
+                      pub last_line: Option<u32>, pub why: String }
+
+// checked: what the pipeline is allowed to carry
+pub struct Site { pub path: RepoPath, pub span: Option<LineSpan>, pub why: String }
+
+pub struct RepoPath(String);
+impl RepoPath {
+    pub fn check(root: &Path, raw: &str) -> Result<Self, Why> { … }   // the ONLY constructor
+}
+```
+
+`RepoPath::check` rejects absolute paths, rejects `..`, and requires the path to exist under the
+workspace root. That single function is F253's whole fix: per path instead of per brief, a value
+instead of an `eprintln!`, and nothing to tokenise. The recorder runs the conversion; a failure is
+`Uncertain(Ungrounded { detail })` naming the path, on the log, where the console can show it and the
+next attempt can read it.
+
+On this fixture the grounding check caught nothing — 6 of 6 paths existed — which is worth saying
+plainly rather than dressing up: with the tree listing in the prompt, copying a path is easy. The
+check costs a `stat` per path and it is the case where the tree is *not* in the prompt that it exists
+for.
+
+### 2. The five artifacts
+
+The full source is `research/spikes/w11-artifacts/artifacts/src/{wire,checked,emit}.rs`, compiling,
+with its schemas emitted to `schemas/*.json` and three tests holding the rules. The shape:
+
+| # | artifact | phase | wire type | checked type | notes |
+|---|---|---|---|---|---|
+| 1 | **brief** | A1 | `BriefWire` | `Brief { sites: Vec<Site>, … }` | every `RepoPath` checked |
+| 2 | **task set** | M1 | `TaskSetWire` | `TaskSet { tasks: Vec<Task> }` | `depends_on` emitted, not inferred from order (OQ-W11-3) |
+| 3 | **diff** | A2 | *(none)* | `DiffRef { base: Sha, head: Sha, files, +/− }` | **no wire type at all** |
+| 4 | **measurement set** | A3/M2 | *(none — no model)* | `MeasurementSet { checks: Vec<Check> }` | `Check { name, outcome: GateInput<Run>, required }` |
+| 5 | **verdict** | A4 | `VerdictWire` | `Verdict { call, rationale, defects }` | **no score field** |
+
+Four rulings inside that table are the substance.
+
+**The diff has no wire type.** A model-authored account of its own edits is narration, and grading
+narration is F232. The artifact is a SHA pair plus `git diff --numstat`; the Judge reads the change
+from git. A `ChangeNoteWire { summary, unresolved }` exists alongside it for the one thing git cannot
+report — what the model knows it did not finish — and it is never the diff.
+
+**The verdict has no score.** F247 measured the binary as reproducible at temperature 0 and the
+number as not (0, 2, 0, 2 on identical input), and F269 saw the same spread again in BCF's five
+dimensions. A field whose value does not survive re-running is not a field the type is entitled to
+have. `Call::{Pass, Fail}` plus a defect list, and the defect list is what a threshold would have
+been approximating.
+
+**Every gate input is `GateInput<T>`, which is not `Default` and not `Ord`:**
+
+```rust
+pub enum GateInput<T> { Measured { value: T }, Uncertain { why: Why } }
+```
+
+No `Ord` is the mechanical form of item 1's "`Uncertain` loses every comparison it enters" — there is
+no comparison to lose. The only fold is `admits_pass`, a conjunction, so the gate is W6 item 2's
+conjunction of vetoes and `Uncertain` vetoes by construction. `Why` is a closed enum — `TraceOverran
+{ reasoning_tokens }`, `Truncated`, `EmptyPayload`, `Ungrounded`, `Unparseable`,
+`CriterionDoesNotDiscriminate { exit }`, `CriterionUnrunnable`, `NotRun`, `Stalled { idle_ms }` — so
+adding a reason is a compile error at every `match`.
+
+**The criterion's baseline is a four-variant enum, not `Option<ExitCode>`.** Item 2 handed over
+`baseline: Option<ExitCode>` with "its absence is a state, not a default". An `Option` is one
+`unwrap_or` from being a default, which item 1 §6 forbids, so:
+
+```rust
+pub enum Baseline {
+    Unmeasured,                             // a task in this state may not be Deployed
+    Red { exit: i32 },                      // the criterion binds — the only usable state
+    DoesNotDiscriminate { exit: i32 },      // back to M1, with the command and its exit code
+    Unrunnable { detail: String },          // never a fail
+}
+```
+
+### 3. Provenance is added by the recorder, and the model is never asked for it
+
+```rust
+pub struct Recorded<A> { seq, mission, task, attempt, phase, produced: Provenance, artifact: A }
+pub enum Provenance { Model(ModelCall), Instrument(Run), Operator { at: Seq } }
+pub struct ModelCall { model, head, prompt_tokens, completion_tokens,
+                       reasoning_tokens, finish_reason, wall_ms }
+```
+
+F257 is the argument: BCF's report has five `duration_secs` fields and writes `0.0` into all five,
+because the artifact was shaped to hold provenance the producer did not have. Splitting the envelope
+from the payload also keeps the model-facing schema minimal, which F265 prices — every field in the
+schema is tokens the model spends emitting instead of reasoning.
+
+`reasoning_tokens` and `finish_reason` are mandatory on every `ModelCall`, per item 2 §5, and the
+empty-payload match stays exactly as item 2 wrote it.
+
+### 4. Emission order is part of the schema, and a test holds it
+
+The rule F263 bought, stated so it survives a refactor:
+
+> **In any artifact a model emits, no field that records a decision may be the first field emitted,
+> and every field before it must carry the reasoning that justifies it.**
+
+Not "any field in front" — a constant does not work (0/3) and a neutral list is unstable (2/3). And
+the rule cannot be left to declaration order, because F264 shows two silent layers between the Rust
+struct and the bytes on the wire. So:
+
+- `serde_json` gets its `preserve_order` feature, with the reason in the `Cargo.toml` line;
+- each artifact declares an explicit emission order and its decision key in one table (`emit.rs`);
+- the schema is emitted through `emit::apply`, never straight from `schema_for!`;
+- `a_decision_key_is_never_the_first_emitted_field` fails the build if that stops being true.
+
+`emit::apply` also closes the `required` gap `schemars` leaves on `Option<T>` — nullable-in-the-type
+rather than absent-from-`required` — which costs nothing here and is what OpenAI's strict mode
+requires elsewhere.
+
+This is cheap and it is the highest-leverage thing in the item: the same model, the same prompt, the
+same schema content, 0/14 wrong one way and 17/17 right the other.
+
+### 5. `kind` carries the version, and old types live forever
+
+F268's collision has one honest resolution. W3's `event.kind` column becomes the versioned
+discriminant — `verdict.v1`, `verdict.v2` — and:
+
+- every version is a **distinct Rust type**, `deny_unknown_fields`, no `#[serde(default)]`, ever;
+- the projection dispatches on `kind` and upgrades with a hand-written `impl From<VerdictV1> for
+  Verdict` that has to say, explicitly, what the missing field means for events that predate it;
+- an unknown `kind` at replay is `Uncertain(UnknownKind)`, never a skip.
+
+The cost is real and worth stating: the codebase carries dead-but-live types forever, and every
+schema change is a new type plus a conversion. That is the price of an append-only log that boots by
+replaying itself, and it is cheaper than the alternative, which is a `Default` impl deciding in 2027
+what a gate meant in 2026.
+
+### 6. Criteria: red-before is necessary, and F266 says what it is not
+
+Item 2 recommendation 6 stands unchanged and is now measured harder. What has to be added:
+
+- **Red-before *and* green-after are one pair of evidence, not a tick.** Both go on the log as
+  separate `Check`s, and the console shows the transition. A criterion that was never red is
+  `DoesNotDiscriminate`; a criterion that is still red after a passing attempt is the K5.3 case and
+  is `Uncertain(CriterionOverStrict)` rather than a fail.
+- **The criterion is never the only required check.** It sits in the same conjunction as the build
+  and the project's own suite, because F266's 8 textual proxies pass red-before *and* green-after
+  and are still satisfied by a comment.
+- **`CriterionUnrunnable` needs a real detector.** An `ImportError`, a missing binary, a Store shim,
+  a wrong shell — four of the 35 failed this way and all four look like a fail on the exit code
+  alone. The runner's own self-test is part of the deliverable, not scaffolding: it is what stopped
+  this probe from reporting 35/35 binding, twice.
+- **Port v1's four auto-repairs** (`orchestrator.py:236-284`), which item 1 already flagged; F266 is
+  the measurement that says why they are not optional.
+
+### 7. What this hands onward
+
+- **To W3 item 1/3**: `event.kind` is the versioned artifact discriminant, and the projection's
+  dispatch is exhaustive over it. `payload` is one wire-or-checked type per kind, never a bag.
+- **To W11 item 4 / W6 item 3**: the verdict type has no score, so a second opinion can only be asked
+  for the binary and the defect list. That narrows the independence question before it is asked.
+- **To W11 item 5**: `Why` is the closed vocabulary a circuit breaker counts. A breaker that counts
+  `Uncertain(CriterionUnrunnable)` as a failed attempt is counting the host, not the work.
+- **To W5**: the console's evidence view is the artifact chain by `seq`, and the two artifacts worth
+  rendering specially are the measurement set (a conjunction, so show which conjunct failed) and the
+  criterion pair (red → green as a transition, not a tick).
+- **To W2/W1**: F265's 87–97% trace ratio is a serving fact as much as a prompt fact.
+
+## Rejected alternatives and why
+
+- **One type per artifact, no wire/checked split.** Simpler, and it cannot express F253: the
+  difference between "the model said `jobs/sla.py`" and "`jobs/sla.py` exists" has to live
+  somewhere, and if it is not in the type it is in a comment.
+- **A score on the verdict, for continuity with all three donors.** F247 and F269: the number does
+  not survive re-running at temperature 0 in either donor's shape. Keeping it would give the console
+  something to plot and give the gate something to be fooled by.
+- **`#[serde(default)]` for artifact evolution.** F268. It is the tutorial answer and it is
+  `result.score || 5`.
+- **Carrying diff text on the log.** F260: median 7 KB per commit, 178 KB over twenty. The log is not
+  a blob store and the Judge should not read a copy when the original is one `git diff` away.
+- **Trusting `schema_for!` output as shipped.** F263 + F264: it is derived from declaration order,
+  declaration order is a prose habit, and two layers between the struct and the wire will silently
+  re-sort it anyway.
+- **Letting the criterion's quality rest on emission order.** F267 — tried, measured, worse. Recorded
+  rather than quietly dropped, because the next person will have the same idea.
+- **`Vec<f32>` of dimension scores, BCF-style, as the defect list.** F269's numbered-list case: five
+  numbers that look like scores, an average that moves 7.70 → 3.00, and a warning that cannot fire.
+
+## Effect on fun
+
+The best thing item 3 found is that **the honest verdict and the correct one are the same fix**, and
+it costs nothing. A Judge that is made to write down its reasoning before it commits is both more
+accurate (0/14 → 17/17) and better television: the console gets the argument first and the ruling
+last, which is the order a verdict is delivered in everywhere else in life. The version that answered
+`pass` while typing *"therefore the only valid verdict is FAIL"* is the least dramatic thing
+imaginable — a unit that has already decided and is reading out a prepared statement.
+
+`GateInput` with no `Ord` is the other one. §10 wanted the operator to see where the front line is;
+a front line made of numbers that can be averaged is a front line that can be argued into any shape,
+and F254 is what that looks like from the inside — a project whose entire test suite fails, scoring
+8.0 because its files are longer than fifty bytes and contain a comment. A conjunction of vetoes
+cannot be averaged. Each conjunct is a thing that either happened or did not, and the screen can name
+the one that stopped the mission instead of showing a bar at 63%.
+
+And F266 is the item's genuinely alarming result, which is worth keeping alarming. Thirty-five
+acceptance criteria, generated by a competent model over a real repository with the requirement
+stated explicitly, and not one of them both fails today and passes on the reference solution.
+Twenty-two are satisfied before the work starts. One of them prints *"All status decisions correctly
+handle CANCELLED."* on a tree where none of them do. A game whose green ticks are generated by the
+same player who is being graded is not a game, and the only thing standing between 2.0 and that is a
+handful of `Check` rows that go red first and are shown going green.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W11-12 | Does the emission-order effect (F263) hold on other models and other decisions, or is it a property of this one? It is a two-line change to any schema and a large effect; it deserves the K-series treatment. | one comparison run; W1's harness |
+| OQ-W11-13 | Can a criterion be *verified* rather than validated — is there an affordable third rung between red-before/green-after and a reference solution nobody has at runtime? The K-suite's own three-point gate is the model. | W6 item 3, W8 |
+| OQ-W11-14 | Does the wire→checked conversion belong in the recorder or in the executor? Recorder means one place; executor means the refusal is available to the model as a tool result (item 2 §3's executor-side policy). | W3 item 4's `apply()` |
+| OQ-W11-15 | What is on the log for a *streamed* artifact — one event at the end, or a `seq` per chunk? W5 F126's scrub position wants the latter and the payload types want the former. | W5, W3 item 3 |
+| OQ-W11-3 | *(from item 1)* Does a task set need real dependency edges? | **answered here**: yes, and the wire type emits them — `depends_on: Vec<u32>` as indices, converted to W3's `depends_on(task, task)` rows. Inferring them from list order is what makes F259's truncation silent |
+| OQ-W11-10 | *(from item 2)* Is A1 Localize's output budget really 8192? | **partly**: a brief measured 725–861 bytes of payload against 1,627–2,444 completion tokens (F265). 8192 is not the binding constraint; the trace is |
+
+## Confidence: high on the measurements, medium on the type shapes
+
+**High** on everything run this session, all re-runnable from `research/spikes/w11-artifacts/` against
+the in-repo fixture. F263 is the strongest result in the item — 43 Judge calls across eleven arms, two
+confounds explicitly ruled out (enum value order, and any-prefix-will-do), 0/14 against 17/17, and the
+shipped schema verified end to end at 3/3. F266's classification survived two broken runners and a
+seven-check self-test, and its central claim is checked against the reference solution rather than
+asserted. F261's chain result is six clean round trips. The donor readings are each read at the
+consumption site and each re-checkable with one grep.
+
+**Medium** on three things. The **type shapes themselves** are a design proposal, not a measurement:
+they compile, their schemas work, and nothing has run a mission through them — the wire/checked split
+in particular will be judged by how annoying the conversion is at the twentieth call site, not by how
+it reads here. The **grounding check found nothing** on this fixture (6/6 paths existed), so F253's
+fix is justified by the donor's code rather than by a measured failure rate; the case where the tree
+is not in the prompt is unmeasured. And **F263's mechanism is a hypothesis** — that the reasoning
+trace does not carry the decision into the constrained payload — where only the effect is measured;
+if the mechanism is something else, the rule still holds but its generalisation to other decisions
+(OQ-W11-12) is guesswork.

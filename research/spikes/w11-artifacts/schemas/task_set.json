@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskSetWire",
+  "type": "object",
+  "properties": {
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TaskWire"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "tasks"
+  ],
+  "$defs": {
+    "TaskWire": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "intent": {
+          "description": "What this task must achieve. The Change phase's prose contract.",
+          "type": "string"
+        },
+        "touches": {
+          "description": "Files this task is expected to touch. Checked against the tree.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "depends_on": {
+          "description": "Indices into `TaskSetWire::tasks` this task depends on (W3 F109 edges,\nemitted rather than inferred from list order).",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0
+          }
+        },
+        "criterion": {
+          "description": "One executable acceptance criterion. Prose criteria do not exist\n(W11 F236).",
+          "$ref": "#/$defs/CriterionWire"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "intent",
+        "touches",
+        "depends_on",
+        "criterion"
+      ]
+    },
+    "CriterionWire": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "description": "The command, verbatim. Its shell is part of it (W11 F251).",
+          "type": "string"
+        },
+        "shell": {
+          "$ref": "#/$defs/Shell"
+        },
+        "cwd": {
+          "description": "Workspace-relative working directory. `\".\"` for the root.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "shell",
+        "cwd"
+      ]
+    },
+    "Shell": {
+      "type": "string",
+      "enum": [
+        "sh",
+        "powershell",
+        "cmd"
+      ]
+    }
+  }
+}

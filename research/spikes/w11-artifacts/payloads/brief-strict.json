@@ -1,0 +1,14 @@
+{
+  "approach": "grounded",
+  "restatement": "The SLA report incorrectly flags recently cancelled jobs as breached because `finished_at` in `jobs/sla.py` only treats `DONE` and `FAILED` as terminal states. Since `CANCELLED` is also a terminal status (per `jobs/status.py`), it should be measured at its actual end time rather than the current time.",
+  "risks": [
+    "None expected; this is a straightforward logic correction in a single function."
+  ],
+  "sites": [
+    {
+      "path": "jobs/sla.py",
+      "why": "`finished_at` decides whether to use `job.ended_at` or `now`. It currently misses `CANCELLED`, causing cancelled jobs to accrue SLA time indefinitely until the report runs.",
+      "last_line": 34
+    }
+  ]
+}

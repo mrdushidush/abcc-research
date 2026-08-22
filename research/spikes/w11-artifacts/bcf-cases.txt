@@ -1,0 +1,67 @@
+1 exactly as the prompt asks
+DEV: 8.5 | defects: missing null check in parse
+ARCH: 7.0 | defects: none
+TEST: 6.5 | defects: no edge case coverage
+SEC: 9.0 | defects: none
+DOCS: 7.5 | defects: sparse docstrings
+
+2 numbered list
+1. DEV: 8.5 | defects: missing null check in parse
+2. ARCH: 7.0 | defects: none
+3. TEST: 6.5 | defects: no edge case coverage
+4. SEC: 9.0 | defects: none
+5. DOCS: 7.5 | defects: sparse docstrings
+
+3 markdown bold
+**DEV:** 8.5 | defects: missing null check in parse
+**ARCH:** 7.0 | defects: none
+**TEST:** 6.5 | defects: no edge case coverage
+**SEC:** 9.0 | defects: none
+**DOCS:** 7.5 | defects: sparse docstrings
+
+4 bulleted
+- DEV: 8.5 | defects: missing null check in parse
+- ARCH: 7.0 | defects: none
+- TEST: 6.5 | defects: no edge case coverage
+- SEC: 9.0 | defects: none
+- DOCS: 7.5 | defects: sparse docstrings
+
+5 scores written out of ten
+DEV: 8.5/10 | defects: missing null check in parse
+ARCH: 7.0/10 | defects: none
+TEST: 6.5/10 | defects: no edge case coverage
+SEC: 9.0/10 | defects: none
+DOCS: 7.5/10 | defects: sparse docstrings
+
+6 markdown table
+| Role | Score | Defects |
+| DEV: | 8.5 | missing null check |
+| ARCH: | 7.0 | none |
+| TEST: | 6.5 | no edge cases |
+| SEC: | 9.0 | none |
+| DOCS: | 7.5 | sparse docstrings |
+
+7 a preamble line the prompt forbade
+Here are the 5 reviews:
+DEV: 8.5 | defects: missing null check in parse
+ARCH: 7.0 | defects: none
+TEST: 6.5 | defects: no edge case coverage
+SEC: 9.0 | defects: none
+DOCS: 7.5 | defects: sparse docstrings
+
+8 role names expanded with their briefs
+DEV (correctness, robustness): 8.5 | defects: missing null check
+ARCH (architecture, SOLID): 7.0 | defects: none
+TEST (test quality, coverage): 6.5 | defects: no edge cases
+SEC (security, OWASP): 9.0 | defects: none
+DOCS (readability): 7.5 | defects: sparse docstrings
+
+9 a reviewer that gives a genuine zero
+DEV: 0.0 | defects: does not compile
+ARCH: 0.0 | defects: no structure to speak of
+TEST: 0.0 | defects: no tests at all
+SEC: 0.0 | defects: hardcoded credentials in main
+DOCS: 0.0 | defects: none whatsoever
+
+10 the model refused
+I need to see the test suite before I can score this code.

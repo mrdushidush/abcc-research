@@ -1,0 +1,82 @@
+-- K-criterion-first: ['criterion', 'depends_on', 'intent', 'title', 'touches'] --
+K-criterion-first-1    tasks=4  comp_tok= 4340  64.8s
+    task1 binds                  exit=1     grep -q "is_terminal\|CANCELLED" jobs/sla.py
+    task2 binds                  exit=1     grep -q "is_terminal\|CANCELLED" jobs/summary.py
+    task3 binds                  exit=1     grep -q "is_terminal\|CANCELLED" jobs/charges.py
+    task4 does-not-discriminate  exit=0     grep -q "is_terminal\|CANCELLED" jobs/dashboard.py
+K-criterion-first-2    tasks=4  comp_tok= 4727  69.0s
+    task1 binds                  exit=9009  python3 -c "from jobs.sla import is_sla_breach; assert not is_sla_brea
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=9009  python3 -c "from jobs.summary import get_status_counts; counts = get_s
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task3 binds                  exit=9009  python3 -c "from jobs.charges import compute_charge; assert compute_ch
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task4 binds                  exit=9009  python3 -c "from jobs.dashboard import get_dashboard_data; data = get_
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+K-criterion-first-3    tasks=4  comp_tok= 5982  86.7s
+    task1 binds                  exit=9009  python3 run.py data/jobs.json && echo "SLA logic corrected"
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=1     grep -q "is_terminal\|CANCELLED" jobs/charges.py && echo "Charge logic
+    task3 binds                  exit=1     grep -q "is_terminal\|CANCELLED" jobs/retry.py && echo "Retry logic up
+    task4 binds                  exit=1     python3 run.py data/jobs.json > /dev/null 2>&1 && python3 -m pytest te
+            -> The system cannot find the path specified.
+K-criterion-first-4    tasks=3  comp_tok= 4378  63.7s
+    task1 binds                  exit=9009  python3 run.py data/jobs.json
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=9009  python3 run.py data/jobs.json
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task3 binds                  exit=9009  python3 run.py data/jobs.json
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+K-criterion-first-5    tasks=3  comp_tok= 5810  81.2s
+    task1 binds                  exit=9009  python3 run.py data/jobs.json > /tmp/sla_report.txt && ! grep -q "J-01
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=9009  python3 run.py data/jobs.json > /tmp/sla_report.txt && ! grep -qi "SLA
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task3 binds                  exit=9009  python3 run.py data/jobs.json > /tmp/sla_report.txt && grep -q "CANCEL
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+
+-- L-criterion-last: ['title', 'intent', 'touches', 'depends_on', 'criterion'] --
+L-criterion-last-1     tasks=3  comp_tok= 5201  73.0s
+    task1 binds                  exit=9009  python3 -m pytest tests/test_jobs.py
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=9009  python3 -m pytest tests/test_jobs.py
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task3 binds                  exit=9009  python3 -m pytest tests/test_jobs.py
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+L-criterion-last-2     tasks=4  comp_tok= 6128  85.0s
+    task1 does-not-discriminate  exit=0     python3 run.py data/jobs.json | grep -q "J-017.*over its SLA" && exit 
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=1     python3 -c "from jobs import charges; assert not getattr(charges, 'is_
+            -> The system cannot find the path specified. The system cannot find the path specified.
+    task3 binds                  exit=1     python3 -c "from jobs import retry; assert not getattr(retry, 'can_ret
+            -> The system cannot find the path specified. The system cannot find the path specified.
+    task4 binds                  exit=1     python3 run.py data/jobs.json > /tmp/service_verify.txt && ! grep -qE 
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+L-criterion-last-3     tasks=4  comp_tok= 4574  68.9s
+    task1 binds                  exit=9009  python3 run.py data/jobs.json
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=9009  python3 -c "import jobs.summary; print('summary module loads cleanly')
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task3 binds                  exit=9009  python3 -c "import jobs.dashboard; print('dashboard module loads clean
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task4 binds                  exit=9009  python3 run.py data/jobs.json && echo "EXIT_CODE: $?"
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+L-criterion-last-4     tasks=3  comp_tok= 6163  91.4s
+    task1 binds                  exit=9009  python3 -c "assert 'is_terminal' in open('jobs/sla.py').read() or 'TER
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=9009  python3 -c "assert all(any(x in open(f).read() for x in ['is_terminal'
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task3 binds                  exit=9009  python3 run.py data/jobs.json
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+L-criterion-last-5     tasks=3  comp_tok= 4867  67.3s
+    task1 binds                  exit=9009  python3 run.py data/jobs.json
+            -> Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from
+    task2 binds                  exit=1     grep -q "CANCELLED" jobs/summary.py && echo "pass" || exit 1
+    task3 does-not-discriminate  exit=0     grep -r "is_terminal\|CANCELLED" jobs/model.py jobs/charges.py jobs/da
+            -> 5
+
+-- tally: a criterion that exits 0 on the unfixed tree measures nothing --
+  K-criterion-first    criteria=18  binds=17  does-not-discriminate=1  unrunnable=0
+  L-criterion-last     criteria=17  binds=15  does-not-discriminate=2  unrunnable=0
+
+[exited with code 0]
