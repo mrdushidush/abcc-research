@@ -84,3 +84,9 @@ python criteria.py             # needs plan.py's output and integrate.py's clone
 `integrate.py` clones Claudette into the session scratchpad with `--no-hardlinks` (a `--local`
 clone across volumes fails on Windows with `Improper link`) and never touches the donor. Both
 drives on this box are SSD with over 900 GB free, so the C:/D: split is not a confound.
+
+⚠ **`integrate.py`, `plan.py` and `criteria.py` hardcode the scratchpad path of the session that
+wrote them** (`…/42b00185-4a5a-4806-9e97-33bd4fcebc29/scratchpad/w11-integrate`), which will not
+exist in a later session. Point `SCRATCH` / `TREE_ROOT` / `CLONE` at the new session's scratchpad
+before re-running, and run `integrate.py` first — `plan.py` reads the clone's file tree and
+`criteria.py` runs the emitted commands inside it.
