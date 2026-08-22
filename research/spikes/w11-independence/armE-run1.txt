@@ -1,0 +1,21 @@
+E-both         sham     rep1 truth=FAIL call=pass  [MISS] sites=0/0/3 def=0  37.9s
+E-both         sham     rep2 truth=FAIL call=pass  [MISS] sites=0/0/3 def=0  12.0s
+E-both         sham     rep3 truth=FAIL call=pass  [MISS] sites=0/0/3 def=0  33.9s
+E-both         refsol   rep1 truth=PASS call=pass  [ok ] sites=0/0/0 def=0  13.9s
+E-both         refsol   rep2 truth=PASS call=pass  [ok ] sites=0/0/0 def=0  13.4s
+E-both         refsol   rep3 truth=PASS call=pass  [ok ] sites=0/0/0 def=0  13.7s
+E-both         comment  rep1 truth=FAIL call=fail  [ok ] sites=3/3/3 def=3  38.4s
+E-both         comment  rep2 truth=FAIL call=fail  [ok ] sites=3/3/3 def=3  56.8s
+E-both         comment  rep3 truth=FAIL call=fail  [ok ] sites=2/2/3 def=2  49.1s
+E-both         disable  rep1 truth=FAIL call=fail  [ok ] sites=0/2/3 def=1  93.1s
+E-both         disable  rep2 truth=FAIL call=fail  [ok ] sites=1/2/3 def=1  65.9s
+E-both         disable  rep3 truth=FAIL call=fail  [ok ] sites=3/3/3 def=3  54.1s
+
+-- by arm --
+E-both         correct 9/12   false-pass 3/9   false-fail 0/3   sites(defects) 12/27   sites(any) 15/27   decoy 0/12
+
+-- by artifact --
+sham      truth=FAIL  E:pass  E:pass  E:pass
+refsol    truth=PASS  E:pass  E:pass  E:pass
+comment   truth=FAIL  E:fail  E:fail  E:fail
+disable   truth=FAIL  E:fail  E:fail  E:fail

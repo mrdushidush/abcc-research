@@ -1,0 +1,42 @@
+[
+  {
+    "subject": "refsol",
+    "hunk": "jobs/sla.py",
+    "criterion_without_it": "fail",
+    "suite_without_it": "FAIL",
+    "criterion_binds": true,
+    "suite_binds": true
+  },
+  {
+    "subject": "refsol",
+    "hunk": "jobs/summary.py",
+    "criterion_without_it": "pass",
+    "suite_without_it": "FAIL",
+    "criterion_binds": false,
+    "suite_binds": true
+  },
+  {
+    "subject": "refsol",
+    "hunk": "jobs/charges.py",
+    "criterion_without_it": "pass",
+    "suite_without_it": "FAIL",
+    "criterion_binds": false,
+    "suite_binds": true
+  },
+  {
+    "subject": "refsol",
+    "hunk": "jobs/retry.py",
+    "criterion_without_it": "pass",
+    "suite_without_it": "FAIL",
+    "criterion_binds": false,
+    "suite_binds": true
+  },
+  {
+    "subject": "sham",
+    "hunk": "jobs/sla.py",
+    "criterion_without_it": "fail",
+    "suite_without_it": "FAIL",
+    "criterion_binds": true,
+    "suite_binds": true
+  }
+]

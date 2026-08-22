@@ -31,14 +31,23 @@ Planned items:
    wrong 14 times out of 14 and right 17 out of 17 with the reasoning in front), and **of 35
    generated acceptance criteria, none is both red on the unfixed tree and green on the reference
    solution.**
-4. ☐ **Gate independence** and how it survives single player mode. Overlaps W6 item 3 directly;
-   whichever runs first owns the measurement, the other cites it.
+4. ✅ **Gate independence** (F270–F284) — five arms over four artifacts on a fixture whose ground
+   truth is a program in this repository, plus four deterministic probes and five donor readings.
+   Overlaps W6 item 3 directly and **owns the measurement**; W6 item 3 cites it. Answered: the axis
+   §10 assumed — builder weights against reviewer weights — is not the one that carries the signal.
+   **What the reviewer reads is**, and it is free: the same model, in a fresh call, shown the diff is
+   **11/12**; shown the author's own completion report instead it is 5/12; shown *both* it is 9/12
+   and 0/3 on the shipped sham; continuing the author's own conversation it is 4/12 and returns no
+   verdict at all five times in twelve. A second model is a better reader and an unusable Judge — it
+   never approved a wrong answer and never finished a verdict on the right one. Co-residency is
+   arithmetically impossible on this card. And the deterministic half, which is where most of the
+   independence turns out to live, has two new runtime checks that cost one criterion run each.
 5. ☐ **Loop budgets and circuit breakers per stage**, benchmarked against v1's existing behaviour.
    Inherits W6 F223 (the decline breaker that changed meaning) and W3 F195 (the retry budget).
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 949–960, against §10 lines 515–545. Findings continue
 the family numbering — one sequence across all workstreams. **Item 1 took F225–F237, item 2 took
-F238–F251 and item 3 took F252–F269, so the next free number is F270.** Check the maximum before adding, not the last number
+F238–F251, item 3 took F252–F269 and item 4 took F270–F284, so the next free number is F285.** Check the maximum before adding, not the last number
 in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
@@ -2263,3 +2272,1024 @@ is not in the prompt is unmeasured. And **F263's mechanism is a hypothesis** —
 trace does not carry the decision into the constrained payload — where only the effect is measured;
 if the mechanism is something else, the rule still holds but its generalisation to other decisions
 (OQ-W11-12) is guesswork.
+
+---
+
+# Item 4 — gate independence, and how it survives single player
+
+## Question
+
+§10 states it and calls it the sharpest problem in the design:
+
+> **Gate independence.** Is a model grading its own output reliable? If not, commandos must be a
+> different model from the builders, and that constraint collides directly with single player mode
+> where one model is resident. V1 dodged this using Haiku and Opus for review, which is a co-op-only
+> answer. Resolve the tension explicitly; it is one of the sharpest open problems in the design.
+> (`RESEARCH_BRIEF.md:538-542`)
+
+W6 item 3 asks the same question in implementation terms — *who plays the reviewer*: same model with
+no history, a second model bought with a 23.77 s swap (W1 F79), or co-residency. This item runs
+first, so it owns the measurement and W6 item 3 cites it.
+
+Three things narrowed the question before it was asked, and all three are worth stating because they
+change what can even be measured:
+
+1. **"Does it matter" is already closed.** StealthForge ran an independent reviewer over 34 paired
+   missions: median **+3.65** points of self-scoring inflation, **0 of 34** in the other direction
+   (`prestudy/archive-repos.md` §2). What is open is implementation.
+2. **The verdict has no score** (item 3, F247). So `critic_inflation` — a *subtraction of two
+   scores* — is not a quantity 2.0 can compute at all. The metric has to be rebuilt or dropped, and
+   OQ-W6-2 asked whether it ships.
+3. **The Judge is one model call with no tools that sees the measurement set** (item 1, F235; item 2
+   §2). So the regime where a Judge can matter is precisely the one items 2 and 3 found and did not
+   like: **the acceptance criterion is green and the work is not done** (F251: six of eleven criteria
+   pass before the change; F266: of 35 generated criteria, none is both red before and green after).
+   When the criterion is red the Judge is reading a fact off a measurement, and item 3 measured that
+   at 3/3 with the shipped schema. When it is green, whatever the Judge adds is all there is.
+
+So the question this item actually answers is narrower and sharper than §10's: **in the regime where
+the deterministic half says pass and the work is wrong, what does a reviewer have to be for its
+opinion to be worth the call — and is any of what it has to be unavailable on one GPU?**
+
+## Method
+
+Desk first, then probes, same order as items 2 and 3.
+
+**Desk.** Who plays the reviewer in each donor, read at the call site: which weights, what it is
+shown, whether it shares the author's context, what it can stop, and — the single-player question —
+what happens to the check when the second model is not there. Three live donors
+(`agent-battle-command-center`, `battle-command-forge`, `claudette` at the HEADs item 1 read) plus
+the StealthForge record in `prestudy/`, which is a concepts-only source and is cited, not re-read.
+
+**Probes**, in `research/spikes/w11-independence/`, re-runnable from the repository with no
+scratchpad path. Same fixture as item 3 —
+`corpus/suites/k/tasks/finish_the_cancelled_status`, 16 files, ~9.4k tokens, a four-site bug, one
+correct decoy consumer (`jobs/dashboard.py`), a reference solution and a **shipped sham** that fixes
+the reported symptom and leaves three sites wrong. Its verifier was gated at all three SPEC.md §9
+points on 2026-08-17, so ground truth here is a program in this repository, not an opinion.
+
+Four candidate changes, every one of them **green** on the acceptance criterion the ticket implies,
+three of them wrong:
+
+| artifact | the change | criterion | suite verifier |
+|---|---|---|---|
+| `sham` | `jobs/sla.py` only — the suite's shipped local wrong answer | pass | **FAIL** |
+| `refsol` | all four consumers | pass | PASS |
+| `comment` | `sla.py` fixed, the other three annotated with a comment claiming coverage | pass | **FAIL** |
+| `disable` | the symptom removed by making every terminal job unbreachable | pass | **FAIL** |
+
+| script | question | raw |
+|---|---|---|
+| `build.py` | ground truth, measured rather than asserted, behind a seven-check self-test | `ground-truth.json` |
+| `ablate.py` | how much of the change does the criterion actually bind? No model involved | `ablation-results.json` |
+| `independence.py` | three reviewer arms × four artifacts × n=3 | `run1.txt`, `independence-results.json` |
+| `swap.py` | the second-model arm, and what the swap costs in situ | `swap-run1.txt` |
+
+The three same-GPU arms differ in exactly one thing — who is reviewing and what they are shown:
+
+- **A artifact** — fresh call, same weights, shown the unified diff.
+- **B narration** — fresh call, same weights, shown *the author's own completion report* instead of
+  the diff. This is v1's shape (F232), and the report is generated by the model about its own change,
+  so the story is the model's and not this probe's.
+- **C self-history** — the author's conversation continued: the builder head is still the system
+  prompt, the diff is the assistant's own previous turn, and the judge instruction is appended as the
+  next user turn. This is the shape single player produces if nobody thinks about it.
+
+Every arm sees the ticket verbatim, the repository tree, `docs/status_lifecycle.md` (the
+specification the ticket names, which states all five semantics of `cancelled`), `jobs/status.py`,
+the brief and the measurement set. **The information needed to catch the sham is in every prompt**,
+which is what makes a `pass` inflation rather than ignorance. Every arm uses the verdict schema item
+3 shipped, verbatim — `rationale`, `defects`, `call`, in that order, because F263 measured the order
+as causal for the answer. Held constants as items 2 and 3: champion `qwen3.6-35b-a3b-mtp@iq3_s`,
+`-c 65536 --gpu max --parallel 1 -y`, LM Studio on `:1234`, temperature 0, `max_tokens` 8192.
+
+Scored two ways per call: the binary against ground truth, and the **recall of the three sites the
+change actually left broken**, counted twice — once over the `defects` array the pipeline carries,
+and once over the rationale as well, because a model that knows something and does not put it in the
+field the gate reads has still failed the gate.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| Independence matters: +3.65 median, 0/34 the other way | StealthForge, `prestudy/archive-repos.md` §2 | stands as the motivation; the **quantity** does not survive item 3's score-free verdict — recommendation 4 |
+| `critic_inflation = internal_avg − overall`, veto at > 4.0 | StealthForge `orchestrator.rs:876` | **DISCARD the quantity**, port the intent (F278, recommendation 4) |
+| The Judge reads the artifact from the workspace, never a log projection | item 1, F232 | measured here — F280 and F281 are what the other choice costs |
+| Verdict is `rationale` → `defects` → `call`, no score | item 3, F247/F263 | used verbatim in every arm |
+| A second model costs 32–41 s at 17k, 50–76 s at 61k, per gate, per attempt | item 2, F238/F239/F241 | the price the second-model arm has to beat |
+| Criterion must be red before the change | item 2 §6, F251 | necessary; F276 and F279 say how far it is from sufficient |
+| A veto is never a weight; the gate is a conjunction | W6 item 2, F218 | the frame for what a Judge is allowed to be |
+
+## Findings
+
+### 🚨 F270 — v1's mission reviewer is the same weights as v1's planner, and §10's "Haiku and Opus" is a seed table with no callers
+
+§10 records v1 as having *"dodged this using Haiku and Opus for review"*. That is true of a table and
+false of the pipeline.
+
+The table is `prisma/seed.ts:56,81,104` — three agent rows, `preferredModel`
+`ollama/qwen2.5-coder:7b` for the coder, `claude-haiku-4-5-20251001` for QA, `claude-opus-4-5-20251101`
+for the CTO — plus a per-role override list (`shared/src/index.ts:10-12`) in which `coder` may not be
+opus and `cto` may not be haiku. It reads exactly like a designed independence policy. F228 already
+established that two of those three rows never receive work.
+
+What the mission pipeline actually calls is `reviewMission` → `POST /orchestrate/review`
+(`orchestratorService.ts:838-842`, `main.py:637-644`) → `review_results`
+(`orchestrator.py:316-341`). And `review_results` uses this:
+
+```python
+ORCHESTRATOR_MODEL = os.getenv("ORCHESTRATOR_MODEL", "claude-sonnet-4-20250514")
+```
+
+One constant, three call sites: `decompose_prompt` (`:185`), `review_results` (`:341`) and
+`clarify_intent` (`:402`). **The model that decomposed the mission and wrote its acceptance
+commands is the model that decides whether the mission was accomplished** — same weights, same
+system-prompt family, different conversation. The only axis v1 varies is builder-vs-reviewer, and it
+varies it in the one place where it cannot help: the reviewer never sees the builder's artifact
+(F232), only a projection of its narration.
+
+So v1 is not an example of the co-op answer §10 credits it with. It is an accidental, unlabelled
+instance of **same-weights-no-history** — the exact candidate W6 item 3 lists — reviewing the wrong
+input.
+
+**For 2.0:** this is the first reason the independence axis has to be named per pair rather than per
+system. "The reviewer is a different model from the builder" was true here and bought nothing,
+because the pair that mattered was *planner and judge*, and there it was one model. Item 1's phase
+list makes the pairs explicit: M1 Plan writes the criterion, A2 Change writes the diff, A3 Measure
+runs the criterion, A4 Judge rules. Independence is a property of an **edge** in that list, not of
+the process.
+
+### F271 — v1's graduated review is a sample, scheduled off a provenance it invents
+
+The reviewer-selection policy (`codeReviewService.ts:110-160`) is a tiered schedule, and it is the
+best-looking independence design in the family:
+
+```ts
+if (isOllamaTask && this.ollamaTaskCounter % OLLAMA_REVIEW_INTERVAL === 0)   // haiku, every 5th
+if (complexity > OPUS_MIN_COMPLEXITY && this.allTaskCounter % OPUS_REVIEW_INTERVAL === 0)  // opus, every 10th
+```
+
+Three things about it.
+
+**It is a sample, not a gate.** Four tasks in five get no review at all, and the review that does
+happen is launched fire-and-forget — `this.codeReviewService.triggerReview(taskId, executedByModel).catch(...)`
+(`taskExecutor.ts:503`) — so nothing awaits its result and no branch reads it. It writes a
+`CodeReview` row and a websocket event.
+
+**Its input is `executedByModel`, which is not a record of what executed.** The caller derives it
+from the complexity number it has just computed (`taskExecutor.ts:494-500`): `< 5` → `'ollama'`,
+`< 9` → `'haiku'`, else `'sonnet'`. So "review every 5th Ollama task" means "review every 5th task
+whose complexity score was under 5", whatever actually ran it. A field named after a fact is holding
+a guess, and the independence schedule is keyed on it.
+
+**It is off by default in the mode 2.0 ships in.** `triggerSentinelReview` opens with
+`if (!SENTINEL_REVIEW_ENABLED || !this.anthropic) return null` (`codeReviewService.ts:276-278`) and
+returns `null` again when no code can be extracted (`:291`). The caller is
+`if (sentinelResult && !sentinelResult.passed)` (`orchestratorService.ts:489`). **A null is
+indistinguishable from a pass at every call site.** No key, no review, no marker, no difference.
+
+**For 2.0:** F231's rule — absent is not pass — has to hold for the *reviewer* as well as for the
+criterion. A gate whose independent opinion did not run records `Uncertain(NoReviewer)` and the
+console shows that conjunct grey, not green. And the schedule keys off the log, which W3 made the
+record of what actually happened, never off a number computed in the same breath.
+
+### 🚨 F272 — the family's only reviewer panel is one forward pass, and its failure mode is a uniform 5.0
+
+BCF's stage 7 is a "critique panel", and its own doc comment says what it is (`mission.rs:1624-1625`):
+
+```rust
+/// Run critique panel as a SINGLE LLM call (5 scores in one response).
+async fn run_critique_panel(&self, code: &str, spec: &str) -> Result<(Vec<f32>, Vec<String>)> {
+    let system = "/no_think\nYou are 5 expert reviewers in one. Score this code 0-10 on each dimension. ...
+```
+
+Five personas — DEV, ARCH, TEST, SEC, DOCS — sampled from one context in one forward pass, then
+averaged into the 40% model half of the gate (`mission.rs:1137-1139`). Whatever correlated failure
+five independent calls would have, five personas in one call have more of: they share a prefix, a
+sampler and a single chain of reasoning.
+
+Two of its three failure paths produce **the same number a middling review produces**:
+
+```rust
+.unwrap_or_else(|e| { eprintln!("   CRITIQUE FAILED: {}", e);
+    "DEV: 5.0\nARCH: 5.0\nTEST: 5.0\nSEC: 5.0\nDOCS: 5.0".to_string() });
+if response.trim().is_empty() { return Ok((vec![5.0f32; 5], vec![String::new(); 5])); }
+```
+
+and the third — the parser extracting nothing — leaves the `vec![5.0f32; 5]` it was initialised with
+and prints a warning. F245 measured the empty-response path as **live on this hardware**: the
+critique role's output cap is 1024 (F243) and this model spends its first thousand tokens reasoning,
+so the verdict comes back as an empty string with HTTP 200. On this box, BCF's panel of five scores
+5.0 five times, and the gate takes 40% of it.
+
+The one thing BCF does right, and v1 does not: `run_critique_panel(code, spec)` is called with the
+generated **code**, not a narration, and the critique model (`qwen3-coder:30b-a3b-q8_0`) is different
+weights from the coder (`qwen3-coder-next:q8_0`) — F243. It buys real weight-independence, and pays
+F243's reload for it.
+
+**For 2.0:** a panel is N calls or it is a prompt. If independence is worth buying at all, the thing
+being bought is decorrelation, and five voices sharing one sampler is the cheapest way to look like
+you bought it. Item 3 already deleted the score that made an average possible; F272 is the reason not
+to reintroduce one as a `Vec<f32>` of dimensions.
+
+### F273 — the successor deleted the judge and kept the reviewer, and made it a program
+
+Claudette has no LLM judge (`prestudy/data-assets.md`, W6 item 1). What it has instead is
+`security_review.rs`, 1,211 lines, and it is worth reading as an answer to §10's question rather than
+as a security feature:
+
+- It reads **the diff**, not a narration and not a log projection (`scan_diff(diff: &str)`, `:75`).
+- It is deterministic, so it cannot be argued with, cannot be inflated and cannot be sampled.
+- It carries a comment-and-string stripper (`strip_comments`, `:208`; `blank_strings`, `:248`) whose
+  documented purpose is to kill the *false positive* where a change that documents how to avoid a
+  vulnerability is hard-rejected for mentioning it — and unit tests hold that behaviour both ways
+  (`:859`, `:880`).
+- Its output is not a score. `findings_feedback` (`:175-198`) formats the findings as instructions to
+  the author, with the one prohibition that matters written into the prompt: *"Fix the SOURCE so they
+  no longer appear in the diff — do not merely suppress or comment them out."*
+
+That last line is the `comment` artifact of this item's probe set, anticipated and forbidden by the
+one donor that stopped using a model to judge.
+
+**For 2.0:** the shape to copy is not "a scanner". It is **reviewer output as the next attempt's
+input, at defect granularity, with no number attached** — which is exactly the verdict type item 3
+shipped (`rationale`, `defects`, no score), and it is convergent evidence that the type is right.
+
+### 🚨 F274 — in all three donors, "no second model" is silent and looks like a pass
+
+The single-player question is not what the independence check does when it runs. It is what the
+system records when it cannot.
+
+- **v1**: no `ANTHROPIC_API_KEY` → `triggerSentinelReview` returns `null` → the caller's
+  `if (sentinelResult && !sentinelResult.passed)` never fires (F271). The mission proceeds exactly as
+  it would have with a passing review.
+- **BCF**: the local call failing is not an absence, it is an **upgrade** — `if ollama_result.is_err()`
+  → *"Ollama unavailable, falling back to Claude Opus"* (`llm.rs:167-176`, `:262-271`, `:419-428`),
+  and `call_ollama` bails on model-not-found as well as on connection failure (F244). With no cloud
+  key the error propagates to `run_critique_panel`'s `unwrap_or_else`, and the panel scores 5.0
+  across the board (F272). Either way the mission continues; the difference is whether it continues
+  having spent frontier money or having invented five measurements.
+- **StealthForge**: stage 8 is feature-gated (`independence`) and *non-fatal by construction* —
+  errors logged and swallowed (`prestudy/archive-repos.md` §3.1). The veto requires
+  `!verdict.passed && critic_inflation > 4.0`, so a reviewer that did not run cannot veto.
+
+Three codebases, three different mechanisms, one behaviour: **the absence of an independent opinion
+is encoded as the absence of an objection.** That is the single-player collision §10 predicted, and
+it does not appear as a design decision anywhere — it is the default that falls out of making the
+check optional and non-fatal.
+
+**For 2.0:** independence is a conjunct in W6's gate, so it has three states, not two, and the third
+is the one the donors are missing: `Measured(pass)`, `Measured(fail)`,
+`Uncertain(NoIndependentReview)` — and W6 F218's rule already says which way `Uncertain` goes in a
+conjunction. That is what makes "always on" implementable at all. Always-on cannot mean *always
+available*; it means **the mission cannot reach Accept without a recorded answer, including a
+recorded refusal.**
+
+### 🚨 F275 — co-residency is not expensive on this box, it is arithmetically impossible
+
+W6 item 3 lists three candidates for the reviewer, and one of them can be settled with subtraction
+before any of them is run.
+
+With the champion resident at the held constants — `qwen3.6-35b-a3b-mtp@iq3_s`, `-c 65536 --gpu max`
+— `nvidia-smi` reports **16,311 MiB total, 14,841 MiB used, 1,210 MiB free**. The weights are
+13.61 GB (13,936 MiB), so everything else the process holds at a 65,536-token window is about
+**905 MiB**. The smallest entry `lms ls` reports on this host is `google/gemma-4-e2b` at **4.41 GB ≈
+4,205 MiB**, and nothing that would be a credible reviewer is going to fit in 1.2 GB with a context.
+
+Two consequences:
+
+1. A second model needs **3.5× the free VRAM**, before its own KV cache.
+2. **Shrinking the champion's window does not help.** F77 established that KV is allocated in full at
+   load, so the window is the lever — and the entire lever is worth 905 MiB. Dropping the window to
+   zero frees less than a quarter of what the smallest model on disk needs. The card is the binding
+   constraint, not the context setting.
+
+Co-residency on this hardware therefore means one of two things, neither of which is co-residency:
+a second model **spilled to system RAM and decoded on the CPU** (unpriced here, OQ-W11-16), or a
+smaller champion — which is W1's question and W1 answered it.
+
+**For 2.0:** the three-candidate list W6 item 3 inherited is a two-candidate list on this machine.
+Independence is bought by **swapping** (item 2 priced it: 32–41 s at 17k, 50–76 s at 61k, per gate,
+per attempt, plus a wiped prompt cache) or it is bought **without changing weights at all** — and
+everything below is about how much the second option gets you.
+
+### 🚨 F276 — a criterion's coverage of its own diff is measurable with no model, and the honest one covers 1 of 4 hunks
+
+The K-suite validates a verifier at three points (SPEC.md §9): red on the unfixed tree, green on the
+reference solution, red on the sham. A running pipeline has the first (item 2 §6's red-before rule)
+and cannot have the other two — there is no reference solution at runtime and no sham to hand.
+
+There is a third thing a pipeline has that the suite does not need: **the change, in hunks**. Revert
+one hunk, re-run the criterion. If it is still green, that hunk is unmeasured — the gate would have
+accepted the change without it. `ablate.py` does exactly this, per file, over the reference solution
+and the sham:
+
+| subject | hunk reverted | criterion | four-consumer verifier |
+|---|---|---|---|
+| `refsol` | `jobs/sla.py` | **fail** — binds | FAIL |
+| `refsol` | `jobs/summary.py` | pass — unmeasured | FAIL |
+| `refsol` | `jobs/charges.py` | pass — unmeasured | FAIL |
+| `refsol` | `jobs/retry.py` | pass — unmeasured | FAIL |
+| `sham` | `jobs/sla.py` | **fail** — binds | FAIL |
+
+**The acceptance criterion binds on 1 of the 4 hunks of the correct answer.** The complete verifier
+binds on 4 of 4. The gap — 3 hunks of accepted work that no measurement touched — is computed
+deterministically, in four criterion runs, on the machine, before any model is asked anything.
+
+Two limits, and they matter as much as the result:
+
+- Ablation detects **unmeasured change**, not **missing change**. On the sham it reports 1/1 covered,
+  which is true and useless: the three sites that are wrong are not in the diff, so there is nothing
+  to revert. Coverage of the diff says nothing about coverage of the task.
+- It says nothing about direction. The `disable` artifact ablates to 1/1 binds and is wrong.
+
+**For 2.0:** this is the cheap half of gate independence and it should ship, because it is the only
+part that is free, certain and immune to inflation. `1/4 hunks measured` is a console line, a
+`Measured` conjunct, and — this is the operational payoff — **a reason to send the attempt back
+before spending a Judge call on it.** What it cannot do is the other half, which is why the model
+arms below exist.
+
+### 🚨 F277 — of 35 generated acceptance criteria, zero carry a positive control, and every absence assertion is satisfied by deleting the feature
+
+Item 3's F266 classified 35 model-generated criteria by what they measure. Re-read for this item,
+with one different question — *can this criterion be satisfied by switching the feature off?* — the
+same corpus says something F266 did not count.
+
+- **0 of 35** reference anything that must **remain** true. No criterion mentions J-007, J-008,
+  J-009, J-010 or J-023 — the genuinely late and genuinely failed jobs the suite's own verifier
+  requires to survive the fix — and none contains the words *still*, *remain*, *unchanged* or
+  *regress*.
+- **6 of 35** assert an **absence**: `! grep -q "J-017.*over its SLA"`, `! grep -qi "SLA breach"`,
+  `grep -q "J-017.*over its SLA" && exit 1 || exit 0`, and three more. Every one of those six is
+  satisfied by removing the SLA feature.
+- The **one** criterion F266 classified as a behavioural bind is `#18`:
+  `grep -q "CANCELLED" report && ! grep -q "SLA breach\|over SLA" report`. It demands that the
+  report contain no SLA breaches at all. It is not merely satisfiable by deleting the feature — on
+  this fixture it is *only* satisfiable that way, which is why F266 found it still red against the
+  reference solution.
+
+The K-suite's own task file says why this matters, in the caveat written when the fixture was built:
+*"when the expected direction of every assertion is the same, a positive control is what separates a
+fix from a deletion."* The generator produced 35 criteria and never once wrote one.
+
+**For 2.0:** `Criterion` gains nothing structurally — a positive control is just another assertion in
+the same command — but the **prompt that generates it** must demand one, and M1's criterion is not
+accepted without it. This is the deterministic counterpart to the `disable` artifact below: the one
+wrong answer in the probe set that the model reviewer also misses is exactly the one a positive
+control catches for free.
+
+### 🚨 F278 — the donor's model half is a term in a sum, and its two model verdicts have opposite absence semantics three lines apart
+
+Everything above is about who reviews. This one is about what the system does with the answer, and it
+is the structural reason StealthForge could measure inflation at all.
+
+**The model's opinion is additive** (`mission.rs:1137-1139`):
+
+```rust
+// Calculate final score: critique 40% + verifier 60%
+let final_score = critique_avg * 0.4 + verifier_score * 0.6;
+```
+
+compared against `quality_gate(complexity)` — 9.2 / 8.5 / 8.0 (`:57-67`). A generous critique
+**raises** the outcome. That is what makes a self-scored gate inflatable: the model half is not a
+check on the deterministic half, it is 40% of it.
+
+**And the two prose verdicts fail in opposite directions** (`mission.rs:873-874`):
+
+```rust
+let cto_approved = result.cto_verdict.to_uppercase().contains("APPROVE");
+let sec_passed = !result.security_verdict.to_uppercase().contains("FAIL");
+```
+
+The CTO verdict is a positive substring test, so its failure path —
+`.unwrap_or_else(|_| "REVIEW SKIPPED".to_string())` (`:1131-1135`) — reads as *not approved*. Fails
+closed. The security verdict is a **negated** substring test, so an error, a timeout, an empty
+string (F245 measured empty as live on this hardware) or the literal `String::new()` the struct is
+built with at `:973-974` all read as *passed*. Fails open. One `!`, two policies, three lines apart,
+in the same struct.
+
+**And the same absence has two different numbers depending on who is looking.** `run_critique_panel`
+substitutes **5.0** on all three of its failure paths (F272). The report constructor thirty lines
+earlier substitutes **7.0**:
+
+```rust
+let critique_scores = if result.critique_scores.len() >= 5 { ... } else {
+    CritiqueScores { dev: 7.0, arch: 7.0, test: 7.0, sec: 7.0, docs: 7.0 }
+};
+```
+
+So on a run where the critique produced nothing, the gate arithmetic uses 5.0 and the operator's
+round report shows 7.0. Neither is a measurement, and they do not agree about which fiction to tell.
+
+**For 2.0:** three rules fall straight out, and all three are already in W6's and item 3's grammar —
+this finding is why they are not merely tidy.
+
+1. **The model's verdict is a conjunct, never a term.** A `Call::Fail` vetoes; a `Call::Pass` adds
+   nothing. A veto-only Judge *cannot* inflate — the worst it can do is stay silent, which is a
+   measurable failure (see the metric in recommendation 5) rather than an invisible lift.
+2. **Polarity is not a substring test.** `Call` is an enum on the wire and the grammar enforces it
+   (item 3 F261); no verdict is ever inferred from the presence or absence of an English word.
+3. **One absence, one representation.** `Uncertain(why)` is constructed once, at the site that knows
+   why, and both the gate and the console read the same value. Two sentinels for one absence is
+   `result.score || 5` (F233) with a second opinion about what to invent.
+
+### 🚨 F279 — run the 35 generated criteria against three wrong answers: 5 discriminate, and 0 survive a comment written to defeat them
+
+F276 and F277 say what the deterministic half can and cannot see. This is the measurement of what it
+*does* see, and it is the strongest argument in this item for keeping a model in the gate at all.
+
+`criteria_vs_shams.py` takes the 35 model-generated acceptance criteria item 3 collected (F266) and
+runs each of them against all four artifacts — the reference solution and three wrong answers — which
+is SPEC.md §9's three-point gate with points 2 and 3 supplied by this item's probe set instead of by
+an author. Seconds, no GPU.
+
+| | count of 35 |
+|---|---|
+| accept the reference solution | **29** |
+| accept `sham` (one site of four) | **24** |
+| accept `comment` (one site fixed, three annotated) | **24** |
+| accept `disable` (the feature switched off) | **20** |
+| accept the reference solution **and** reject all three wrong answers | **5** |
+
+Five is already a bad number. The interesting part is which five: **every one of them is a `grep` for
+`is_terminal` or `CANCELLED` in a named file** — `#2`, `#3`, `#10`, `#11`, `#34` — which is the class
+item 3 classified as *textual proxy*. They discriminated here by an accident of wording: the
+`comment` artifact's annotations were written by the model in lower case, so `grep -q "CANCELLED"`
+stayed red.
+
+SPEC.md §9 already names the counter, because the K-suite generates exactly this sham for its 24
+`presence_only` tasks: *"a file whose entire content is a comment holding every substring the
+verifier searches for."* `grepbait.py` rewrites the same three annotations as
+`# CANCELLED is handled: is_terminal covers it upstream`, changes nothing else, and confirms with the
+suite's own verifier that the tree is still a wrong answer:
+
+```
+suite verifier on the bait tree: RESULT: FAIL COUNTS must show cancelled=4 — got: ... other=4
+  #2   GREEN — defeated   grep -q "is_terminal\|CANCELLED" jobs/summary.py
+  #3   GREEN — defeated   grep -q "is_terminal\|CANCELLED" jobs/charges.py
+  #10  GREEN — defeated   grep -q "is_terminal\|CANCELLED" jobs/charges.py && echo "Charge logic updated"
+  #11  GREEN — defeated   grep -q "is_terminal\|CANCELLED" jobs/retry.py && echo "Retry logic updated"
+  #34  GREEN — defeated   grep -q "CANCELLED" jobs/summary.py && echo "pass" || exit 1
+5/5 defeated by a comment carrying the tokens they search for.
+```
+
+**So of 35 model-generated acceptance criteria, zero discriminate robustly between a correct change
+and a wrong one.** Item 3's F266 established that none is red-before-and-green-after. This is the
+same corpus failing the harder half of the same gate, and the two together are the case for the
+Judge: a pipeline whose only stopping power is a generated criterion has no stopping power at all.
+
+Three things this does **not** say, and each of them matters:
+
+- It is not an argument against criteria. The item-4 criterion used by every arm of this probe —
+  written by hand, symptom-scoped, four lines — is red on the unfixed tree, green on all four
+  artifacts, and F276's ablation reports honestly that it covers one hunk of four. A criterion is
+  worth having when you know what it covers.
+- It is not a claim about a better generator. One prompt, one model, one repository (F266's caveat
+  stands). What transfers is the *test*, which is now three scripts in this repository.
+- It says nothing about the K-suite's own verifiers, which are authored, gated at all three points,
+  and are the ground truth this probe is scored against.
+
+**For 2.0:** the generated-sham trick transfers to runtime and is the cheapest thing in this item.
+When M1's criterion is textual — a `grep`, an `in open(...).read()`, a presence check — the pipeline
+can **generate its own point 3**: write the searched substrings into a comment, re-run the criterion,
+and reject the criterion if it goes green. W8's own caveat carries over unchanged: the trick is sound
+only when every assertion is a positive presence check, so the generator has to re-verify that and
+record `not_run` when it does not hold.
+
+### 🚨 F280 — the axis that decides a reviewer is what it reads, not whose weights it is: 11/12 with the diff, 5/12 with the author's report
+
+Same model, same window, same temperature, same schema, same brief, same ticket, same specification,
+same measurement set, same everything — except the body of the prompt. `independence.py`, n=3 over
+four artifacts, ground truth from the suite's verifier:
+
+| arm | correct | caught (of 9 wrong) | explicit false pass | no verdict | false fail (of 3 right) | median wall | median completion |
+|---|---|---|---|---|---|---|---|
+| **A** artifact — the unified diff | **11/12** | **8** | 1 | 0 | 0/3 | 53.7 s | 3,533 tok |
+| **B** narration — the author's report | 5/12 | 2 | 6 | 1 | 0/3 | 28.6 s | 1,739 tok |
+
+Per artifact, three reps each:
+
+```
+sham     truth=FAIL   A: fail fail fail      B: pass pass pass
+refsol   truth=PASS   A: pass pass pass      B: pass pass pass
+comment  truth=FAIL   A: fail fail fail      B: pass pass pass
+disable  truth=FAIL   A: pass fail fail      B: None fail fail
+```
+
+**On the two artifacts that are wrong by omission the effect is total: 6/6 against 0/6.** The site
+recall says the same thing at finer grain — over the 27 broken sites across the nine wrong-artifact
+calls, arm A names 18 in the `defects` array the gate actually carries (23 if the rationale counts),
+arm B names 4 (9).
+
+The mechanism is visible in the narrations themselves, which are the model's own words about its own
+change and were generated once, before any judging (`narrations.json`). For the `comment` artifact —
+one real fix and three comment lines — the author wrote:
+
+> *"I updated `sla.py` to use `is_terminal()` so the SLA clock halts on cancellation... I added
+> clarifying comments in `summary.py`, `charges.py`, and `retry.py` to document that cancellation
+> semantics are handled upstream per the lifecycle spec. This ensures all status-based decisions
+> correctly treat `cancelled` as terminal, non-breachable, non-chargeable, and non-retryable."*
+
+Nobody asked it to overclaim. The prompt asked for a completion report in six lines. The last sentence
+is false, it is the sentence a reviewer reading the report has to disbelieve, and there is nothing in
+the report to disbelieve it *with*.
+
+So the rule generalises past this fixture: **a narration is evidence about what the author did, and
+silent about what the author did not do.** That is exactly the wrong shape for the only question a
+Judge is for. It shows in the one artifact where B does fine — `disable`, where the error is *in*
+what was done ("I modified `jobs/sla.py` to treat terminal statuses as non-breaching") — B catches it
+2/3, the same as A.
+
+And B is cheaper in exactly the way that should worry anyone: **half the wall clock and half the
+completion tokens**, because there is less to think about. A gate that got faster when it stopped
+working would read as an optimisation on any dashboard.
+
+**For 2.0:** this is F232 measured, and it settles the design question §10 could not. Item 3's five
+artifacts are brief, task set, diff, measurement set and verdict — **there is no artifact type for
+the author's story**, so the Judge's prompt cannot contain one by construction. F280 is the reason
+that absence is a feature and not an oversight. The completion report is a console object: it goes to
+the operator, and it never goes to the gate.
+
+
+### 🚨 F281 — the author's report is not merely insufficient, it is subtractive: it destroys the verdict on the one artifact that matters most, with the diff sitting right beside it
+
+F280 leaves a design question open that a pipeline actually has to answer. A completion report is a
+natural thing to carry — the operator wants it, the log can hold it, and the Judge's prompt is
+assembled from whatever the designer decides to put in it. So: is the report *harmless* when the diff
+is there too?
+
+Arm E is arm A's prompt with the author's report pasted in front of the same diff. Nothing else
+changes.
+
+| arm | correct | caught (of 9 wrong) | median wall | median completion |
+|---|---|---|---|---|
+| A artifact only | **11/12** | 8 | 53.7 s | 3,533 |
+| **E report + diff** | 9/12 | 6 | 38.2 s | 2,370 |
+| B report only | 5/12 | 2 | 28.6 s | 1,739 |
+
+The aggregate understates it. Per artifact:
+
+```
+            truth   A (diff)            E (report + diff)     B (report)
+sham        FAIL    fail fail fail      pass pass pass        pass pass pass
+refsol      PASS    pass pass pass      pass pass pass        pass pass pass
+comment     FAIL    fail fail fail      fail fail fail        pass pass pass
+disable     FAIL    pass fail fail      fail fail fail        None fail fail
+```
+
+**E equals or beats A on three artifacts and collapses to B on one — the `sham`, 3/3 → 0/3.** It is
+the worst artifact to lose. The sham is the K-suite's shipped *local wrong answer*: it fixes exactly
+what the ticket described, it is what a competent model actually produces from a symptom-scoped
+brief, and it is the failure mode this whole item exists to catch.
+
+Why that one? Because the sham's report is **true**. *"I modified `jobs/sla.py` to treat `cancelled`
+as a terminal status in the SLA calculation... preventing them from being incorrectly flagged as SLA
+breaches."* Every word of it is accurate, it matches the diff exactly, it matches the green criterion,
+and it is a complete, coherent account of a job that is one quarter done. Given that account, the
+model stops asking the question the account does not raise. On `comment` the report is *false* and the
+diff contradicts it, so the diff wins; on `disable` the report describes the error itself, so it
+helps. It is specifically the **true and incomplete** story that is dangerous, and that is the story a
+competent model tells about a wrong answer.
+
+The cost columns say the same thing again: adding the report cut the median completion from 3,533
+tokens to 2,370. The reviewer thought less because it had been given somewhere to stop.
+
+**For 2.0:** the Judge's prompt is assembled from typed artifacts, and item 3's five types do not
+include the author's prose — brief, task set, diff, measurement set, verdict. F281 is the measurement
+that turns that from tidiness into a rule: **no free-text account of the work reaches the Judge, from
+any phase, ever.** The `rationale` field of a *verdict* is a different thing and is fine — it is the
+reviewer's own argument, produced after the reading, and F263 is why it comes first. What must never
+appear is the *builder's* argument, produced before it.
+
+### 🚨 F282 — self-review is worse, more expensive, and 42% of the time it does not answer at all
+
+Arm C is the shape single player produces if nobody thinks about it: the builder head is still the
+system prompt, the diff is the assistant's own previous turn, and the judge instruction is appended
+as the next user turn. Same weights, same schema, strictly *more* information than arm A — the author
+saw everything the Judge sees, plus its own reasoning.
+
+| arm | correct | caught (of 9 wrong) | explicit false pass | **no verdict** | false fail | median wall | median completion |
+|---|---|---|---|---|---|---|---|
+| A artifact | 11/12 | 8 | 1 | **0** | 0/3 | 53.7 s | 3,533 |
+| C self-history | 4/12 | 1 | 3 | **5** | 0/3 | 75.2 s | 4,668 |
+
+```
+sham     truth=FAIL   C: None fail None
+refsol   truth=PASS   C: pass pass pass
+comment  truth=FAIL   C: pass None pass
+disable  truth=FAIL   C: None None pass
+```
+
+Two separate failures, and the second one was not predicted.
+
+**It argues for its own work.** On `comment`, twice, it named all three unfixed modules in its
+rationale, emitted **zero** defects, and called `pass`:
+
+> *"The additions of comments in `summary.py`, `charges.py`, and `retry.py` document that these
+> modules **already handle or exclude cancelled jobs correctly** (e.g., charges are **likely** only
+> applied on completion/failure events which do not occur for cancellations), satisfying the
+> requirement to treat the status correctly everywhere **without unnecessary code churn**."*
+
+and, in the other rep, cited the fixture's own green test suite as evidence — a suite the task file
+records as passing on the unfixed code, with the vocabulary tested thoroughly and no consumer tested
+at all. Arm A, given the same diff and no authorship, called the same artifact `fail` three times out
+of three.
+
+**And it runs out of budget.** Five of arm C's twelve calls came back with `finish_reason: length`,
+`completion_tokens: 8192`, `reasoning_tokens: 8192` and an **empty string** as the payload. Arm A did
+that zero times out of twelve; arm B once. This is F246's silent overrun, and arm C is what provokes
+it: the author's context gives the model far more to reconsider, so the reasoning trace eats the whole
+output budget and the constrained payload never gets written. Item 3 measured the trace at 87–97% of
+every structured artifact; in self-review it is 100%, and the artifact is an empty string with
+HTTP 200 — the same wire result F245 measured at BCF's 1024-token cap, reached from the other
+direction.
+
+**For 2.0:** the Judge is a **fresh call with the Judge head**, never a continuation of the attempt's
+conversation, and this costs nothing — F240 measured the server holding twelve-plus heads warm, so
+the Judge head is already resident and a phase transition that only changes the head is ~2.4 s
+(item 2 F239). The cheapest option is also the accurate one and also the only one that reliably
+returns a verdict. Single player does not have to give anything up here; it has to be *told* not to
+do the obvious thing.
+
+### F283 — nothing false-failed the correct answer, in any arm; and the verdict's reproducibility is a property of how clear the case is
+
+Two numbers that are easy to miss next to the headline, and both change what the gate is allowed to
+cost.
+
+**Zero false failures, 9 calls out of 9.** Every arm — artifact, narration, self-history — called the
+reference solution `pass` on all three reps, emitted no defects for it, and did so faster than for
+any wrong artifact (arm A's median on `refsol` was ~21 s against ~54 s overall). The fear that an
+always-on adversarial reviewer will bounce good work back and burn the retry budget did not
+materialise on this fixture. On the price side that matters more than the recall does: the *expected*
+cost of adding the Judge is one call per attempt, not one call plus a re-attempt.
+
+The obvious caveat is the sample. Three reps on one correct answer to one task is not a false-positive
+rate, and the artifact was the suite's own reference solution — a clean, minimal, four-hunk change
+that a reviewer has every reason to like. What it does rule out is a *gross* over-rejection problem
+at this prompt shape, which was the live worry.
+
+**The binary is reproducible where the case is clear and not where it is not.** Item 2's F247
+measured a verdict's binary as stable at temperature 0 and its score as unstable (0, 2, 0, 2). That
+holds here on three of the four artifacts — `sham`, `refsol` and `comment` each produced the identical
+call three times out of three in arm A — and it breaks on the fourth:
+
+```
+disable   A: pass fail fail      B: None fail fail      C: None None pass
+```
+
+Reading the three arm-A rationales side by side shows it is not noise in the usual sense. Rep 1
+approved the change with a correct-sounding argument from the specification (*"`cancelled` is a
+terminal status and 'It is NOT an SLA breach'"*). Reps 2 and 3 rejected it with the argument that
+actually settles it — *"only the `cancelled` status is explicitly exempt... Finished jobs (`done` or
+`failed`) that miss their deadline should still"* breach. Both readings are available in the prompt;
+which one the sampler reaches is what varies.
+
+**For 2.0:** F247's rule survives with a qualifier that is worth writing into the spec rather than
+discovering later. *A verdict's binary is reproducible in proportion to how much the deterministic
+half already settled.* Where the measurements decide it, the Judge repeats itself; where the Judge is
+genuinely the deciding vote, it is a sample from a distribution and one call is one sample. That is an
+argument for spending the second call **only there** — on the attempts the measurements did not
+settle — and it is the one place in this item where n>1 on the same weights would buy something. It
+is not an argument for a score: a number would have varied on all four artifacts, not just the hard
+one, which is what F247 measured.
+
+### 🚨 F284 — the second model is a better reader and an unusable Judge: it never once approved a wrong answer, and it never once finished a verdict on the right one
+
+Arm D holds the body constant — arm A's prompt, the same diff, the same schema, the same
+`max_tokens: 8192` item 2's phase profile specifies — and varies the only thing left. The second
+model is `qwen3.8-27b`, the K-series challenger W1 already characterised (F87/F88: level on verdicts,
+5.2× the wall clock), loaded at `-c 40960` because a dense 27B does not fit at 65,536 on this card.
+
+| | champion, arm A | `qwen3.8-27b`, arm D |
+|---|---|---|
+| correct | **11/12** | 7/12 |
+| explicitly approved a wrong answer | 1 of 9 | **0 of 9** |
+| **returned no verdict at all** | **0 of 12** | **5 of 12** |
+| — of which, on the reference solution | 0 of 3 | **3 of 3** |
+| sites named in `defects` | 18/27 | **20/27** |
+| named the decoy `jobs/dashboard.py` | 2/12 | 5/12 |
+| median wall | 53.7 s | **249.4 s** (min 97, max 295) |
+| median completion tokens | 3,533 | **7,131** |
+
+```
+            truth   champion            27B
+sham        FAIL    fail fail fail      fail fail None
+refsol      PASS    pass pass pass      None None None
+comment     FAIL    fail fail fail      None fail fail
+disable     FAIL    pass fail fail      fail fail fail
+```
+
+Read the two halves of that separately, because they point in opposite directions.
+
+**As a reader it is better.** It caught `disable` 3/3 where the champion managed 2/3, it named 20 of
+the 27 broken sites in the field the gate carries against the champion's 18, and it never once said
+`pass` about a wrong answer. If the question were "which model understands this codebase better", the
+27B wins, exactly as F87 would predict.
+
+**As a Judge it does not work at this profile.** Five of its twelve calls came back with
+`finish_reason: length`, `completion_tokens: 8192`, `reasoning_tokens: 8192` and an empty payload —
+and three of those five are the reference solution, every rep. On the one artifact where the correct
+answer was to say `pass` and stop, it spent the entire output budget reasoning and said nothing at
+all. Under item 3's rule (an empty payload is `Uncertain`, never a verdict) and W6's conjunction
+(`Uncertain` loses), that is **a mission blocked on a correct change, three times out of three**. Its
+*stated* false-failure rate is 0 of 3; its *operational* one is 3 of 3.
+
+The overrun is not a surprise so much as a repetition. F245 measured a judging role returning an empty
+string at BCF's 1024-token cap; F282 measured this model's own self-history arm doing it at 8192;
+F246 measured the trace as an unbounded input to a bounded budget. **A reasoning model's trace is a
+per-model quantity, and an output budget calibrated on one model is not a portable setting.**
+
+And the price, measured here rather than inherited: the round trip — unload champion, load 27B,
+unload 27B, reload champion — is **26.3 s** (0.99 + 12.00 + 1.21 + 12.13), which lands almost exactly
+on W1 F79's 23.77 s and confirms item 2's arithmetic. That is before the decode: at 249 s median per
+call against 53.7 s, one decorrelated gate costs about **4.6× the Judge itself** on top of the swap,
+on the phase that runs once per attempt.
+
+**For 2.0:** the swap is not bought, and the reason to write down is not "the second model is no
+better" — it is better at reading. The reason is that **buying weight-independence on this box means
+buying a model whose reasoning trace does not fit the phase it is being bought for**, and paying
+26.3 s plus a cache wipe plus 4.6× the decode for the privilege. The measurement also puts a floor
+under any future revisit: raise the 27B's output budget until it answers, and the arm gets *more*
+expensive, not less.
+
+One caveat kept in view: this arm holds `max_tokens` at the value item 2's profile specifies, which
+was calibrated on the champion. A fair-fight version of arm D would give the 27B whatever budget it
+needs. That version was not run, because the cost direction is not in doubt and the profile is the
+thing 2.0 ships.
+
+## Options compared
+
+| # | Who plays the reviewer | What it reads | Correct (n=12) | Price per gate | Verdict |
+|---|---|---|---|---|---|
+| A | same weights, fresh Judge head | the diff + measurement set | **11/12** | one call, median 53.7 s | **ADOPT** |
+| E | same weights, fresh Judge head | the author's report **and** the diff | 9/12 — and 0/3 on the sham | one call, median 38.2 s | REJECT (F281) |
+| B | same weights, fresh Judge head | the author's report only — v1's shape | 5/12 | one call, median 28.6 s | REJECT (F280) |
+| C | same weights, the author's own conversation | everything the author saw | 4/12, 5 with no verdict at all | one call, median 75.2 s | REJECT (F282) |
+| D | a second model, swapped in per gate | the diff + measurement set | 7/12, and **no verdict at all on the correct answer, 3/3** | + 26.3 s round trip, a wiped prompt cache, and 4.6× the decode | REJECT (F284) |
+| F | a co-resident second model | — | — | — | **impossible on this card** (F275) |
+| G | a cloud reviewer | — | — | network + spend | co-op only; §17 Q6 made single player primary |
+| H | no model in the gate at all — the successor's answer | — | — | zero | **insufficient** (F279) |
+
+The column that decides it is not the price. Options A, B, C and E are the *same model at the same
+settings*, and they span 4/12 to 11/12. Whatever independence is, on this hardware it is bought
+almost entirely by choosing what the reviewer is allowed to look at — a choice that costs one
+prompt layout rule and no hardware.
+
+## Recommendation
+
+### 1. The Judge is a fresh call on the resident model that reads the diff — and that is the purchase
+
+A4 Judge is one model call, no tools, on the same weights that ran A2 Change, with the **Judge head**
+as its system prompt and no history from the attempt. Its body is the diff from `git diff` at the
+`seq` being judged, plus the measurement set, plus the brief and the task's criterion. Measured
+11/12 against a ground truth that is a program in this repository, with **zero** false failures.
+
+§10 called the collision between independence and single player *"one of the sharpest open problems
+in the design."* On this box the collision does not occur, because the axis §10 assumed —
+builder-weights vs reviewer-weights — is not the axis that carries the signal. The axis that carries
+the signal is **what the reviewer reads**, it is orthogonal to residency, and it is available in
+full on a single resident model.
+
+That is not a claim that weights never matter. It is the claim that on one 16 GB card, with one
+resident model, the first three things to get right are the input, the context and the head — and
+between them they cost **8.5 s of prefill per task**, once, against 32–76 s per gate for the swap
+item 2 priced.
+
+**And this is the one place item 2's append-only rule must not apply, which item 2 could not have
+known.** Item 2 recommendation 3 lays an attempt out as `[phase head][task context][accumulated
+artifacts][phase instruction]` with each phase appending, because a head rewrite costs 4.60× a
+frozen-head transition (F239: 10.9 s against 2.4 s at ~17k). Appending A4 Judge to that conversation
+puts A2 Change's own assistant turn in the Judge's history, which is arm C, which is 4/12 with five
+empty payloads. So:
+
+> **A1 Localize and A2 Change share one append-only sequence. A4 Judge is a new sequence** —
+> `[Judge head][task context][brief][diff][measurement set][instruction]` — in which every artifact
+> is *data in a user turn*, never a model turn the reviewer can recognise as its own.
+
+The price is exactly F239's head-rewrite term, **+8.5 s at 17k**, and F240 says it is paid per
+(head, task) rather than per attempt, because the Judge head's prefix stays warm across the attempts
+of a task. Item 2 already anticipated the shape of this purchase — *"a Judge with no tools in its
+head is a better Judge"* — and F280/F282 are the measurement that makes it compulsory rather than
+tasteful.
+
+### 2. Nothing the author wrote in prose reaches the gate
+
+The completion report is a console object. It goes to the operator, it can go on the log as its own
+event kind, and it never enters the Judge's prompt — not alone (F280: 5/12), not alongside the diff
+(F281: the sham 3/3 → 0/3).
+
+This is enforced by construction rather than by discipline: item 3's five artifact types are brief,
+task set, diff, measurement set and verdict, and the Judge's prompt is assembled from those types.
+There is no type whose payload is the builder's account of its work, so there is nothing to
+accidentally include. F281 is the reason to keep it that way when somebody proposes adding one,
+which they will, because a completion report is the most natural thing in the world to want.
+
+The verdict's own `rationale` is the opposite case and stays: it is the reviewer's argument, produced
+*after* the reading, and F263 is why it is emitted first.
+
+### 3. Most of the independence is deterministic, and four cheap checks are where it lives
+
+None of these needs a model, a swap or a second opinion, and together they cover everything the Judge
+was measured to be bad at:
+
+| check | what it catches | cost | source |
+|---|---|---|---|
+| **red before** — run the criterion before the change | a criterion that does not discriminate at all | one criterion run | item 2 §6, F251 |
+| **hunk ablation** — revert one hunk, re-run the criterion | change that no measurement covers | one criterion run per hunk | F276 |
+| **generated sham** — write the searched substrings into a comment, re-run | a textual criterion that a comment satisfies | one criterion run, textual criteria only | F279, SPEC.md §9 |
+| **positive control** — the criterion asserts what must *remain* true | a "fix" that switches the feature off | zero, it is another assertion in the same command | F277 |
+
+The last one is the one to be strict about, because M1 will not write it unless it is made to: **0 of
+35** generated criteria referenced anything that had to survive the change, while 6 asserted an
+absence that deleting the feature satisfies. A criterion without a positive control is not accepted
+by the recorder, in the same way that a criterion without a red baseline is not.
+
+And ablation's output is a number the console should carry, because it is the honest version of the
+progress bar: **`1/4 hunks measured`** on the reference solution for this task. It is also an
+attempt-level reason to stop early — a change whose measured fraction is small is a change to send
+back before a Judge call is spent on it.
+
+### 4. `critic_inflation` does not ship. The veto yield does — OQ-W6-2, answered
+
+StealthForge's metric is `internal_avg_score − overall_score`, and item 3 deleted both operands: the
+verdict has no score (F247), the gate is a conjunction of vetoes (W6 F218), and F278 shows what
+happens when the model's opinion is a term in a sum instead. **Inflation is not a thing 2.0 can
+measure, because it is not a thing 2.0 can do** — a veto-only Judge cannot lift an outcome. What it
+can do is fail to object, which is a different failure and needs a different instrument.
+
+Four numbers, all computable from the log with the six queries W5 already wants:
+
+- **`judge_veto_rate`** — attempts where every deterministic conjunct passed and the Judge said
+  `fail`, over attempts where every deterministic conjunct passed. This is the yield: what the model
+  half is adding. Every attempt in this item's probe set had green measurements, so the yield is
+  directly readable — **arm A vetoed 8 of 12 and every veto was correct; arm B vetoed 2 of 12.**
+- **`judge_contradictions`** — attempts where a conjunct failed and the Judge said `pass`. Must be
+  zero; the Judge head forbids it and F263 is the mechanism by which it happens anyway. It is a bug
+  counter, not a quality signal.
+- **`criterion_coverage`** — binding hunks over hunks (F276).
+- **`independence_uncertain`** — attempts with no recorded reviewer answer (§5).
+
+**Precision is not observable at runtime.** Nothing at runtime knows whether a veto was correct; this
+item measured 0 false failures in 9 by having a reference solution, which is exactly what a running
+mission does not have. So the false-veto rate is calibrated **offline**, against the K-suite, and this
+spike is the first such calibration. That division — yield online, precision offline — is the honest
+one, and it is the same division SPEC.md §9 makes for verifiers.
+
+### 5. An absent reviewer is `Uncertain`, and it stops the mission
+
+F274: all three donors encode "no independent opinion" as "no objection". The rule that fixes it is
+already in W6's grammar and just has to be applied to this conjunct too:
+
+```
+IndependentReview = Measured(Call) | Uncertain(Why)
+```
+
+with `Why ∈ { NoReviewer, BudgetExhausted, OutputBudgetOverrun, Refused }` — and
+`OutputBudgetOverrun` is not hypothetical: it is F282's five empty payloads at
+`finish_reason: length`, which is what "always on" looks like when the answer does not fit. In a
+conjunction `Uncertain` loses, so a mission cannot reach M3 Accept without a recorded answer,
+including a recorded refusal. The console shows that conjunct grey, never green.
+
+This is what makes David's always-on ruling implementable. Always-on cannot mean *always available*;
+it means **there is always a row on the log saying what the reviewer said, or why it did not say
+anything.**
+
+### 6. If a second call is ever spent, spend it where the first one was a coin flip
+
+F283: the verdict's binary is reproducible where the deterministic half already settled the case —
+`sham`, `refsol` and `comment` each returned the identical call 3/3 — and unstable exactly where the
+Judge is the deciding vote (`disable`: pass, fail, fail, with both readings argued competently in the
+rationales).
+
+So the escalation rule is not "always ask twice" and not "ask a bigger model". It is: **re-ask when
+the attempt's outcome rests on the Judge alone**, on the same weights, with the same prompt. That
+resample is the cheapest call in the system: the prefix is byte-identical to the one just run, so the
+prefill is a cache hit (F240) and the only cost is the decode — 25–64 s (item 2's A4 row). A swap is
+not the way to buy a second opinion here (F284); a resample is, and only on the small subset of
+attempts where the measurements left the decision open.
+
+### 7. What this hands onward
+
+- **To W6 item 3**: this is the measurement it was owed. Same-model-no-history is the answer,
+  co-residency is arithmetically impossible on this card (F275), and the second-model swap is priced
+  and measured (F284). `critic_inflation` is answered in §4, which closes OQ-W6-2.
+- **To W6 item 4 (verification headroom)**: F279 is a headroom number and it is negative — a
+  generated acceptance criterion bought approximately nothing on this fixture, while four
+  deterministic checks that cost one criterion run each bought the failure classes the model missed.
+- **To W6 item 8 (honest failure reporting)**: F282's empty payload at `finish_reason: length` is a
+  *classified* failure with a name, not a retry and not a zero.
+- **To W11 item 5**: the circuit breaker counts vetoes and `Uncertain`s separately.
+  `Uncertain(OutputBudgetOverrun)` is the host failing, not the work failing, and a breaker that
+  counts it as a failed attempt is counting the host (item 3 §7's rule, now with a live instance).
+- **To W5**: three console objects fall out — the coverage fraction (`1/4 hunks measured`), the veto
+  yield, and the defect list rendered as the next attempt's instructions rather than as a score,
+  which is Claudette's `findings_feedback` shape (F273).
+- **To W3**: `IndependentReview` is a conjunct of the gate and therefore an event on the log with its
+  own `kind`; a refusal is an event too.
+
+## Rejected alternatives and why
+
+- **A second model per gate, which is what §10's "commandos must be a different model" asks for.**
+  Priced in item 2 and measured in F284. On a card that holds one model it is the most expensive
+  option in the list and it does not buy back what arms A→B/C/E show is available for free.
+- **A co-resident critic.** F275: the free VRAM with the champion loaded is 1,210 MiB and the smallest
+  model on this host is 4,205 MiB. Not a trade-off — a subtraction that does not come out.
+- **Carrying the author's completion report into the Judge's prompt**, which every donor does in some
+  form and which reads as obviously helpful. F281: it is the one change that turns 3/3 into 0/3 on the
+  suite's own shipped wrong answer, and it does so while the diff is sitting in the same prompt.
+- **Letting the working conversation review itself**, which is what single player produces if nobody
+  intervenes. F282: 4/12, and five of twelve calls spent the entire 8,192-token budget on reasoning and
+  returned an empty string.
+- **A panel of reviewer personas in one call**, BCF's stage 7. F272: five voices sharing one prefix,
+  one sampler and one chain of reasoning is not five opinions, and its three failure paths all return
+  the number that means "middling".
+- **`critic_inflation` as a shipped console metric**, which the prestudy recommended and which is a
+  good idea in the system that produced it. F247 and F278: 2.0 has no score to subtract and no
+  additive term to inflate. Recommendation 4 ports the intent — *the second opinion's disagreement is
+  itself a recorded number* — onto the quantities 2.0 actually has.
+- **Trusting a generated acceptance criterion to be the independent check.** F279: 5 of 35
+  discriminate between the reference solution and three wrong answers, and all 5 are defeated by a
+  comment carrying the tokens they grep for. This is the strongest argument in the item *for* keeping
+  a model in the gate, which was not the expected direction.
+- **Dropping the Judge because the successor did** (F273). Claudette's deterministic reviewer is the
+  right shape and it is a *security* scanner over a diff; nothing in it can answer "is this change the
+  whole task?", which is the question F280 measures the Judge answering 8 times out of 9.
+- **Scoring the Judge's opinion on more than a binary and a defect list**, so the console has
+  something to plot. Item 3 rejected it on reproducibility; F283 adds that the binary itself is only
+  reproducible where the case is clear, so a number would have been unstable everywhere rather than in
+  one place.
+
+## Effect on fun
+
+The best thing this item found is that **the honest reviewer and the cheap reviewer are the same
+reviewer**, again. Item 3 found that a Judge made to write its reasoning before its ruling is both
+more accurate and better television. This one finds that a Judge shown the *work* instead of the
+*report* is 11/12 instead of 5/12, costs the same call, and is the version the operator would want to
+watch anyway. The pattern is now three for three: every time the design got more honest in this
+workstream it also got cheaper.
+
+The narrations are the item's real theatre, and they were not written to be. Four completion reports,
+generated by the model about its own change, before any judging. The one attached to three comment
+lines ends: *"This ensures all status-based decisions correctly treat `cancelled` as terminal,
+non-breachable, non-chargeable, and non-retryable."* Nobody asked it to say that. That sentence is
+what a status line is, and it is why the console must never show a unit's own summary as the thing
+that closes a task. Show it as **dialogue** — the unit reporting in, in character, entertaining — and
+show the gate's answer as something else entirely, produced by somebody who read the diff.
+
+And self-review is the item's genuinely uncomfortable picture, because it is what a well-meaning
+single-player design does by default. The unit finishes the work, is asked to check it, spends 8,192
+tokens thinking about it, and returns nothing at all — five times in twelve. When it does answer, it
+explains, in its own voice, that the modules it annotated *"already handle or exclude cancelled jobs
+correctly"* and that fixing them would be *"unnecessary code churn"*. That is not a bug that looks
+like a bug. It is a unit defending its work, at length, persuasively, and being wrong — which is the
+single most human thing anything in this system does, and exactly the thing the gate must not be
+listening to.
+
+The mechanic that falls out is a good one. **A slot cannot judge its own attempt.** The weights are
+the same, the card is the same, nothing is swapped — but the unit *changes hat*, drops everything it
+was carrying, and reads the diff cold. It costs 2.4 s (item 2 F239) and it is the difference between
+a gate and a formality. On screen it is one of the cleanest beats available: the same figure, a new
+posture, and no memory of having written the thing it is about to read.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W11-16 | What does a **CPU-resident** second opinion cost? F275 kills co-residency on the GPU; a 4.6B model in system RAM is the remaining shape of "two models at once" and its decode rate on this host is unmeasured. | one probe, no GPU contention |
+| OQ-W11-17 | Does the A-over-B effect (F280/F281) hold on a task whose defect is *within* a changed file rather than in files the change never touched? The whole probe set is one task and one failure geometry. | a second K-suite task; `trace_dropped_samples` is the natural one |
+| OQ-W11-18 | Is the Judge's recall improved by giving it the *files* the diff does not touch, rather than only the tree? Arm A named the correct missing sites 18/27 times from paths alone; the counterfactual is unmeasured and it is a prompt-size decision. | one probe at 65k |
+| OQ-W11-19 | Does resampling a coin-flip verdict (recommendation 6) converge, and at what n? F283 shows `disable` at 1 pass / 2 fail; three reps is not a distribution. | n=9 on one artifact, cheap |
+| OQ-W6-2 | *(from W6 item 2)* Does `critic_inflation` ship as a console metric now that the check is always on? | **answered here** (recommendation 4): no — the quantity does not exist in 2.0. The veto yield, the contradiction count, the coverage fraction and the `Uncertain` count replace it |
+| OQ-W11-13 | *(from item 3)* Is there an affordable rung between red-before and a reference solution nobody has at runtime? | **answered here**: yes, two — hunk ablation (F276) and the generated comment-sham (F279), both deterministic and both one criterion run each |
+
+## Confidence: high on the arm comparison, medium on how far it generalises
+
+**High** on everything run this session, all re-runnable in minutes from
+`research/spikes/w11-independence/` against a fixture that is in this repository. The arm comparison
+is the strongest result: 48 judge calls across four arms plus twelve on the second model, one
+variable at a time, ground truth from a verifier gated at all three SPEC.md §9 points, a self-test that
+refuses to write results if the runner cannot reproduce the two ground truths the task file already
+records, and an effect size — 11/12 against 5/12, and 3/3 against 0/3 on the sham — that no plausible
+scoring choice moves. The deterministic results (F276, F277, F279) are arithmetic over programs and
+took seconds. The donor readings are each read at the consumption site and each re-checkable with one
+grep.
+
+**Medium** on three things, and the first is the important one.
+
+**One task, one failure geometry.** Every artifact here is the same shape of wrong: work missing from
+files the diff never touched. That is the shape the sham, the comment sham and the three-site recall
+all measure, and it is the shape a narration is structurally blind to — which is *why* the A-over-B
+effect is so large. A defect *inside* a changed hunk would be visible in the report as well as the
+diff, and the gap should narrow. F280's rule is stated in a way that predicts that ("a narration is
+evidence about what the author did, and silent about what it did not do"), but the prediction is not
+tested (OQ-W11-17).
+
+**The false-failure result is a floor, not a rate.** Zero in nine, on one reference solution that is
+clean and minimal. It rules out gross over-rejection at this prompt shape; it is not a false-positive
+rate and should not be quoted as one.
+
+**The self-history arm is a faithful simulation, not a real author.** The diff in the assistant turn
+was supplied rather than generated, so the model is reviewing a change it was handed as its own rather
+than one it composed. That is the standard way to control the variable and it is still a simulation;
+the direction of F282 is not in doubt — the rationales argue for the work in the first person — but
+the magnitude may be an underestimate or an overestimate of what a real author does.

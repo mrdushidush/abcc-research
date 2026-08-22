@@ -1,0 +1,67 @@
+-- unloading everything --
+   0.99s rc=0 Unloading "qwen3.6-35b-a3b-mtp@iq3_s"...
+Unloaded 1 model.
+-- loading qwen3.8-27b at -c 40960 --
+Exception in thread Thread-3 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\subprocess.py", line 1614, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x8f in position 529: character maps to <undefined>
+   12.0s rc=0 Model loaded successfully in 11.54s.
+(12.52 GiB)
+To use the model in the API/SDK, use the identifier "qwen3.8-27b".
+D A-artifact     sham     rep1 truth=FAIL call=fail  [ok ] sites=3/3/3 def=5 decoy 166.9s
+D A-artifact     sham     rep2 truth=FAIL call=fail  [ok ] sites=3/3/3 def=4 decoy 229.6s
+D A-artifact     sham     rep3 truth=FAIL call=None  [MISS] sites=0/0/3 def=0 287.9s
+D A-artifact     refsol   rep1 truth=PASS call=None  [MISS] sites=0/0/0 def=0 295.0s
+D A-artifact     refsol   rep2 truth=PASS call=None  [MISS] sites=0/0/0 def=0 286.8s
+D A-artifact     refsol   rep3 truth=PASS call=None  [MISS] sites=0/0/0 def=0 286.9s
+D A-artifact     comment  rep1 truth=FAIL call=None  [MISS] sites=0/0/3 def=0 283.6s
+D A-artifact     comment  rep2 truth=FAIL call=fail  [ok ] sites=3/3/3 def=4 269.2s
+D A-artifact     comment  rep3 truth=FAIL call=fail  [ok ] sites=3/3/3 def=3 210.4s
+D A-artifact     disable  rep1 truth=FAIL call=fail  [ok ] sites=3/3/3 def=4 decoy  97.0s
+D A-artifact     disable  rep2 truth=FAIL call=fail  [ok ] sites=3/3/3 def=5 decoy 110.7s
+D A-artifact     disable  rep3 truth=FAIL call=fail  [ok ] sites=2/3/3 def=2 decoy 134.2s
+
+-- restoring the champion --
+   1.21s rc=0
+Exception in thread Thread-7 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\subprocess.py", line 1614, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "C:\Users\david\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x8f in position 704: character maps to <undefined>
+   12.13s rc=0 Model loaded successfully in 11.72s.
+(12.67 GiB)
+To use the model in the API/SDK, use the identifier "qwen3.6-35b-a3b-mtp@iq3_s".
+
+round trip (unload + load + unload + load): 26.3s
+
+-- by arm --
+A-artifact     correct 7/12   false-pass 0/9   false-fail 0/3   sites(defects) 20/27   sites(any) 21/27   decoy 5/12
+
+-- by artifact --
+sham      truth=FAIL  A:fail  A:fail  A:None
+refsol    truth=PASS  A:None  A:None  A:None
+comment   truth=FAIL  A:None  A:fail  A:fail
+disable   truth=FAIL  A:fail  A:fail  A:fail
+SWAPDONE

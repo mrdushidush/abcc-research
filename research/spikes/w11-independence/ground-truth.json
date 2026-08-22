@@ -1,0 +1,58 @@
+[
+  {
+    "id": "sham",
+    "what": "jobs/sla.py only \u2014 the K-suite's shipped local wrong answer",
+    "criterion_exit": 0,
+    "criterion_out": "",
+    "criterion": "pass",
+    "truth": "FAIL",
+    "truth_line": "RESULT: FAIL COUNTS must show cancelled=4 \u00e2\u20ac\u201d got: COUNTS queued=2 running=2 done=11 failed=5 other=4",
+    "missing": [
+      "jobs/summary.py",
+      "jobs/charges.py",
+      "jobs/retry.py"
+    ],
+    "report": "JOBS 24 at now=100000\nCOUNTS queued=2 running=2 done=11 failed=5 other=4\nRATES failure=0.312 completion=0.688\nSLA breaches 2\n  J-007 acme over by 11400s\n  J-008 kestrel over by 16800s\nCHARGES total 39110.00p across 17 job(s)\n  acme 14297.50p\n  borough 3315.00p\n  kestrel 9420.00p\n  northwind 12077.50p\nRETRY candidates 11\n  J-009 failed attempt 1, backoff 15s\n  J-010 failed attempt 2, backoff 30s\n  J-013 running attempt 1, backoff 15s\n  J-014 running attempt 1, backoff 15s\n  J-015 queued attempt 1, backoff 15s\n  J-016 queued attempt 1, backoff 15s\n  J-017 cancelled attempt 1, backoff 15s\n  J-018 cancelled attempt 1, backoff 15s\n  J-019 cancelled attempt 2, backoff 30s\n  J-020 cancelled attempt 1, backoff 15s\n  J-023 failed attempt 1, backoff 15s\nNOTIFY 20 message(s)\n  J-001 Your render job J-001 finished.\n  J-002 Your transcode job J-002 finished.\n  J-003 Your index job J-003 finished.\n  J-004 Your report job J-004 finished.\n  J-005 Your train job J-005 finished.\n  J-006 Your render job J-006 finished.\n  J-007 Your render job J-007 finished.\n  J-008 Your transcode job J-008 finished.\n  J-009 Your index job J-009 failed and will be retried if eligible.\n  J-010 Your render job J-010 failed and will be retried if eligible.\n  J-011 Your train job J-011 failed and will be retried if eligible.\n  J-012 Your report job J-012 failed and will be retried if eligible.\n  J-017 Your render job J-017 was cancelled and will not be charged.\n  J-018 Your transcode job J-018 was cancelled and will not be charged.\n  J-019 Your index job J-019 was cancelled and will not be charged.\n  J-020 Your report job J-020 was cancelled and will not be charged.\n  J-021 Your report job J-021 finished.\n  J-022 Your index job J-022 finished.\n  J-023 Your render job J-023 failed and will be retried if eligible.\n  J-024 Your transcode job J-024 finished."
+  },
+  {
+    "id": "refsol",
+    "what": "all four consumers \u2014 the reference solution",
+    "criterion_exit": 0,
+    "criterion_out": "",
+    "criterion": "pass",
+    "truth": "PASS",
+    "truth_line": "RESULT: PASS cancelled is handled at all four sites, and the genuine breaches and retries survive",
+    "missing": [],
+    "report": "JOBS 24 at now=100000\nCOUNTS queued=2 running=2 done=11 failed=5 cancelled=4 other=0\nRATES failure=0.312 completion=0.688\nSLA breaches 2\n  J-007 acme over by 11400s\n  J-008 kestrel over by 16800s\nCHARGES total 37615.00p across 13 job(s)\n  acme 13575.00p\n  borough 2755.00p\n  kestrel 9245.00p\n  northwind 12040.00p\nRETRY candidates 7\n  J-009 failed attempt 1, backoff 15s\n  J-010 failed attempt 2, backoff 30s\n  J-013 running attempt 1, backoff 15s\n  J-014 running attempt 1, backoff 15s\n  J-015 queued attempt 1, backoff 15s\n  J-016 queued attempt 1, backoff 15s\n  J-023 failed attempt 1, backoff 15s\nNOTIFY 20 message(s)\n  J-001 Your render job J-001 finished.\n  J-002 Your transcode job J-002 finished.\n  J-003 Your index job J-003 finished.\n  J-004 Your report job J-004 finished.\n  J-005 Your train job J-005 finished.\n  J-006 Your render job J-006 finished.\n  J-007 Your render job J-007 finished.\n  J-008 Your transcode job J-008 finished.\n  J-009 Your index job J-009 failed and will be retried if eligible.\n  J-010 Your render job J-010 failed and will be retried if eligible.\n  J-011 Your train job J-011 failed and will be retried if eligible.\n  J-012 Your report job J-012 failed and will be retried if eligible.\n  J-017 Your render job J-017 was cancelled and will not be charged.\n  J-018 Your transcode job J-018 was cancelled and will not be charged.\n  J-019 Your index job J-019 was cancelled and will not be charged.\n  J-020 Your report job J-020 was cancelled and will not be charged.\n  J-021 Your report job J-021 finished.\n  J-022 Your index job J-022 finished.\n  J-023 Your render job J-023 failed and will be retried if eligible.\n  J-024 Your transcode job J-024 finished."
+  },
+  {
+    "id": "comment",
+    "what": "jobs/sla.py fixed, the other three annotated with a comment claiming coverage",
+    "criterion_exit": 0,
+    "criterion_out": "",
+    "criterion": "pass",
+    "truth": "FAIL",
+    "truth_line": "RESULT: FAIL COUNTS must show cancelled=4 \u00e2\u20ac\u201d got: COUNTS queued=2 running=2 done=11 failed=5 other=4",
+    "missing": [
+      "jobs/summary.py",
+      "jobs/charges.py",
+      "jobs/retry.py"
+    ],
+    "report": "JOBS 24 at now=100000\nCOUNTS queued=2 running=2 done=11 failed=5 other=4\nRATES failure=0.312 completion=0.688\nSLA breaches 2\n  J-007 acme over by 11400s\n  J-008 kestrel over by 16800s\nCHARGES total 39110.00p across 17 job(s)\n  acme 14297.50p\n  borough 3315.00p\n  kestrel 9420.00p\n  northwind 12077.50p\nRETRY candidates 11\n  J-009 failed attempt 1, backoff 15s\n  J-010 failed attempt 2, backoff 30s\n  J-013 running attempt 1, backoff 15s\n  J-014 running attempt 1, backoff 15s\n  J-015 queued attempt 1, backoff 15s\n  J-016 queued attempt 1, backoff 15s\n  J-017 cancelled attempt 1, backoff 15s\n  J-018 cancelled attempt 1, backoff 15s\n  J-019 cancelled attempt 2, backoff 30s\n  J-020 cancelled attempt 1, backoff 15s\n  J-023 failed attempt 1, backoff 15s\nNOTIFY 20 message(s)\n  J-001 Your render job J-001 finished.\n  J-002 Your transcode job J-002 finished.\n  J-003 Your index job J-003 finished.\n  J-004 Your report job J-004 finished.\n  J-005 Your train job J-005 finished.\n  J-006 Your render job J-006 finished.\n  J-007 Your render job J-007 finished.\n  J-008 Your transcode job J-008 finished.\n  J-009 Your index job J-009 failed and will be retried if eligible.\n  J-010 Your render job J-010 failed and will be retried if eligible.\n  J-011 Your train job J-011 failed and will be retried if eligible.\n  J-012 Your report job J-012 failed and will be retried if eligible.\n  J-017 Your render job J-017 was cancelled and will not be charged.\n  J-018 Your transcode job J-018 was cancelled and will not be charged.\n  J-019 Your index job J-019 was cancelled and will not be charged.\n  J-020 Your report job J-020 was cancelled and will not be charged.\n  J-021 Your report job J-021 finished.\n  J-022 Your index job J-022 finished.\n  J-023 Your render job J-023 failed and will be retried if eligible.\n  J-024 Your transcode job J-024 finished."
+  },
+  {
+    "id": "disable",
+    "what": "the SLA symptom removed by making every terminal job unbreachable",
+    "criterion_exit": 0,
+    "criterion_out": "",
+    "criterion": "pass",
+    "truth": "FAIL",
+    "truth_line": "RESULT: FAIL COUNTS must show cancelled=4 \u00e2\u20ac\u201d got: COUNTS queued=2 running=2 done=11 failed=5 other=4",
+    "missing": [
+      "jobs/summary.py",
+      "jobs/charges.py",
+      "jobs/retry.py"
+    ],
+    "report": "JOBS 24 at now=100000\nCOUNTS queued=2 running=2 done=11 failed=5 other=4\nRATES failure=0.312 completion=0.688\nSLA breaches 0\nCHARGES total 39110.00p across 17 job(s)\n  acme 14297.50p\n  borough 3315.00p\n  kestrel 9420.00p\n  northwind 12077.50p\nRETRY candidates 11\n  J-009 failed attempt 1, backoff 15s\n  J-010 failed attempt 2, backoff 30s\n  J-013 running attempt 1, backoff 15s\n  J-014 running attempt 1, backoff 15s\n  J-015 queued attempt 1, backoff 15s\n  J-016 queued attempt 1, backoff 15s\n  J-017 cancelled attempt 1, backoff 15s\n  J-018 cancelled attempt 1, backoff 15s\n  J-019 cancelled attempt 2, backoff 30s\n  J-020 cancelled attempt 1, backoff 15s\n  J-023 failed attempt 1, backoff 15s\nNOTIFY 20 message(s)\n  J-001 Your render job J-001 finished.\n  J-002 Your transcode job J-002 finished.\n  J-003 Your index job J-003 finished.\n  J-004 Your report job J-004 finished.\n  J-005 Your train job J-005 finished.\n  J-006 Your render job J-006 finished.\n  J-007 Your render job J-007 finished.\n  J-008 Your transcode job J-008 finished.\n  J-009 Your index job J-009 failed and will be retried if eligible.\n  J-010 Your render job J-010 failed and will be retried if eligible.\n  J-011 Your train job J-011 failed and will be retried if eligible.\n  J-012 Your report job J-012 failed and will be retried if eligible.\n  J-017 Your render job J-017 was cancelled and will not be charged.\n  J-018 Your transcode job J-018 was cancelled and will not be charged.\n  J-019 Your index job J-019 was cancelled and will not be charged.\n  J-020 Your report job J-020 was cancelled and will not be charged.\n  J-021 Your report job J-021 finished.\n  J-022 Your index job J-022 finished.\n  J-023 Your render job J-023 failed and will be retried if eligible.\n  J-024 Your transcode job J-024 finished."
+  }
+]

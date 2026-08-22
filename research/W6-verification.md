@@ -18,9 +18,20 @@ Planned items:
    Veto and Decide). **F202 is now measured, and it grew**: the probe reproduces BCF's pipe-buffer
    deadlock *and* finds that the successor's fix hangs on its own timeout path when the killed
    child left a grandchild holding the pipe (F220, `research/spikes/w6-pipeline/`).
-3. ☐ **Who plays the reviewer** — always-on independence on one GPU: same-model-no-history vs
-   second-model-swap (23.77 s, W1 F79) vs co-residency; `critic_inflation` as a console metric.
-   Gate independence is measured at +3.65 median inflation over 34 missions (W8).
+3. ✅ **Who plays the reviewer** — **answered and measured in W11 item 4 (F270–F284), which owns
+   the measurement; this item cites it rather than repeating it.** Of the three candidates:
+   **same-model-no-history wins**, and the reason is that the deciding axis is not the weights but
+   what the reviewer is shown — the same model in a fresh call is 11/12 reading the diff and 5/12
+   reading the author's completion report (F280), 0/3 on the shipped sham when the report is added
+   *alongside* the diff (F281), and 4/12 with five empty payloads when it continues the author's own
+   conversation (F282). **Co-residency is arithmetically impossible on this card** — 1,210 MiB free
+   against a 4.41 GB smallest model (F275). **The second-model swap is priced and measured** at
+   26.3 s round trip plus 4.6× the decode, and the second model returned no verdict at all on the
+   correct answer 3/3 (F284). `critic_inflation` **does not ship**: item 3's verdict has no score, so
+   the quantity does not exist — its successor is the veto yield, the contradiction count, the
+   criterion-coverage fraction and the `Uncertain` count (W11 item 4 recommendation 4, closing
+   OQ-W6-2). W8's +3.65 median inflation over 34 missions stands as the motivation and not as a
+   number 2.0 can reproduce.
 4. ☐ **Verification headroom** — quantify what type checks, linters, generated tests, property
    tests and sandboxed execution buy over v1's syntax-error auto-retry. Needs GPU runs.
 5. ☐ **Language generality** — what in the pipeline is language-specific (item 1 shows: almost
@@ -31,8 +42,9 @@ Planned items:
    item 1's no-silent-midpoints rule is its first half.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
-Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); **item 2 took F213–F224, so the
-next free number is F225.** The numbering is one sequence across all workstreams — check the
+Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
+then ran to F284, and **item 3 was answered inside W11 item 4 (F270–F284), so the next free number
+is F285.** The numbering is one sequence across all workstreams — check the
 maximum before adding, not the last number in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
@@ -200,7 +212,7 @@ win, which is §7's definition of boring. An `Uncertain` that renders honestly (
 | # | Question | Waiting on |
 |---|---|---|
 | OQ-W6-1 | Do security/CTO verdicts enter the formula, hard-veto, or advisory-only? | item 2 (pipeline), W11 |
-| OQ-W6-2 | Does `critic_inflation` ship as a console metric now that the check is always on? | item 3 |
+| OQ-W6-2 | Does `critic_inflation` ship as a console metric now that the check is always on? | **answered** in W11 item 4 recommendation 4: no — the quantity does not exist once the verdict has no score. Four replacements, all computable from the log |
 | OQ-W6-3 | The first threshold set for 2.0's verifier — chosen how, before W8 data exists? | item 4, W8 |
 
 ## Confidence: high on the diagnosis, high on voiding the numbers

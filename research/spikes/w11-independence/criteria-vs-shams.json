@@ -1,0 +1,584 @@
+[
+  {
+    "n": 1,
+    "command": "grep -q \"is_terminal\\|CANCELLED\" jobs/sla.py",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 2,
+    "command": "grep -q \"is_terminal\\|CANCELLED\" jobs/summary.py",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 0,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [],
+    "discriminating": true
+  },
+  {
+    "n": 3,
+    "command": "grep -q \"is_terminal\\|CANCELLED\" jobs/charges.py",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 0,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [],
+    "discriminating": true
+  },
+  {
+    "n": 4,
+    "command": "grep -q \"is_terminal\\|CANCELLED\" jobs/dashboard.py",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 5,
+    "command": "python3 -c \"from jobs.sla import is_sla_breach; assert not is_sla_breach('cancelled', 0, 120)\"",
+    "item3_class": "unrunnable (symbol/file the model invented)",
+    "exits": {
+      "refsol": 1,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": false,
+    "accepts_wrong": [],
+    "discriminating": false
+  },
+  {
+    "n": 6,
+    "command": "python3 -c \"from jobs.summary import get_status_counts; counts = get_status_counts('data/jobs.json'); assert counts.get('cancelled', 0) > 0 and counts.get('sla_violations') == 0\"",
+    "item3_class": "unrunnable (symbol/file the model invented)",
+    "exits": {
+      "refsol": 1,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": false,
+    "accepts_wrong": [],
+    "discriminating": false
+  },
+  {
+    "n": 7,
+    "command": "python3 -c \"from jobs.charges import compute_charge; assert compute_charge('cancelled', 120) == 0\"",
+    "item3_class": "unrunnable (symbol/file the model invented)",
+    "exits": {
+      "refsol": 1,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": false,
+    "accepts_wrong": [],
+    "discriminating": false
+  },
+  {
+    "n": 8,
+    "command": "python3 -c \"from jobs.dashboard import get_dashboard_data; data = get_dashboard_data('data/jobs.json'); assert 'cancelled' in str(data) and data.get('sla_alerts') == []\"",
+    "item3_class": "unrunnable (symbol/file the model invented)",
+    "exits": {
+      "refsol": 1,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": false,
+    "accepts_wrong": [],
+    "discriminating": false
+  },
+  {
+    "n": 9,
+    "command": "python3 run.py data/jobs.json && echo \"SLA logic corrected\"",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 10,
+    "command": "grep -q \"is_terminal\\|CANCELLED\" jobs/charges.py && echo \"Charge logic updated\"",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 0,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [],
+    "discriminating": true
+  },
+  {
+    "n": 11,
+    "command": "grep -q \"is_terminal\\|CANCELLED\" jobs/retry.py && echo \"Retry logic updated\"",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 0,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [],
+    "discriminating": true
+  },
+  {
+    "n": 12,
+    "command": "python3 run.py data/jobs.json > /dev/null 2>&1 && python3 -m pytest tests/test_jobs.py -q",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 13,
+    "command": "python3 run.py data/jobs.json",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 14,
+    "command": "python3 run.py data/jobs.json",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 15,
+    "command": "python3 run.py data/jobs.json",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 16,
+    "command": "python3 run.py data/jobs.json > /tmp/sla_report.txt && ! grep -q \"J-017.*over its SLA\" /tmp/sla_report.txt",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 17,
+    "command": "python3 run.py data/jobs.json > /tmp/sla_report.txt && ! grep -qi \"SLA breach.*cancelled\\|over SLA\" /tmp/sla_report.txt",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 18,
+    "command": "python3 run.py data/jobs.json > /tmp/sla_report.txt && grep -q \"CANCELLED\" /tmp/sla_report.txt && ! grep -q \"SLA breach\\|over SLA\" /tmp/sla_report.txt",
+    "item3_class": "behavioural bind",
+    "exits": {
+      "refsol": 1,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": false,
+    "accepts_wrong": [],
+    "discriminating": false
+  },
+  {
+    "n": 19,
+    "command": "python3 -m pytest tests/test_jobs.py",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 20,
+    "command": "python3 -m pytest tests/test_jobs.py",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 21,
+    "command": "python3 -m pytest tests/test_jobs.py",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 22,
+    "command": "python3 run.py data/jobs.json | grep -q \"J-017.*over its SLA\" && exit 1 || exit 0",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 23,
+    "command": "python3 -c \"from jobs import charges; assert not getattr(charges, 'is_billable', lambda s: True)('cancelled')\" 2>/dev/null && echo \"PASS\" || python3 run.py data/jobs.json > /dev/null 2>&1",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 24,
+    "command": "python3 -c \"from jobs import retry; assert not getattr(retry, 'can_retry', lambda s: True)('cancelled')\" 2>/dev/null && echo \"PASS\" || python3 run.py data/jobs.json > /dev/null 2>&1",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 25,
+    "command": "python3 run.py data/jobs.json > /tmp/service_verify.txt && ! grep -qE \"(J-017.*SLA|charge.*cancelled|retry.*cancelled)\" /tmp/service_verify.txt && echo \"All status decisions correctly handle CANCELLED.\" || exit 1",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 26,
+    "command": "python3 run.py data/jobs.json",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 27,
+    "command": "python3 -c \"import jobs.summary; print('summary module loads cleanly')\"",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 28,
+    "command": "python3 -c \"import jobs.dashboard; print('dashboard module loads cleanly')\"",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 29,
+    "command": "python3 run.py data/jobs.json && echo \"EXIT_CODE: $?\"",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 30,
+    "command": "python3 -c \"assert 'is_terminal' in open('jobs/sla.py').read() or 'TERMINAL' in open('jobs/sla.py').read()\"",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 31,
+    "command": "python3 -c \"assert all(any(x in open(f).read() for x in ['is_terminal', 'TERMINAL']) for f in ['jobs/charges.py', 'jobs/summary.py'])\"",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 1,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": false,
+    "accepts_wrong": [],
+    "discriminating": false
+  },
+  {
+    "n": 32,
+    "command": "python3 run.py data/jobs.json",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 33,
+    "command": "python3 run.py data/jobs.json",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  },
+  {
+    "n": 34,
+    "command": "grep -q \"CANCELLED\" jobs/summary.py && echo \"pass\" || exit 1",
+    "item3_class": "textual proxy (a comment satisfies it)",
+    "exits": {
+      "refsol": 0,
+      "sham": 1,
+      "comment": 1,
+      "disable": 1
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [],
+    "discriminating": true
+  },
+  {
+    "n": 35,
+    "command": "grep -r \"is_terminal\\|CANCELLED\" jobs/model.py jobs/charges.py jobs/dashboard.py | wc -l",
+    "item3_class": "exit-0-on-unfixed-tree",
+    "exits": {
+      "refsol": 0,
+      "sham": 0,
+      "comment": 0,
+      "disable": 0
+    },
+    "green_on_refsol": true,
+    "accepts_wrong": [
+      "sham",
+      "comment",
+      "disable"
+    ],
+    "discriminating": false
+  }
+]
