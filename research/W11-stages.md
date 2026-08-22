@@ -850,7 +850,7 @@ So the price of a tier change is three things, not one:
 **A per-gate second-opinion reviewer therefore costs ~32–41 s per gate at 17k and ~50–76 s at the
 daily driver's window**, against **zero** for same-model-no-history. The 17k figures are measured;
 the 55k figures extrapolate F80's 33.9 s cold prefill at 54,930 tokens against this session's
-measured restore rate of ~6,700 tok/s. Either way the number W6 item 3 and W11 item 4 have to weigh
+measured restore rate of ~6,500 tok/s. Either way the number W6 item 3 and W11 item 4 have to weigh
 against W8's +3.65 median critic inflation is **roughly double F79's**, and it recurs per attempt
 rather than per mission.
 
@@ -1407,7 +1407,7 @@ line is; the front line is wherever a measurement last changed its mind.
 |---|---|---|
 | OQ-W11-7 | Does a **bigger model for M1 Plan only** produce a better task set? F250 measured cost and inflation, not quality; F87 says the 27B ties on *fixes* and nothing measures it on *plans*. | one K-series-shaped run over plan quality |
 | OQ-W11-8 | What is the RAM prompt cache's actual capacity and eviction policy? Twelve heads at 16.9k did not evict; the budget is a llama.cpp default this project has not read from source. | cheap: keep adding heads until one comes back cold |
-| OQ-W11-9 | Does the restore rate hold at the daily driver's window? All of F239/F240 is at ~17k; the 55k figures in F238 are extrapolated from F80 and a measured ~6,700 tok/s restore. | one probe at 55k, ~10 minutes |
+| OQ-W11-9 | Does the restore rate hold at the daily driver's window? All of F239/F240 is at ~17k; the 55k figures in F238 are extrapolated from F80 and a measured ~6,500 tok/s restore. | one probe at 55k, ~10 minutes |
 | OQ-W11-10 | Is A1 Localize's output budget really 8192? It is assigned by inheritance from M1, not measured. | item 3 or the first real pipeline run |
 | OQ-W11-11 | Does the executor-side tool policy of recommendation 3 cost quality — does a model that can see `write_file` during Localize behave worse than one that cannot? | a comparison run; W6 item 3's harness |
 | OQ-W11-2 | *(from item 1)* Is M1 Plan skippable for a single-task mission? | **answered here** (F250): it does not inflate, so skipping is a ~40 s optimisation, and it cannot be skipped outright because it emits the criterion |
