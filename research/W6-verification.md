@@ -43,8 +43,9 @@ Planned items:
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
 Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
-then ran to F284, and **item 3 was answered inside W11 item 4 (F270–F284), so the next free number
-is F285.** The numbering is one sequence across all workstreams — check the
+then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284),
+so the next free number is F297.** W11 item 5 (F285–F296) hands item 4 a second headroom result and
+item 8 its anti-pattern. The numbering is one sequence across all workstreams — check the
 maximum before adding, not the last number in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 

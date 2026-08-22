@@ -1299,7 +1299,7 @@ but if OQ-W3-3 lands on something finer, this is the row to re-measure.
 |---|---|---|
 | OQ-W3-11 | Retention and archival: the log is the console's replay source, so it cannot simply be truncated. Same question as OQ-W5-9 — answer once | W5, W8 volume data |
 | OQ-W3-12 | The workspace checkpoint marker: git worktree, git stash-object, or a copied pre-image tree | **W6 item 6** |
-| OQ-W3-13 | The idle-gap timeout value — what inter-token gap actually means "hung" on this hardware | W8 runs; F172 says the *mechanism* is missing regardless |
+| ✅ OQ-W3-13 | The idle-gap timeout value — what inter-token gap actually means "hung" on this hardware | **ANSWERED by W11 item 5, F292**, in two halves: at the socket, set it from the per-round cost (F198 showed the mechanism already exists); at the *task*, do not build it from the outside at all — a working agent is silent for up to 669 s on a cell that passed, so the progress clock is the iteration boundary |
 | OQ-W3-14 | Does `attempt` stay a table, or become a second projection of the log? Leaning table: attempts are immutable, so the duplication cannot drift | item 5 (escalation lineage) |
 | ✅ OQ-W3-2 | **ANSWERED here** — `Blocked` is derived from `depends_on` edges, not stored. A stored variant is denormalised state with no writer that owns it, which is F149's drift bug re-created on purpose | — |
 | OQ-W3-4 | Still open (W2's prefix-cache interaction), but durability narrows it: slot occupancy is *derived* from state, so whichever way it lands it is a scheduler policy change, not a schema migration | W2 |
@@ -1816,7 +1816,7 @@ the rule living in `apply()` instead of in one screen.
 | OQ-W3-17 | Does `Enqueue` land at the next model call or the next tool boundary when a tool is mid-flight? Codex retries rejected steers on the next turn; the cheapest correct rule is unproven here | item 5, W5 console |
 | ✅ OQ-W5-3 | **ANSWERED here** — the permission channel lives in the log; identity is the request's `seq`, delivery is the broker's in-memory notify, and "who answered" is a required field (F180) | — |
 | ✅ OQ-W3-10 | **ANSWERED here** — sub-agents get a child control point carrying the parent's grants and their own lineage; fail-closed unchanged | — |
-| OQ-W3-13 | Unchanged from item 3, and F184 sharpens it: the idle-gap timeout is what makes the cancel flag reachable when the server stops talking, so it is the same mechanism, not a separate feature | W8 runs |
+| ✅ OQ-W3-13 | Unchanged from item 3, and F184 sharpens it: the idle-gap timeout is what makes the cancel flag reachable when the server stops talking, so it is the same mechanism, not a separate feature | **ANSWERED by W11 item 5, F292** — see item 3's row |
 
 ## Confidence: high on the diagnosis and the mechanism, medium on the arrival rule
 

@@ -1,0 +1,29 @@
+budget                       n  pass    rate  at cap  med it    med s
+12                           9     6   66.7%       8      13    120.4
+20                           9     8   88.9%       3      16    121.2
+40                           9     4   44.4%       0      19     99.6
+40 (W1 baseline, k-champ)    9     8   88.9%       2      18    112.5
+
+per task:
+  task                                                        12                          20                          40   40 (W1 baseline, k-champ)
+  finish_the_cancelled_status                    PfP it=13,13,13             PPf it=13,16,13             fff it=10,15,12             fPP it=18,15,14
+  round_at_the_line_not_the_total                PPf it=13,13,13             PPP it=21,21,21             fPP it=20,27,30             PPP it=41,41,29
+  trace_dropped_samples                           fPP it=7,13,13             PPP it=10,13,18              PfP it=19,8,19             PPP it=14,29,13
+
+cells that reached their cap (a truncated attempt), by budget:
+  budget 12  finish_the_cancelled_status        pass  it=13 wall=136.1
+  budget 12  round_at_the_line_not_the_total    pass  it=13 wall=76.6
+  budget 12  finish_the_cancelled_status        fail  it=13 wall=128.1
+  budget 12  round_at_the_line_not_the_total    pass  it=13 wall=84.2
+  budget 12  trace_dropped_samples              pass  it=13 wall=171.1
+  budget 12  finish_the_cancelled_status        pass  it=13 wall=120.4
+  budget 12  round_at_the_line_not_the_total    fail  it=13 wall=78.5
+  budget 12  trace_dropped_samples              pass  it=13 wall=315.2
+  budget 20  round_at_the_line_not_the_total    pass  it=21 wall=121.2
+  budget 20  round_at_the_line_not_the_total    pass  it=21 wall=86.8
+  budget 20  round_at_the_line_not_the_total    pass  it=21 wall=156.9
+  budget 40  round_at_the_line_not_the_total    pass  it=41 wall=187.8
+  budget 40  round_at_the_line_not_the_total    pass  it=41 wall=181.9
+
+graceful landing outcomes (cells that reached the cap):
+  landings: 11   produced a real summary: 1   fell back to the honest line: 10  (91%)

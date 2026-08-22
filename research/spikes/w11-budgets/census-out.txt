@@ -1,0 +1,63 @@
+files=31 cells=1348
+suites: {'k': 33, 'u100': 251, 'q56': 1064}
+statuses: {'timeout': 15, 'pass': 1025, 'fail': 259, 'invalid': 8, 'error': 41}
+
+--- ALL cells  n=1348 (wall n=1307, iters n=1292) ---
+  wall_clock_s: min=6.2 p50=23.4 p90=84.1 p95=181.4 max=2400.0 mean=52.8
+    >   300s (v1 stuck deadline 300s): 38/1307 = 2.9%
+    >   600s (v1 EXECUTE_TIMEOUT 600s): 21/1307 = 1.6%
+    >   900s (15 min): 9/1307 = 0.7%
+    >  1800s (v1 MISSION_TIMEOUT 1800s): 2/1307 = 0.2%
+  iterations:   min=3 p50=8 p90=15 p95=21 max=41 mean=9.2
+    >  20 (v1 CTO max_iter): 66/1292 = 5.1%
+    >  25 (v1 Coder max_iter): 51/1292 = 3.9%
+    >  50 (v1 QA max_iter / MAX_TOTAL_TOOL_CALLS): 0/1292 = 0.0%
+    at/over harness cap 40: 24/1292 = 1.9%  (censoring)
+
+--- K-suite (repository work, champion)  n=9 (wall n=9, iters n=9) ---
+  wall_clock_s: min=70.1 p50=112.5 p90=277.5 p95=453.3 max=629.1 mean=184.7
+    >   300s (v1 stuck deadline 300s): 1/9 = 11.1%
+    >   600s (v1 EXECUTE_TIMEOUT 600s): 1/9 = 11.1%
+    >   900s (15 min): 0/9 = 0.0%
+    >  1800s (v1 MISSION_TIMEOUT 1800s): 0/9 = 0.0%
+  iterations:   min=13 p50=18 p90=41 p95=41 max=41 mean=23.8
+    >  20 (v1 CTO max_iter): 4/9 = 44.4%
+    >  25 (v1 Coder max_iter): 4/9 = 44.4%
+    >  50 (v1 QA max_iter / MAX_TOTAL_TOOL_CALLS): 0/9 = 0.0%
+    at/over harness cap 40: 2/9 = 22.2%  (censoring)
+
+--- K-suite (repository work, 27B)  n=18 (wall n=18, iters n=13) ---
+  wall_clock_s: min=169.9 p50=879.4 p90=1347.8 p95=2024.1 max=2400.0 mean=842.0
+    >   300s (v1 stuck deadline 300s): 14/18 = 77.8%
+    >   600s (v1 EXECUTE_TIMEOUT 600s): 12/18 = 66.7%
+    >   900s (15 min): 9/18 = 50.0%
+    >  1800s (v1 MISSION_TIMEOUT 1800s): 2/18 = 11.1%
+  iterations:   min=15 p50=19 p90=29 p95=29 max=29 mean=20.7
+    >  20 (v1 CTO max_iter): 4/13 = 30.8%
+    >  25 (v1 Coder max_iter): 3/13 = 23.1%
+    >  50 (v1 QA max_iter / MAX_TOTAL_TOOL_CALLS): 0/13 = 0.0%
+    at/over harness cap 40: 0/13 = 0.0%  (censoring)
+
+--- Q56 / W8 corpus  n=1315 (wall n=1274, iters n=1264) ---
+  wall_clock_s: min=6.2 p50=22.9 p90=66.7 p95=124.3 max=600.0 mean=40.4
+    >   300s (v1 stuck deadline 300s): 23/1274 = 1.8%
+    >   600s (v1 EXECUTE_TIMEOUT 600s): 8/1274 = 0.6%
+    >   900s (15 min): 0/1274 = 0.0%
+    >  1800s (v1 MISSION_TIMEOUT 1800s): 0/1274 = 0.0%
+  iterations:   min=3 p50=8 p90=14 p95=19 max=41 mean=9.0
+    >  20 (v1 CTO max_iter): 58/1264 = 4.6%
+    >  25 (v1 Coder max_iter): 44/1264 = 3.5%
+    >  50 (v1 QA max_iter / MAX_TOTAL_TOOL_CALLS): 0/1264 = 0.0%
+    at/over harness cap 40: 22/1264 = 1.7%  (censoring)
+
+--- ALL cells that PASSED  n=1025 (wall n=1025, iters n=1025) ---
+  wall_clock_s: min=6.2 p50=23.7 p90=73.4 p95=144.1 max=1957.8 mean=45.7
+    >   300s (v1 stuck deadline 300s): 20/1025 = 2.0%
+    >   600s (v1 EXECUTE_TIMEOUT 600s): 8/1025 = 0.8%
+    >   900s (15 min): 4/1025 = 0.4%
+    >  1800s (v1 MISSION_TIMEOUT 1800s): 1/1025 = 0.1%
+  iterations:   min=3 p50=8 p90=15 p95=21 max=41 mean=9.5
+    >  20 (v1 CTO max_iter): 52/1025 = 5.1%
+    >  25 (v1 Coder max_iter): 39/1025 = 3.8%
+    >  50 (v1 QA max_iter / MAX_TOTAL_TOOL_CALLS): 0/1025 = 0.0%
+    at/over harness cap 40: 18/1025 = 1.8%  (censoring)

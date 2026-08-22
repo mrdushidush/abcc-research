@@ -1,6 +1,7 @@
 # W11 — Stage pipeline and unit roles
 
-**Status: IN PROGRESS — started 2026-08-21**, the third leg of the W3 + W6 + W11 block (§14 item 4).
+**Status: COMPLETE — 2026-08-21 to 2026-08-22, all five items**, the third leg of the W3 + W6 + W11
+block (§14 item 4).
 Built one item at a time in §13 format. W11 turns §10 into a spec and is the workstream §10 itself
 names: *"Phase 0 must surface all three taxonomies side by side, and W11 must produce one. Do not
 assume this table wins."* (`RESEARCH_BRIEF.md:529-531`).
@@ -42,12 +43,23 @@ Planned items:
    never approved a wrong answer and never finished a verdict on the right one. Co-residency is
    arithmetically impossible on this card. And the deterministic half, which is where most of the
    independence turns out to live, has two new runtime checks that cost one criterion run each.
-5. ☐ **Loop budgets and circuit breakers per stage**, benchmarked against v1's existing behaviour.
-   Inherits W6 F223 (the decline breaker that changed meaning) and W3 F195 (the retry budget).
+5. ✅ **Loop budgets and circuit breakers per stage** (F285–F296) — the donor archaeology, four
+   analyses over the 1,342 measured cells already in `runs/`, and one GPU sweep. Answered: the
+   baseline §10 names **does not exist** (v1's "10 minute stuck timeout" is a doc comment over a
+   300 s deadline measured from `assignedAt` with no heartbeat, racing a 600 s request bound it
+   always beats), its loop detector **cannot break a circuit** (every call site returns the
+   exception's message as a tool result), and **no code path in v1 can stop a running agent** at
+   all. The unit is the **tool-call round**, and seconds are legitimate only in the phases with no
+   model in them — a seconds budget is a work budget divided by a factor that moves 11.7× with the
+   model. There is **one budget**, not one per stage; what is per stage is the breaker. Breakers are
+   a **ladder** — change the result, steer, warn, land, classify — and no rung is a silent kill. The
+   budget binds at 12 and stops binding by 20, and above that the model stops on its own judgement
+   with 25 rounds unspent, which is the case a counter can never decide and the gate must.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 949–960, against §10 lines 515–545. Findings continue
 the family numbering — one sequence across all workstreams. **Item 1 took F225–F237, item 2 took
-F238–F251, item 3 took F252–F269 and item 4 took F270–F284, so the next free number is F285.** Check the maximum before adding, not the last number
+F238–F251, item 3 took F252–F269, item 4 took F270–F284 and item 5 took F285–F296, so the next free
+number is F297.** Check the maximum before adding, not the last number
 in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
@@ -3293,3 +3305,1012 @@ was supplied rather than generated, so the model is reviewing a change it was ha
 than one it composed. That is the standard way to control the variable and it is still a simulation;
 the direction of F282 is not in doubt — the rationales argue for the work in the first person — but
 the magnitude may be an underestimate or an overestimate of what a real author does.
+
+---
+
+# Item 5 — loop budgets and circuit breakers per stage
+
+## Question
+
+§10 asks it inside the failure-routing bullet, and it names its own baseline: *"On gate failure,
+back to build, back to architecture, or up a tier? Loop budgets and circuit breakers. **V1's loop
+detection and 10 minute stuck timeout are the baseline to beat.**"* (`RESEARCH_BRIEF.md:549-551`),
+restated in §11 as *"Loop budgets and circuit breakers per stage, benchmarked against V1's existing
+behaviour"* (`:958`).
+
+Items 1–4 have already moved every noun in that sentence. There are seven phases, not four stages
+(item 1); the escalation half of the failure-routing question is W3's and was answered there; the
+gate's own budget is item 4's. What is left, and what this item owes, is three numbers and one
+rule: **how much work does an attempt get, what stops it early, and what does a stop mean.**
+
+The baseline turns out to need checking before it can be beaten, which is where the item starts.
+
+## Method
+
+Two halves, and the second is the one the brief asked for.
+
+**Donor archaeology**, read at the consumption site per the standing rule: v1's watchdog, its loop
+detector and every constant on the path of one task execution (`agent-battle-command-center`,
+HEAD `d5528ea`); BCF's round loop and its decline breaker (`d6c1601`); Claudette's iteration cap,
+no-progress counter and nudge ladder (`af3f804`). One probe was run to settle a claim that reading
+could only make plausible (`fastapi_blocking_probe.py`).
+
+**Measurement against data already on disk.** This repository holds **1,342 measured cells across
+29 runs** — every W8/Q56 cell, every U100 cell and the 27 K-suite cells from W1's model comparison
+— each with `iterations`, `wall_clock_s` and a graded verdict, and each with a timestamped
+transcript. That is a distribution of real agent attempts on this hardware, which is exactly what
+a loop budget has to be set against. Four scripts in `research/spikes/w11-budgets/`:
+
+- `census.py` — the distribution of attempt cost, with v1's constants placed on it as percentiles.
+- `breakers.py` — do the two budget units cut the same cells, how much does seconds-per-iteration
+  vary, and does a long attempt actually fail more often.
+- `v1_limits_replay.py` — v1's per-path tool caps replayed over all 1,342 transcripts.
+- `silence.py` — how long a *working* agent goes without producing a byte, which is the number an
+  idle-gap timeout needs and which OQ-W3-13 has been waiting for.
+
+**One GPU probe**, `run_budget_sweep.sh`: the K suite on the champion at
+`CLAUDETTE_MAX_ITERATIONS` ∈ {12, 20, 40}, three reps each, one variable, everything else pinned
+to W1's k-champ baseline. 27 cells. This is the marginal-value-of-budget curve, and nothing on
+disk could supply it because truncation cannot be simulated after the fact.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| §10's "V1's 10 minute stuck timeout is the baseline to beat" | `RESEARCH_BRIEF.md:550-551` | **the baseline does not exist**: 10 minutes is a doc comment, the code's default is 5, and the clock is not a stuck clock (F285) |
+| F195 — one retry budget, read by one of four mechanisms, with a global cap bolted on after an incident | W3 item 5 | binding, and now with the other half: the mechanism that fires most often on this hardware does not consume the budget *or* return it (F288) |
+| F223 — the decline breaker changed meaning when inherited, and is inert at the default budget | W6 item 2 | binding and generalised: a stopping rule and the round budget are one decision, and F294 supplies the budget's binding point — and its noise floor |
+| F192 — a threshold written against one budget rots when the budget moves | W3 | ratified as the family's one solved problem: Claudette's fix is the shape to copy (F295) |
+| F172 / OQ-W3-13 — three donors, three total-duration timeouts, zero idle-gap timeouts | W3 items 3/6 | **answered from the task side** (F292): the outside-observer clock is unusable at any setting, so the progress clock has to be inside the loop |
+| F244 — every donor's ladder is biased upward and two escalate on infrastructure failure | W11 item 2 | binding, with a new instance in the *other* direction (F288) |
+| Item 4 §7 — the breaker counts vetoes and `Uncertain`s separately | W11 item 4 | binding, and it is the rule that decides what a truncated attempt costs (recommendation 4) |
+| F218 / F233 — every gate input is `Measured \| Uncertain`, constructed never coalesced | W6, item 1 | binding: budget exhaustion is a *classified* outcome, never a score and never a pass |
+| §14 item 4 — W11 is the last leg of the W3+W6+W11 block | brief | this item closes W11 |
+
+## Findings
+
+### 🚨 F285 — the baseline named in the brief does not exist: 10 minutes is a comment, the code says 5, and the clock it reads is not a progress clock
+
+`StuckTaskRecoveryService` is the mechanism §10 names. Its file header says *"tasks that have been
+stuck in `in_progress` status for too long (default: 10 minutes)"*
+(`packages/api/src/services/stuckTaskRecovery.ts:4-5`). Thirty-five lines later the default is
+
+```ts
+taskTimeoutMs: 5 * 60 * 1000,   // 5 minutes (was 10 — tightened for faster recovery)
+checkIntervalMs: 30 * 1000,     // 30 seconds (was 60s — more responsive detection)
+```
+
+(`:39-43`). The header was not updated. So the number in the brief is a doc comment describing a
+value the same file deleted, and the real baseline is **300 s, checked every 30 s**.
+
+Three things follow, and the third is the one that matters.
+
+**1. It is a deadline, not a stuck detector.** The query is
+`{ status: 'in_progress', assignedAt: { lt: timeoutThreshold } }` (`:192-202`), and `assignedAt` is
+written exactly once per attempt — at assignment (`taskAssigner.ts:121`, `taskRouter.ts:533`,
+`orchestratorService.ts:422`, `battleClawService.ts:260`, `routes/task-planning.ts:57`) — and
+otherwise only ever cleared to `null` (`taskExecutor.ts:261`, `taskQueue.ts:208`,
+`agentManager.ts:145`). Nothing advances it. There is no heartbeat, no last-activity column, no
+liveness signal of any kind. A task producing output continuously for 301 seconds is "stuck" by the
+same test as a task whose container died at second 2.
+
+**2. It races the request it is supposed to bound, and always wins.** The API gives the agents
+service 600 s for the same execution (`executor.ts:8`, `EXECUTE_TIMEOUT_MS = 600_000`). The
+watchdog fires between 300 s and 330 s. So for every task in the 300–600 s band the sequence is:
+the watchdog marks the task `aborted`, releases the file locks, releases the resource-pool slot and
+sets the agent back to `idle` — **while the HTTP request is still open and the agent is still
+writing into the workspace**. The locks it released are protecting nothing, the slot it freed can
+be handed to a second task that will write the same files, and the response, when it arrives up to
+five minutes later, belongs to a task the system has already buried. That is W3's orphaned-work
+class reached by a different route: not a kill that misses a grandchild (F208), but a bookkeeping
+transition with no kill attached at all (F287).
+
+**3. On this hardware the band is not a corner case.** Measured over the 1,342 cells in `runs/`
+(`census.py`): 2.0% of the cells that **passed** ran longer than 300 s, and on the K suite — the
+repository-work fixtures, which is the workload 2.0 answers for — it is 1 of 9 for the champion and
+**14 of 18 for the 27B**. A 300 s deadline on this box does not catch stuck agents. It catches slow
+models.
+
+### 🚨 F286 — v1's circuit breaker returns its refusal to the model as a tool result, and the message it returns says it stopped
+
+`ActionHistory.register_action` raises `ActionLoopDetected` on four conditions
+(`packages/agents/src/monitoring/action_history.py:52-129`). The hard cap's message is explicit:
+
+```python
+raise ActionLoopDetected(
+    f"ERROR: Hard limit exceeded - Made {cls._total_calls} tool calls.\n"
+    f"Maximum allowed is {MAX_TOTAL_TOOL_CALLS} per task.\n"
+    f"This task is too complex or the agent is stuck. Stopping execution."
+)
+```
+
+Every one of the eight call sites catches it and returns the message as the tool's **result
+string** — `except ActionLoopDetected as e: return str(e)` at `tools/file_ops.py:47`, `:86`,
+`:130`, `:165`, `tools/shell.py:270`, `tools/search.py:79`, `:118`,
+`tools/code_validation.py:86`. The model reads a sentence telling it that execution has stopped,
+and then takes its next turn. `cls._total_calls` keeps incrementing, so call 51 and call 200 both
+get the same paragraph. Nothing in the process is capable of ending the run on this signal.
+
+Half of this is deliberate and correct, and the agent prompts say so: *"If blocked for repeating,
+try a DIFFERENT approach"* (`agents/coder.py:231`), *"If blocked, try a different approach — do not
+loop on the same action"* (`agents/qa.py:189`). Steering a model with a tool result is a good
+mechanism — it is the same mechanism Claudette's nudges use (F295), and item 4's F273 already
+recommended the defect list be delivered that way. The defect is that the *only* mechanism is the
+steer, that the steer is written as a termination, and that the one constant advertised as a hard
+cap is the one that can never bind. What actually ends a v1 run is CrewAI's `max_iter` — 25 for the
+coder, 50 for QA, 20 for the CTO (`agents/coder.py:248`, `qa.py:194`, `cto.py:17`) — a number the
+loop detector cannot see and does not decrement.
+
+### 🚨 F287 — no code path in ABCC v1 can stop a running agent, and the endpoint that claims to is a no-op that cannot be reached anyway
+
+Three entry points write "this task is over". None of them terminates the work.
+
+| Entry point | What it calls | What reaches the agent |
+|---|---|---|
+| `POST /execute/abort` (`routes/execute.ts:104-119`) | `executor.abortExecution` → agents `/execute/abort` | a dict deletion, see below |
+| `POST /tasks/:id/abort` (`routes/tasks.ts:268`) | `taskQueue.abortTask` → `taskExecutor.abortTask` | **nothing** — database writes only |
+| the watchdog (`stuckTaskRecovery.ts:228-344`) | its own inline row updates | **nothing** — database writes only |
+
+The first one is the interesting one, because it is the only path that even tries. The agents
+service handler is six lines:
+
+```python
+@app.post("/execute/abort")
+async def abort_execution(request: AbortRequest):
+    task_id = request.task_id
+    if task_id in execution_state:
+        execution_state[task_id]["status"] = "aborted"
+        del execution_state[task_id]
+    return {"aborted": True, "task_id": task_id}
+```
+
+(`packages/agents/src/main.py:592-601`). `execution_state` is declared at `main.py:36` and a grep
+for it across the whole module returns **three hits, all inside this handler**. The execution path
+never writes it. So the condition is always false, the handler always falls through to
+`return {"aborted": True}`, and the caller reads `response.ok` (`executor.ts:99`) as proof and
+marks the task aborted (`execute.ts:114-118`). The operator presses Abort, the console updates, and
+the crew keeps working.
+
+**And the handler cannot be served while a task is running.** `execute_task` is declared
+`async def` (`main.py:236`) and calls the synchronous `crew.kickoff()` inside it (`:381`), which
+occupies the event loop for the whole execution. Measured rather than assumed, because this is two
+rungs out from v1's own code — the same FastAPI/uvicorn shape, one blocking handler, one trivial
+one, the blocking request given a 1 s head start (`fastapi_blocking_probe.py`):
+
+| Handler shape | `/abort` answered in |
+|---|---|
+| server idle | **24 ms** |
+| `async def` + 6 s blocking call — **v1's shape** | **5,006 ms** — blocked for the remainder |
+| plain `def` + 6 s blocking call — FastAPI's threadpool | **16 ms** |
+
+`/health` is `async def` too (`main.py:657`) and the API health check allows it 10 s
+(`executor.ts:10`), so during any task longer than ten seconds — the median measured cell is 23 s —
+the agents service also reports itself down.
+
+There is an honest reading of this: v1 is a fleet manager whose recovery story is *release the
+bookkeeping, let the container finish or die*. But the container is not disposable — it holds the
+workspace the next task will be assigned into, and it holds it with no lock, because the watchdog
+gave the lock back.
+
+### 🚨 F288 — fourteen constants can end one task, in three processes, in four units, and the one that fires most often neither spends the budget nor returns it
+
+Every constant on the path of a single ABCC v1 task execution that can bound or end the work:
+
+| # | Constant | Value | Unit | Process |
+|---|---|---|---|---|
+| 1 | `maxIterations` (`routes/tasks.ts:16`, DB column) | 3 (1–10) | attempts | API |
+| 2 | `MAX_TOTAL_RETRIES` (`autoRetryService.ts:51`) | 3 | retries | API |
+| 3 | `MAX_OLLAMA_RETRIES` / `MAX_REMOTE_RETRIES` / `MAX_HAIKU_RETRIES` (`autoRetryService.ts:46-48`, duplicated at `asyncValidationService.ts:81-82`) | 1 each | retries | API |
+| 4 | `taskTimeoutMs` (`stuckTaskRecovery.ts:40`) | 300 s | seconds since assignment | API |
+| 5 | `checkIntervalMs` (`:41`) | 30 s | detection grain | API |
+| 6 | `EXECUTE_TIMEOUT_MS` (`executor.ts:8`) | 600 s | seconds per request | API |
+| 7 | `VALIDATION_TIMEOUT_MS` (`autoRetryService.ts:49`) | 15 s | seconds | API |
+| 8 | `max_iter` (`agents/{coder,qa,cto}.py`) | 25 / 50 / 20 | agent iterations | agents |
+| 9 | `max_rpm` (same files) | 20 | requests per minute | agents |
+| 10 | `MAX_TOTAL_TOOL_CALLS` (`action_history.py:22`) | 50 | tool calls | agents |
+| 11 | `TOOL_SPECIFIC_LIMITS` (`:15-19`) | 3 / 5 / 10 | calls per path | agents |
+| 12 | the three window rules (`:101`, `:113`, `:124`) | 3 / 5 / 5-of-5 | calls in a window | agents |
+| 13 | `litellm.request_timeout` (`main.py:19`) and `LITELLM_NUM_RETRIES` (`config.py:27`) | 120 s, 5 | seconds, retries | agents |
+| 14 | `shell_run`'s subprocess timeout (`tools/shell.py:255`) | 60 s | seconds | agents |
+
+Four units — attempts, iterations, tool calls, seconds — and no two of these are visible to each
+other. F195 already recorded the shape from inside the retry ladder ("three independent per-phase
+caps cannot bound the total, patched with a fourth counter"); this is the same disease across the
+whole path, and it is *why* rows 8 and 10 can be 25 and 50 without anyone noticing that a 50-call
+cap can never bind on a 25-iteration agent.
+
+Two details in the table are worth pulling out.
+
+**The retry budget is spent by failure and not by timeout, and the timeout is the common case.**
+`handleTaskFailure` retries while `currentIteration < maxIterations`, by setting the task back to
+`pending` and clearing `assignedAt` (`taskExecutor.ts:243-272`) — with a comment recording that
+leaving it `assigned` used to hold the agent, the slot and the locks until a human hit reset, which
+is a donor writing down what it got wrong and is the behaviour to inherit. But the watchdog does
+not go through that function. It writes `status: 'aborted'` directly (`stuckTaskRecovery.ts:264-271`),
+and `aborted` is terminal: nothing requeues it, only a human can (`routes/tasks.ts:220`). So a task
+killed by the 300 s deadline **does not consume an attempt and does not get one** — its budget of 3
+is still on the row, unusable. A task that fails honestly gets all three. This is F244's bias with
+the sign flipped: the donors there escalate on an infrastructure failure, and this one refuses to
+retry on one. Both come from the same place — the cause was never classified.
+
+**There are two `aborted` writers and they do different work.** `taskExecutor.abortTask` recomputes
+the task's complexity from the execution logs, categorises the error and captures training data
+(`:300-320`, `:236-241`). The watchdog does none of that; it writes `errorCategory: 'timeout'` as a
+literal and updates the agent's `tasksFailed` and `successRate` with its own inline copy of the
+stats logic (`stuckTaskRecovery.ts:287-304`). So the mechanism that fires most often on this
+hardware is the one that records least, and it charges the agent's success rate for the host being
+slower than a constant.
+
+**And one constant is declared for exactly the case that needs it, and read by nobody.**
+`REMOTE_OLLAMA_TIMEOUT` defaults to 600 s (`config.py:33`) — the remote, larger, slower model, given
+five times the budget. A grep for the name across `packages/agents/src/` returns one hit: its own
+definition. The local path's `ChatOllama` is constructed with a hard-coded `timeout=120` under the
+comment *"Increase timeout for larger models"* (`models/ollama.py:24-33`). Same class as F189's
+`errorCategory`: a well-named value with no consumption site.
+
+### 🚨 F289 — a time budget and a work budget are not two spellings of one thing: they cut almost disjoint sets, and the exchange rate between them moves 11.7× with the model
+
+1,286 of the measured cells carry both `iterations` and `wall_clock_s`. Place v1's two headline
+constants on them — the coder's `max_iter = 25` and the watchdog's 300 s — and ask which cells each
+one cuts (`breakers.py`):
+
+| | cells cut |
+|---|---|
+| iteration cap alone (`> 25`) | 51 |
+| time deadline alone (`> 300 s`) | 23 |
+| **both** | **11** |
+| union | 63 |
+
+Jaccard **0.17**. Two thirds of what the iteration cap catches, the deadline does not see, and half
+of what the deadline catches finished inside 25 iterations. They are not redundant, and they are
+not interchangeable — they measure different things and a system that ships one of them has not
+covered the other.
+
+The reason is the exchange rate, and it is not a constant. Seconds per iteration, same box, same
+harness, same corpus:
+
+| Arm | n | p50 s/iter | max |
+|---|---|---|---|
+| champion, Q56 + U100 | 1,264 | **2.94** | 40.34 |
+| champion, K suite (repository work) | 9 | **5.76** | 21.69 |
+| 27B, K suite | 13 | **34.34** | 115.17 |
+
+**11.7× between the two models on the same hardware**, and 2× between two workloads on the same
+model. A wall-clock budget is therefore a work budget divided by a number nobody wrote down: the
+same 300 s buys 102 rounds of Q56-shaped work on the champion, 52 on the K suite, and **8.7** on
+the 27B. This is the arithmetic behind F285's third point, and it generalises past v1 — any
+seconds-denominated budget silently rations work by whatever the model and the fixture happen to
+cost that day, and re-rations it the moment either changes. W1's whole 27B question (`F87–F88`, and
+F284's judge arm) is a decision to change exactly that number.
+
+### 🚨 F290 — wall clock adds nothing a round count does not already carry, and the round count alone cannot tell a fast attempt from a truncated one
+
+The prior behind every deadline in the family is that an attempt running long is an attempt going
+wrong. Pooled over 1,278 graded cells it does not hold (`breakers.py`):
+
+| wall clock | n | pass | | iterations | n | pass |
+|---|---|---|---|---|---|---|
+| < 30 s | 843 | 78.5% | | < 6 | 401 | 68.3% |
+| 30–60 s | 282 | 85.1% | | 6–10 | 461 | 83.7% |
+| 60–120 s | 80 | 75.0% | | 10–15 | 280 | 89.3% |
+| 120–300 s | 50 | 78.0% | | 15–20 | 65 | 83.1% |
+| 300–600 s | 15 | 80.0% | | 20–25 | 18 | 94.4% |
+| > 600 s | 8 | **100%** | | 25–30 | 15 | 86.7% |
+| | | | | > 30 | 38 | 71.1% |
+
+The pooled iteration column looks U-shaped, and **it is an artifact — stratifying by variant kills
+it.** 947 of these cells come from Q56 arms whose whole purpose is to interrupt the agent
+(`deny-first-edit`, `redirect-first-edit`, `gated`), and an interruption produces a short attempt
+that fails:
+
+| iterations | control (n=383) | interfered-with (n=901) |
+|---|---|---|
+| < 6 | **93.9%** | **53.5%** |
+| 6–10 | 89.4% | 81.7% |
+| 10–15 | 91.4% | 88.4% |
+| 15–20 | 77.3% | 86.0% |
+| > 30 | **72.2%** | **70.0%** |
+
+Three things survive that stratification, and the second one is not what the item set out to find.
+
+**1. Wall clock is dominated, not merely noisy.** On control cells the duration gradient
+(93.3% under 30 s → 75.8% at 120–300 s) is the *same* gradient as the round gradient (93.9% → 77.3%),
+because duration is rounds multiplied by a speed. It carries the same information and adds a
+divisor that F289 measured moving 11.7× with the model. There is no case for a seconds budget on
+model work: it is strictly worse than the thing it is a proxy for.
+
+**2. Neither is a stuck detector.** The eight cells that ran past ten minutes all passed, and the
+control cells past 300 s pass at 86.7% (n=15). Whatever lives in the tail of the duration
+distribution, it is not the failures. The one signal that reproduces across both populations is the
+high shoulder — **72.2% and 70.0% past 30 rounds**, against ~90% in the middle — and it is a weak
+one: a 20-point drop, not a cliff, and confounded with task difficulty in both arms.
+
+**3. The round count alone cannot classify an attempt.** The same bucket — under 6 rounds — is a
+93.9% population and a 53.5% population depending only on whether something interrupted the agent.
+That is the most useful thing in the table, because it is the case a breaker actually has to
+decide: an attempt that stopped early is either finished or cut off, and the counter cannot tell
+which. The instrument that can is not a counter at all — it is item 4's deterministic coverage
+fraction (F276), which asks what the change actually touched. A budget decides *when to stop*; it
+was never able to decide *whether the stop was fine*, and this is the measurement that says so.
+
+⚠ Small-n at both extremes: 15 control cells past 300 s, 18 pooled cells at 20–25 rounds, 8 past
+ten minutes. The stratified comparison is the load-bearing part; the individual bucket rates at the
+edges are not.
+
+### 🚨 F291 — measured: raising one deadline turned four timeouts into eight passes, and the closest cell missed by 7.2 seconds
+
+The natural experiment is already on disk. W1 ran the K suite on the 27B three times at the
+corpus's original `timeout_s = 900`, then raised it to 2,400 and ran three more (F89, `a9d1a02`).
+Same model, same tasks, same harness, same everything except the number:
+
+| `timeout_s` | passes | timeouts |
+|---|---|---|
+| 900 | 5 / 9 | **4 / 9** |
+| 2,400 | **8 / 9** | 1 / 9 |
+
+The four cells that exceeded the old ceiling finished at **907.2, 947.2, 1,086.4 and 1,957.8 s**,
+and every one of them was graded a pass once it was allowed to finish. One of them beat the
+deadline it had been given by **7.2 seconds**.
+
+Two consequences.
+
+**A deadline reports on the deadline.** At 900 s the arm's record read "four failures"; at 2,400 s
+the same arm on the same work read "one". Nothing about the model or the task changed. That is not
+a measurement of the work at all, and it is the exact shape of the error §7 of the brief calls the
+scripted win — the run *looks* decided, and the thing that decided it was a constant.
+
+**A timeout also destroys the evidence.** A timed-out cell records no verdict, no `iterations`, no
+`peak_prompt_tokens` — the harness keeps `wall_clock_s`, `subject_output_bytes` and
+`subject_last_output_ms` and nothing else. So the failure mode is not just "the work was thrown
+away": it is "the work was thrown away and the record cannot say why". 2.0's version of that rule
+is item 3's and item 4's: budget exhaustion is a *classified* outcome carrying whatever was
+measured before it fired, never an empty row and never a score.
+
+⚠ The two arms are separate runs rather than the same executions replayed with a longer clock, so
+this is a nine-versus-nine comparison and not a paired one. The direction is not in doubt — the
+overshoot figures are single-cell measurements — but the 4-to-1 count is a small sample.
+
+### 🚨 F292 — a working agent is silent for up to 669 seconds, so an outside-observer idle-gap timeout is unusable at every setting; this answers OQ-W3-13 from the task side
+
+F172 recorded that all three donors bound the *whole* request and none bounds the gap between
+bytes, and OQ-W3-13 has been holding the question of what gap actually means "hung" on this
+hardware, waiting on W8 runs. The runs exist. Every cell in `runs/` has a transcript with
+millisecond stamps, so the longest silence per cell is arithmetic (`silence.py`).
+
+On the 1,021 cells that **passed**:
+
+| signal | p50 longest gap | p90 | p99 | max |
+|---|---|---|---|---|
+| any transcript line (a pipe watcher) | 8.2 s | 26.4 s | 232.2 s | **669.5 s** |
+| a workspace mutation (a filesystem watcher), n=219 | 14.3 s | 79.3 s | 355.1 s | **678.3 s** |
+| any transcript line, K suite only (n=21) | **125.5 s** | 366.1 s | — | 669.5 s |
+
+And the cost of choosing a threshold, counted as successful attempts a supervisor would have killed:
+
+| idle-gap timeout | false kills |
+|---|---|
+| 30 s | 83 / 1,021 = **8.1%** |
+| 60 s | 43 / 1,021 = 4.2% |
+| 120 s | 22 / 1,021 = 2.2% |
+| 300 s | 7 / 1,021 = 0.7% |
+| 600 s | 1 / 1,021 = 0.1% |
+
+To get the false-kill rate to zero the threshold has to exceed **669.5 s** — longer than v1's
+entire task deadline (300 s), longer than its per-request bound (600 s), and long enough that
+nothing it detects arrives in time to matter. **The outside-observer idle-gap timeout has no good
+setting on this workload.** That is not a calibration problem to be solved with a better number; it
+is the wrong instrument, and F91's 40-minute silent cell — faithful transcript, 20 completions in
+the server log — is the same fact from the other direction.
+
+This lands directly on W5's fun bar. F129 sets **no gap longer than 10 s without a liveness
+mark**, and the measurement here is that the work itself goes quiet for two orders of magnitude
+longer than that. The console therefore cannot render liveness by *observing* the worker; it has to
+be handed a mark from inside the loop. Same conclusion, arrived at from the operator's side.
+
+The instrument that does work is the one 2.0 has and the donors did not: 2.0 *owns* the loop, so
+the progress clock reads the **iteration boundary**, not the pipe. On that clock the numbers are
+small and stable — p99 of 32.4 s per round overall, 21.7 s worst case for the champion on
+repository work, 115.2 s worst case for the 27B (F289). A round that has not completed in a few
+multiples of that is a real signal, it arrives in seconds rather than minutes, and it does not
+depend on the model narrating anything.
+
+So OQ-W3-13 gets two answers, not one. **Socket level:** F198 already showed `reqwest`'s blocking
+timeout is a per-read budget, so the mechanism exists and only the value was missing — set it from
+the inter-chunk gap, which is bounded by the same per-round figures. **Task level:** do not build
+this from the outside at all.
+
+### 🚨 F293 — v1's per-path tool caps, replayed over all 1,342 measured runs: they block 1.3% of successful attempts overall and 9.5% of the repository-work ones, and the worst offender is item 4's own ground-truth fixture
+
+`TOOL_SPECIFIC_LIMITS` caps calls per target path, cumulatively, for the whole task: `file_write: 3`,
+`file_edit: 5`, `shell_run: 10` (`action_history.py:15-19`). These are the two rules in v1's
+detector that can be replayed faithfully against a Claudette transcript, because they are keyed on
+path and counted cumulatively — unnarrated reads in between cannot change the count. Mapping
+`write_file → file_write` and `apply_diff`/`edit_file`/`apply_patch` → `file_edit`
+(`v1_limits_replay.py`, 1,342 transcripts, 1,649 mutations):
+
+| population | n | `file_write > 3` | `file_edit > 5` | either | 5 same in a row (upper bound) |
+|---|---|---|---|---|---|
+| all cells | 1,342 | 0.8% | 0.4% | **1.3%** | 1.6% |
+| cells that passed | 1,021 | 0.8% | 0.5% | **1.3%** | 1.5% |
+| K suite (repository work) | 27 | 0% | 7.4% | **7.4%** | 22.2% |
+| K suite, passed | 21 | 0% | 9.5% | **9.5%** | 19.0% |
+
+The cap is not decorative: `register_action` runs *before* the file is touched
+(`tools/file_ops.py:67-83`), so the fourth write to a path is refused and the model gets the loop
+message instead of a written file. F286's point is that the run does not end; this one is that the
+work does not land.
+
+The worst offenders among cells that passed are the shape of the problem:
+
+| task | writes on one path | edits on one path | mutations |
+|---|---|---|---|
+| Q43 | **9** | 2 | 11 |
+| Q45 | 0 | **8** | 8 |
+| `finish_the_cancelled_status` | 0 | **7** | 12 |
+| Q44 | **6** | 0 | 8 |
+
+`finish_the_cancelled_status` is the fixture item 4 used as its ground truth — the task whose
+correct answer is *"the change must land at four sites, and the ticket names one"*. Its busiest run
+is the 27B's, and reading the mutation sequence is what makes the point:
+
+```
+1. sla.py   2. charges.py   3. retry.py   4. retry.py   5. summary.py
+6-12. tests/test_jobs.py  (seven consecutive edits)
+```
+
+Four modules swept in a row, then seven edits building a test file. Under v1's rules the fifth
+consecutive edit trips the window rule, and edits 6 and 7 to `tests/test_jobs.py` are refused
+outright by the `file_edit: 5` per-path cap. That test file is precisely the behaviour W1 named as the 27B's
+one quality edge over the champion — *"added tests covering the gap the fixture documents as
+untested"*, 2 of its 8 completed cells against 0 of the champion's 9 (F87). The cap would have
+blocked the one thing the more expensive model was bought for.
+
+The right verdict on this is not that the numbers are wrong. **They are calibrated to a different
+workload.** v1's own decomposition rule is *"one subtask = one file, one function"*
+(`agents/cto.py:11`), and against a one-file greenfield subtask three writes to a path really is a
+loop. 2.0's answered target workload is repository work (`RESEARCH_BRIEF.md:1264-1270`), where
+touching one file five times while a four-site change settles is what success looks like — and the
+same constants that are generous at 0.8% become a 9.5% tax. A per-path cap is a fine mechanism; it
+is only ever as good as the shape of work it was measured against, and it must be re-measured when
+the shape changes.
+
+⚠ The `5 same in a row` column is an **upper** bound and is labelled as such: Claudette narrates
+mutations only (F91), so an unnarrated read between two edits would break a run that this count
+treats as consecutive. The two per-path columns carry no such caveat.
+
+### 🚨 F294 — measured: the budget binds at 12, stops binding by 20, and above that the model stops on its own judgement with three quarters of the budget unspent
+
+The one GPU probe of the item. K suite, champion, `control`, three reps at
+`CLAUDETTE_MAX_ITERATIONS` ∈ {12, 20, 40}, one variable, everything else pinned to W1's k-champ
+baseline (`run_budget_sweep.sh`, `sweep_report.py`). W1's own budget-40 arm from 2026-08-18 is
+printed beside it as an external replication.
+
+| budget | pass | rate | cells that reached the cap | median rounds | median s |
+|---|---|---|---|---|---|
+| 12 | 6 / 9 | 66.7% | **8 / 9** | 13 | 120.4 |
+| 20 | 8 / 9 | 88.9% | 3 / 9 | 16 | 121.2 |
+| 40 | 4 / 9 | 44.4% | **0 / 9** | 19 | 99.6 |
+| 40 — W1 baseline, 2026-08-18 | 8 / 9 | 88.9% | 2 / 9 | 18 | 112.5 |
+
+A truncated attempt has a signature: Claudette increments the counter before testing it, so a cell
+that reports `iterations = cap + 1` is one that hit the cap. Per task:
+
+| task | 12 | 20 | 40 | 40 (W1) |
+|---|---|---|---|---|
+| `finish_the_cancelled_status` | PfP `13,13,13` | PPf `13,16,13` | **fff** `10,15,12` | fPP `18,15,14` |
+| `round_at_the_line_not_the_total` | PPf `13,13,13` | PPP `21,21,21` | fPP `20,27,30` | PPP `41,41,29` |
+| `trace_dropped_samples` | fPP `7,13,13` | PPP `10,13,18` | PfP `19,8,19` | PPP `14,29,13` |
+
+Three results, and the third one is the item's answer.
+
+**1. Twelve is too tight, and it is tight in the way that matters.** The cap binds on 8 of 9 cells,
+the median attempt is truncated, and the pass rate is 6/9. This is a real cost and it is the only
+place in the sweep where the variable under test is doing anything.
+
+**2. Twenty is enough on this workload.** The cap binds on 3 of 9 — all of them
+`round_at_the_line_not_the_total`, which wants ~21 rounds and passed 3/3 anyway at the cap, on the
+strength of the graceful landing leaving a complete workspace behind. At 40 it binds on **0 of 9**.
+
+**3. Above 20 the cap stops being the constraint, because the model stops on its own judgement.**
+This is the finding, and the failures are what show it. At budget 40 the three
+`finish_the_cancelled_status` cells spent **10, 15 and 12 rounds out of 40** and all three failed
+the same way — *"COUNTS must show cancelled=4 — got: … other=4"*, the summary bucket never added.
+Twenty-five to thirty rounds of budget sat unspent while the unit declared itself done with a
+four-site change three-quarters finished. **A budget cannot buy work the model does not think it
+needs to do.** That is F290's rule with a mechanism attached: the round counter cannot tell a
+finished attempt from an unfinished one because *the model cannot either*, and the instrument that
+can is the gate.
+
+**And the arms above 12 are not separable, which is itself a measurement.** Budget 40 today read
+4/9; W1's budget-40 arm read 8/9. The cap bound on neither (0/9 and 2/9), so the difference cannot
+be a budget effect. The two arms differ in three things, none of them the variable: the corpus
+commit (a `timeout_s` raise and a comment — the prompt and fixture are byte-identical,
+`git diff 3b6e788c 6699cc8f -- corpus/suites/k/`), `preamble_tokens_in` **4,861 against 4,877**, and
+the server's `loaded_context_length` **40,960 against 65,536**. Claudette sends `temperature: 0.0`
+(`api.rs:783`), so this is not sampling noise — it is a 16-token prompt difference and a different
+KV allocation, and at greedy decoding either is enough to send a 15-round trajectory somewhere else.
+**The noise floor on a 9-cell K arm is at least ±4 cells**, which is what W1 meant by *"n=3 is what
+made the instability visible, and n=1 would have reported either extreme as fact"* — this is the
+same lesson arriving at n=9.
+
+The failure modes drifted too, in a way worth recording. Today's `finish` failures are all
+*incomplete* — the fourth site never touched. W1's single `finish` failure four days earlier was the
+opposite, an *over-edit*: it changed all four sites and then replaced the `other` catch-all
+(F87). Same task, same model, same budget, opposite errors.
+
+**One more measurement, and it is against this item's own recommendation.** The graceful landing —
+the rung that turns a cap into a handoff — fired 11 times across the sweep and produced a usable
+state-of-work note **once**. The other ten times the landing call returned no text and Claudette
+substituted its honest fallback: *"I hit this turn's tool-call iteration limit before finishing and
+produced no summary. The task is incomplete."* The guard that does this is deliberate, with its own
+recorded incident (`conversation.rs:914-939`, *"the silent tail of the 2026-07-03 spiral"*), and the
+cause is almost certainly the one item 2 and item 4 both measured on this model — the reasoning
+trace consuming a bounded output budget and leaving no content (F246, F282). So the landing is the
+right mechanism and on this model it mostly produces nothing, which makes the **classified stop**
+the load-bearing artifact and the prose a bonus. That is the same conclusion item 4 reached from the
+other direction, and it is stated in the recommendation as a limit rather than buried.
+
+### F295 — the successor already has the answer, and its shape is a ladder: change the result, steer the prompt, warn the budget, land the turn, classify the stop
+
+Claudette's loop control is a ladder — five rungs, six triggers — and no rung of it is a silent kill
+(`crates/claudette/src/runtime/conversation.rs`, `brain_selector.rs`):
+
+| Rung | Trigger | What happens | Constant |
+|---|---|---|---|
+| change the result | 2nd identical re-read of an unchanged file | the tool returns a scroll-up/narrow notice instead of the body | `READ_LOOP_LIMIT_DEFAULT = 2` (`:25`) |
+| steer, once | 9 consecutive navigation calls | `search_budget_nudge` appended to the tool result | `SEARCH_NUDGE_AT = 9` (`:1232`) |
+| steer, once | 8 rounds since the last **successful** mutation | `no_progress_nudge` appended to a clean nav result | `NO_PROGRESS_NUDGE_AT = 8` (`:30`) |
+| warn the budget | last 5 rounds before the cap | `iteration_budget_nudge(remaining)` appended to the **system prompt** | `ITERATION_NUDGE_WINDOW = 5` (`:51`) |
+| land the turn | cap reached | one extra **text-only** call; tool calls in the reply are refused, not executed | `graceful_iteration_cap` (`:437-457`) |
+| classify | empty response / no text near the cap / 3 consecutive tool errors | a named `StuckReason`, tagged into the JSONL log | `brain_selector.rs:43-92` |
+
+Four things in that table are the transferable design, and each is a rule 2.0 should adopt whole.
+
+**A no-progress counter measures mutations, not activity.** `iters_since_mutation` resets only on
+`is_mutation_tool(&tool_name) && !is_error` (`:788-793`) — a *successful* write. And the nudge is
+gated on `consecutive_nav < iters_since_mutation` (`:805-812`), which fires it only when a non-nav
+tool (a failed edit) broke the navigation streak. Pure exploration — ten distinct reads and no
+edits — deliberately does not trigger it, and there is a test named for exactly that case
+(`no_progress_nudge_does_not_fire_on_pure_read_churn`, `:2975`), alongside one for the churn it
+does catch and one for a successful edit resetting the counter (`:2919`, `:2950`). This is the
+discrimination v1's detector lacks: v1 counts *any* repeated tool in a window, so it cannot tell a
+sweep from a spiral (F293), and the two look identical unless you ask whether the workspace
+changed.
+
+**Thresholds are derived from the budget in force.** `max_iter_stuck_threshold()` is
+`max_iterations - MAX_ITER_STUCK_MARGIN`, floored at 11 (`brain_selector.rs:66-86`), and the doc
+comment says why in the plainest terms available: the original absolute `11` *"was written against
+`max_iterations = 15` and silently became a 27%-of-budget tripwire when the cap moved to 40,
+diagnosing ordinary long tool chains as stalls and replaying them wholesale on the bigger brain."*
+That is F192 and F223's rule, discovered independently and fixed at the site rather than deleted.
+
+**The budget is an input to the work, not only a limit on it.** For the last five rounds the system
+prompt carries *"Iteration budget alert: at most N tool-call round(s) remain this turn. Prioritize
+finishing the task now. If you cannot finish, stop calling tools and reply with a summary of what
+is done, the current state, and the exact next steps."* The recorded reason is two dogfood sessions
+on 2026-06-11 that were hard-killed within sight of the finish line, *"one at `git checkout -b`
+after the full test gate had passed"*. A budget nobody is told about is spent badly; the same
+budget, announced, buys a handoff.
+
+**Exhaustion produces an artifact.** The graceful landing spends one extra text-only call on
+"what was accomplished, the current state, what remains, the exact next step" — which is the
+`CompletionReport` of item 3, except that item 4 measured what that report is worth as gate
+evidence (5/12 alone, and *subtractive* beside the diff, F280/F281). Both are true and they are not
+in conflict: **the landing note is for the operator and for the next attempt, and it must never
+reach the Judge.**
+
+BCF has one piece of this and it is worth naming because it is a compile-time construct:
+`const _: () = assert!(MAX_FIX_ROUNDS >= 1)` (`mission.rs:55`), with a comment at `:712-719`
+explaining that the assertion is what makes an unreachable `None` branch unreachable. A budget that
+the type system knows is at least 1 is a budget the code can reason about.
+
+### 🚨 F296 — in BCF, exhausting the budget returns `Ok(())`, and the number the report prints as the budget is a second literal
+
+The fix loop is `for round in 0..MAX_FIX_ROUNDS` with `MAX_FIX_ROUNDS = 5` (`mission.rs:52`,
+`:474`). It has three exits: the gate passes and the operator accepts; the decline breaker fires
+(F223); or the loop runs out. The third one:
+
+```rust
+println!("All {} fix rounds exhausted (best: {:.1}/10, round {})",
+    MAX_FIX_ROUNDS, best.final_score, best_round);
+// Restore best round's files to disk (fix rounds may have degraded)
+codegen::write_files(output_dir, &best.files)?;
+let report = rb.build(false, best.final_score, best_round, output_dir, &best.files);
+let _ = report::save_report(&report);
+self.last_best_score = best.final_score as f64;
+voice::mission_complete(false, best.final_score);
+Ok(())
+```
+
+(`:712-740`). The best round's files are written to the output directory, a report is saved, the
+voice line plays, and the mission returns **`Ok(())`**. The `false` passed to `rb.build` and
+`voice::mission_complete` is the accepted flag, so the record is not *dishonest* — it says the gate
+did not pass. But the control-flow type says success, the artifact on disk is indistinguishable
+from an accepted one, and `save_report`'s failure is discarded with `let _ =` on the one path where
+the report is the only evidence that anything went wrong.
+
+Two smaller notes on the same loop.
+
+`report.rs:392` writes `max_rounds_allowed: 5` as a literal rather than reading `MAX_FIX_ROUNDS`.
+They agree today. They are two facts about one budget stored in two places, and F223 is what
+happens when that arrangement is left alone for a while.
+
+And the credit: BCF *does* tell somebody how much budget is left. `let remaining = MAX_FIX_ROUNDS -
+(round + 1)` (`:517`) drives the auto-mode line *"continuing to fix round ({} remaining)"* and the
+human approval prompt. It goes to the operator, which is right, and — unlike Claudette's
+`iteration_budget_nudge` — never to the model, which is the half that is missing.
+
+## Options compared
+
+| Option | The budget is… | The breaker is… | Verdict |
+|---|---|---|---|
+| 1. Port v1's baseline — a wall-clock deadline plus a repetition detector | seconds since assignment | a per-path and per-window repetition count | **rejected**: the deadline measures the model's speed, not the work (F285, F289, F290), and the detector cannot separate a sweep from a spiral (F293) |
+| 2. Keep the deadline, raise it until it stops false-killing | seconds, generously set | unchanged | **rejected**: F292 puts the no-false-kill threshold above 669 s, at which point it detects nothing in time to matter; F291 shows the number is reporting on itself |
+| 3. Iteration cap only, hard kill at the cap | tool-call rounds | the cap | **rejected as the whole answer, adopted as the core**: the right unit (F289/F290), the wrong ending — a hard kill throws away the endgame and produces no artifact (F295's dogfood note) |
+| 4. **One budget in rounds, a per-round liveness clock derived from the session, a graduated breaker ladder, and exhaustion as a classified outcome** | tool-call rounds at every phase with a model in it; seconds only where the work is deterministic | steer → warn → land → classify, plus one deterministic no-progress counter | **recommended** |
+| 5. No budget; run until the gate passes or the operator stops it | none | the human | **rejected as policy, kept as the floor** — right for an attended session with a watching operator, wrong as the default, for the reason W3 item 5 gave when it rejected the same option for escalation: a fleet that needs a hand on every attempt is a treadmill |
+
+## Recommendation
+
+**Option 4.** Every mechanism in it already exists in one donor or another; what this item supplies
+is the unit, the numbers, and the rule about what a stop means.
+
+### 1. Count rounds, not seconds — and count seconds only where a second is a fixed amount of work
+
+This is the whole of F289 and F290 turned into a rule. A wall-clock budget is a work budget divided
+by the model's speed, and that divisor moved **11.7×** between two models on this one box and 2×
+between two workloads on one model. The division buys nothing: on control cells the pass-rate
+gradient against duration is the same gradient as against rounds, because duration *is* rounds
+times a speed — so seconds carry no information rounds do not, and add a factor that changes
+whenever the model or the fixture changes.
+
+So the unit is the **tool-call round** in every phase that has a model in it — M1 Plan, A1 Localize,
+A2 Change, A4 Judge — and seconds are legitimate in exactly the phases that do not: A3 Measure,
+M2 Integrate, and the human clock on M3 Accept. `cargo test` takes the same number of seconds
+whichever model asked for it; a round does not.
+
+The consequence worth stating loudly, because it removes a primitive rather than adding one:
+**2.0 has no attempt deadline.** Total wall clock is *derived* — rounds × the per-round liveness
+bound — so a deadline is a consequence of the budget, never a control that can disagree with it.
+F285's whole failure mode is two constants that bound the same thing and race.
+
+The obvious objection is the unattended overnight run, and it has an answer that is not a deadline:
+**a wall-clock stop is an operator control, not a breaker.** "Stop everything at 08:00" is a
+decision a person makes about their morning, it goes on the log with an author like every other
+control verb, and what it produces is a *cancellation* — not a judgement about the work. The
+distinction is the one v1 collapsed: its watchdog is a scheduling constraint wearing the costume of
+a verdict, and it charges the agent's success rate for it (F288).
+
+### 2. The per-phase budget table — the deliverable
+
+This is the column item 2's profile table left open — its A2 row reads *"large; bounded by the loop
+budget (item 5)"*. Same seven phases, same numbering.
+
+| Phase | Model? | Budget | Breaker | On exhaustion |
+|---|---|---|---|---|
+| **M1 Plan** | yes, 1 call | 1 call, output budget 8192 (item 2) | `finish_reason = length` | `Uncertain(OutputBudgetOverrun)` → operator |
+| **A1 Localize** | yes, read-only tools | rounds, from the attempt budget | search-budget nudge at 9 consecutive navigations — a steer, not a stop | if the whole attempt budget goes here, the landing fires and the attempt is `Budget { rounds }` **with no change made**, which is a different outcome from a failed change and must be recorded as one |
+| **A2 Change** | yes, full tools | the remainder of the attempt budget; 8192 output **per round**, so the loop budget is what bounds the total | no-progress: 8 rounds since the last **successful** mutation | graceful landing (§4) |
+| **A3 Measure** | **no** | seconds, **per command** | the command's own timeout | `Uncertain(timeout)` carrying the partial output — never a pass, and it loses every comparison it enters (F218) |
+| **A4 Judge** | yes, 1 call, no tools | 1 call, output budget 8192; **+1 resample** only where the measurements left it a coin flip (item 4 rec 6) | `finish_reason = length` | `Uncertain(OutputBudgetOverrun)` — the host failed, not the work (item 4 §7) |
+| **Veto** | **no** | none | — | — |
+| **M2 Integrate** | **no** | seconds, per command; the target project's real cost (F249) | the command's own timeout | `Uncertain(timeout)` |
+| **M3 Accept** | human | the loss clock, one field on the event that started it (F196) | re-armed every time the state is re-entered | a written state on a clock, visible — never a silent default |
+
+Three numbers in that table come from this item's measurements and are stated as measurements:
+
+- **The per-round liveness bound is not a constant.** Mean seconds per round, per cell: p50 2.95 s
+  and p99 32.4 s overall, with the slowest cell averaging 21.7 s per round on the champion and
+  115.2 s on the 27B (F289). Any constant large enough for the 27B is useless for the champion, so
+  the bound is **a multiple of the session's own running median round, with a floor** — F192's rule
+  applied to a clock instead of to a counter. The floor exists so a session of three fast rounds
+  cannot drive the bound down to seconds.
+  ⚠ Every figure here is a *cell average* — `wall_clock_s / iterations` — because nothing on disk
+  records individual round times. A session's worst round is necessarily worse than its average by
+  an amount this data cannot bound, so the multiple is **not** derivable from these numbers and is
+  left open as OQ-W11-21. What the numbers do establish is the thing the rule turns on: the
+  centre of the distribution moves 11.7× with the model, so the bound cannot be a constant.
+- **Seconds-per-command in A3 and M2 are the target project's, not ours** (F249), so they are
+  configuration with a default, and a timeout there is `Uncertain(timeout)` rather than a failure of
+  the work.
+- **The attempt round budget** is §3.
+
+### 3. The round budget: buy the tail, because an unspent round is free
+
+**The attempt round budget is 40 on this workload, and the argument for it is that 40 is not the
+constraint.** F294 measured the cap binding on 8 of 9 attempts at 12, on 3 of 9 at 20 and on **0 of
+9** at 40, while the median attempt spends 19. So the cost of a generous budget is zero on the
+median attempt by construction — an unspent round is not billed — and the cost of a tight one is
+measured: 6/9 against 8/9, with the median attempt truncated.
+
+The sweep cannot separate 20 from 40, and says so: two arms at budget 40 whose caps bound on
+0 and 2 of 9 cells returned 4/9 and 8/9, which puts the noise floor of a nine-cell arm at ±4. What
+the sweep *can* separate is 12 from everything above it. So the defensible statement is **at least
+20, and 40 costs nothing** — and per F293 the number is a property of this workload, to be
+re-measured when the workload changes, not a constant to inherit.
+
+The reason to prefer the generous end is F294's third result. At budget 40 the three
+`finish_the_cancelled_status` attempts spent 10, 15 and 12 rounds and all three shipped a four-site
+change with one site missing. **Twenty-five rounds of budget sat unspent while the unit declared
+itself finished.** Above the binding point, more budget buys nothing because the model is not
+stopping on the cap — it is stopping on its own judgement, and no number in this section can
+correct that. What corrects it is the gate.
+
+The mirror-image worry — that a generous budget invites over-editing — does not survive the same
+data either. W1's one champion failure of this kind (all four sites changed, then the `other`
+catch-all destroyed, F87) happened at **18 rounds**, comfortably inside every cap in the sweep.
+Over-editing is not a budget phenomenon; it is another thing the gate catches and a counter cannot.
+
+
+The other half of the budget question is the one a counter cannot answer, and F290's stratification
+is what says so. The same bucket — an attempt that finished in **fewer than 6 rounds** — passes
+**93.9%** of the time when nothing interrupted it and **53.5%** when something did. The counter
+reads the same number in both cases. Every breaker in the family watches the top of the range only,
+and the reason the bottom looks like it needs a breaker too is an artifact; what the bottom actually
+needs is a *different instrument*.
+
+That instrument exists and item 4 built it. The **coverage fraction** (F276) — what proportion of
+the change's hunks any acceptance criterion actually exercises — is deterministic, costs one
+criterion run, and asks the question a round count structurally cannot: not *how long did this
+take* but *what did it touch*. So the rule is: **a short attempt is never a pass on the strength of
+being short.** It goes through the same gate as a long one, and a coverage fraction of zero is
+`Uncertain` whether the attempt took 3 rounds or 30.
+
+A budget decides when to stop. It was never able to decide whether the stop was fine, and that
+division of labour is the cleanest thing this item found.
+
+### 4. Breakers are a ladder, and no rung of it is a silent kill
+
+Claudette's five rungs (F295) port whole, with the constants set from this item's data:
+
+1. **Change the result** — the second identical re-read returns a pointer, not the body.
+2. **Steer, once** — a nudge appended to the tool result at 9 consecutive navigations, or at 8
+   rounds since the last successful mutation. Both are one-shot, both are recorded as events, and
+   the no-progress counter resets **only on a successful mutation** and deliberately does not fire
+   on pure exploration (F295's three named tests). This is the rung v1's detector is missing, and
+   it is why v1 cannot tell a four-module sweep from a loop (F293).
+3. **Warn the budget** — the last few rounds carry the remaining count into the system prompt.
+   Claudette's window is 5 and its recorded reason is two sessions hard-killed within sight of the
+   finish line. Adopt it, and unlike Claudette also send it to the operator, which is the half BCF
+   has and Claudette does not (F296).
+4. **Land the turn** — at the cap, one extra text-only call producing "what was done, current state,
+   what remains, the exact next step". Tool calls in that reply are refused, not executed. The
+   landing note goes to the operator and to the next attempt's prompt, and — item 4's F281 — it
+   **never reaches the Judge**.
+   ⚠ Ship it as **best effort, never as a required artifact**. F294 measured 11 landings across the
+   sweep and exactly **one** produced a usable note; the other ten returned no text and fell back to
+   Claudette's honest line. The mechanism is right and cheap, the model mostly declines it, and the
+   fallback is what keeps the record truthful. The load-bearing artifact of a stop is rung 5, which
+   is typed data and cannot come back empty.
+5. **Classify the stop**, and use the two vocabularies that already exist rather than inventing a
+   third. An *attempt outcome* is W3's `FailureClass`, so a budget stop is `Budget { which }` with
+   the sub-kind named — rounds exhausted, per-round liveness bound, no-progress after steering. A
+   *gate input* is item 3's closed `Why`, and it already reserved the variant this item needed:
+   **`Stalled { idle_ms }`**. What item 5 supplies is what `idle_ms` is measured against — the
+   round boundary, against a session-derived bound, not the pipe (F292). Nothing here adds a `Why`
+   variant, which is the test of whether item 3's enum was closed correctly.
+
+And one rung that must exist and does not exist anywhere in the family: **the stop has to actually
+stop.** F287 is three abort paths and zero terminations. In 2.0 this is not a new mechanism either —
+W3 item 7's job-object seam kills the process tree, and W3's runtime ruling (threads own the work,
+one tokio runtime owns the console edge) is precisely what keeps the abort path reachable while a
+worker is blocked, which is the other half of what F287 measured.
+
+### 5. Exhaustion is a classified outcome and it is never a score
+
+Item 3's rule, item 4's rule, and now a third instance. A budget that runs out produces
+`Budget { which }` on the event log with whatever was measured before it fired — the rounds spent,
+the last successful mutation, the coverage fraction, the partial test output. Three things it is
+not:
+
+- not `Ok(())` with the best-so-far written to disk (F296),
+- not a task the retry ladder cannot see, with its budget still unspent on the row (F288),
+- not an empty record (F291): a timed-out cell in W8 keeps `wall_clock_s`,
+  `subject_output_bytes` and `subject_last_output_ms` precisely because a previous session found
+  out the hard way that a stop with no evidence cannot be diagnosed.
+
+One budget in the table is not a loop budget and is worth naming as an exception: **A4 Judge's
+resample.** Item 4 recommendation 6 left it here — re-asking the Judge is the cheapest call in the
+system (byte-identical prefix, decode only, F239) and is worth spending exactly where the
+measurements left the decision open. So A4's budget is *one call, plus at most one resample under a
+stated condition*, and the condition is a property of the artifact, not of the clock. ⚠ OQ-W11-19
+is still open on whether a resampled coin-flip verdict converges at all, so this is a budget with a
+rule and no measurement behind the rule.
+
+And item 4's rule decides the arithmetic: **the breaker counts vetoes and `Uncertain`s separately.**
+`Uncertain(OutputBudgetOverrun)` and `Uncertain(timeout)` are the host failing, not the work
+failing. A round that ends that way must not decrement the work budget, or the host's bad day is
+charged to the unit — which is exactly what v1's watchdog does when it adds a `tasksFailed` to the
+agent's success rate for a task that ran 301 seconds (F285, F288).
+
+### 6. One budget per task, and it is data an operator can raise
+
+W3's F195 rule, unchanged and now with the other half from F288: **one budget, decremented by every
+mechanism that consumes a round or an attempt, refused when exhausted** — and equally, a mechanism
+that ends an attempt without consuming the budget is a bug, because the budget then describes work
+that can never happen. A ladder rung is an attempt; a fix-in-place is a round; an escalation is an
+attempt; all of them come out of the same number.
+
+`+2 rounds` is a control event with an author on the same log as everything else (W3 item 4), which
+is what makes a budget a *decision* the operator watches rather than a constant they discover in a
+post-mortem. The console renders the remaining budget because the model is being told it anyway
+(§4 rung 3) — the operator should not know less than the unit does.
+
+### 7. What this hands onward
+
+- **To W3**: `FailureClass::Budget { which }` gains three named sub-kinds (§4 rung 5), and the
+  per-round liveness bound is a session-derived value rather than a config constant — a change to
+  W3 item 5's policy *inputs*, not to its mechanism. OQ-W3-13 is answered on the task side (F292):
+  do not build it from the outside. And the check on item 3's enum passes — the whole item needed
+  no new `Why` variant, because `Stalled { idle_ms }` was already there.
+- **To W6 item 4 (verification headroom)**: F290 hands it a negative result and a positive one —
+  the round count carries no information about whether a short attempt is finished or cut off
+  (93.9% against 53.5% in the same bucket), and item 4's coverage fraction is the instrument that
+  does. Headroom here is measured in what the gate can decide, not in how long the loop ran.
+- **To W6 item 8 (honest failure reporting)**: every rung of §4 is an event with a name; F296 is
+  the anti-pattern to cite (`Ok(())` on exhaustion), and F294's landing result is the argument that
+  honest reporting cannot be built on model prose — 10 of 11 landings had none, and the only reason
+  the record stayed truthful is that a guard synthesised the sentence instead.
+- **To W5**: three console objects — the remaining round budget as a counter that ticks, each
+  nudge as a line of dialogue from the unit, and the landing note as the unit reporting in. Plus
+  one control verb, `+N rounds`, with an author. And one hard constraint from F292: F129's *"no gap
+  longer than 10 s without a liveness mark"* cannot be met by watching the worker, because the
+  worker is measurably silent for up to 669 s while succeeding. The liveness mark is emitted by the
+  loop, at the round boundary, and it is the same event the progress clock reads.
+- **To W11 item 2's profile table**: the output budget per phase is already there; this item adds
+  that overrunning it is a *named* stop, not a retry (item 4 §7's `Uncertain(OutputBudgetOverrun)`).
+- **To W4**: the variant stratification in F290 is a labelled dataset that arrives free — every
+  interfered-with cell is a truncated attempt with a known cause, sitting beside a control cell of
+  the same task and the same round count that was not truncated. That is the pair a classifier
+  needs, and v1 knew it wanted this data and captured only the final frame
+  (`captureTrainingData`, fired once, at max iterations).
+
+## Rejected alternatives and why
+
+- **A wall-clock deadline on an attempt**, which is v1's baseline and every donor's instinct.
+  F290: pass rate is flat in wall clock and every cell over ten minutes passed. F289: the
+  seconds-to-work exchange rate moves 11.7× with the model. F291: raising one such number turned
+  four failures into eight passes without anything about the work changing. A deadline on model
+  work is a measurement of the model's speed wearing the costume of a measurement of the work.
+- **Keeping the deadline and setting it generously.** F292 prices it: to stop false-killing
+  successful attempts the threshold has to clear 669 s, and a 669 s detector detects nothing worth
+  detecting. This is not a number that needs tuning; it is an instrument pointed at the wrong thing.
+- **A per-stage budget, which is literally what §11 asks for.** Independent per-phase caps cannot
+  bound the total — F195 is the incident report, patched in production with a fourth counter, and
+  F288 is the same disease across fourteen constants in three processes. What is genuinely per
+  phase is the **breaker and the unit** (§2's table); the count comes out of one budget, which is
+  the only arrangement in which "how much work is left" has an answer.
+- **A repetition detector over tool calls in a sliding window**, v1's `exact duplicate in the last
+  3` and `same tool 5 times in the last 5`. F293: on repository work these fire on a *sweep* — four
+  modules edited in a row is what fixing a four-site defect looks like, and the read-edit-reread
+  verify pattern is an exact duplicate by construction. Repetition is not the signal. **Mutations
+  since the last successful change** is (F295), because it asks whether the workspace moved.
+- **A per-path mutation cap** (`file_write: 3`, `file_edit: 5`). Replayed over 1,342 runs it blocks
+  1.3% of successful attempts overall, 9.5% on repository work, and on the busiest K cell it would
+  have refused edits 6 and 7 to a test file — the exact behaviour W1 identified as the 27B's quality
+  edge (F293). The idea survives in a better form: Claudette's read-loop suppression *changes the
+  tool's answer* rather than refusing the call (F295 rung 1), which cannot block work that needs
+  doing.
+- **A hard kill at the cap.** F295 records what it costs: two dogfood sessions killed within sight
+  of the finish line, one at `git checkout -b` after the full test gate had passed. One extra
+  text-only call converts a dead turn into a handoff. It is the cheapest rung in the ladder and the
+  only one that produces an artifact.
+- **Letting a steering message be the whole mechanism**, which is v1's `return str(e)` at all eight
+  call sites. F286: it is a good rung and a bad ladder, and the message it returns claims to have
+  stopped the run.
+- **A declining-score breaker** — BCF's `final_score < prev_best - 0.1` and Claudette's three
+  strictly declining history entries (F223). 2.0's gate has no score to decline: item 4 retired
+  `critic_inflation` for exactly this reason. The port that *does* work is sitting in the same file:
+  BCF already tracks **persistent issues** across rounds and feeds them back as *"PERSISTENT ISSUES
+  (unfixed for N rounds)"* (`mission.rs:1576-1585`), and the keys come from `lint_issues` —
+  deterministic linter output normalised to short strings (`extract_issue_keys`, `:1598-1622`), not
+  from a model's opinion. BCF has the right quantity and uses it as *feedback* while stopping on the
+  score. 2.0 stops on the quantity: **the same veto surviving a fix round** is a set comparison, it
+  is deterministic, and it is the shape W3's `Wrong { evidence }` class already asks for.
+- **A tight round budget on the theory that a long attempt is a wasteful one.** F294 prices it: at
+  12 the cap binds on 8 of 9 attempts and costs 2 cells of 9, and at 40 it binds on none while the
+  median attempt spends 19 rounds. An unspent round is not billed, so the tight budget buys a
+  measured loss against an unmeasurable saving.
+- **Setting the round budget from the median.** The median attempt on this box is 8 rounds and the
+  work that matters is not at the median: the K-suite fixtures — four-site defects, the shape 2.0
+  answers for — run at 18 and above (§3). A budget set at the middle of a distribution dominated by
+  single-invocation cells is a budget calibrated on the wrong workload, which is F293's mistake
+  made a second time.
+
+## Effect on fun
+
+The best thing in this item is that **the budget stops being a trapdoor and becomes a clock on the
+wall**. Every donor's version is invisible until it fires, which on screen is the worst possible
+event: a unit that was working is suddenly not, with no line of dialogue and no explanation. The
+recommended shape puts the same number in three places at once — the unit is told it in its system
+prompt, the operator sees it counting down, and the log records each rung as it is climbed. Nothing
+about the run gets less honest and the console gets a timer, which is free tension.
+
+The nudges are better television than the kill they replace, and they are already written in the
+right voice. *"[no-progress: several reads/searches and no file has actually changed. … Make the
+edit now, or stop and summarize what you found.]"* — that is a sergeant, and it arrives at round 8
+of an attempt the operator is watching. What follows is genuinely uncertain: sometimes the unit
+takes the steer and lands the change two rounds later, sometimes it does not, and either way the
+next thing on screen is the unit's own answer to it.
+
+The landing note is the beat this item adds to item 4's cast. Item 4 established that the unit's
+completion report is *dialogue*, never evidence — persuasive, first-person, and structurally blind
+to what it did not do. A unit that runs out of budget produces exactly that artifact under
+pressure: what I got done, where things stand, what I would do next. It is the field report of a
+unit pulled back before the objective, it is the right thing to show the operator, and item 4's
+F281 is the reason it must never be handed to the Judge. Same sentence, two audiences, and the gate
+is not one of them.
+
+And the story this item leaves in the drawer is a 7.2-second one. A run of the largest fixture,
+allowed 900 seconds, finished the work at 907.2 and was recorded as a failure — one of four, in an
+arm that reads "5 pass / 4 timeout" and is really "the clock was short". Re-run with the same model
+on the same task at a longer ceiling, that arm reads 8 of 9. Nothing about the unit changed. The
+number changed. That is the exact species of scripted win §7 says the project must never ship, and
+it was sitting inside our own measurement rig.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W11-20 | Does the round-budget curve (§3) hold on the 27B? Its rounds cost 11.7× more, and the sweep is champion-only — the *shape* should transfer if rounds are the right unit, and that is the prediction F289 makes and this item did not test. | one sweep arm, ~3 GPU hours |
+| OQ-W11-21 | What multiple of the session's running median round makes a good per-round liveness bound? F289's figures are *cell averages* (`wall_clock_s / iterations`) — nothing on disk records individual round times, so the within-session spread, which is what the multiple has to cover, is unmeasured. | a harness change: stamp each round in `cells.jsonl`, then one re-run |
+| OQ-W11-22 | Does the coverage fraction actually separate the two sub-6-round populations F290 found (93.9% control against 53.5% interfered-with)? The recommendation leans on it and the pairing is sitting in `runs/` unmeasured. | one deterministic pass over the Q56 workdirs, no model |
+| OQ-W11-23 | Rounds per attempt is answered; **attempts per mission** is not. The K repeats show an independent retry converting a failure into a pass, but an independent retry is not a fix round carrying the veto set forward, and nothing here measures the second kind. | a fix-loop probe: attempt → gate → veto set → attempt |
+| OQ-W11-24 | Does the no-progress counter's discrimination (mutations, not activity) survive a task whose correct answer is mostly *reading* — an investigation with a one-line fix? Every K fixture is multi-site editing. | a fixture with a different work shape |
+| OQ-W11-25 | Why does the graceful landing return no text 10 times in 11 (F294)? The suspected cause is the reasoning trace eating the output budget (F246/F282), and if it is, the fix is one field — a larger or reasoning-suppressed budget on that single call. Worth knowing before 2.0 relies on the note at all. | one probe: replay a capped session's landing call at 2× and 4× the output budget |
+| OQ-W3-13 | *(from W3 items 3/6)* The idle-gap timeout value — what inter-token gap means "hung" on this hardware | **answered here** (F292), and in two halves: at the socket, set it from the per-round cost, since F198 showed the mechanism already exists; at the task, do not build it from the outside at all — the progress clock is the iteration boundary |
+
+## Confidence: high on the archaeology and the arithmetic, medium on the budget number
+
+**High on the donor half.** Every claim in F285–F288, F295 and F296 is a line read at its
+consumption site and re-checkable with one grep. The two that would otherwise be inferences were
+not left as inferences: `execution_state` having no writer is a three-hit grep over one module, and
+the blocked event loop — two rungs out from v1's code, into FastAPI's semantics, which is exactly
+where item 20 of the standing lessons says reading runs out of authority — was measured with the
+smallest program that reproduces the shape.
+
+**High on the arithmetic over `runs/`.** 1,342 cells, four scripts, no GPU, seconds to run, raw
+output committed next to the scripts. F289's Jaccard, F292's silence distribution and F293's replay
+are counts over data that was already recorded for other reasons and cannot have been shaped by
+this item's question.
+
+**Medium on how far the pass-rate shapes generalise, and this is where the item corrected itself.**
+The pooled iteration table in F290 shows a clean U — failures at both ends — and it is an artifact.
+1,315 of the 1,342 cells are Q56/U100, and 947 of the graded ones come from arms whose purpose is
+to *interrupt* the agent; stratifying by variant turns the 68.3% low shoulder into 93.9% on
+controls. The item's first reading of its own data was wrong in the flattering direction — it had
+found a new failure mode nobody watches — and the check that killed it took one script edit. What
+survives the stratification is stated as surviving it, and the K-suite figures throughout are
+small-n (9 champion cells, 18 on the 27B) and labelled.
+
+**Medium on the lower end of the round budget, and explicitly nothing above it.** The sweep is 27
+cells, three tasks, one model, plus nine more from W1. It separates 12 from everything above it —
+the cap binds on 8 of 9 attempts there and the pass rate drops — and it **cannot separate 20 from
+40**, because two arms whose caps bound on 0 and 2 of 9 cells returned 4/9 and 8/9. That ±4 spread
+on a nine-cell arm is reported as the result it is rather than smoothed over, and it is why §3 says
+"at least 20, and 40 costs nothing" instead of naming a number the data does not support. The
+history is also censored: every prior run was capped at 40, so nothing on disk says what a larger
+budget would buy — though F294's third result argues nothing would, since the model already stops
+25 rounds short.
+
+**High on F294's third result, which is the one the recommendation rests on**, because it does not
+depend on comparing arms at all: three attempts at budget 40 spent 10, 15 and 12 rounds and failed
+the same way. That is a single-arm observation, and the unspent budget is arithmetic.
+
+**Medium-low on F291's headline count.** The 900 s and 2,400 s arms are separate runs rather than
+the same executions replayed with a longer clock, so "4 timeouts became 8 passes" is a
+nine-versus-nine comparison. The single-cell overshoots — 907.2 s against a 900 s ceiling — are
+direct measurements and carry the argument on their own.
+
+**And two things this item asserts are weaker than the rest.** The per-round liveness bound is a
+*rule* with no multiple attached, because the data records cell averages and not round times
+(OQ-W11-21). And the graceful landing is recommended while being measured at 1 usable note in 11 —
+recommended because the mechanism is right and the fallback is honest, not because it was observed
+working.
+
+**And one whole half of the question is not measured here.** Everything in this item is about the
+budget *within* one attempt. How many attempts a mission should get — a fix round that carries the
+veto set forward, which is not the same thing as an independent retry — has no measurement behind
+it, in this item or anywhere in the block. That is OQ-W11-23, it is the natural next probe, and the
+recommendation is written so that its answer plugs into the same budget rather than adding a second
+one.

@@ -1,0 +1,60 @@
+cells with both iterations and wall clock: 1292
+
+1. OVERLAP at iter>25 and wall>300s
+   iteration cap alone cuts : 51
+   time deadline alone cuts : 23
+   both                     : 11
+   union                    : 63
+   Jaccard                  : 0.17
+
+2. SECONDS PER ITERATION  n=1292
+   min=1.64 p10=2.16 p50=2.96 p90=5.60 p99=32.37 max=115.17
+   champion K: n=   9 median=  5.76 max=  21.69 s/iter
+        27B K: n=  13 median= 34.34 max= 115.17 s/iter
+     q56/u100: n=1264 median=  2.94 max=  40.34 s/iter
+
+3. DISCRIMINATION  (pass|fail cells only, n=1284)
+   by wall:
+     [    0,   30) s: n= 843 pass= 662 rate= 78.5%
+     [   30,   60) s: n= 283 pass= 240 rate= 84.8%
+     [   60,  120) s: n=  82 pass=  62 rate= 75.6%
+     [  120,  300) s: n=  53 pass=  41 rate= 77.4%
+     [  300,  600) s: n=  15 pass=  12 rate= 80.0%
+     [  600,  inf) s: n=   8 pass=   8 rate=100.0%
+   by iters:
+     [    0,    6) it: n= 401 pass= 274 rate= 68.3%
+     [    6,   10) it: n= 462 pass= 386 rate= 83.5%
+     [   10,   15) it: n= 285 pass= 254 rate= 89.1%
+     [   15,   20) it: n=  65 pass=  54 rate= 83.1%
+     [   20,   25) it: n=  18 pass=  17 rate= 94.4%
+     [   25,   30) it: n=  15 pass=  13 rate= 86.7%
+     [   30,  inf) it: n=  38 pass=  27 rate= 71.1%
+
+3b. STRATIFIED BY VARIANT (the pooled low shoulder is an artifact)
+   variants: {'control': 383, 'gated': 187, 'redirect-first-edit': 387, 'deny-first-edit': 327}
+   --- control  n=383 ---
+     [    0,    6) it: n= 147 pass= 138 rate= 93.9%
+     [    6,   10) it: n= 113 pass= 101 rate= 89.4%
+     [   10,   15) it: n=  70 pass=  64 rate= 91.4%
+     [   15,   20) it: n=  22 pass=  17 rate= 77.3%
+     [   20,   25) it: n=   6 pass=   6 rate=100.0%
+     [   25,   30) it: n=   7 pass=   6 rate= 85.7%
+     [   30,  inf) it: n=  18 pass=  13 rate= 72.2%
+     [    0,   30) s: n= 255 pass= 238 rate= 93.3%
+     [   30,   60) s: n=  57 pass=  51 rate= 89.5%
+     [   60,  120) s: n=  23 pass=  18 rate= 78.3%
+     [  120,  300) s: n=  33 pass=  25 rate= 75.8%
+     [  300,  inf) s: n=  15 pass=  13 rate= 86.7%
+   --- interfered-with  n=901 ---
+     [    0,    6) it: n= 254 pass= 136 rate= 53.5%
+     [    6,   10) it: n= 349 pass= 285 rate= 81.7%
+     [   10,   15) it: n= 215 pass= 190 rate= 88.4%
+     [   15,   20) it: n=  43 pass=  37 rate= 86.0%
+     [   20,   25) it: n=  12 pass=  11 rate= 91.7%
+     [   25,   30) it: n=   8 pass=   7 rate= 87.5%
+     [   30,  inf) it: n=  20 pass=  14 rate= 70.0%
+     [    0,   30) s: n= 588 pass= 424 rate= 72.1%
+     [   30,   60) s: n= 226 pass= 189 rate= 83.6%
+     [   60,  120) s: n=  59 pass=  44 rate= 74.6%
+     [  120,  300) s: n=  20 pass=  16 rate= 80.0%
+     [  300,  inf) s: n=   8 pass=   7 rate= 87.5%

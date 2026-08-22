@@ -1,0 +1,43 @@
+cells matched to a transcript: 1348/1348  (0 missing)
+
+--- ALL cells with a transcript  n=1348 ---
+  mutations/cell: max=12 mean=1.2 zero=285
+  file_write >3 on one path :   11  =   0.8%
+  file_edit  >5 on one path :    6  =   0.4%
+  per-path caps (either)    :   17  =   1.3%   <- faithful replay
+  5-in-a-row same verb      :   21  =   1.6%   <- upper bound
+  ANY v1 breaker fires      :   26  =   1.9%
+
+--- cells that PASSED  n=1025 ---
+  mutations/cell: max=12 mean=1.3 zero=77
+  file_write >3 on one path :    8  =   0.8%
+  file_edit  >5 on one path :    5  =   0.5%
+  per-path caps (either)    :   13  =   1.3%   <- faithful replay
+  5-in-a-row same verb      :   15  =   1.5%   <- upper bound
+  ANY v1 breaker fires      :   19  =   1.9%
+
+--- K-suite (repository work)  n=33 ---
+  mutations/cell: max=12 mean=3.5 zero=3
+  file_write >3 on one path :    0  =   0.0%
+  file_edit  >5 on one path :    2  =   6.1%
+  per-path caps (either)    :    2  =   6.1%   <- faithful replay
+  5-in-a-row same verb      :    6  =  18.2%   <- upper bound
+  ANY v1 breaker fires      :    6  =  18.2%
+
+--- K-suite that PASSED  n=25 ---
+  mutations/cell: max=12 mean=3.8 zero=0
+  file_write >3 on one path :    0  =   0.0%
+  file_edit  >5 on one path :    2  =   8.0%
+  per-path caps (either)    :    2  =   8.0%   <- faithful replay
+  5-in-a-row same verb      :    4  =  16.0%   <- upper bound
+  ANY v1 breaker fires      :    4  =  16.0%
+
+worst offenders (passing cells, by per-path count):
+   q56 Q43                                    writes/path=9 edits/path=2 muts=11 longest_run=9
+   q56 Q45                                    writes/path=0 edits/path=8 muts=8 longest_run=8
+     k finish_the_cancelled_status            writes/path=0 edits/path=7 muts=12 longest_run=12
+     k finish_the_cancelled_status            writes/path=0 edits/path=6 muts=10 longest_run=10
+   q56 Q44                                    writes/path=6 edits/path=0 muts=8 longest_run=8
+   q56 Q09                                    writes/path=0 edits/path=6 muts=6 longest_run=6
+   q56 Q44                                    writes/path=1 edits/path=6 muts=7 longest_run=4
+     k finish_the_cancelled_status            writes/path=0 edits/path=5 muts=12 longest_run=12

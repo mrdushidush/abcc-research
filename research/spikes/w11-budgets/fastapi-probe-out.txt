@@ -1,0 +1,10 @@
+baseline /abort while idle: 24 ms
+
+async def (v1's shape)     blocking handler sleeps 6 s
+    /abort answered in     5006 ms  err=None
+    -> abort endpoint was BLOCKED for the whole task
+
+plain def (threadpool)     blocking handler sleeps 6 s
+    /abort answered in       16 ms  err=None
+    -> abort endpoint was reachable
+

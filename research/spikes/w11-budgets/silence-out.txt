@@ -1,0 +1,28 @@
+transcripts parsed: 1348
+
+A. longest gap between consecutive TRANSCRIPT LINES (stdout/stderr watcher):
+  all cells                    n=1307  p50=   8.4s p90=   29.3s p99=  266.7s max=  669.5s
+  passing cells                n=1025  p50=   8.2s p90=   26.9s p99=  231.8s max=  669.5s
+  passing, K suite             n=  25  p50=  93.6s p90=  357.0s p99=  626.2s max=  669.5s
+
+B. longest gap between consecutive MUTATIONS (workspace watcher):
+  all cells                    n= 263  p50=  15.7s p90=   99.8s p99=  473.4s max=  678.3s
+  passing cells                n= 221  p50=  14.3s p90=   78.1s p99=  353.5s max=  678.3s
+  passing, K suite             n=  16  p50=  37.1s p90=  329.5s p99=  631.9s max=  678.3s
+
+longest silences on cells that PASSED (line gap):
+     k trace_dropped_samples            silence=  669.5s lines= 81 muts=3
+     k finish_the_cancelled_status      silence=  489.2s lines= 73 muts=4
+   q56 Q19                              silence=  477.9s lines= 89 muts=2
+     k finish_the_cancelled_status      silence=  366.1s lines= 88 muts=12
+     k finish_the_cancelled_status      silence=  343.3s lines= 73 muts=10
+   q56 Q45                              silence=  319.3s lines= 17 muts=2
+   q56 Q53                              silence=  303.8s lines=296 muts=4
+     k trace_dropped_samples            silence=  285.6s lines= 67 muts=6
+
+false kills by an idle-gap timeout on the LINE signal, passing cells only:
+  idle-gap   30s: kills   87/1025 =   8.5% of successful attempts
+  idle-gap   60s: kills   43/1025 =   4.2% of successful attempts
+  idle-gap  120s: kills   22/1025 =   2.1% of successful attempts
+  idle-gap  300s: kills    7/1025 =   0.7% of successful attempts
+  idle-gap  600s: kills    1/1025 =   0.1% of successful attempts
