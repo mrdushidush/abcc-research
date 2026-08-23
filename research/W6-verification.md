@@ -1613,7 +1613,7 @@ test that failed. Claudette's `Option<bool>` exists precisely for this cell (F31
 The `--passWithNoTests` flag in the ts/js arm is worth one more line: it is a **jest** flag. Passed
 to a project whose `test` script is `vitest` or `node --test` it is an unknown argument, and the run
 fails for a reason that has nothing to do with the code. Both donors assume jest for Node
-(Claudette's `--testNamePattern` at `quality.rs:236` is the same assumption) — which is the first
+(Claudette's `--testNamePattern` at `quality.rs:237` is the same assumption) — which is the first
 sign that the unit 2.0 has to model is not the language.
 
 ### F315 — the language of a BCF mission is a keyword scan of the user's prompt, with a Python default
@@ -1716,7 +1716,7 @@ Three separate results, in increasing order of importance.
 - **And the health check cannot warn about it, because it probes a different binary.** `doctor.rs`
   opens its toolchain section with *"Missing a toolchain is the #1 silent reason 'forge says it
   passed but nothing actually compiled'"* (`doctor.rs:513-516`) and then probes `node` — with
-  `why: "the npm forge gate"` (`:562-566`) — while the gate runs `npm`. There is no `npm` entry in
+  `why: "the npm forge gate"` (`:560-567`) — while the gate runs `npm`. There is no `npm` entry in
   `TOOLCHAINS`. Both use the same spawn mechanism (`Command::new(bin).arg(arg).output()`, `:609`),
   so the probe passes and the gate fails, on the same machine, for the same reason the section
   comment was written. The `python` entry shows the author knew the shape — `bins: &["python",
