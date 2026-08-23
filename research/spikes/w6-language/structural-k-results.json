@@ -1,0 +1,636 @@
+[
+ {
+  "id": "k-27b-r1/finish_the_cancelled_status__control",
+  "run": "k-27b-r1",
+  "task": "finish_the_cancelled_status",
+  "status": "timeout",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-27b-r1/round_at_the_line_not_the_total__control",
+  "run": "k-27b-r1",
+  "task": "round_at_the_line_not_the_total",
+  "status": "timeout",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-27b-r1/trace_dropped_samples__control",
+  "run": "k-27b-r1",
+  "task": "trace_dropped_samples",
+  "status": "timeout",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "k-27b-r2/finish_the_cancelled_status__control",
+  "run": "k-27b-r2",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "README.md",
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-27b-r2/round_at_the_line_not_the_total__control",
+  "run": "k-27b-r2",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-27b-r2/trace_dropped_samples__control",
+  "run": "k-27b-r2",
+  "task": "trace_dropped_samples",
+  "status": "timeout",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "k-27b-r3/finish_the_cancelled_status__control",
+  "run": "k-27b-r3",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-27b-r3/round_at_the_line_not_the_total__control",
+  "run": "k-27b-r3",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-27b-r3/trace_dropped_samples__control",
+  "run": "k-27b-r3",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r1/finish_the_cancelled_status__control",
+  "run": "k-27b-t2400-r1",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r1/round_at_the_line_not_the_total__control",
+  "run": "k-27b-t2400-r1",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r1/trace_dropped_samples__control",
+  "run": "k-27b-t2400-r1",
+  "task": "trace_dropped_samples",
+  "status": "timeout",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "k-27b-t2400-r2/finish_the_cancelled_status__control",
+  "run": "k-27b-t2400-r2",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r2/round_at_the_line_not_the_total__control",
+  "run": "k-27b-t2400-r2",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r2/trace_dropped_samples__control",
+  "run": "k-27b-t2400-r2",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r3/finish_the_cancelled_status__control",
+  "run": "k-27b-t2400-r3",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r3/round_at_the_line_not_the_total__control",
+  "run": "k-27b-t2400-r3",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-27b-t2400-r3/trace_dropped_samples__control",
+  "run": "k-27b-t2400-r3",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "k-champ-r1/finish_the_cancelled_status__control",
+  "run": "k-champ-r1",
+  "task": "finish_the_cancelled_status",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-champ-r1/round_at_the_line_not_the_total__control",
+  "run": "k-champ-r1",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-champ-r1/trace_dropped_samples__control",
+  "run": "k-champ-r1",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "k-champ-r2/finish_the_cancelled_status__control",
+  "run": "k-champ-r2",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-champ-r2/round_at_the_line_not_the_total__control",
+  "run": "k-champ-r2",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/invoice.py"
+  ]
+ },
+ {
+  "id": "k-champ-r2/trace_dropped_samples__control",
+  "run": "k-champ-r2",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "k-champ-r3/finish_the_cancelled_status__control",
+  "run": "k-champ-r3",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "k-champ-r3/round_at_the_line_not_the_total__control",
+  "run": "k-champ-r3",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "k-champ-r3/trace_dropped_samples__control",
+  "run": "k-champ-r3",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "w11-b12-r1/finish_the_cancelled_status__control",
+  "run": "w11-b12-r1",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "w11-b12-r1/round_at_the_line_not_the_total__control",
+  "run": "w11-b12-r1",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "w11-b12-r1/trace_dropped_samples__control",
+  "run": "w11-b12-r1",
+  "task": "trace_dropped_samples",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "w11-b12-r2/finish_the_cancelled_status__control",
+  "run": "w11-b12-r2",
+  "task": "finish_the_cancelled_status",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/sla.py"
+  ]
+ },
+ {
+  "id": "w11-b12-r2/round_at_the_line_not_the_total__control",
+  "run": "w11-b12-r2",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "w11-b12-r2/trace_dropped_samples__control",
+  "run": "w11-b12-r2",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "w11-b12-r3/finish_the_cancelled_status__control",
+  "run": "w11-b12-r3",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "w11-b12-r3/round_at_the_line_not_the_total__control",
+  "run": "w11-b12-r3",
+  "task": "round_at_the_line_not_the_total",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "w11-b12-r3/trace_dropped_samples__control",
+  "run": "w11-b12-r3",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r1/finish_the_cancelled_status__control",
+  "run": "w11-b20-r1",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r1/round_at_the_line_not_the_total__control",
+  "run": "w11-b20-r1",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r1/trace_dropped_samples__control",
+  "run": "w11-b20-r1",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r2/finish_the_cancelled_status__control",
+  "run": "w11-b20-r2",
+  "task": "finish_the_cancelled_status",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r2/round_at_the_line_not_the_total__control",
+  "run": "w11-b20-r2",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r2/trace_dropped_samples__control",
+  "run": "w11-b20-r2",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r3/finish_the_cancelled_status__control",
+  "run": "w11-b20-r3",
+  "task": "finish_the_cancelled_status",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "w11-b20-r3/round_at_the_line_not_the_total__control",
+  "run": "w11-b20-r3",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "w11-b20-r3/trace_dropped_samples__control",
+  "run": "w11-b20-r3",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "w11-b40-r1/finish_the_cancelled_status__control",
+  "run": "w11-b40-r1",
+  "task": "finish_the_cancelled_status",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "w11-b40-r1/round_at_the_line_not_the_total__control",
+  "run": "w11-b40-r1",
+  "task": "round_at_the_line_not_the_total",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "w11-b40-r1/trace_dropped_samples__control",
+  "run": "w11-b40-r1",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ },
+ {
+  "id": "w11-b40-r2/finish_the_cancelled_status__control",
+  "run": "w11-b40-r2",
+  "task": "finish_the_cancelled_status",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "green",
+  "src_modified": [
+   "jobs/charges.py",
+   "jobs/retry.py",
+   "jobs/sla.py",
+   "jobs/summary.py"
+  ]
+ },
+ {
+  "id": "w11-b40-r2/round_at_the_line_not_the_total__control",
+  "run": "w11-b40-r2",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "w11-b40-r2/trace_dropped_samples__control",
+  "run": "w11-b40-r2",
+  "task": "trace_dropped_samples",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "w11-b40-r3/finish_the_cancelled_status__control",
+  "run": "w11-b40-r3",
+  "task": "finish_the_cancelled_status",
+  "status": "fail",
+  "truth": "FAIL",
+  "verdict": "red",
+  "src_modified": []
+ },
+ {
+  "id": "w11-b40-r3/round_at_the_line_not_the_total__control",
+  "run": "w11-b40-r3",
+  "task": "round_at_the_line_not_the_total",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "billing/pricing.py"
+  ]
+ },
+ {
+  "id": "w11-b40-r3/trace_dropped_samples__control",
+  "run": "w11-b40-r3",
+  "task": "trace_dropped_samples",
+  "status": "pass",
+  "truth": "PASS",
+  "verdict": "green",
+  "src_modified": [
+   "pipeline/ingest.py",
+   "pipeline/stats.py"
+  ]
+ }
+]

@@ -42,8 +42,9 @@ Planned items:
    file* — at 9 of 12 on repository work with no false positives, and the acceptance test, which
    costs less than the ladder that decides nothing. Generated tests discriminate 4/9 written before
    the change and **ratify a wrong change 6/9 written after it**.
-5. ✅ **Language generality** (F311–F320) — measured over the donors' own code and one controlled
-   experiment. **The scoping question has a smaller answer than it looks:** what is language-specific
+5. ✅ **Language generality** (F311–F324) — measured over the donors' own code, one controlled
+   experiment, and **728 real agent attempts in five languages** (item 4's 377, plus the 351 node,
+   typescript and shell cells it deliberately skipped). **The scoping question has a smaller answer than it looks:** what is language-specific
    is a *toolchain profile* — extensions, a build command, a test command, a binary path — and the
    expensive part of the donors' abstraction (387 of 1,068 lines in Claudette's `quality.rs`) is
    output parsers keyed to a **tool**, not a language, which item 4's `Measured(exit_code, stdout,
@@ -56,7 +57,12 @@ Planned items:
    host and its validation channel runs **1 of 13** real commands; BCF scores a perfect Python file
    **5.80** and a language it has never heard of **8.00**, and cannot pass its own gate on a project
    whose extensions it does not know at any complexity; Claudette's npm arm **cannot spawn `npm` from
-   a Rust process on Windows at all**, while its health check probes `node`.
+   a Rust process on Windows at all**, while its health check probes `node`. On the real population:
+   a type check caught **0 of 160** failures in five languages, `tsc` false-failed 5 correct answers,
+   and on the 280 cells where the agent was left alone **no rung in any language fired on any of the
+   29 real failures**. The free structural check has now produced **0 false positives on 609 correct
+   trees**, and its yield is a property of the task's shape — 9/12 on repository work against 0/29 on
+   clean single-function work — so it goes first because it is free, never because of a rate.
 6. ☐ **Worktrees / per-task isolation** — overhead and RAM cost against the 32 GB ceiling.
 7. ☐ **Verifying the unrunnable** — docs and review output; LLM-as-judge failure modes.
 8. ☐ **Honest failure reporting** — the design against v1's zero-tests-claimed-passing defect;
@@ -65,7 +71,7 @@ Planned items:
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
 Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
 then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284)**;
-item 4 took **F297–F310** and item 5 took **F311–F320**, so the next free number is **F321**. W11
+item 4 took **F297–F310** and item 5 took **F311–F324**, so the next free number is **F325**. W11
 item 5 (F285–F296) handed item 4 a second headroom result and item 8 its anti-pattern; item 5 hands
 item 6 the toolchain-profile question (OQ-W6-11) and item 8 the loud-`Uncertain` requirement. The numbering is one sequence across all
 workstreams — check the maximum before adding, not the last number in this file
@@ -1376,6 +1382,13 @@ paraphrase it.
   `classify_tests` and `is_hard_fail` verbatim with their line numbers, and drives them with real
   subprocesses over twelve trees — four frameworks × {no tests, green suite, failing suite} — plus
   a polyglot tree. The subprocesses are spawned from a Rust process, which is part of the question.
+- **The three languages item 4 skipped, on real cells.** Item 4 ran Q56's rust and python halves
+  and left 351 preserved workdirs unmeasured because its ladder had no rungs for node, typescript or
+  shell. Those rungs are now written (`../w6-headroom/instruments.py`, and the harness change is part
+  of this item), the resumable ladder re-run, and two further passes added: `structural.py`, which
+  runs item 4's free structural rung over all 728 Q56 cells and re-runs it over K stratified by arm,
+  and `baseline.py`, which runs every rung over the pristine fixture and the reference solution so a
+  rung that is red before the change is caught being one (F323).
 - **One ticket, three languages, two styles.** `mutants.py` writes the same task — *a fourth
   status exists in the type; make the four consumers agree about what it means*, the K corpus's
   shape — in Python, TypeScript and Rust, in seven candidate answers from "did nothing" to
@@ -1422,9 +1435,12 @@ Four different mechanisms, and each one is a lesson about what a language bindin
   Windows 11 `python3` resolves to `WindowsApps\python3.exe`, the Microsoft Store *app execution
   alias*, which spawns successfully, prints *"Python was not found; run without arguments to install
   from the Microsoft Store"* and exits 9009. The tool's own fallback — *"If python3 not available,
-  skip syntax check"* — never fires, because the process **did** start. v1 itself ships in Docker
-  where `python3` is real, so this is not a defect in v1's container; it is what the same table does
-  on 2.0's target machine, and it is the same root cause as F313's 5.80.
+  skip syntax check"* — never fires, because the process **did** start. This is **F27**, already on
+  the family's record: the Q56 import rewrote all 56 donor verifiers to probe an interpreter *by
+  executing it* for exactly this reason (`W8-q56-import.md:186-188`), and every Q56 verifier still
+  carries the comment. What is new here is that it also defeats v1's own guard, and BCF's (F313).
+  v1 ships in Docker where `python3` is real, so this is not a defect in v1's container; it is what
+  the same table does on 2.0's target machine.
 - **JavaScript — the extension decides the parser.** The table writes the model's code to a `.js`
   temp file and runs `node --check`. On node 24.15.0, `node --check` **exits 0 on a file that
   contains ESM syntax and a syntax error**, and exits 1 on the identical bytes in a `.mjs` file:
@@ -1479,7 +1495,10 @@ validation commands a real ticket would carry:
 | `python -c "… print('PASS')"` | itself | **pass** |
 | `python -c "… assert add(2,3)==5"` | itself | fail — correct, silent, no `PASS` |
 
-The one command that works is the shape v1's own coder persona teaches (`coder.py:57`). On a host
+The one command that works is the shape v1's own QA persona teaches — `python -c "…; print('PASS')"`
+in two of its four worked examples (`qa.py:37`, `:55`), which is also the only agent given the syntax
+tool (F297). The coder's examples run `python -c` too and print the *result* rather than the word
+(`coder.py:57`), so a coder that copies its own persona fails the channel. On a host
 where `python3` is real the wrapper's output is worth quoting, because it is what
 `buildRetryDescription` (`asyncValidationService.ts:484-500`) pastes into the retry prompt under
 *"The validation failed with this error"*:
@@ -1497,6 +1516,11 @@ one of five interpreters.** A verifier's interface has to be a *process* — arg
 streams — and v1's is a string plus a language label.
 
 ### 🚨 F313 — BCF's quality number is a per-language handicap: a perfect Python file scores 5.80 and a language BCF has never heard of scores 8.00
+
+Phase 0 already measured this scorer on Python and found a valid and a broken file scoring the same
+5.80 (`prestudy/verification.md` §2.2), and item 1 built F158 on it. The question here is the one
+nobody asked: **what does the same scorer do to the other four languages, and to a fifth it has
+never heard of?**
 
 `calculate_score` (`verifier.rs:741-765`) starts every file at 5.0 and adds fixed amounts for six
 Boolean signals — syntax valid +1.5, lint passed +1.0, has tests +1.0, has a docstring +0.5, has
@@ -1524,9 +1548,12 @@ Three things are wrong at once, and they compound.
   substring poll — `verify_rust` (`:718`) calls a file syntactically valid if it contains `fn `, `struct ` or
   `impl `; `verify_generic` (`:735`) calls it valid if `content.len() > 50`.
 - **The one language with a real check is the one the check is broken for.** The checker is
-  `python3` (F311's Store alias), so `syntax_valid` is false and a lint issue is pushed for *every*
-  Python file, valid or not: 5.0 + 1.0 (lint_passed is still `true`, the issue only costs −0.2)
-  = **5.80, invariant over the content**.
+  `python3` (F311's Store alias, F27), so `syntax_valid` is false and a lint issue is pushed for
+  *every* Python file, valid or not: 5.0 + 1.0 (lint_passed is still `true`, the issue only costs
+  −0.2) = **5.80, invariant over the content**. That number is **not new** — Phase 0 executed it
+  (`prestudy/verification.md` §2.2:218-219, a valid and a broken Python file both at 5.80) and item 1
+  restated it (`:126-128`). It is reproduced here through the donor's own crate as the control for
+  the row that is new: **every other language in the table**.
 - **The extension list decides whether a file is looked at at all.** `verify_project` (`verifier.rs:74-80`) maps
   `py ts tsx js jsx rs go cpp cc cxx hpp h` and `continue`s on anything else — `.c` is **not in the
   list while `.h` is**. Measured on a directory of nine files: six scored, and `best.c`,
@@ -1817,6 +1844,154 @@ is the one thing the free structural check already measures for nothing.** Item 
 — do not gate on a linter, in either form — now has a mechanism as well as a rate, in a second
 language, at the absolute level rather than the delta.
 
+### 🚨 F321 — the ladder in three more languages: 351 more real cells, and on the arms where the agent was left alone every rung in every language is green on every failure
+
+Item 4 measured the Rust and Python halves of Q56 and skipped the other three languages because
+`instruments.q56_ladder` had no rungs for them (F307). Item 5 wrote the rungs — `node --check` and
+the fixture's own test for node, `tsc --noEmit` (plain and `--strict`) plus the fixture's test for
+TypeScript, `bash -n` for shell — and re-ran the ladder, which is resumable and therefore measured
+only the 351 new cells. **The Q56 population is now 728 preserved agent workdirs in five languages,
+160 of them real failures**, ground truth re-run rather than read.
+
+Pooled over all 728 cells:
+
+| language | cells | FAIL | rung | red on FAIL | red on PASS | median |
+|---|---:|---:|---|---|---|---:|
+| node | 130 | 14 | `node --check` | 0 / 14 | 0 / 116 | 48 ms |
+| | | | the fixture's own test | 1 / 14 | 0 / 116 | 53 ms |
+| typescript | 117 | 11 | `tsc --noEmit` | **0 / 11** | **5 / 106** | 606 ms |
+| | | | `tsc --noEmit --strict` | **0 / 11** | **5 / 106** | 609 ms |
+| | | | the fixture's own test | 1 / 11 | 0 / 106 | 88 ms |
+| shell | 104 | 33 | `bash -n` | 1 / 33 | 0 / 71 | 36 ms |
+
+**OQ-W6-9's named unmeasured language behaves exactly like the two item 4 measured.** `tsc` is the
+build in TypeScript and it caught **none** of the eleven real failures, while going red on **five
+correct answers**. Across all five languages and 160 real failures, a type or syntax check caught
+**one** — and that one is `bash -n` on a file the harness had truncated mid-write.
+
+Then the stratification, which changes the reading and is the reason this finding is not the one it
+first appeared to be. The Q56 cells come from W8's gate campaign, which has four arms: `control` and
+`gated` leave the agent alone, while `redirect-first-edit` and `deny-first-edit` **interfere with the
+agent's first attempt to write a file**. Split on that:
+
+| stratum | cells | failures | any rung red on a failure |
+|---|---:|---:|---|
+| `control` + `gated` | 280 | 29 | **0 of 29, in all five languages** |
+| `redirect-first-edit` + `deny-first-edit` | 448 | 131 | structural 90, the repo's own tests 13, `bash -n` 1, type checks 0 |
+
+**On the 280 cells where the agent was left alone, not one deterministic rung in five languages went
+red on a single one of the 29 real failures** — while `ruff` went red on 12 of 68 correct Python
+answers, `tsc` on 4 of 44 correct TypeScript ones and `clippy` on 2 of 56 correct Rust ones. The
+ladder is not a weak instrument here. It is a **constant**, and the only thing it varies with is
+whether it is wrong.
+
+The five `tsc` false-fails have one mechanism and it is worth quoting, because it is F320's in
+another language. All five are `Q35`, whose declared return type is
+`Record<string, string | string[]>` and whose ticket asks for a repeated key to collect its values
+into an array. The fixture stub is type-clean; a correct answer assigns a `string` into the slot and
+later `.push`es to it, and gets `TS2322: Type 'string | string[]' is not assignable to type 'string'`
+and `TS2339: Property 'push' does not exist`. **The type checker is red because the work was done**,
+on the one task in the language whose ticket creates a union type — the same direction as
+`unreachable_patterns` in Rust, by a completely different route.
+
+### 🚨 F322 — the free structural check is a measurement of the task's *shape*, not of the language: 9 of 12 on repository work, 0 of 29 on clean single-function work, 90 of 131 when the harness itself blocked the edit — and 0 false positives on 609 correct trees
+
+Item 4's cheapest and best rung is *did the change touch any source file?* — 9 of 12 behavioural
+failures on the K population, no toolchain, no parser, no language table (F302, recommendation 1).
+It is therefore the rung whose generality matters most, and it was run here over every preserved
+Q56 workdir in five languages, plus re-run over K stratified by arm.
+
+| population | cells | failures | untouched trees among the failures | false positives |
+|---|---:|---:|---|---|
+| Q56, `control` + `gated` | 280 | 29 | **0** | 0 / 251 |
+| Q56, edit-interference arms | 448 | 131 | **90** (69%) | 0 / 316 |
+| K (repository bugfixes) | 54 | 12 | **9** | 0 / 42 |
+
+Pooled over Q56 that is 90 of 160, which is the number this item nearly recorded, and it would have
+been an artefact: **every one of the 90 is in an arm built to stop the agent editing.** The rung is
+measuring the interference. On the arms where nothing was interfered with, a single-function task
+either got written or the cell did not exist — and 29 real failures produced 29 modified files.
+
+The K population says the opposite, and that is the interesting half. Nine of its twelve failures
+are untouched trees — item 4's number, reproduced here with item 4's exact rule (CRLF-normalised,
+`tests/` excluded) so the two populations are comparable — and they are **not** concentrated where a
+sceptic would look:
+
+| K arm | failures | untouched |
+|---|---:|---:|
+| `k-champ`, the champion unconstrained | 1 | **0** |
+| `k-27b`, both of them timeouts (W1 F91) | 2 | 2 |
+| `w11-b12`, budget 12, deliberately tight | 3 | 2 |
+| `w11-b20` | 1 | 1 |
+| **`w11-b40`, the most generous arm W11 item 5 ran** | 5 | **4** |
+
+Four of the nine are at the budget where F294 found the model stopping 25 rounds *short* of
+exhausting it, so this is not starvation. On repository work the empty tree is a real and common
+failure, and the reason is the one F302 named: on a 16–20 file repository an agent can spend its
+whole budget navigating and never edit; on a one-file exercise it cannot.
+
+**The ruling that survives is item 4's, with its scope stated: the structural check goes first
+because it is free and because it has now produced zero false positives on 609 correct trees in five
+languages — but its yield is a property of the task shape.** Expect it to fire on repository work
+(the shape 2.0 targets) and to stay silent on single-file work, and never quote the pooled rate,
+because the pooled rate is a fact about which arms were in the sample.
+
+### F323 — an instrument that is red on the unfixed tree is not an instrument, and this item shipped one for an hour
+
+The first `tsc` run over the TypeScript cells returned **red on 10 of 10 failures and 80 of 80
+passes**. A rate like that is either a perfect instrument or a broken one, and the control that
+settles it costs nothing: run the rung on the **pristine fixture** and on the **reference solution**,
+where truth is by construction. Both were red, with `TS2307: Cannot find module 'node:assert/strict'`
+— the fixtures import node's own types and the probe had not pointed `tsc` at `@types/node`. With
+`--typeRoots` added, the fixture and the refsol are green for all nine TypeScript tasks and the
+population numbers become F321's.
+
+The same pass is worth running for what else it says. Over all 56 Q56 tasks, fixture and reference
+solution:
+
+| rung | red on the unfixed fixture | red on the reference solution |
+|---|---|---|
+| `tsc` / `tsc --strict` | 0 / 9 | 0 / 9 |
+| `cargo check`, `py_compile`, `node --check`, `bash -n`, `mypy` | 0 | 0 |
+| `cargo clippy -D warnings` | 2 / 14 | 0 / 14 |
+| `ruff` | 3 / 15 | **1 / 15** |
+| the fixture's own test | **13 / 56** (6 rust, 3 python, 2 node, 2 ts) | **0 / 56** |
+
+Two readings. The linter is red on a **reference solution**, which is the whole argument against
+gating on it in one cell. And the tests a repository already ships are red-before and green-after in
+**13 of the 56 tasks** — by construction they discriminate on nearly a quarter of this corpus — yet
+on the real cells they caught only 13 of 160 failures (F321). The gap is the point: a shipped test
+encodes the part of the requirement someone thought to write down, and the failures are in the part
+nobody did. That is item 4's recommendation 3 with a mechanism, and it is the same asymmetry F305
+found in generated tests.
+
+This is not only a note about the probe. **It is the requirement.** 2.0 will run rungs inside
+repositories it has never configured — that is what item 5's whole profile machinery is for — and a
+misconfigured rung is red on everything, which is indistinguishable at the call site from a
+repository full of defects. So: **every rung is calibrated against the pre-change tree, and a rung
+that is red before the change contributes `Uncertain`, never a veto.** The pre-change tree is
+already available at Localize time (F318's exhaustiveness detector wants the same run), so the
+calibration is free. F300 found the same thing from the other end — `ruff` and `mypy --strict` red
+on the K fixtures themselves — and [[verify-claims-against-code-not-docs]] 23 recorded it as a method
+rule after item 4; here it is a product rule.
+
+### F324 — F220 again, in a third language, in this item's own run: `taskkill /T` is not a job object
+
+While the ladder was running, a `bash solution.sh` from a Q56 **shell** cell was found alive with 202
+seconds of CPU and **its parent gone** — a spinning agent solution, orphaned by the verifier's
+timeout, burning a core after the cell it belonged to had been recorded. `common.kill_tree` does the
+right thing on Windows (`taskkill /PID <pid> /T /F`), and `/T` walks the *live* parent-child links:
+the intermediate `bash` had already exited, so the grandchild was reparented and the sweep missed it.
+
+That is F220's mechanism exactly, now reproduced in a third language and in a harness that already
+carries the fix. Item 4 hit it in Python (a `pytest` orphan holding a pipe for 22 minutes); item 2
+measured it in the donor's own pipeline. The conclusion is the one W3 item 7 already specified and
+this is the third piece of evidence for it: **process-tree killing by parent links is not a
+containment primitive.** On Windows the containment primitive is a **job object** with
+`JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`; on Linux it is a process group or a cgroup. Anything 2.0
+executes on behalf of a model is created inside one, and the kill closes the job rather than walking
+a tree that has already been rearranged.
+
 ## Options compared
 
 The scoping question is really one design question — **how does 2.0 learn what to run?** — and the
@@ -1832,14 +2007,14 @@ three donors between them have already tried four of the five answers.
 
 And within a chosen language, the per-rung cost of being general, measured:
 
-| rung | what generalises | what does not | cost of the part that does not |
+| rung | what generalises | what does not | on 728 real attempts in five languages |
 |---|---|---|---|
-| structural check | the whole thing, if the site list comes from Plan | "what is a source file" as an extension list | BCF: `.c` dropped, `.h` kept, unknown language averaged to 5.0 (F313) |
-| syntax check | nothing — it is a different binary per language | the binary name, the file extension, the module system | v1: 0 of 6 languages discriminate (F311) |
-| type check | the verdict, exactly | whether the subject code has a catch-all arm | 1/6 vs 4/6, identical in three languages (F318) |
-| linter | nothing worth having | — | green on the empty answer, red on the correct one (F320) |
-| the repo's own suite | the *role* (regression guard, 1/6) | the runner, and the runner is not the language | jest vs vitest from one `npm test` (F316) |
-| **acceptance test** | **the whole thing** | one command string, which the task already carries | 5/6 in every cell of the grid (F318) |
+| **structural check** | **the whole thing** — no toolchain, no parser, no table | "what is a source file", as an extension list | 0 false positives on 609 correct trees; 9/12 on repository work, 0/29 on clean single-function work (F322) |
+| syntax check | nothing — a different binary, extension and module system per language | all of it | 1 of 160 failures, and that one is `bash -n` on a truncated file (F321); v1's table discriminates in 0 of 6 languages (F311) |
+| type check | the verdict, exactly | whether the subject code has a catch-all arm | **0 of 160**, in all five; 1/6 vs 4/6 on the constructed grid depending on style (F318, F321) |
+| linter | nothing worth having | — | red on 12 of 68 correct python and 4 of 44 correct typescript answers, 0 of 29 wrong ones on clean arms (F321); green on the empty answer and red on the correct one in rust (F320) |
+| the repo's own suite | the *role* — regression guard | the runner, and the runner is not the language | 13 of 127, no false positives — and 0 on the clean arms (F321); jest vs vitest from one `npm test` (F316) |
+| **acceptance test** | **the whole thing** | one command string, which the task already carries | it is the ground truth here; 5/6 in every cell of the constructed grid (F318) |
 
 ## Recommendation
 
@@ -1878,20 +2053,26 @@ this machine a Node project passes the inherited gate with a red suite and nothi
 rung that did not run must appear in the outcome and on the console, with the reason. This is item
 8's first requirement and it arrives here from the language direction.
 
-**6 — For the structural check, prefer the site list; when there is none, never skip a file because
-its extension is unknown.** Item 4's cheapest and best rung needs a definition of "source file".
-BCF's answer is a twelve-extension allow-list that drops `.c` while keeping `.h` and scores a
-project it cannot read as exactly 5.0 (F313). An allow-list is wrong in the direction that hides
-work; the fallback rule is *any tracked file that is not in a known generated/vendored set*, and the
-real answer is the Plan's site list, which is language-free.
+**6 — Run the structural check first everywhere, quote its yield nowhere.** It is the one rung that
+needed no rungs written for it: the same walk ran unchanged over five languages and produced **zero
+false positives on 609 correct trees** (F322). Its *yield*, though, is a property of the task shape
+and of the arm — 9 of 12 on repository work, 0 of 29 on clean single-function work, 90 of 131 when
+the harness itself blocked the edit — so it goes first because it is free and cannot be wrong, not
+because of a rate. Two details it needs: a definition of "source file" that is a **deny-list**
+(BCF's twelve-extension allow-list drops `.c` while keeping `.h` and scores a project it cannot read
+as exactly 5.0, F313), and CRLF normalisation, without which a file rewritten with different line
+endings reads as work (F310, and item 4's `residue.py:37` already does it). The real answer is still
+the Plan's site list, which is language-free.
 
 **7 — Do not require exhaustiveness; detect it, and take the site list for free where it exists.**
 Under the `exhaustive` style the compiler catches the whole dominant failure class — nothing done,
 or part of it done — in all three languages, and its error list *is* the coverage fraction (F318).
-Under the style both real corpora actually use, it catches none of it (F319). The detector is
-cheap and Localize needs it anyway: **run the type check on the unfixed tree**. Red, with file
-names, means the compiler will do the coverage check; green means the site list has to come from
-the Plan (OQ-W6-8).
+Under the style both real corpora actually use, it catches none of it (F319), which is what 728 real
+attempts show from the other side: **a type check caught 0 of 160 real failures in five languages**
+(F321). The detector is cheap and Localize needs it anyway: **run the type check on the unfixed
+tree**. Red with file names means the compiler will do the coverage check; green means the site list
+has to come from the Plan (OQ-W6-8); and red *without* the change having happened is F323's
+calibration signal, not a verdict.
 
 **8 — The gate is ordered and short-circuits, because Rust makes that mandatory.** In Rust a type
 error takes the test suite down with it — the repo suite goes from 1/6 to 5/6 red in the
@@ -1915,7 +2096,9 @@ the first that fired, and mark everything behind it `Uncertain` rather than gree
   perfect critique. Item 1 voided the numbers; this voids the shape.
 - **"Add a linter to the gate for languages where it is idiomatic."** Rust is the case for it and
   Rust is the counter-example: `-D warnings` is green on the answer that did nothing and red on the
-  correct one, with an error count equal to the work completed (F320).
+  correct one, with an error count equal to the work completed (F320). On the real population the
+  same instruments cost 12 of 68 correct Python answers and 4 of 44 correct TypeScript ones while
+  catching nothing on the clean arms (F321).
 - **"Require the subject repository to be written with exhaustive matches."** Zero sites in either
   corpus (F319), and 2.0 does not own the code it is asked to change. Detect, do not demand.
 - **"Treat Windows as the problem and require WSL."** Tempting after F317, and it moves the failure
@@ -1946,10 +2129,11 @@ on. Show them on the diff; never let them stop a unit.
 
 | # | Question | Waiting on |
 |---|---|---|
-| OQ-W6-9 | Does the picture change in a language whose type checker is the build? | **answered here**: no — the variable is the subject code's catch-all arm, not the language, and the split is 1/6 vs 4/6 identically in Python, TypeScript and Rust (F318) |
+| OQ-W6-9 | Does the picture change in a language whose type checker is the build? | **answered twice here**: on the constructed grid the variable is the subject code's catch-all arm, not the language — 1/6 vs 4/6 identically in Python, TypeScript and Rust (F318); and on **728 real attempts in five languages** a type check caught **0 of 160** failures while false-failing 5 correct TypeScript answers (F321) |
 | OQ-W6-8 | Does the coverage fraction bind as a veto, or only as a report? | still open, with a second source named: where the subject code is exhaustive the *compiler* emits the site list (F318), and neither corpus is (F319), so Plan still has to |
 | OQ-W6-11 | Where does the toolchain profile live — a table shipped with 2.0, a file in the repository, or both — and who writes it for a repository 2.0 has never seen? | item 6 (isolation) and W12 (repo strategy) |
-| OQ-W6-12 | Does 2.0 ship a PATHEXT-aware spawn for Windows, or declare Node work out of scope until WSL? `Command::new("npm")` is `program not found` today (F317) | W7 (sandboxing) — it is the same seam as the job object |
+| OQ-W6-12 | Does 2.0 ship a PATHEXT-aware spawn for Windows, or declare Node work out of scope until WSL? `Command::new("npm")` is `program not found` today (F317) | W7 (sandboxing) — it is the same seam as the job object, which F324 says is not `taskkill /T` |
+| OQ-W6-13 | The Q56 clean arms hold 29 real failures and no rung fires on any of them (F321). What *are* they? K's taxonomy (F302) does not transfer — these are one-file tasks where the file was always written | item 7, and a candidate for the first thing an LLM judge is asked to do |
 | OQ-W6-7 | *(from item 2)* Rules-only router, or rules plus a recorded model reading? | still open — nothing here bears on it |
 
 ## Confidence: high on the donor facts, high on the experiment's internal validity, medium on how far it travels
@@ -1961,14 +2145,21 @@ subprocesses. Where something could not be run it is marked — the Go arm of BC
 PHP anywhere, because neither toolchain is installed here.
 
 The controlled experiment is strong internally: 42 trees, ground truth by construction, and the
-three languages agree cell for cell within a style, which is not a subtle statistical claim. Two
-limits on how far it travels. The **defect set is chosen rather than sampled** — six candidate
-answers around one ticket — so the 1/6 and 4/6 are ratios over a constructed population, and the
-claim that the missing-work class dominates in reality comes from item 4's 431 real attempts, not
-from here. And the **task shape is one shape**: a new case in an existing vocabulary. A task that
-adds a function, changes a signature, or touches configuration would exercise a type checker
-differently, and the honest expectation is that a signature change is the case where a type checker
-earns its place in any style — untested here.
+three languages agree cell for cell within a style, which is not a subtle statistical claim. Its
+**defect set is chosen rather than sampled** — six candidate answers around one ticket — so the 1/6
+and 4/6 are ratios over a constructed population. That is why the real half matters: **728 preserved
+agent workdirs in five languages, 160 real failures, ground truth re-run rather than read**, and it
+agrees (F321). Between them the two halves are the strongest generality evidence this workstream
+has.
+
+Two limits remain, and one of them nearly became a finding. The **Q56 population is arm-heavy**: 448
+of its 728 cells come from arms that deny or redirect the agent's first edit, and pooling them
+produced a structural-check rate of 90/160 that stratification cut to 0/29 on the clean arms (F322).
+Every rate in this item is therefore reported per stratum, and the pooled numbers are labelled as
+pooled. ([[verify-claims-against-code-not-docs]] 26 is exactly this, and it fired again.) And the
+**task shape is one shape in each population** — a new case in an existing vocabulary for the
+constructed grid, one-function exercises for Q56. A task that changes a signature is the case where
+a type checker should earn its place in any style, and it is untested here.
 
 Two narrower caveats. The `node --check` result (F311) is one node version on one platform and
 reads like a bug rather than a design; it was not checked against another version, and the finding

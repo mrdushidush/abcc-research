@@ -334,8 +334,161 @@ def make_q56_pytest(task_id):
     return inst
 
 
+
+# ── node / typescript / shell — added by W6 item 5 (language generality) ─────
+#
+# Item 4 ran the rust and python halves of Q56 and left 351 preserved cells in
+# the other three languages unmeasured, deliberately: `q56_ladder` returned an
+# empty rung list and `ladder.py` skipped the cell. These are those rungs. The
+# shape is item 4's unchanged — every rung answers green/red/error plus a wall
+# clock, and nothing here reads the verifier's residue (`ladder.py` deletes it
+# before any rung runs).
+#
+# What exists per language is itself a finding. Node has a syntax check and the
+# fixture's own test and no type checker. TypeScript has a type checker and no
+# separate syntax rung worth running (tsc is the parse). Shell has `bash -n` and
+# nothing else — `shellcheck` is not installed on this host, and a shell fixture
+# ships no test file at all.
+
+TSC = C.REPO / "research/spikes/w6-language/node_modules/typescript/bin/tsc"
+
+
+def _sources(work, suffix):
+    return sorted(p for p in pathlib.Path(work).rglob(f"*{suffix}")
+                  if "node_modules" not in p.parts and not p.name.startswith("hidden_gate"))
+
+
+def inst_node_syntax(work):
+    """`node --check` over the solution files — v1's javascript rung, on `.mjs`.
+
+    The extension matters: the same content in a `.js` file is accepted by node
+    24 when it contains ESM syntax and a syntax error (W6 item 5, F311). Q56's
+    node fixtures are `.mjs`, so this is the rung working as intended.
+    """
+    files = [f for f in _sources(work, ".mjs") if not f.name.startswith("test_")]
+    if not files:
+        return {"verdict": "error", "ms": 0, "detail": "no .mjs files", "n": 0}
+    worst = {"verdict": "green", "ms": 0, "detail": "", "n": 0}
+    for f in files:
+        code, out, ms = C.run(["node", "--check", str(f)], work, timeout=60)
+        worst["ms"] += ms
+        if code != 0:
+            worst["verdict"] = "red"
+            worst["n"] += 1
+            worst["detail"] = worst["detail"] or " ".join(out.split())[:200]
+    return worst
+
+
+def inst_bash_syntax(work):
+    """`bash -n` — the shell equivalent of `py_compile`, and the only free rung."""
+    files = _sources(work, ".sh")
+    if not files:
+        return {"verdict": "error", "ms": 0, "detail": "no .sh files", "n": 0}
+    worst = {"verdict": "green", "ms": 0, "detail": "", "n": 0}
+    for f in files:
+        code, out, ms = C.run([C.BASH, "-n", str(f)], work, timeout=60)
+        worst["ms"] += ms
+        if code != 0:
+            worst["verdict"] = "red"
+            worst["n"] += 1
+            worst["detail"] = worst["detail"] or " ".join(out.split())[:200]
+    return worst
+
+
+def _tsc(work, extra):
+    """`tsc --noEmit` over the tree, with flags rather than a tsconfig.
+
+    The fixtures ship no tsconfig, which is itself the point: a project that has
+    never been type-checked has no config file to detect, and Claudette's
+    `detect_diag_tool` looks for exactly that file.
+    """
+    if not TSC.is_file():
+        return {"verdict": "error", "ms": 0, "detail": "tsc not installed", "n": 0}
+    files = [str(f) for f in _sources(work, ".ts")]
+    if not files:
+        return {"verdict": "error", "ms": 0, "detail": "no .ts files", "n": 0}
+    # `--typeRoots` is not optional: the fixtures import `node:assert/strict`,
+    # and without the spike's @types/node every tree is red with TS2307 before
+    # anything about the change is looked at. (Caught by running the rung on the
+    # pristine fixture AND the refsol first - both red, which is what a broken
+    # instrument looks like.)
+    types = C.REPO / "research/spikes/w6-language/node_modules/@types"
+    code, out, ms = C.run(
+        ["node", str(TSC), "--noEmit", "--target", "es2022",
+         "--module", "nodenext", "--moduleResolution", "nodenext",
+         "--allowImportingTsExtensions", "--skipLibCheck",
+         "--typeRoots", str(types), "--types", "node"] + extra + files,
+        work, timeout=180,
+    )
+    if code is None:
+        return {"verdict": "error", "ms": ms, "detail": "<timeout>", "n": 0}
+    errs = [l for l in out.splitlines() if ": error TS" in l]
+    return {
+        "verdict": "green" if code == 0 else "red",
+        "ms": ms,
+        "detail": (errs[0] if errs else out.strip()[-200:])[:200],
+        "n": len(errs),
+    }
+
+
+def inst_tsc(work):
+    """`tsc --noEmit`: the type check IS the build in this language.
+
+    Flags rather than a tsconfig, because the fixtures do not ship one - which is
+    itself the point: a project that has never been type-checked has no config to
+    detect, and Claudette's `detect_diag_tool` looks for exactly that file.
+    """
+    return _tsc(work, [])
+
+
+def inst_tsc_strict(work):
+    """`--strict`, which is what a TypeScript project usually turns on.
+
+    Item 4 measured plain `mypy` against `mypy --strict` and found the second red
+    on every tree it saw; this is the same comparison in the language where the
+    strict flag is the community default.
+    """
+    return _tsc(work, ["--strict"])
+
+
+def make_node_test(task_id, suffix):
+    """The test file the fixture already shipped — never the verifier's."""
+    wanted = [t for t in fixture_tests_any(task_id) if t.endswith(suffix)]
+
+    def inst(work):
+        present = [w for w in wanted if (pathlib.Path(work) / w).is_file()]
+        if not present:
+            return {"verdict": "error", "ms": 0,
+                    "detail": "the fixture ships no test file", "n": 0}
+        worst = {"verdict": "green", "ms": 0, "detail": "", "n": 0, "files": present}
+        for rel in present:
+            code, out, ms = C.run(["node", rel], work, timeout=120)
+            worst["ms"] += ms
+            if code is None:
+                return {"verdict": "error", "ms": worst["ms"], "detail": "<timeout>",
+                        "n": 0, "files": present}
+            if code != 0:
+                worst["verdict"] = "red"
+                worst["n"] += 1
+                worst["detail"] = worst["detail"] or " ".join(out.split())[-200:]
+        return worst
+
+    return inst
+
+
+def fixture_tests_any(task_id):
+    """`fixture_tests` without the python-only naming rule."""
+    fx = C.Q56_TASKS / task_id / "fixture"
+    return [p.relative_to(fx).as_posix() for p in sorted(fx.rglob("*"))
+            if p.is_file() and p.name.startswith("test_")]
+
+
 def q56_ladder(task_id):
-    """The rungs that exist for this task's language."""
+    """The rungs that exist for this task's language.
+
+    Five languages, and the rung list is not the same length twice - which is
+    W6 item 5's answer in one function.
+    """
     lang = q56_lang(task_id)
     if lang == "rust":
         return lang, RS_LADDER
@@ -345,5 +498,20 @@ def q56_ladder(task_id):
             ("ruff", inst_ruff),
             ("mypy", inst_mypy),
             ("pytest_fixture", make_q56_pytest(task_id)),
+        ]
+    if lang == "node":
+        return lang, [
+            ("node_syntax", inst_node_syntax),
+            ("node_fixture_test", make_node_test(task_id, ".mjs")),
+        ]
+    if lang == "typescript":
+        return lang, [
+            ("tsc", inst_tsc),
+            ("tsc_strict", inst_tsc_strict),
+            ("node_fixture_test", make_node_test(task_id, ".ts")),
+        ]
+    if lang == "shell":
+        return lang, [
+            ("bash_syntax", inst_bash_syntax),
         ]
     return lang, []

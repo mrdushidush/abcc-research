@@ -7,8 +7,8 @@ Probes run 2026-08-23 for **W6 item 5 (language generality)**. Findings **F311�
 the pipeline is language-specific and what generalizes? This is a real scoping question."* Plus
 **OQ-W6-9** from item 4: *does the picture change in a language whose type checker is the build?*
 
-Four probes. Two run the donors' own code, one runs the donors' own rules over measured streams,
-and one is a controlled experiment where the language is the only variable.
+Seven probes. Three run the donors' own code, one is a controlled experiment where the language is
+the only variable, and three measure real agent output in five languages.
 
 | probe | what it runs | output |
 |---|---|---|
@@ -16,6 +16,10 @@ and one is a controlled experiment where the language is the only variable.
 | `v1_channel.py` | v1's `ValidateSyntaxTool._run` and the `/run-validation` dispatch, **ported verbatim** and executed | `v1-channel-results.json` |
 | `claudette-probe/` | Claudette's detector, build step, count parsers and `classify_tests`, **vendored verbatim** with line citations, driven by real subprocess results | stdout JSON, quoted in the finding |
 | `mutants.py` | one ticket, seven candidate answers, **three languages × two coding styles**, five instruments | `mutants-results.json` |
+| `../w6-headroom/ladder.py q56` | item 4's ladder, with the node / typescript / shell rungs this item added to `instruments.py`, over the **351 real cells item 4 skipped** | `../w6-headroom/results-q56.json` (now 728 cells) |
+| `q56_langs.py` | F307's table, re-cut over all five languages | prints; reads the file above |
+| `structural.py` | item 4's free structural rung over all 728 Q56 cells (`--k` for the K population, stratified by arm) | `structural-results.json`, `structural-k-results.json` |
+| `baseline.py` | every rung over the pristine fixture **and** the reference solution — the control that catches a rung which is red before the change (F323) | `baseline-results.json` |
 
 ## Running them
 
@@ -28,6 +32,11 @@ python v1_channel.py                          # ~30 s
 (cd bcf-probe && cargo run --release)         # first build ~70 s: it compiles the donor crate
                                               # BCF prints its own progress lines before the JSON;
                                               # keep the last stdout line
+python baseline.py                            # ~3 min, mostly cargo
+(cd ../w6-headroom && python ladder.py q56)   # resumable: only measures cells not already in
+                                              # results-q56.json. ~20 min for the 351 new ones
+python q56_langs.py                           # prints the five-language table
+python structural.py ; python structural.py --k
 ```
 
 `bcf-probe` depends on `../../../../../battle-command-forge` at `d6c1601` being checked out beside
@@ -78,3 +87,12 @@ languages.
   host (F311), and its validation channel scores **1 of 13** realistic commands a pass (F312).
 - Claudette's `npm` arm cannot spawn `npm` from a Rust process on Windows at all — `program not
   found`, in all three tree states (F317).
+- On **728 real agent attempts in five languages**, a type or syntax check caught **1 of 160**
+  failures, and on the 280 cells from the arms that leave the agent alone **nothing caught anything**
+  (F321).
+- The free structural check has **0 false positives on 609 correct trees**, and a yield that is a
+  property of the task's shape rather than of the language (F322).
+
+⚠ **Every rate here is reported per stratum.** 448 of the 728 Q56 cells come from arms that deny or
+redirect the agent's first edit; pooling them gives the structural check a 90/160 that stratification
+cuts to 0/29 on the clean arms.

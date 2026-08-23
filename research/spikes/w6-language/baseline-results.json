@@ -1,0 +1,2943 @@
+[
+ {
+  "task": "Q01",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 182,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 232,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "red",
+    "ms": 463,
+    "detail": "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 1
+   }
+  }
+ },
+ {
+  "task": "Q01",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 184,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 242,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 463,
+    "detail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q02",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 177,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 222,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "red",
+    "ms": 413,
+    "detail": "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 1
+   }
+  }
+ },
+ {
+  "task": "Q02",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 182,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 231,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 417,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q03",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 175,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 226,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 468,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q03",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 183,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 234,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 476,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q04",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 185,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "red",
+    "ms": 216,
+    "detail": "error: this `if` statement can be collapsed",
+    "n": 2
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 483,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q04",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 200,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 235,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 538,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q05",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 183,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 234,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 365,
+    "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q05",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 206,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 237,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 373,
+    "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q06",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 179,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 227,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "red",
+    "ms": 434,
+    "detail": "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 1
+   }
+  }
+ },
+ {
+  "task": "Q06",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 194,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 240,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 462,
+    "detail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q07",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 190,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 236,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 566,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q07",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 198,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 236,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 635,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q08",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 209,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "red",
+    "ms": 235,
+    "detail": "error: manual implementation of an assign operation",
+    "n": 2
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 494,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q08",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 204,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 263,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 491,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q09",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 188,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 229,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "red",
+    "ms": 435,
+    "detail": "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 1
+   }
+  }
+ },
+ {
+  "task": "Q09",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 191,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 241,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 491,
+    "detail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q10",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 182,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 224,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "red",
+    "ms": 412,
+    "detail": "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 1
+   }
+  }
+ },
+ {
+  "task": "Q10",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 196,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 238,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 491,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q11",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 189,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 240,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 375,
+    "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q11",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 196,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 247,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 368,
+    "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q12",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 186,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 227,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 431,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q12",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 183,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 236,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 532,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q13",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 85,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 78,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 995,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 714,
+    "detail": "1 passed in 0.26s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q13",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 82,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 987,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 640,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q14",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 83,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 994,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 639,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q14",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 75,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 993,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 646,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q15",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 92,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "red",
+    "ms": 74,
+    "detail": "BLE001; S110",
+    "n": 2,
+    "hits": [
+     "solution.py::BLE001",
+     "solution.py::S110"
+    ]
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 984,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 638,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q15",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 86,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "red",
+    "ms": 74,
+    "detail": "BLE001",
+    "n": 1,
+    "hits": [
+     "solution.py::BLE001"
+    ]
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 977,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 647,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q16",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 81,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 74,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 977,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 633,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q16",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 92,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 74,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 976,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 637,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q17",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 83,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 972,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 641,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q17",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 992,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 641,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q18",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 81,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "red",
+    "ms": 78,
+    "detail": "B006",
+    "n": 1,
+    "hits": [
+     "solution.py::B006"
+    ]
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 987,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 644,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q18",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 90,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 979,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 641,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q19",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 91,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 72,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 975,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 643,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q19",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 91,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 74,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 985,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 641,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q20",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 72,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 978,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 667,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q20",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 86,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 976,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 646,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q21",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 85,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 74,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 984,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 640,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q21",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 90,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 970,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 634,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q22",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 83,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 74,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 1006,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 644,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q22",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 89,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 74,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 1058,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 641,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q23",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 91,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "red",
+    "ms": 73,
+    "detail": "PERF402",
+    "n": 1,
+    "hits": [
+     "solution.py::PERF402"
+    ]
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 987,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 638,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q23",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 72,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 974,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 644,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q24",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 85,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 72,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 993,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "red",
+    "ms": 685,
+    "detail": "1 failed in 0.25s",
+    "n": 1,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q24",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 93,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 75,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 973,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 636,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q25",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 988,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 647,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q25",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 85,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 1030,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 638,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q26",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 50,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 54,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q26",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 46,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 54,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q27",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 46,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 52,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q27",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 49,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 51,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q28",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 49,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 51,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q28",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 46,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 63,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q29",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 48,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 52,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q29",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 47,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 57,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q30",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 50,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 54,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q30",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 49,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 59,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q31",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 45,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "red",
+    "ms": 56,
+    "detail": "nternal/modules/run_main:101:5) { generatedMessage: true, code: 'ERR_ASSERTION', actual: {}, expected: { odd: [ 1, 3 ], even: [ 2, 4 ] }, operator: 'deepStrictEqual', diff: 'simple' } Node.js v24.15.0",
+    "n": 1,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q31",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 49,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 53,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q32",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 48,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 51,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q32",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 48,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 52,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q33",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 45,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 51,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q33",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 48,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 55,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q34",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 94,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 54,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q34",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 100,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 51,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q35",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 601,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 593,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 91,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q35",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 609,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 638,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 85,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q36",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 602,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 610,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 95,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q36",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 615,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 609,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 104,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q37",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 610,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 593,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 102,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q37",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 613,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 602,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 87,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q38",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 608,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 598,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 88,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q38",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 602,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 602,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 85,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q39",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 595,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 587,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q39",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 600,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 597,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q40",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 598,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 609,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "red",
+    "ms": 94,
+    "detail": "yncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) { generatedMessage: true, code: 'ERR_ASSERTION', actual: 0, expected: 1, operator: 'strictEqual', diff: 'simple' } Node.js v24.15.0",
+    "n": 1,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q40",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 619,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 621,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 89,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q41",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 614,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 588,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 85,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q41",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 611,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 593,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 90,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q42",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 583,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 583,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q42",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 592,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 598,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 95,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q43",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 40,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q43",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q44",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q44",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q45",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q45",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q46",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q46",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 39,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q47",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q47",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 36,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q48",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 31,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q48",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 38,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q49",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 61,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q49",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 63,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q50",
+  "lang": "shell",
+  "tree": "fixture",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 32,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q50",
+  "lang": "shell",
+  "tree": "refsol",
+  "instruments": {
+   "bash_syntax": {
+    "verdict": "green",
+    "ms": 36,
+    "detail": "",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q51",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 90,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 72,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 986,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "red",
+    "ms": 692,
+    "detail": "2 failed in 0.26s",
+    "n": 1,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q51",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 86,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 983,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 648,
+    "detail": "2 passed in 0.22s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q52",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 185,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 234,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 365,
+    "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q52",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 196,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 242,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 362,
+    "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ },
+ {
+  "task": "Q53",
+  "lang": "node",
+  "tree": "fixture",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 55,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "red",
+    "ms": 50,
+    "detail": "ader (node:internal/modules/run_main:101:5) { generatedMessage: true, code: 'ERR_ASSERTION', actual: [], expected: [ [ 'a', 'b', 'c' ] ], operator: 'deepStrictEqual', diff: 'simple' } Node.js v24.15.0",
+    "n": 1,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q53",
+  "lang": "node",
+  "tree": "refsol",
+  "instruments": {
+   "node_syntax": {
+    "verdict": "green",
+    "ms": 56,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 52,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.mjs"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q54",
+  "lang": "python",
+  "tree": "fixture",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 83,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 73,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 984,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "red",
+    "ms": 705,
+    "detail": "1 failed in 0.26s",
+    "n": 1,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q54",
+  "lang": "python",
+  "tree": "refsol",
+  "instruments": {
+   "syntax": {
+    "verdict": "green",
+    "ms": 84,
+    "detail": "",
+    "n": 0
+   },
+   "ruff": {
+    "verdict": "green",
+    "ms": 70,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "mypy": {
+    "verdict": "green",
+    "ms": 1009,
+    "detail": "",
+    "n": 0,
+    "hits": []
+   },
+   "pytest_fixture": {
+    "verdict": "green",
+    "ms": 641,
+    "detail": "1 passed in 0.21s",
+    "n": 0,
+    "files": [
+     "test_basic.py"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q55",
+  "lang": "typescript",
+  "tree": "fixture",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 597,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 607,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "red",
+    "ms": 87,
+    "detail": "WithESMLoader (node:internal/modules/run_main:101:5) { generatedMessage: true, code: 'ERR_ASSERTION', actual: [], expected: [ [ 1, 4 ] ], operator: 'deepStrictEqual', diff: 'simple' } Node.js v24.15.0",
+    "n": 1,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q55",
+  "lang": "typescript",
+  "tree": "refsol",
+  "instruments": {
+   "tsc": {
+    "verdict": "green",
+    "ms": 617,
+    "detail": "",
+    "n": 0
+   },
+   "tsc_strict": {
+    "verdict": "green",
+    "ms": 606,
+    "detail": "",
+    "n": 0
+   },
+   "node_fixture_test": {
+    "verdict": "green",
+    "ms": 103,
+    "detail": "",
+    "n": 0,
+    "files": [
+     "test_basic.ts"
+    ]
+   }
+  }
+ },
+ {
+  "task": "Q56",
+  "lang": "rust",
+  "tree": "fixture",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 179,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 224,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "red",
+    "ms": 423,
+    "detail": "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 1
+   }
+  }
+ },
+ {
+  "task": "Q56",
+  "lang": "rust",
+  "tree": "refsol",
+  "instruments": {
+   "cargo_check": {
+    "verdict": "green",
+    "ms": 193,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_clippy": {
+    "verdict": "green",
+    "ms": 233,
+    "detail": "",
+    "n": 0
+   },
+   "cargo_test": {
+    "verdict": "green",
+    "ms": 454,
+    "detail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "n": 0
+   }
+  }
+ }
+]
