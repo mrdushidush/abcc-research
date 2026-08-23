@@ -1,0 +1,12 @@
+[package]
+name = "claudette-probe"
+version = "0.1.0"
+edition = "2021"
+
+# No path dependency: the pieces under test are private (`pub(crate)`) in
+# claudette, so the detector, the build step, the count parsers and the
+# classifier are vendored verbatim in src/main.rs with their source lines cited.
+[dependencies]
+serde_json = "1"
+
+[workspace]

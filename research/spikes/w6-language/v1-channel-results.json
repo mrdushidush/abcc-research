@@ -1,0 +1,303 @@
+{
+ "validate_syntax": [
+  {
+   "language": "python",
+   "sample": "valid",
+   "verdict_first_line": "Syntax error:",
+   "verdict": "Syntax error:\nPython was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "reads_as_ok": false
+  },
+  {
+   "language": "python",
+   "sample": "invalid",
+   "verdict_first_line": "Syntax error:",
+   "verdict": "Syntax error:\nPython was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "reads_as_ok": false
+  },
+  {
+   "language": "javascript",
+   "sample": "valid",
+   "verdict_first_line": "OK",
+   "verdict": "OK",
+   "reads_as_ok": true
+  },
+  {
+   "language": "javascript",
+   "sample": "invalid",
+   "verdict_first_line": "OK",
+   "verdict": "OK",
+   "reads_as_ok": true
+  },
+  {
+   "language": "typescript",
+   "sample": "valid",
+   "verdict_first_line": "Syntax error:",
+   "verdict": "Syntax error:\n[stdin]:1\nexport function add(a: number, b: number): number {\n                     ^\n\nSyntaxError: Unexpected token ':'\n    at checkSyntax (node:internal/main/check_syntax:72:5)\n    at node:internal/main/check_syntax:45:5\n    at Socket.<anonymous> (node:internal/process/execution:205:5)\n    at Socket.emit (node:events:521:24)\n    at endReadableNT (node:internal/streams/readable:1729:",
+   "reads_as_ok": false
+  },
+  {
+   "language": "typescript",
+   "sample": "invalid",
+   "verdict_first_line": "Syntax error:",
+   "verdict": "Syntax error:\n[stdin]:1\nexport function add(a: number, b: number): number {\n                     ^\n\nSyntaxError: Unexpected token ':'\n    at checkSyntax (node:internal/main/check_syntax:72:5)\n    at node:internal/main/check_syntax:45:5\n    at Socket.<anonymous> (node:internal/process/execution:205:5)\n    at Socket.emit (node:events:521:24)\n    at endReadableNT (node:internal/streams/readable:1729:",
+   "reads_as_ok": false
+  },
+  {
+   "language": "go",
+   "sample": "valid",
+   "verdict_first_line": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "verdict": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "reads_as_ok": false
+  },
+  {
+   "language": "go",
+   "sample": "invalid",
+   "verdict_first_line": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "verdict": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "reads_as_ok": false
+  },
+  {
+   "language": "php",
+   "sample": "valid",
+   "verdict_first_line": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "verdict": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "reads_as_ok": false
+  },
+  {
+   "language": "php",
+   "sample": "invalid",
+   "verdict_first_line": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "verdict": "Validation failed: [WinError 2] The system cannot find the file specified",
+   "reads_as_ok": false
+  },
+  {
+   "language": "rust",
+   "sample": "valid",
+   "verdict_first_line": "Unsupported language: rust. Supported: python, javascript, typescript, go, php",
+   "verdict": "Unsupported language: rust. Supported: python, javascript, typescript, go, php",
+   "reads_as_ok": false
+  },
+  {
+   "language": "rust",
+   "sample": "invalid",
+   "verdict_first_line": "Unsupported language: rust. Supported: python, javascript, typescript, go, php",
+   "verdict": "Unsupported language: rust. Supported: python, javascript, typescript, go, php",
+   "reads_as_ok": false
+  }
+ ],
+ "run_validation": [
+  {
+   "success": false,
+   "output": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "exit_code": 9009,
+   "argv": [
+    "python3",
+    "-c",
+    "pytest -q"
+   ],
+   "command": "pytest -q",
+   "language": "python"
+  },
+  {
+   "success": false,
+   "output": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "exit_code": 9009,
+   "argv": [
+    "python3",
+    "-m",
+    "pytest",
+    "-q"
+   ],
+   "command": "python3 -m pytest -q",
+   "language": "python"
+  },
+  {
+   "success": false,
+   "output": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "exit_code": 9009,
+   "argv": [
+    "python3",
+    "-c",
+    "ruff check ."
+   ],
+   "command": "ruff check .",
+   "language": "python"
+  },
+  {
+   "success": false,
+   "output": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "exit_code": 9009,
+   "argv": [
+    "python3",
+    "-c",
+    "mypy ."
+   ],
+   "command": "mypy .",
+   "language": "python"
+  },
+  {
+   "success": false,
+   "output": "Unsupported language: rust",
+   "exit_code": -1,
+   "argv": null,
+   "command": "cargo test",
+   "language": "rust"
+  },
+  {
+   "success": false,
+   "output": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "exit_code": 9009,
+   "argv": [
+    "python3",
+    "-c",
+    "cargo test"
+   ],
+   "command": "cargo test",
+   "language": "python"
+  },
+  {
+   "success": false,
+   "output": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.",
+   "exit_code": 9009,
+   "argv": [
+    "python3",
+    "-c",
+    "npm test"
+   ],
+   "command": "npm test",
+   "language": "python"
+  },
+  {
+   "success": false,
+   "output": "[eval]:1\nnpm test\n    ^^^^\nExpected ';', '}' or <eof>\n\nSyntaxError: Unexpected identifier 'test'\n    at makeContextifyScript (node:internal/vm:194:14)\n    at compileScript (node:internal/process/execution:388:10)\n    at evalTypeScript (node:internal/process/execution:260:22)\n    at node:internal/main/eval_string:71:3\n\nNode.js v24.15.0",
+   "exit_code": 1,
+   "argv": [
+    "node",
+    "-e",
+    "npm test"
+   ],
+   "command": "npm test",
+   "language": "javascript"
+  },
+  {
+   "success": false,
+   "output": "\u2139 tests 0\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 10.483",
+   "exit_code": 0,
+   "argv": [
+    "node",
+    "--test"
+   ],
+   "command": "node --test",
+   "language": "javascript"
+  },
+  {
+   "success": false,
+   "output": "Validation error: [WinError 2] The system cannot find the file specified",
+   "exit_code": -1,
+   "argv": [
+    "go",
+    "test",
+    "./..."
+   ],
+   "command": "go test ./...",
+   "language": "go"
+  },
+  {
+   "success": false,
+   "output": "Validation error: [WinError 2] The system cannot find the file specified",
+   "exit_code": -1,
+   "argv": [
+    "tsx",
+    "-e",
+    "tsc --noEmit"
+   ],
+   "command": "tsc --noEmit",
+   "language": "typescript"
+  },
+  {
+   "success": true,
+   "output": "PASS",
+   "exit_code": 0,
+   "argv": [
+    "python",
+    "-c",
+    "from calc import add; assert add(2,3)==5; print('PASS')"
+   ],
+   "command": "python -c \"from calc import add; assert add(2,3)==5; print('PASS')\"",
+   "language": "python"
+  },
+  {
+   "success": false,
+   "output": "",
+   "exit_code": 0,
+   "argv": [
+    "python",
+    "-c",
+    "from calc import add; assert add(2,3)==5"
+   ],
+   "command": "python -c \"from calc import add; assert add(2,3)==5\"",
+   "language": "python"
+  }
+ ],
+ "node_check": [
+  {
+   "case": "cjs-broken",
+   "extension": ".js",
+   "exit_code": 1,
+   "reads_as_ok": false
+  },
+  {
+   "case": "esm-broken",
+   "extension": ".js",
+   "exit_code": 0,
+   "reads_as_ok": true
+  },
+  {
+   "case": "esm-broken",
+   "extension": ".mjs",
+   "exit_code": 1,
+   "reads_as_ok": false
+  },
+  {
+   "case": "esm-broken-token",
+   "extension": ".js",
+   "exit_code": 0,
+   "reads_as_ok": true
+  },
+  {
+   "case": "esm-broken-token",
+   "extension": ".mjs",
+   "exit_code": 1,
+   "reads_as_ok": false
+  },
+  {
+   "case": "esm-ok",
+   "extension": ".js",
+   "exit_code": 0,
+   "reads_as_ok": true
+  }
+ ],
+ "node_version": "v24.15.0",
+ "wrapper_on_a_working_interpreter": [
+  {
+   "command": "pytest -q",
+   "exit_code": 1,
+   "error": "NameError: name 'pytest' is not defined. Did you mean: 'bytes'?"
+  },
+  {
+   "command": "cargo test",
+   "exit_code": 1,
+   "error": "SyntaxError: invalid syntax"
+  },
+  {
+   "command": "npm test",
+   "exit_code": 1,
+   "error": "SyntaxError: invalid syntax"
+  },
+  {
+   "command": "ruff check .",
+   "exit_code": 1,
+   "error": "SyntaxError: invalid syntax"
+  }
+ ]
+}

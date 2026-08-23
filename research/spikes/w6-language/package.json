@@ -1,0 +1,9 @@
+{
+  "name": "w6-language-probe",
+  "private": true,
+  "description": "toolchain pin for the W6 item 5 cross-language mutation probe",
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/node": "^24"
+  }
+}

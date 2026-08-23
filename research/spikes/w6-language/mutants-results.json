@@ -1,0 +1,1388 @@
+[
+ {
+  "lang": "py",
+  "style": "wildcard",
+  "mutant": "m0_empty",
+  "note": "no change at all",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 85,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1086,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 82,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 723,
+   "tail": "....                                                                     [100%]\n4 passed in 0.27s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 741,
+   "tail": "unt_p=500) = Order('o1', <Status.DISPUTED: 'disputed'>, 500)\nE        +      where <Status.DISPUTED: 'disputed'> = Status.DISPUTED\n\nacceptance\\test_disputed.py:17: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_held - AssertionError: a...\nFAILED acceptance/test_disputed.py::test_disputed_is_terminal - AssertionErro...\nFAILED acceptance/test_disputed.py::test_disputed_label - AssertionError: ass...\nFAILED acceptance/test_disputed.py::test_disputed_needs_followup - AssertionE...\n4 failed in 0.28s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "wildcard",
+  "mutant": "m1_one_site",
+  "note": "1 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 78,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1081,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 75,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 674,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 723,
+   "tail": " +    where Order(ident='o1', status=<Status.DISPUTED: 'disputed'>, amount_p=500) = Order('o1', <Status.DISPUTED: 'disputed'>, 500)\nE        +      where <Status.DISPUTED: 'disputed'> = Status.DISPUTED\n\nacceptance\\test_disputed.py:17: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_terminal - AssertionErro...\nFAILED acceptance/test_disputed.py::test_disputed_label - AssertionError: ass...\nFAILED acceptance/test_disputed.py::test_disputed_needs_followup - AssertionE...\n3 failed, 1 passed in 0.28s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "wildcard",
+  "mutant": "m2_three_sites",
+  "note": "3 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 78,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1100,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 75,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 676,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 719,
+   "tail": "     AssertionError: assert False is True\nE        +  where False = needs_followup(Order(ident='o1', status=<Status.DISPUTED: 'disputed'>, amount_p=500))\nE        +    where Order(ident='o1', status=<Status.DISPUTED: 'disputed'>, amount_p=500) = Order('o1', <Status.DISPUTED: 'disputed'>, 500)\nE        +      where <Status.DISPUTED: 'disputed'> = Status.DISPUTED\n\nacceptance\\test_disputed.py:17: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_needs_followup - AssertionE...\n1 failed, 3 passed in 0.27s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "wildcard",
+  "mutant": "m3_wrong_semantics",
+  "note": "all 4 touched, is_terminal wrong",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 83,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1088,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 75,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 705,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 716,
+   "tail": "====\n__________________________ test_disputed_is_terminal __________________________\n\n    def test_disputed_is_terminal() -> None:\n>       assert is_terminal(Status.DISPUTED) is True\nE       AssertionError: assert False is True\nE        +  where False = is_terminal(<Status.DISPUTED: 'disputed'>)\nE        +    where <Status.DISPUTED: 'disputed'> = Status.DISPUTED\n\nacceptance\\test_disputed.py:9: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_terminal - AssertionErro...\n1 failed, 3 passed in 0.27s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "wildcard",
+  "mutant": "m4_wrong_type",
+  "note": "all 4 touched, bucket returns a bool",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 87,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 1080,
+   "tail": "orders.py:33: error: Incompatible return value type (got \"bool\", expected \"str\")  [return-value]\nFound 1 error in 1 file (checked 1 source file)"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 73,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 679,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 719,
+   "tail": "held\"\nE       AssertionError: assert True == 'held'\nE        +  where True = bucket(Order(ident='o1', status=<Status.DISPUTED: 'disputed'>, amount_p=500))\nE        +    where Order(ident='o1', status=<Status.DISPUTED: 'disputed'>, amount_p=500) = Order('o1', <Status.DISPUTED: 'disputed'>, 500)\nE        +      where <Status.DISPUTED: 'disputed'> = Status.DISPUTED\n\nacceptance\\test_disputed.py:5: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_held - AssertionError: a...\n1 failed, 3 passed in 0.27s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "wildcard",
+  "mutant": "m5_reference",
+  "note": "correct",
+  "correct": true,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 77,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1064,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 79,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 678,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 663,
+   "tail": "....                                                                     [100%]\n4 passed in 0.21s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "wildcard",
+  "mutant": "m6_regression",
+  "note": "correct for DISPUTED, breaks REFUNDED",
+  "correct": false,
+  "breaks_existing": true,
+  "syntax": {
+   "verdict": "green",
+   "ms": 80,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1077,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 76,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 729,
+   "tail": "_for_the_original_three() -> None:\n        assert is_terminal(Status.NEW) is False\n        assert is_terminal(Status.PAID) is False\n>       assert is_terminal(Status.REFUNDED) is True\nE       AssertionError: assert False is True\nE        +  where False = is_terminal(<Status.REFUNDED: 'refunded'>)\nE        +    where <Status.REFUNDED: 'refunded'> = Status.REFUNDED\n\ntests_repo\\test_orders.py:17: AssertionError\n=========================== short test summary info ===========================\nFAILED tests_repo/test_orders.py::test_terminality_for_the_original_three - A...\n1 failed, 3 passed in 0.28s"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 669,
+   "tail": "....                                                                     [100%]\n4 passed in 0.21s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "exhaustive",
+  "mutant": "m0_empty",
+  "note": "no change at all",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 80,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 1089,
+   "tail": "orders.py:33: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\norders.py:45: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\norders.py:57: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\norders.py:69: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\nFound 4 errors in 1 file (checked 1 source file)"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 75,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 666,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 905,
+   "tail": "AssertionError: Expected code to be unreachable, but got: <Status.DISPUTED: 'disputed'>\n\nC:\\Users\\david\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\typing.py:2586: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_held - AssertionError: E...\nFAILED acceptance/test_disputed.py::test_disputed_is_terminal - AssertionErro...\nFAILED acceptance/test_disputed.py::test_disputed_label - AssertionError: Exp...\nFAILED acceptance/test_disputed.py::test_disputed_needs_followup - AssertionE...\n4 failed in 0.46s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "exhaustive",
+  "mutant": "m1_one_site",
+  "note": "1 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 81,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 1091,
+   "tail": "orders.py:47: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\norders.py:59: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\norders.py:71: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\nFound 3 errors in 1 file (checked 1 source file)"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 77,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 681,
+   "tail": "....                                                                     [100%]\n4 passed in 0.22s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 854,
+   "tail": "ionError(f\"Expected code to be unreachable, but got: {value}\")\nE       AssertionError: Expected code to be unreachable, but got: <Status.DISPUTED: 'disputed'>\n\nC:\\Users\\david\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\typing.py:2586: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_terminal - AssertionErro...\nFAILED acceptance/test_disputed.py::test_disputed_label - AssertionError: Exp...\nFAILED acceptance/test_disputed.py::test_disputed_needs_followup - AssertionE...\n3 failed, 1 passed in 0.41s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "exhaustive",
+  "mutant": "m2_three_sites",
+  "note": "3 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 78,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 1070,
+   "tail": "orders.py:75: error: Argument 1 to \"assert_never\" has incompatible type \"Literal[Status.DISPUTED]\"; expected \"Never\"  [arg-type]\nFound 1 error in 1 file (checked 1 source file)"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 79,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 665,
+   "tail": "....                                                                     [100%]\n4 passed in 0.22s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 769,
+   "tail": "   value = repr(arg)\n        if len(value) > _ASSERT_NEVER_REPR_MAX_LENGTH:\n            value = value[:_ASSERT_NEVER_REPR_MAX_LENGTH] + '...'\n>       raise AssertionError(f\"Expected code to be unreachable, but got: {value}\")\nE       AssertionError: Expected code to be unreachable, but got: <Status.DISPUTED: 'disputed'>\n\nC:\\Users\\david\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\typing.py:2586: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_needs_followup - AssertionE...\n1 failed, 3 passed in 0.32s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "exhaustive",
+  "mutant": "m3_wrong_semantics",
+  "note": "all 4 touched, is_terminal wrong",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 76,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1083,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 77,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 681,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 723,
+   "tail": "====\n__________________________ test_disputed_is_terminal __________________________\n\n    def test_disputed_is_terminal() -> None:\n>       assert is_terminal(Status.DISPUTED) is True\nE       AssertionError: assert False is True\nE        +  where False = is_terminal(<Status.DISPUTED: 'disputed'>)\nE        +    where <Status.DISPUTED: 'disputed'> = Status.DISPUTED\n\nacceptance\\test_disputed.py:9: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_terminal - AssertionErro...\n1 failed, 3 passed in 0.27s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "exhaustive",
+  "mutant": "m4_wrong_type",
+  "note": "all 4 touched, bucket returns a bool",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 87,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 1092,
+   "tail": "orders.py:34: error: Incompatible return value type (got \"bool\", expected \"str\")  [return-value]\nFound 1 error in 1 file (checked 1 source file)"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 76,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 674,
+   "tail": "....                                                                     [100%]\n4 passed in 0.23s"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 712,
+   "tail": "held\"\nE       AssertionError: assert True == 'held'\nE        +  where True = bucket(Order(ident='o1', status=<Status.DISPUTED: 'disputed'>, amount_p=500))\nE        +    where Order(ident='o1', status=<Status.DISPUTED: 'disputed'>, amount_p=500) = Order('o1', <Status.DISPUTED: 'disputed'>, 500)\nE        +      where <Status.DISPUTED: 'disputed'> = Status.DISPUTED\n\nacceptance\\test_disputed.py:5: AssertionError\n=========================== short test summary info ===========================\nFAILED acceptance/test_disputed.py::test_disputed_is_held - AssertionError: a...\n1 failed, 3 passed in 0.27s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "exhaustive",
+  "mutant": "m5_reference",
+  "note": "correct",
+  "correct": true,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 80,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1087,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 74,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 672,
+   "tail": "....                                                                     [100%]\n4 passed in 0.22s"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 665,
+   "tail": "....                                                                     [100%]\n4 passed in 0.21s"
+  }
+ },
+ {
+  "lang": "py",
+  "style": "exhaustive",
+  "mutant": "m6_regression",
+  "note": "correct for DISPUTED, breaks REFUNDED",
+  "correct": false,
+  "breaks_existing": true,
+  "syntax": {
+   "verdict": "green",
+   "ms": 80,
+   "tail": ""
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 1080,
+   "tail": "Success: no issues found in 1 source file"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 74,
+   "tail": "All checks passed!"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 729,
+   "tail": "_for_the_original_three() -> None:\n        assert is_terminal(Status.NEW) is False\n        assert is_terminal(Status.PAID) is False\n>       assert is_terminal(Status.REFUNDED) is True\nE       AssertionError: assert False is True\nE        +  where False = is_terminal(<Status.REFUNDED: 'refunded'>)\nE        +    where <Status.REFUNDED: 'refunded'> = Status.REFUNDED\n\ntests_repo\\test_orders.py:17: AssertionError\n=========================== short test summary info ===========================\nFAILED tests_repo/test_orders.py::test_terminality_for_the_original_three - A...\n1 failed, 3 passed in 0.28s"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 664,
+   "tail": "....                                                                     [100%]\n4 passed in 0.21s"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "wildcard",
+  "mutant": "m0_empty",
+  "note": "no change at all",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 84,
+   "tail": "(node:27476) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m0_empty/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 692,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 176,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.8065ms)\n\u2714 terminality for the original three (0.1331ms)\n\u2714 labels for the original three (0.1295ms)\n\u2714 followup for the original three (0.1341ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 117.4487"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 176,
+   "tail": "e (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "wildcard",
+  "mutant": "m1_one_site",
+  "note": "1 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 101,
+   "tail": "(node:21668) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m1_one_site/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 686,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 165,
+   "tail": "it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.8192ms)\n\u2714 terminality for the original three (0.1452ms)\n\u2714 labels for the original three (0.133ms)\n\u2714 followup for the original three (0.1331ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 112.0765"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 177,
+   "tail": "e (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "wildcard",
+  "mutant": "m2_three_sites",
+  "note": "3 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 104,
+   "tail": "(node:31528) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m2_three_sites/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 685,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 170,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.7593ms)\n\u2714 terminality for the original three (0.1368ms)\n\u2714 labels for the original three (0.1291ms)\n\u2714 followup for the original three (0.1286ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 111.6952"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 189,
+   "tail": "e (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "wildcard",
+  "mutant": "m3_wrong_semantics",
+  "note": "all 4 touched, is_terminal wrong",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 87,
+   "tail": "(node:22844) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m3_wrong_semantics/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 675,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 177,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.8043ms)\n\u2714 terminality for the original three (0.1415ms)\n\u2714 labels for the original three (0.1374ms)\n\u2714 followup for the original three (0.1307ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 117.5485"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 164,
+   "tail": "(node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "wildcard",
+  "mutant": "m4_wrong_type",
+  "note": "all 4 touched, bucket returns a bool",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 81,
+   "tail": "(node:20380) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m4_wrong_type/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 686,
+   "tail": "orders.ts(24,7): error TS2322: Type 'boolean' is not assignable to type 'string'."
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 185,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.8401ms)\n\u2714 terminality for the original three (0.1472ms)\n\u2714 labels for the original three (0.1336ms)\n\u2714 followup for the original three (0.1334ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 128.3935"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 168,
+   "tail": "werd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m4_wrong_type/acceptance/disputed.test.ts:8:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.start (node:internal/test_runner/test:1096:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: 'held',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "wildcard",
+  "mutant": "m5_reference",
+  "note": "correct",
+  "correct": true,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 81,
+   "tail": "(node:16356) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m5_reference/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 723,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 181,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.7755ms)\n\u2714 terminality for the original three (0.1382ms)\n\u2714 labels for the original three (0.1306ms)\n\u2714 followup for the original three (0.1325ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 120.8338"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 168,
+   "tail": "/acceptance/disputed.test.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 disputed is held (0.7577ms)\n\u2714 disputed is terminal (0.1389ms)\n\u2714 disputed label (0.1202ms)\n\u2714 disputed needs followup (0.1306ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 111.1817"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "wildcard",
+  "mutant": "m6_regression",
+  "note": "correct for DISPUTED, breaks REFUNDED",
+  "correct": false,
+  "breaks_existing": true,
+  "syntax": {
+   "verdict": "green",
+   "ms": 89,
+   "tail": "(node:16052) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-wildcard-m6_regression/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 691,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 182,
+   "tail": "(node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 169,
+   "tail": "/acceptance/disputed.test.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 disputed is held (0.7797ms)\n\u2714 disputed is terminal (0.1435ms)\n\u2714 disputed label (0.1299ms)\n\u2714 disputed needs followup (0.1291ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 115.9128"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "exhaustive",
+  "mutant": "m0_empty",
+  "note": "no change at all",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 78,
+   "tail": "(node:18048) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m0_empty/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 686,
+   "tail": "orders.ts(24,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'.\norders.ts(38,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'.\norders.ts(52,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'.\norders.ts(66,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'."
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 171,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.8238ms)\n\u2714 terminality for the original three (0.1408ms)\n\u2714 labels for the original three (0.1325ms)\n\u2714 followup for the original three (0.1343ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 116.3744"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 181,
+   "tail": "de:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'disputed',\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "exhaustive",
+  "mutant": "m1_one_site",
+  "note": "1 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 82,
+   "tail": "(node:21564) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m1_one_site/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 695,
+   "tail": "orders.ts(40,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'.\norders.ts(54,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'.\norders.ts(68,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'."
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 180,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.7896ms)\n\u2714 terminality for the original three (0.1376ms)\n\u2714 labels for the original three (0.1343ms)\n\u2714 followup for the original three (0.1349ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 124.1733"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 166,
+   "tail": "de:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'disputed',\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "exhaustive",
+  "mutant": "m2_three_sites",
+  "note": "3 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 99,
+   "tail": "(node:20196) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m2_three_sites/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 686,
+   "tail": "orders.ts(72,9): error TS2322: Type '\"disputed\"' is not assignable to type 'never'."
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 184,
+   "tail": " it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.7923ms)\n\u2714 terminality for the original three (0.1403ms)\n\u2714 labels for the original three (0.1342ms)\n\u2714 followup for the original three (0.136ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 126.674"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 166,
+   "tail": "de:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'disputed',\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "exhaustive",
+  "mutant": "m3_wrong_semantics",
+  "note": "all 4 touched, is_terminal wrong",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 90,
+   "tail": "(node:24224) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m3_wrong_semantics/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 698,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 174,
+   "tail": "it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.7805ms)\n\u2714 terminality for the original three (0.1419ms)\n\u2714 labels for the original three (0.133ms)\n\u2714 followup for the original three (0.1392ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 118.9569"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 172,
+   "tail": "(node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "exhaustive",
+  "mutant": "m4_wrong_type",
+  "note": "all 4 touched, bucket returns a bool",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 82,
+   "tail": "(node:12032) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m4_wrong_type/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 713,
+   "tail": "orders.ts(24,7): error TS2322: Type 'boolean' is not assignable to type 'string'."
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 176,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.7849ms)\n\u2714 terminality for the original three (0.1414ms)\n\u2714 labels for the original three (0.1365ms)\n\u2714 followup for the original three (0.1351ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 118.5148"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 167,
+   "tail": "rd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m4_wrong_type/acceptance/disputed.test.ts:8:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.start (node:internal/test_runner/test:1096:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: 'held',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "exhaustive",
+  "mutant": "m5_reference",
+  "note": "correct",
+  "correct": true,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 85,
+   "tail": "(node:13160) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m5_reference/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 729,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 180,
+   "tail": "t doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 buckets for the original three (0.8783ms)\n\u2714 terminality for the original three (0.1874ms)\n\u2714 labels for the original three (0.1829ms)\n\u2714 followup for the original three (0.1427ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 123.3325"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 187,
+   "tail": "/acceptance/disputed.test.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 disputed is held (0.8285ms)\n\u2714 disputed is terminal (0.2265ms)\n\u2714 disputed label (0.1445ms)\n\u2714 disputed needs followup (0.1436ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 130.1937"
+  }
+ },
+ {
+  "lang": "ts",
+  "style": "exhaustive",
+  "mutant": "m6_regression",
+  "note": "correct for DISPUTED, breaks REFUNDED",
+  "correct": false,
+  "breaks_existing": true,
+  "syntax": {
+   "verdict": "green",
+   "ms": 94,
+   "tail": "(node:15844) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/dev/ABCC_20_powerd_by_claudette/research/spikes/w6-language/trees/ts-exhaustive-m6_regression/orders.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 739,
+   "tail": ""
+  },
+  "lint": {
+   "verdict": "skipped",
+   "ms": 0,
+   "tail": "no linter installed for ts"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 193,
+   "tail": "(node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1201:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)\n      at Test.postRun (node:internal/test_runner/test:1330:19)\n      at Test.run (node:internal/test_runner/test:1258:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 170,
+   "tail": "n/acceptance/disputed.test.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n\u2714 disputed is held (0.8112ms)\n\u2714 disputed is terminal (0.1529ms)\n\u2714 disputed label (0.127ms)\n\u2714 disputed needs followup (0.1472ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 113.4709"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "wildcard",
+  "mutant": "m0_empty",
+  "note": "no change at all",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 186,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m0_empty)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 51,
+   "tail": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 245,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m0_empty)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 462,
+   "tail": "running 4 tests\ntest tests::buckets_for_the_original_three ... ok\ntest tests::labels_for_the_original_three ... ok\ntest tests::terminality_for_the_original_three ... ok\ntest tests::followup_for_the_original_three ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m0_empty)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 492,
+   "tail": "ion `left == right` failed\n  left: \"Unknown\"\n right: \"Disputed\"\n\n\nfailures:\n    disputed_is_held\n    disputed_is_terminal\n    disputed_label\n    disputed_needs_followup\n\ntest result: FAILED. 0 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m0_empty)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.36s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)\nerror: test failed, to rerun pass `--test acceptance`"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "wildcard",
+  "mutant": "m1_one_site",
+  "note": "1 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 187,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m1_one_site)\nsrc\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 1 warning\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 51,
+   "tail": "src\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 1 warning\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 223,
+   "tail": " of the same values\n22 |         Status::Paid => \"done\",\n   |         ------------ matches some of the same values\n23 |         Status::Refunded => \"done\",\n   |         ---------------- matches some of the same values\n24 |         Status::Disputed => \"held\",\n   |         ---------------- matches some of the same values\n25 |         _ => \"other\",\n   |         ^ collectively making this unreachable\n   = note: `-D unreachable-patterns` implied by `-D warnings`\n   = help: to override `-D warnings` add `#[allow(unreachable_patterns)]`\n\nerror: could not compile `orders` (lib) due to 1 previous error"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 445,
+   "tail": "s some of the same values\n23 |         Status::Refunded => \"done\",\n   |         ---------------- matches some of the same values\n24 |         Status::Disputed => \"held\",\n   |         ---------------- matches some of the same values\n25 |         _ => \"other\",\n   |         ^ collectively making this unreachable\n   = note: `#[warn(unreachable_patterns)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `orders` (lib test) generated 1 warning\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 472,
+   "tail": "ded => \"done\",\n   |         ---------------- matches some of the same values\n24 |         Status::Disputed => \"held\",\n   |         ---------------- matches some of the same values\n25 |         _ => \"other\",\n   |         ^ collectively making this unreachable\n   = note: `#[warn(unreachable_patterns)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `orders` (lib) generated 1 warning\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.34s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)\nerror: test failed, to rerun pass `--test acceptance`"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "wildcard",
+  "mutant": "m2_three_sites",
+  "note": "3 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 192,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m2_three_sites)\nsrc\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 3 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 48,
+   "tail": "src\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 3 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 221,
+   "tail": "h some of the same values\n  --> src\\lib.rs:47:9\n   |\n43 |         Status::New => \"New\",\n   |         ----------- matches some of the same values\n44 |         Status::Paid => \"Paid\",\n   |         ------------ matches some of the same values\n45 |         Status::Refunded => \"Refunded\",\n   |         ---------------- matches some of the same values\n46 |         Status::Disputed => \"Disputed\",\n   |         ---------------- matches some of the same values\n47 |         _ => \"Unknown\",\n   |         ^ collectively making this unreachable\n\nerror: could not compile `orders` (lib) due to 3 previous errors"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 449,
+   "tail": "lues\n44 |         Status::Paid => \"Paid\",\n   |         ------------ matches some of the same values\n45 |         Status::Refunded => \"Refunded\",\n   |         ---------------- matches some of the same values\n46 |         Status::Disputed => \"Disputed\",\n   |         ---------------- matches some of the same values\n47 |         _ => \"Unknown\",\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib test) generated 3 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 475,
+   "tail": "   ------------ matches some of the same values\n45 |         Status::Refunded => \"Refunded\",\n   |         ---------------- matches some of the same values\n46 |         Status::Disputed => \"Disputed\",\n   |         ---------------- matches some of the same values\n47 |         _ => \"Unknown\",\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib) generated 3 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.35s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)\nerror: test failed, to rerun pass `--test acceptance`"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "wildcard",
+  "mutant": "m3_wrong_semantics",
+  "note": "all 4 touched, is_terminal wrong",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 194,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m3_wrong_semantics)\nsrc\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 4 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 48,
+   "tail": "src\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 4 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 228,
+   "tail": "er patterns match some of the same values\n  --> src\\lib.rs:58:9\n   |\n54 |         Status::New => false,\n   |         ----------- matches some of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 454,
+   "tail": "e of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib test) generated 4 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 486,
+   "tail": "lse,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib) generated 4 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.36s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)\nerror: test failed, to rerun pass `--test acceptance`"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "wildcard",
+  "mutant": "m4_wrong_type",
+  "note": "all 4 touched, bucket returns a bool",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "red",
+   "ms": 182,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m4_wrong_type)\nsrc\\lib.rs:24:29: error[E0308]: `match` arms have incompatible types: expected `&str`, found `bool`\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 3 warnings\nerror: could not compile `orders` (lib) due to 1 previous error; 3 warnings emitted"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 125,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m4_wrong_type)\nsrc\\lib.rs:24:29: error[E0308]: `match` arms have incompatible types: expected `&str`, found `bool`\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 3 warnings\nerror: could not compile `orders` (lib) due to 1 previous error; 3 warnings emitted"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 228,
+   "tail": "\n54 |         Status::New => false,\n   |         ----------- matches some of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 200,
+   "tail": "of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nFor more information about this error, try `rustc --explain E0308`.\nwarning: `orders` (lib test) generated 3 warnings\nerror: could not compile `orders` (lib test) due to 1 previous error; 3 warnings emitted"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 125,
+   "tail": "ches some of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nFor more information about this error, try `rustc --explain E0308`.\nwarning: `orders` (lib) generated 3 warnings\nerror: could not compile `orders` (lib) due to 1 previous error; 3 warnings emitted"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "wildcard",
+  "mutant": "m5_reference",
+  "note": "correct",
+  "correct": true,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 187,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m5_reference)\nsrc\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 4 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 48,
+   "tail": "src\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 4 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 225,
+   "tail": "er patterns match some of the same values\n  --> src\\lib.rs:58:9\n   |\n54 |         Status::New => false,\n   |         ----------- matches some of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 461,
+   "tail": "e of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib test) generated 4 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.33s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 476,
+   "tail": "ome of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib) generated 4 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.35s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "wildcard",
+  "mutant": "m6_regression",
+  "note": "correct for DISPUTED, breaks REFUNDED",
+  "correct": false,
+  "breaks_existing": true,
+  "syntax": {
+   "verdict": "green",
+   "ms": 187,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-wildcard-m6_regression)\nsrc\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 4 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 47,
+   "tail": "src\\lib.rs:25:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:36:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:47:9: warning: unreachable pattern: no value can reach this\nsrc\\lib.rs:58:9: warning: unreachable pattern: no value can reach this\nwarning: `orders` (lib) generated 4 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 224,
+   "tail": "er patterns match some of the same values\n  --> src\\lib.rs:58:9\n   |\n54 |         Status::New => false,\n   |         ----------- matches some of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 442,
+   "tail": "Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib test) generated 4 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)\nerror: test failed, to rerun pass `--lib`"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 479,
+   "tail": "ome of the same values\n55 |         Status::Paid => false,\n   |         ------------ matches some of the same values\n56 |         Status::Refunded => false,\n   |         ---------------- matches some of the same values\n57 |         Status::Disputed => true,\n   |         ---------------- matches some of the same values\n58 |         _ => false,\n   |         ^ collectively making this unreachable\n\nwarning: `orders` (lib) generated 4 warnings\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.35s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "exhaustive",
+  "mutant": "m0_empty",
+  "note": "no change at all",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "red",
+   "ms": 180,
+   "tail": "rs-exhaustive-m0_empty)\nsrc\\lib.rs:20:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:29:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:38:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:47:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 117,
+   "tail": "rs-exhaustive-m0_empty)\nsrc\\lib.rs:20:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:29:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:38:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:47:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 217,
+   "tail": "tern `Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n50 ~         Status::Refunded => false,\n51 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 193,
+   "tail": "`Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n50 ~         Status::Refunded => false,\n51 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib test) due to 4 previous errors"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 117,
+   "tail": "tern `Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n50 ~         Status::Refunded => false,\n51 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib) due to 4 previous errors"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "exhaustive",
+  "mutant": "m1_one_site",
+  "note": "1 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "red",
+   "ms": 197,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m1_one_site)\nsrc\\lib.rs:30:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:39:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:48:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nerror: could not compile `orders` (lib) due to 3 previous errors"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 118,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m1_one_site)\nsrc\\lib.rs:30:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:39:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nsrc\\lib.rs:48:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nerror: could not compile `orders` (lib) due to 3 previous errors"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 219,
+   "tail": "tern `Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n51 ~         Status::Refunded => false,\n52 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib) due to 3 previous errors"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 194,
+   "tail": "`Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n51 ~         Status::Refunded => false,\n52 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib test) due to 3 previous errors"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 117,
+   "tail": "tern `Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n51 ~         Status::Refunded => false,\n52 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib) due to 3 previous errors"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "exhaustive",
+  "mutant": "m2_three_sites",
+  "note": "3 of 4 consumers handled",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "red",
+   "ms": 180,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m2_three_sites)\nsrc\\lib.rs:50:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nerror: could not compile `orders` (lib) due to 1 previous error"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 123,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m2_three_sites)\nsrc\\lib.rs:50:11: error[E0004]: non-exhaustive patterns: `Status::Disputed` not covered: pattern `Status::Disputed` not covered\nerror: could not compile `orders` (lib) due to 1 previous error"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 220,
+   "tail": "ttern `Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n53 ~         Status::Refunded => false,\n54 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib) due to 1 previous error"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 195,
+   "tail": " `Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n53 ~         Status::Refunded => false,\n54 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib test) due to 1 previous error"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 117,
+   "tail": "ttern `Status::Disputed` not covered\n   |\nnote: `Status` defined here\n  --> src\\lib.rs:4:10\n   |\n 4 | pub enum Status {\n   |          ^^^^^^\n...\n 8 |     Disputed,\n   |     -------- not covered\n   = note: the matched value is of type `Status`\nhelp: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown\n   |\n53 ~         Status::Refunded => false,\n54 ~         Status::Disputed => todo!(),\n   |\n\nFor more information about this error, try `rustc --explain E0004`.\nerror: could not compile `orders` (lib) due to 1 previous error"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "exhaustive",
+  "mutant": "m3_wrong_semantics",
+  "note": "all 4 touched, is_terminal wrong",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 178,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m3_wrong_semantics)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 48,
+   "tail": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 230,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m3_wrong_semantics)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 436,
+   "tail": "nning 4 tests\ntest tests::buckets_for_the_original_three ... ok\ntest tests::followup_for_the_original_three ... ok\ntest tests::labels_for_the_original_three ... ok\ntest tests::terminality_for_the_original_three ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m3_wrong_semantics)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 471,
+   "tail": "ion failed: is_terminal(Status::Disputed)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    disputed_is_terminal\n\ntest result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m3_wrong_semantics)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.34s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)\nerror: test failed, to rerun pass `--test acceptance`"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "exhaustive",
+  "mutant": "m4_wrong_type",
+  "note": "all 4 touched, bucket returns a bool",
+  "correct": false,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "red",
+   "ms": 179,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m4_wrong_type)\nsrc\\lib.rs:24:29: error[E0308]: `match` arms have incompatible types: expected `&str`, found `bool`\nerror: could not compile `orders` (lib) due to 1 previous error"
+  },
+  "typecheck": {
+   "verdict": "red",
+   "ms": 110,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m4_wrong_type)\nsrc\\lib.rs:24:29: error[E0308]: `match` arms have incompatible types: expected `&str`, found `bool`\nerror: could not compile `orders` (lib) due to 1 previous error"
+  },
+  "lint": {
+   "verdict": "red",
+   "ms": 236,
+   "tail": "-- this is found to be of type `&'static str`\n22 | |         Status::Paid => \"done\",\n   | |                         ------ this is found to be of type `&'static str`\n23 | |         Status::Refunded => \"done\",\n   | |                             ------ this is found to be of type `&'static str`\n24 | |         Status::Disputed => true,\n   | |                             ^^^^ expected `&str`, found `bool`\n25 | |     }\n   | |_____- `match` arms have incompatible types\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `orders` (lib) due to 1 previous error"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 193,
+   "tail": "is is found to be of type `&'static str`\n22 | |         Status::Paid => \"done\",\n   | |                         ------ this is found to be of type `&'static str`\n23 | |         Status::Refunded => \"done\",\n   | |                             ------ this is found to be of type `&'static str`\n24 | |         Status::Disputed => true,\n   | |                             ^^^^ expected `&str`, found `bool`\n25 | |     }\n   | |_____- `match` arms have incompatible types\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `orders` (lib test) due to 1 previous error"
+  },
+  "acceptance": {
+   "verdict": "red",
+   "ms": 112,
+   "tail": "-- this is found to be of type `&'static str`\n22 | |         Status::Paid => \"done\",\n   | |                         ------ this is found to be of type `&'static str`\n23 | |         Status::Refunded => \"done\",\n   | |                             ------ this is found to be of type `&'static str`\n24 | |         Status::Disputed => true,\n   | |                             ^^^^ expected `&str`, found `bool`\n25 | |     }\n   | |_____- `match` arms have incompatible types\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `orders` (lib) due to 1 previous error"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "exhaustive",
+  "mutant": "m5_reference",
+  "note": "correct",
+  "correct": true,
+  "breaks_existing": false,
+  "syntax": {
+   "verdict": "green",
+   "ms": 177,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m5_reference)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 48,
+   "tail": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 232,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m5_reference)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s"
+  },
+  "repo_tests": {
+   "verdict": "green",
+   "ms": 435,
+   "tail": "running 4 tests\ntest tests::buckets_for_the_original_three ... ok\ntest tests::labels_for_the_original_three ... ok\ntest tests::followup_for_the_original_three ... ok\ntest tests::terminality_for_the_original_three ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m5_reference)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 470,
+   "tail": "running 4 tests\ntest disputed_is_held ... ok\ntest disputed_is_terminal ... ok\ntest disputed_label ... ok\ntest disputed_needs_followup ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m5_reference)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.34s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)"
+  }
+ },
+ {
+  "lang": "rs",
+  "style": "exhaustive",
+  "mutant": "m6_regression",
+  "note": "correct for DISPUTED, breaks REFUNDED",
+  "correct": false,
+  "breaks_existing": true,
+  "syntax": {
+   "verdict": "green",
+   "ms": 177,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m6_regression)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s"
+  },
+  "typecheck": {
+   "verdict": "green",
+   "ms": 46,
+   "tail": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"
+  },
+  "lint": {
+   "verdict": "green",
+   "ms": 233,
+   "tail": "Checking orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m6_regression)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s"
+  },
+  "repo_tests": {
+   "verdict": "red",
+   "ms": 438,
+   "tail": "on failed: is_terminal(Status::Refunded)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    tests::terminality_for_the_original_three\n\ntest result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m6_regression)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running unittests src\\lib.rs (target\\debug\\deps\\orders-b07a11d0e61f5101.exe)\nerror: test failed, to rerun pass `--lib`"
+  },
+  "acceptance": {
+   "verdict": "green",
+   "ms": 465,
+   "tail": "running 4 tests\ntest disputed_is_held ... ok\ntest disputed_is_terminal ... ok\ntest disputed_needs_followup ... ok\ntest disputed_label ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n   Compiling orders v0.1.0 (D:\\dev\\ABCC_20_powerd_by_claudette\\research\\spikes\\w6-language\\trees\\rs-exhaustive-m6_regression)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.33s\n     Running tests\\acceptance.rs (target\\debug\\deps\\acceptance-d19e4f6b3b2403e1.exe)"
+  }
+ }
+]

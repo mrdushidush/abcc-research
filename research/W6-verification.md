@@ -42,8 +42,21 @@ Planned items:
    file* — at 9 of 12 on repository work with no false positives, and the acceptance test, which
    costs less than the ladder that decides nothing. Generated tests discriminate 4/9 written before
    the change and **ratify a wrong change 6/9 written after it**.
-5. ☐ **Language generality** — what in the pipeline is language-specific (item 1 shows: almost
-   everything that works) and what generalizes.
+5. ✅ **Language generality** (F311–F320) — measured over the donors' own code and one controlled
+   experiment. **The scoping question has a smaller answer than it looks:** what is language-specific
+   is a *toolchain profile* — extensions, a build command, a test command, a binary path — and the
+   expensive part of the donors' abstraction (387 of 1,068 lines in Claudette's `quality.rs`) is
+   output parsers keyed to a **tool**, not a language, which item 4's `Measured(exit_code, stdout,
+   stderr)` contract deletes. **OQ-W6-9 is answered and its premise was wrong**: a type check catches
+   1 of 6 wrong answers where the subject code has a catch-all arm and 4 of 6 where it does not —
+   *identically* in Python, TypeScript and Rust — and neither real corpus has a single site where the
+   rule could fire (0 of 30 Rust fixtures, 0 `match` statements in the Python ones), which is the
+   mechanical explanation for F307. The acceptance test is 5 of 6 in every cell of the grid. Donor
+   facts, all executed: v1's five-language syntax table discriminates in **0 of 6** languages on this
+   host and its validation channel runs **1 of 13** real commands; BCF scores a perfect Python file
+   **5.80** and a language it has never heard of **8.00**, and cannot pass its own gate on a project
+   whose extensions it does not know at any complexity; Claudette's npm arm **cannot spawn `npm` from
+   a Rust process on Windows at all**, while its health check probes `node`.
 6. ☐ **Worktrees / per-task isolation** — overhead and RAM cost against the 32 GB ceiling.
 7. ☐ **Verifying the unrunnable** — docs and review output; LLM-as-judge failure modes.
 8. ☐ **Honest failure reporting** — the design against v1's zero-tests-claimed-passing defect;
@@ -52,8 +65,9 @@ Planned items:
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
 Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
 then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284)**;
-item 4 took **F297–F310**, so the next free number is **F311**. W11 item 5 (F285–F296) handed item 4
-a second headroom result and item 8 its anti-pattern. The numbering is one sequence across all
+item 4 took **F297–F310** and item 5 took **F311–F320**, so the next free number is **F321**. W11
+item 5 (F285–F296) handed item 4 a second headroom result and item 8 its anti-pattern; item 5 hands
+item 6 the toolchain-profile question (OQ-W6-11) and item 8 the loud-`Uncertain` requirement. The numbering is one sequence across all
 workstreams — check the maximum before adding, not the last number in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
@@ -1318,3 +1332,646 @@ One thing this item does **not** show: that verification is a weak lever. It sho
 deterministic* rungs above a syntax check are a weak lever **on this failure distribution**, and
 that the levers which do move — a structural check on the change, and an acceptance test that
 executes the program — are the two the donors both skipped.
+
+---
+
+# Item 5 — language generality
+
+## Question
+
+§11's scope: *"BCF reportedly outputs Python only. 2.0 targets more languages. **What in the
+pipeline is language-specific and what generalizes?** This is a real scoping question."*
+
+Item 1 gave the short answer — *almost everything that works is language-specific* — and item 4
+made it urgent, because the two instruments it kept are the two whose language dependence is least
+obvious. A structural check has to know what a source file is. An acceptance test has to know how
+to run the program. So the question splits in three:
+
+1. **Where does language enter?** Every site in the three donors where a language name, an
+   extension, a marker file or a tool binary is hard-coded, and which layer it sits in.
+2. **What does a new language cost?** Given the best abstraction in the family — Claudette's
+   four-framework `quality.rs` — what has to be written per language, and what has to be written
+   per *tool*, which is not the same number.
+3. **OQ-W6-9, the one item 4 left open:** does the picture change in a language whose type checker
+   is the build? Q56's Rust half said no (F307, 0 of 59). This item asks it as a controlled
+   experiment instead, with the language as the only variable.
+
+## Method
+
+Four probes in `research/spikes/w6-language/`, three of which execute donor code rather than
+paraphrase it.
+
+- **BCF's scorer, through BCF's own crate.** `bcf-probe/` takes a path dependency on the pinned
+  donor checkout (`d6c1601`) and calls `verifier::verify_file` / `verify_project` on one
+  best-possible file per language — nine files, nine languages, every quality signal the scorer
+  looks for present in each. BCF's gate is a constant threshold over an average of these numbers,
+  so a per-language ceiling is a per-language handicap.
+- **v1's two language surfaces, ported verbatim and run.** `v1_channel.py` carries
+  `ValidateSyntaxTool._run` (`packages/agents/src/tools/code_validation.py:16-89`, minus the
+  `ActionHistory` loop hook) and the `/run-validation` dispatch
+  (`packages/agents/src/main.py:524-576`) as byte-for-byte copies, and runs them over valid and
+  invalid samples in six languages and thirteen realistic validation commands.
+- **Claudette's gate, vendored with citations.** The parts under test are `pub(crate)`, so
+  `claudette-probe/` copies `detect_framework`, `run_build_step`, the four count parsers,
+  `classify_tests` and `is_hard_fail` verbatim with their line numbers, and drives them with real
+  subprocesses over twelve trees — four frameworks × {no tests, green suite, failing suite} — plus
+  a polyglot tree. The subprocesses are spawned from a Rust process, which is part of the question.
+- **One ticket, three languages, two styles.** `mutants.py` writes the same task — *a fourth
+  status exists in the type; make the four consumers agree about what it means*, the K corpus's
+  shape — in Python, TypeScript and Rust, in seven candidate answers from "did nothing" to
+  "correct", under two styles of subject code: every consumer ending in a catch-all arm, or none.
+  42 trees, five instruments each, ground truth by construction.
+
+Toolchain as measured: python 3.14.5 / mypy 2.3.1 / ruff 0.16.4 / pytest 9.1.1, node 24.15.0 with
+typescript 5.9.3, cargo 1.95.0. `go` and `php` are **not installed on this host**, which is data
+rather than a gap.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| The five-language syntax table | v1 `tools/code_validation.py:27-33` | **DISCARD** — 0 of 6 languages separate valid from invalid code on this host (F311) |
+| `LANG=xxx` on the validation command | v1 `asyncValidationService.ts:476-483` | **DISCARD** — the language decides how the command is *mangled*, and 1 of 13 real commands survives (F312) |
+| Per-language quality scoring | BCF `verifier.rs:54-60`, `741-765` | **DISCARD the number** — the ceiling is 5.80 for Python and 8.00 for a language BCF has never heard of (F313) |
+| Test counts as a pass rate | BCF `verifier.rs:431-510` | **DISCARD** — a Boolean in three of five languages, weighted ±2.0 (F314) |
+| Language from the prompt | BCF `mission.rs:343` + `detect_language` | **DISCARD** — a keyword scan with a Python default; a C++ mission writes `main.py` (F315) |
+| Marker → command → parser | Claudette `tools/quality.rs` | **PORT the shape, not the parsers** — 387 of 1068 non-test lines are output parsers, and they are per *tool*, not per language (F316) |
+| `Option<bool>` for "could not run" | Claudette `quality.rs:317-339` | **KEEP** — it is what makes a missing toolchain survivable, and it is the only reason the npm arm's death on Windows is not a false failure (F317) |
+| A type check as a gate rung | item 4's F300 / F307 (0 of 114) | **KEEP the verdict, correct the reason** — the yield is set by the subject code's style, not by the language (F318, F319) |
+
+## Findings
+
+### 🚨 F311 — v1's syntax rung is a five-language table, and on this host it separates valid from invalid code in none of them
+
+`ValidateSyntaxTool` maps a **model-supplied** language string (the tool's own description says
+`language (str: python|javascript|typescript|go|php)`, `code_validation.py:13`) to an extension and
+a checker. Ported verbatim and run over a valid and an invalid sample in six languages:
+
+| language | valid sample | invalid sample | discriminates? |
+|---|---|---|---|
+| python | `Syntax error` | `Syntax error` | **no** |
+| javascript | `OK` | **`OK`** | **no** |
+| typescript | `Syntax error` | `Syntax error` | **no** |
+| go | `Validation failed: [WinError 2]` | `Validation failed: [WinError 2]` | no — `gofmt` absent |
+| php | `Validation failed: [WinError 2]` | `Validation failed: [WinError 2]` | no — `php` absent |
+| rust | `Unsupported language: rust` | `Unsupported language: rust` | n/a — 2.0's own language is not in the table |
+
+Four different mechanisms, and each one is a lesson about what a language binding actually binds to.
+
+- **Python — the binary name is a claim about the machine.** The table's checker is `python3`. On
+  Windows 11 `python3` resolves to `WindowsApps\python3.exe`, the Microsoft Store *app execution
+  alias*, which spawns successfully, prints *"Python was not found; run without arguments to install
+  from the Microsoft Store"* and exits 9009. The tool's own fallback — *"If python3 not available,
+  skip syntax check"* — never fires, because the process **did** start. v1 itself ships in Docker
+  where `python3` is real, so this is not a defect in v1's container; it is what the same table does
+  on 2.0's target machine, and it is the same root cause as F313's 5.80.
+- **JavaScript — the extension decides the parser.** The table writes the model's code to a `.js`
+  temp file and runs `node --check`. On node 24.15.0, `node --check` **exits 0 on a file that
+  contains ESM syntax and a syntax error**, and exits 1 on the identical bytes in a `.mjs` file:
+
+  | content | `.js` | `.mjs` |
+  |---|---|---|
+  | `function add(a, b) {` … unclosed | exit 1 | — |
+  | `export function add(a, b) {` … unclosed | **exit 0** | exit 1 |
+  | `import x from "y"; const q = ;;;` | **exit 0** | exit 1 |
+
+  Every modern model writes `import`/`export`, so the rung passes broken JavaScript for the code a
+  model actually produces. (Measured on one node version on one platform; not checked elsewhere.)
+- **TypeScript — the checker is a JavaScript parser, so valid TypeScript is a syntax error.** The
+  table entry is `['npx', '-y', 'tsx', '--help']`, which validates nothing, and a special case at
+  `code_validation.py:47-55` replaces it with `node --input-type=module --check`. Fed
+  `export function add(a: number, b: number): number`, that returns
+  `SyntaxError: Unexpected token ':'`. The rung rejects correct work 100% of the time, and the
+  false-fail is indistinguishable from a real one.
+- **Go and PHP — an absent toolchain is returned as a string.** `subprocess.run` raises
+  `FileNotFoundError`, the blanket `except Exception` at `:76` turns it into
+  `"Validation failed: [WinError 2] The system cannot find the file specified"`, and that string is
+  the tool's return value. There is no channel for *"I could not measure this"*; the model is handed
+  a sentence that reads like a defect in its own code. Claudette's `Option<bool>` (F218, F317) is
+  the fix, and it is the whole difference.
+
+Read with F297 — the tool is on the QA agent's list and not the coder's — this is a table nobody
+calls, whose one entry that could have worked is broken by the host and whose second is broken by a
+file extension.
+
+### 🚨 F312 — the validation channel is not Python-shaped, it is `python3 -c`-shaped: 1 of 13 real commands survives
+
+Item 4 (F298) found that `/run-validation` scores anything that does not print `PASS` as a failure.
+Reading the same handler for the *language* question finds an earlier defect: the command is
+**rewritten before it runs**. `main.py:534` holds six binaries —
+`("go", "php", "python", "python3", "node", "tsx")` — and a command whose first word is not one of
+them is wrapped in the language's inline-source flag: `python3 -c`, `node -e`, `tsx -e`, `php -r`,
+or, for Go, `go run <the whole command as a filename>`. Ported verbatim and run against thirteen
+validation commands a real ticket would carry:
+
+| the ticket's `validationCommand` | what actually executes | verdict |
+|---|---|---|
+| `pytest -q` | `python3 -c "pytest -q"` | fail |
+| `ruff check .` | `python3 -c "ruff check ."` | fail |
+| `mypy .` | `python3 -c "mypy ."` | fail |
+| `cargo test` (no `LANG=`) | `python3 -c "cargo test"` | fail |
+| `cargo test` (`LANG=rust`) | nothing — `Unsupported language: rust` | fail |
+| `npm test` (`LANG=javascript`) | `node -e "npm test"` | fail |
+| `tsc --noEmit` (`LANG=typescript`) | `tsx -e "tsc --noEmit"` | fail — `tsx` absent |
+| `go test ./...` | `go test ./...`, correctly split | fail — `go` absent |
+| `node --test` | `node --test`, correctly split | **fail — exit 0, "tests 0", no `PASS`** |
+| `python3 -m pytest -q` | itself, correctly split | fail — the Store alias |
+| `python -c "… print('PASS')"` | itself | **pass** |
+| `python -c "… assert add(2,3)==5"` | itself | fail — correct, silent, no `PASS` |
+
+The one command that works is the shape v1's own coder persona teaches (`coder.py:57`). On a host
+where `python3` is real the wrapper's output is worth quoting, because it is what
+`buildRetryDescription` (`asyncValidationService.ts:484-500`) pastes into the retry prompt under
+*"The validation failed with this error"*:
+
+```
+$ python -c "pytest -q"      NameError: name 'pytest' is not defined. Did you mean: 'bytes'?
+$ python -c "cargo test"     SyntaxError: invalid syntax
+$ python -c "npm test"       SyntaxError: invalid syntax
+```
+
+So a Rust task carrying `validationCommand = "cargo test"` sends the model a Python `SyntaxError`
+and asks it to *"rewrite the ENTIRE file with the corrected implementation"*. The channel does not
+merely prefer Python; **it is an `eval` port, and the only artifact it can carry is an expression in
+one of five interpreters.** A verifier's interface has to be a *process* — argv, cwd, exit code, two
+streams — and v1's is a string plus a language label.
+
+### 🚨 F313 — BCF's quality number is a per-language handicap: a perfect Python file scores 5.80 and a language BCF has never heard of scores 8.00
+
+`calculate_score` (`verifier.rs:741-765`) starts every file at 5.0 and adds fixed amounts for six
+Boolean signals — syntax valid +1.5, lint passed +1.0, has tests +1.0, has a docstring +0.5, has
+error handling +1.0, hard-coded secrets −2.0. The signals are set by a per-language function
+(`verifier.rs:54-60`), and **the languages do not have the same number of signals available**. Run
+through BCF's own crate, on one best-possible file per language — every signal present, no secrets,
+no TODOs:
+
+| fixture | language arm | score | syntax_valid | has_tests | docstring | error handling |
+|---|---|---:|---|---|---|---|
+| `best.py` | `verify_python` | **5.80** | **false** | false | false | false |
+| `best.ts` | `verify_js_ts` | 10.00 | true | true | true | true |
+| `best.js` | `verify_js_ts` | 10.00 | true | true | true | true |
+| `best.rs` | `verify_rust` | 10.00 | true | true | true | true |
+| `best.go` | `verify_go` | 10.00 | true | true | true | true |
+| `best.cpp` / `best.c` | `verify_generic` | 8.00 | true | false | true | false |
+| `best.java` / `best.rb` | `verify_generic` | 8.00 | true | false | true | false |
+
+Three things are wrong at once, and they compound.
+
+- **Python's three content signals are dead, and only Python's.** F158 recorded them as dead code;
+  the language question shows *why*. `verify_python` spawns a real syntax check and then `return`s
+  inside the `if let Ok(output)` (`verifier.rs:675-695`); the three `report.has_*` assignments sit
+  **after** that return and run only when the spawn fails. Every other arm sets all four by
+  substring poll — `verify_rust` (`:718`) calls a file syntactically valid if it contains `fn `, `struct ` or
+  `impl `; `verify_generic` (`:735`) calls it valid if `content.len() > 50`.
+- **The one language with a real check is the one the check is broken for.** The checker is
+  `python3` (F311's Store alias), so `syntax_valid` is false and a lint issue is pushed for *every*
+  Python file, valid or not: 5.0 + 1.0 (lint_passed is still `true`, the issue only costs −0.2)
+  = **5.80, invariant over the content**.
+- **The extension list decides whether a file is looked at at all.** `verify_project` (`verifier.rs:74-80`) maps
+  `py ts tsx js jsx rs go cpp cc cxx hpp h` and `continue`s on anything else — `.c` is **not in the
+  list while `.h` is**. Measured on a directory of nine files: six scored, and `best.c`,
+  `best.java`, `best.rb` skipped in silence.
+
+Then the arithmetic. `verify_project` averages the scored files, adjusts by the test pass rate
+(`pass_rate * 4.0 - 2.0`, so +2.0 for a perfect suite), and `mission.rs:1139` mixes it with the LLM
+critique at `critique * 0.4 + verifier * 0.6` against a threshold of 9.2 (C1–C6), 8.5 (C7–C8) or 8.0
+(C9–C10). Best case for each language on this host, with a **perfect 10.0 critique and a 100% green
+suite**:
+
+| project | verifier score | final | 9.2 | 8.5 | 8.0 |
+|---|---:|---:|---|---|---|
+| Python | 5.80 → 7.80 | **8.68** | fail | fail | pass |
+| Python, no suite to run | 5.80 | **7.48** | fail | fail | **fail** |
+| TS / JS / Rust / Go | 10.00 | 10.00 | pass | pass | pass |
+| a language not in the extension list | **5.00** (the empty-average default) | **7.00** | fail | fail | **fail** |
+
+The bottom row is measured, not derived: a directory containing only `.rb` and `.java` returns
+`file_reports: []` and `avg_score: 5.0` — F161's default-pretending-to-be-a-measurement — and 7.00
+is the *ceiling* with a perfect critique. **BCF cannot pass its own gate on a project in a language
+it does not know, at any complexity, however good the code is.** And on this host it cannot pass
+9.2 or 8.5 on a Python project either — the language BCF was built for and whose tools name its
+stage (`emit_stage("5/9", "VERIFIER", "ruff+pytest")`, `mission.rs:996`).
+
+This retires the last reason to port BCF's score. Item 1 voided the *numbers*; this voids the
+*shape*, because a constant threshold over a per-language average compares quantities that were
+never on the same scale.
+
+### F314 — three of BCF's five test arms return an invented count, and the pass rate is the biggest single term
+
+`run_project_tests` (`verifier.rs:145-510`) is where the "60% deterministic" half of the gate gets
+its strongest input, and it is a Boolean dressed as a rate outside Python:
+
+| arm | how the count is produced |
+|---|---|
+| python (`:147`) | venv, pip install, `pytest -q`, real counts parsed from the summary |
+| rust (`:431`) | look for a `test result:` line; if absent, `if result.success { (1, 0) } else { (0, 1) }` |
+| go (`:468`) | `if combined.contains("PASS")` then `passed.max(1)`, else `(0, 1)` |
+| ts / js (`:490`) | `npm install --silent`, then `npm test -- --passWithNoTests`; `success ? (1,0) : (0,1)` |
+
+`passed.max(1)` is the sharpest of the three: any output containing the substring `PASS` anywhere
+reports at least one passing test, and anything that does not contain it — including every way a
+`go test` invocation can decline to run — reports exactly one failure. Which of those two branches a
+real Go project lands in depends on whether `go test ./... -count=1` prints the word, and the code
+pins no flag that would guarantee it. **Not measured here: `go` is not installed on this host**, so
+the Go arm is read rather than run. The adjustment those counts feed is `pass_rate * 4.0 - 2.0`, a
+±2.0 swing on a 10-point scale — larger than any content signal and larger than the gap between two
+of the three gate thresholds.
+
+Measured, by accident, in this item's own probe: `verify_project` on the fixtures directory with
+`language = "rust"` printed `cargo test: failed` and returned `tests_passed: 0, tests_failed: 1`.
+There is no `Cargo.toml` in that directory. The average went from 8.97 to **6.97** because a build
+tool declined to run in a directory that was not a crate, and the gate cannot tell that apart from a
+test that failed. Claudette's `Option<bool>` exists precisely for this cell (F317).
+
+The `--passWithNoTests` flag in the ts/js arm is worth one more line: it is a **jest** flag. Passed
+to a project whose `test` script is `vitest` or `node --test` it is an unknown argument, and the run
+fails for a reason that has nothing to do with the code. Both donors assume jest for Node
+(Claudette's `--testNamePattern` at `quality.rs:236` is the same assumption) — which is the first
+sign that the unit 2.0 has to model is not the language.
+
+### F315 — the language of a BCF mission is a keyword scan of the user's prompt, with a Python default
+
+`Mission::new` calls `detect_language(prompt)` (`mission.rs:343`), which lowercases the prompt and
+returns on the first substring hit: `python|fastapi|django|flask` → python, `typescript|next.js|react`
+→ typescript, `javascript|node|express` → javascript, `rust|cargo` → rust, `go |golang` → go,
+`c++|cpp|cmake` → c++, **else python**. That one string then selects the coder's system prompt, the
+file-extension defaults, the verifier arm, the linter, the test runner and the boilerplate.
+
+Three consequences, all in the code:
+
+- **`"go "` needs a trailing space**, so *"Write a Go service"* is Go and *"Write a service in Go."*
+  is Python. The default is not "unknown", it is a language.
+- **C++ is detectable and unrepresented downstream.** `default_code_path("c++")` falls to
+  `_ => "main.py"` and `default_test_path` to `_ => "test_main.py"` (`mission.rs`), so a C++ mission
+  whose model emits a bare fence with no path header has its C++ written to `main.py`, which the
+  extension list then reads as Python.
+- **The prompt layer leaks a web framework into every language.** `known_bad_patterns(language)`
+  prepends a `common` block to every coder prompt whose bullets are *"Service/repository methods
+  must return ORM/database models, NOT request schemas"*, *"register()/create() MUST call
+  repository.create()"*, *"Do NOT return password hashes in response schemas"*. A Rust CLI mission is
+  told about password hashes and repositories. Below it, `write_boilerplate` (`codegen.rs:302`)
+  writes — for Python only — a `requirements.txt` pinned to FastAPI/SQLAlchemy/PyJWT, a
+  `Dockerfile` with `FROM python:3.12-slim` and `CMD ["uvicorn", "app.main:app", …]`, and an
+  `__init__.py` in every directory.
+
+So BCF is not "Python-only" in the sense the brief guessed. It is **one-stack-only**: a FastAPI
+service generator with five other languages wired far enough in to reach the scorer. That is the
+honest answer to §11's *"BCF reportedly outputs Python only"* — the reusable asset is the pipeline's
+*shape* (item 2's three phases), and none of the language plumbing under it.
+
+### F316 — the family's one real multi-language abstraction names the seam, and the expensive third of it is per *tool*, not per language
+
+Claudette's `tools/quality.rs` is the only place in the three donors where "run this project's
+checks" is written once and specialised. Its module doc states the contract (`quality.rs:5-10`):
+walk up from the cwd, find a canonical config file, and dispatch. The shape it factors into is
+exactly three things, and they do not cost the same:
+
+| the seam | what it is | lines |
+|---|---|---:|
+| **marker** | `Cargo.toml` → Rust, `package.json` → Node, `pytest.ini`/`pyproject.toml` → Python, `go.mod` → Go (`:136-152`), plus a second table for the diagnostics side (`:585-602`) | 35 |
+| **command** | `cargo test`, `npm test [-- --testNamePattern=…]`, `pytest [-k …]`, `go test ./... [-run …]` (`:222-263`), plus the build step (`:410-453`) | 42 |
+| **parser** | thirteen functions that read a tool's human-readable output back into structure — counts, failures, diagnostics (`:663-1068`) | **387** |
+
+387 of the module's 1,068 non-test lines are output parsers, a further 80 turn parsed output back
+into text for the model, and detection plus invocation together are 77. **Adding a language is
+about ten lines; adding a language you want structured results from is about fifty; and the fifty
+are keyed to a tool's stdout format, not to the language.** `parse_jest_counts` reads
+`Tests: 2 failed, 10 passed` — jest's format, not Node's — so a project on vitest or `node --test`
+parses to `(0, 0)` from the same `npm test` command. The unit is the **toolchain**, and a language
+has several.
+
+Two structural consequences fall out of the same file, and both matter for 2.0.
+
+- **The two marker tables disagree.** `detect_framework` looks for `package.json`; `detect_diag_tool`
+  looks for `tsconfig.json`. A TypeScript repository is therefore `npm` to the test side and `tsc` to
+  the diagnostics side; a Python repository carrying only `pytest.ini` is `pytest` to one and
+  *nothing* to the other. Two answers to "what is this project" in one module is one too many — 2.0
+  needs a single resolved profile that every rung reads.
+- **The gate has no compile step for two of its four frameworks by construction.**
+  `run_build_step` returns `None` for `Pytest | Npm` (`:416-421`), with the honest comment that
+  neither has a generic language-level compile step. The consequence is that **the forge gate never
+  type-checks a TypeScript project**, even though `parse_tsc_lines` sits 300 lines away and
+  `detect_diag_tool` knows how to find `tsconfig.json`: `tsc` is reachable only as a tool the *model*
+  may call (`tool_groups.rs:135`), never as a gate input. That is OQ-W6-9's question answered inside
+  the donor before it is asked of the language: in the one ecosystem where the type checker is not
+  the build command, the inherited gate does not run it.
+
+### 🚨 F317 — the same tree state gets four different verdicts from the four frameworks, and on Windows the npm arm cannot spawn at all
+
+`run_build_and_tests` is the successor's deterministic gate and its outcome type is the right one:
+`ran`, `build_ok: Option<bool>`, `tests_ok: Option<bool>`, and `is_hard_fail` = *either* half is
+`Some(false)` (`quality.rs:317-339`). F218 already recorded that as the fix for F161. Vendored
+verbatim and driven over twelve trees that differ only in language and in whether tests exist:
+
+| framework | no tests in the tree | green suite | failing suite |
+|---|---|---|---|
+| cargo | `build ok` + `tests: 0 passed` → **`Some(true)`, a pass** | `Some(true)` | `Some(false)`, hard fail |
+| pytest | exit 5 → `None`, *"no tests collected"* — advisory | `Some(true)` | `Some(false)`, hard fail |
+| npm | **spawn fails** → `None` | **`None`** | **`None` — the failing suite is invisible** |
+| go | `go` absent → `None` on both halves | `None` | `None` |
+
+Three separate results, in increasing order of importance.
+
+- **"There are no tests here" is a pass in Rust and a non-answer in Python.** `cargo test` on a
+  crate with no `#[test]` exits 0 and prints `test result: ok. 0 passed`, which `classify_tests`
+  reads as `Some(true)`; pytest exits 5, which has an explicit arm (`:488-491`) returning `None`.
+  Same tree state, same gate, opposite verdicts — and the Rust one is the dangerous direction,
+  because `tests_ok = Some(true)` is what the fix-loop reads as verified.
+- **On Windows the npm arm is dead, in all three states.** `npm` ships as `npm.cmd` / `npm.ps1`;
+  Rust's `std::process::Command` resolves a bare program name through `CreateProcess`, which does
+  not consult `PATHEXT`, so `Command::new("npm")` returns `program not found` — measured, 0 ms,
+  every time. `cargo`, `pytest`, `node` and `python` all spawn; `npm` and `go` do not; `python3`
+  spawns and exits 9009 (F311). The gate degrades honestly — `None`, advisory, no false failure —
+  which is exactly what the `Option<bool>` is for and is the difference between this and v1's
+  `"Validation failed: [WinError 2]"` string. But the measured consequence stands: **on 2.0's target
+  machine the inherited gate gives a Node or TypeScript project no deterministic verification at
+  all, including when its suite is red.**
+- **And the health check cannot warn about it, because it probes a different binary.** `doctor.rs`
+  opens its toolchain section with *"Missing a toolchain is the #1 silent reason 'forge says it
+  passed but nothing actually compiled'"* (`doctor.rs:513-516`) and then probes `node` — with
+  `why: "the npm forge gate"` (`:562-566`) — while the gate runs `npm`. There is no `npm` entry in
+  `TOOLCHAINS`. Both use the same spawn mechanism (`Command::new(bin).arg(arg).output()`, `:609`),
+  so the probe passes and the gate fails, on the same machine, for the same reason the section
+  comment was written. The `python` entry shows the author knew the shape — `bins: &["python",
+  "python3"]`, *"a platform that ships `python3` but not `python` still resolves"* — and the fix was
+  applied to one row of one table.
+
+The polyglot case is the fourth result and it needs no toolchain to be missing. A tree with
+`Cargo.toml` at the root and a Python package in `pysrc/` containing a **failing** test: the
+detector returns `cargo` (the closest marker to the probe point, which is the mission's root),
+`cargo check` and `cargo test` both pass, and the gate returns `tests_ok: Some(true)`,
+`hard_fail: false`. The failing test is never run. `detect_framework(pysrc)` would have said
+`pytest` — the information is there, and nothing asks for it, because the framework is resolved from
+the *repository root* and never from **what the change touched**. That is the same missing input
+item 4's recommendation 1 needs: a site list.
+
+### 🚨 F318 — OQ-W6-9 answered: the language is not the variable, the subject code's style is. A type check catches 1 of 6 wrong answers under a catch-all arm and 4 of 6 without one — the same split in Python, TypeScript and Rust
+
+The experiment holds the ticket, the defects and the instruments fixed and varies two things: the
+language, and whether the four consumers end in a catch-all arm. Seven candidate answers, ground
+truth by construction, 42 trees. Red counts are over the **six wrong answers**; the last column is
+the false-fail on the one correct answer.
+
+**`wildcard` — every consumer ends in `case _:` / `default:` / `_ =>`:**
+
+| instrument | python | typescript | rust | false-fails the correct answer | median |
+|---|---|---|---|---|---|
+| syntax | 0/6 | 0/6 | 1/6 | 0 | 80 / 87 / 187 ms |
+| **type check** | **1/6** | **1/6** | **1/6** | 0 | 1081 / 686 / 48 ms |
+| linter | 0/6 | — | **5/6** | **1/1 in rust** (F320) | 75 / — / 225 ms |
+| the repo's own suite | 1/6 | 1/6 | 2/6 | 0 | 679 / 177 / 449 ms |
+| **the acceptance test** | **5/6** | **5/6** | **5/6** | 0 | 719 / 169 / 476 ms |
+
+**`exhaustive` — no catch-all; `assert_never` in Python, `const x: never` in TypeScript, nothing at
+all in Rust, which is how Rust spells it:**
+
+| instrument | python | typescript | rust | false-fails the correct answer | median |
+|---|---|---|---|---|---|
+| syntax | 0/6 | 0/6 | 4/6 | 0 | 80 / 85 / 179 ms |
+| **type check** | **4/6** | **4/6** | **4/6** | 0 | 1087 / 698 / 110 ms |
+| linter | 0/6 | — | 4/6 | 0 | 76 / — / 230 ms |
+| the repo's own suite | 1/6 | 1/6 | 5/6 | 0 | 674 / 180 / 195 ms |
+| **the acceptance test** | **5/6** | **5/6** | **5/6** | 0 | 723 / 170 / 117 ms |
+
+Five things, and the first is the answer to the open question.
+
+- **The picture does not change with the language. It changes with the style.** mypy on annotated
+  Python with `assert_never`, `tsc` on a string-literal union with a `never` guard, and `rustc` on
+  an enum behave *identically*: 1 of 6 with a catch-all, 4 of 6 without. Python with `assert_never`
+  is Rust; Rust with `_ =>` is untyped Python. Item 4's F307 (`cargo check` 0 of 59, `mypy` 0 of 43)
+  is not a fact about statically typed languages, and OQ-W6-9's premise — that a language whose type
+  checker is the build might be different — is **false as stated**. What it should have asked about
+  is the code.
+- **What the type check adds under `exhaustive` is exactly the failure class item 4 found dominant.**
+  The three extra catches are `m0_empty`, `m1_one_site` and `m2_three_sites` — nothing was done, or
+  part of it was. F302 measured that as almost the whole real distribution ("work that did not
+  happen"), and F290's coverage fraction is the same quantity. So in a repository written without
+  catch-alls, **the compiler is the coverage check**, and it names the missing sites for free.
+- **What no type check ever catches, in any language or style, is `m3_wrong_semantics`** — all four
+  consumers handled, one of them backwards — **and `m6_regression`**. Those are 2 of the 6, they are
+  the two that require executing the program, and they are caught by the acceptance test and the
+  pre-existing suite respectively. The division of labour item 4 recommended survives the language
+  change unaltered.
+- **The acceptance test is 5 of 6 in every cell of the grid**, and the sixth is the regression it is
+  not asked about. It is also *cheaper* than the type check in two of three languages — 169 ms
+  against 686 in TypeScript, 719 against 1081 in Python — and dearer only in Rust, where
+  `cargo check` is 48 ms because it is the same compiler doing less work.
+- **Rust couples the rungs, and that is a design constraint, not a defect.** In the `exhaustive`
+  arm Rust's repo suite is red on 5 of 6 rather than 1 of 6, because a tree that does not compile
+  cannot run its tests either: the type error takes the regression check down with it. Python and
+  TypeScript keep running the wrong program. So in 2.0's own language the gate has to be **ordered
+  and short-circuiting** — report the first rung that fired, and say the later ones did not run —
+  rather than a set of parallel verdicts to be summarised. `Uncertain` is the right word for the
+  rungs behind a compile error, and `Some(false)` for the compile error itself.
+
+### F319 — the exhaustiveness rule has no site in either real corpus: 0 of 30 Rust fixtures and 0 match statements in the Python ones
+
+F318's `exhaustive` arm is worth 3 extra catches out of 6, which is the largest effect this item
+measured. It is also the arm the real corpora cannot reach:
+
+- **Q56's Rust half.** 30 `.rs` fixture files; 6 contain a `match`; 4 of those 6 have a literal
+  `_ =>` arm. The remaining two are matches over `Option` and over a tuple, closed by a *binding*
+  catch-all — `(x, y) =>` in `Q56/refsol/src/lib.rs:15`, `other =>` at `:20` — which is a wildcard
+  with a name. **Zero of thirty have a closed enum match**, which is the mechanical explanation for
+  F307's `cargo check` catching 0 of 59 Rust failures: the instrument had no site to fire at.
+- **K's Python fixtures.** Zero `match` statements. Status branching is 14 `if`/`elif` comparisons
+  and 10 set-membership tests, and the vocabulary module's own API is membership —
+  `TERMINAL = frozenset({DONE, FAILED, CANCELLED})`, `def is_terminal(status): return status in
+  TERMINAL` (`finish_the_cancelled_status/fixture/jobs/status.py`). A membership test over a set has
+  **no exhaustive form at all**; adding a member cannot make any caller fail to compile, in any
+  language.
+
+The K fixture's own docstring is the point: *"Adding the constant and the transition was the easy
+half; every place that BRANCHES on status has to agree about what it means."* The task was written
+around exactly the failure exhaustiveness prevents, in the idiom where the compiler cannot see it —
+which is what real code looks like, because the idiom was chosen for other reasons years earlier.
+
+So the rule 2.0 can state is narrow and honest: **exhaustiveness is a property of the subject
+repository, not a capability of the pipeline.** 2.0 cannot assume it, cannot create it, and should
+detect it rather than hope for it — the cheap detector is that the type check is red on the *unfixed*
+tree, which is a fact the Localize phase already has to establish for its own reasons.
+
+### F320 — the linter counts the work done: `-D warnings` is green on the answer that did nothing and red on the correct one
+
+Unplanned, and the cleanest replication of item 4's F301 in a second language. In the `wildcard`
+arm, `cargo clippy -- -D warnings` is:
+
+| tree | clippy | errors |
+|---|---|---|
+| `m0_empty` — did nothing | **green** | 0 |
+| `m1_one_site` | red | 1 |
+| `m2_three_sites` | red | 3 |
+| `m5_reference` — **correct** | **red** | **4** |
+
+The lint is `unreachable_patterns`, and it is not a clippy opinion — it is a rustc lint that
+`-D warnings` promotes to an error, so `RUSTFLAGS="-D warnings" cargo check` does the same thing.
+The mechanism is visible in the diagnostic: once all four variants have an explicit arm, the
+pre-existing `_ =>` **becomes unreachable**, and each completed consumer contributes one error.
+The lint's error count is the coverage fraction, inverted — a gate on it would reject the correct
+answer with four errors and accept the empty one with none.
+
+F301 measured the same anti-correlation on the K corpus through a delta (32 of 42 correct changes,
+0 of 12 wrong) and could only say *why* by hand. Here the cause is a single named lint and it
+generalises: **a linter's reds move with the code that was touched, and "the code that was touched"
+is the one thing the free structural check already measures for nothing.** Item 4's recommendation 4
+— do not gate on a linter, in either form — now has a mechanism as well as a rate, in a second
+language, at the absolute level rather than the delta.
+
+## Options compared
+
+The scoping question is really one design question — **how does 2.0 learn what to run?** — and the
+three donors between them have already tried four of the five answers.
+
+| how the language is decided | who does it | works for a language nobody anticipated | fails how | evidence |
+|---|---|---|---|---|
+| a compiled-in table of languages | v1 `validators`, BCF `verify_file` | no — `Unsupported language: rust`, or worse, `verify_generic` scoring it 8.00 | silently, and the default *is* a language | F311, F313 |
+| the model names it | v1's `language` tool argument | no | the model can name one that is not in the table | F311 |
+| a keyword scan of the prompt | BCF `detect_language` | no | *"a service in Go."* is Python; C++ writes `main.py` | F315 |
+| marker files in the tree | Claudette `detect_framework` | no, but it degrades honestly | two tables disagree; the root wins over the change | F316, F317 |
+| **the task carries its own command** | this repository's corpus (`task.toml` `[verify] script = "verify.sh"`) | **yes** | only if the task is wrong, which is visible | item 4 rec 2 |
+
+And within a chosen language, the per-rung cost of being general, measured:
+
+| rung | what generalises | what does not | cost of the part that does not |
+|---|---|---|---|
+| structural check | the whole thing, if the site list comes from Plan | "what is a source file" as an extension list | BCF: `.c` dropped, `.h` kept, unknown language averaged to 5.0 (F313) |
+| syntax check | nothing — it is a different binary per language | the binary name, the file extension, the module system | v1: 0 of 6 languages discriminate (F311) |
+| type check | the verdict, exactly | whether the subject code has a catch-all arm | 1/6 vs 4/6, identical in three languages (F318) |
+| linter | nothing worth having | — | green on the empty answer, red on the correct one (F320) |
+| the repo's own suite | the *role* (regression guard, 1/6) | the runner, and the runner is not the language | jest vs vitest from one `npm test` (F316) |
+| **acceptance test** | **the whole thing** | one command string, which the task already carries | 5/6 in every cell of the grid (F318) |
+
+## Recommendation
+
+**1 — One resolved toolchain profile per mission, with the task's own command outranking it.**
+Three sources in priority order: the **task's** declared command, the **repository's** declared
+profile if it has one, then **detection** from markers. This is not a new mechanism — the corpus in
+this repository already works this way (`[verify] kind = "script"`), and item 4's recommendation 2
+already made the acceptance test the only `Measured` input. What is new is that detection must
+resolve **one** profile that every rung reads, rather than the donor's two marker tables that
+disagree about the same repository (F316).
+
+**2 — The profile is a data record, not a match arm.** Source extensions, build command, test
+command, acceptance command, formatter and linter (advisory), and the resolved absolute path of
+each binary. Adding a language is adding a row in a TOML table that ships with 2.0 and is
+overridable per repository — not a new `match` arm and a rebuild. The reason this is affordable is
+item 4's recommendation 7: the measurement interface is `Measured(exit_code, stdout, stderr)`, so a
+row needs no parser.
+
+**3 — Never parse a tool's human-readable output to decide a verdict; parse only to display one.**
+387 of the 1,068 non-test lines in the donor's best module are output parsers (F316), they are keyed
+to a *tool* rather than a language, and the tool changes underneath them — `parse_jest_counts`
+returns `(0, 0)` for the same `npm test` on a vitest project. Counts are worth showing a human and
+worth nothing to a gate that has an exit code.
+
+**4 — Resolve every binary once, at startup, with the same spawn mechanism the gate uses.** Three
+absences measured here look like three different things: `python3` **spawns and exits 9009**
+(F311, F313), `npm` **cannot be spawned from a Rust process on Windows at all** (F317), and `go` is
+honestly missing. The donor's own health check misses the middle one because it probes `node` and
+the gate runs `npm` (F317). So: probe the binary the rung will actually invoke, by name, through
+`std::process::Command`, and store the resolved path — a version string is not proof, and a
+successful spawn is not proof either.
+
+**5 — An absent toolchain is `Uncertain`, and `Uncertain` is loud.** Claudette's `Option<bool>` is
+the right type and 2.0 keeps it (F218, F317). The gap is that advisory currently means *silent*: on
+this machine a Node project passes the inherited gate with a red suite and nothing says so. Every
+rung that did not run must appear in the outcome and on the console, with the reason. This is item
+8's first requirement and it arrives here from the language direction.
+
+**6 — For the structural check, prefer the site list; when there is none, never skip a file because
+its extension is unknown.** Item 4's cheapest and best rung needs a definition of "source file".
+BCF's answer is a twelve-extension allow-list that drops `.c` while keeping `.h` and scores a
+project it cannot read as exactly 5.0 (F313). An allow-list is wrong in the direction that hides
+work; the fallback rule is *any tracked file that is not in a known generated/vendored set*, and the
+real answer is the Plan's site list, which is language-free.
+
+**7 — Do not require exhaustiveness; detect it, and take the site list for free where it exists.**
+Under the `exhaustive` style the compiler catches the whole dominant failure class — nothing done,
+or part of it done — in all three languages, and its error list *is* the coverage fraction (F318).
+Under the style both real corpora actually use, it catches none of it (F319). The detector is
+cheap and Localize needs it anyway: **run the type check on the unfixed tree**. Red, with file
+names, means the compiler will do the coverage check; green means the site list has to come from
+the Plan (OQ-W6-8).
+
+**8 — The gate is ordered and short-circuits, because Rust makes that mandatory.** In Rust a type
+error takes the test suite down with it — the repo suite goes from 1/6 to 5/6 red in the
+`exhaustive` arm not because it found five regressions but because five trees did not compile
+(F318). A gate that reports parallel verdicts would report five regressions. Order the rungs, report
+the first that fired, and mark everything behind it `Uncertain` rather than green *or* red.
+
+## Rejected alternatives and why
+
+- **"Support the top N languages at launch."** The donors priced it: N is not the number.
+  Claudette's four frameworks cost 387 lines of parser, and the parsers are per *toolchain* — jest
+  and vitest are two, `pytest` and `unittest` are two, and every row is also a claim about which
+  binaries exist on the machine. Ship one row that is correct (Rust), one that is nearly free
+  (Python), and a way to add rows without a rebuild.
+- **"Ask the model which language this is."** v1 takes it as a tool argument and BCF scans the
+  prompt. Both are guesses with a Python default, and BCF's writes C++ into `main.py` (F315). The
+  tree knows, the task knows, and neither has to be asked.
+- **"Score files per language and gate on the average."** F313: a perfect Python file scores 5.80
+  and a language BCF has never heard of scores 8.00, so the constant threshold compares quantities
+  that were never on the same scale — and a project BCF cannot read is unpassable at 7.00 with a
+  perfect critique. Item 1 voided the numbers; this voids the shape.
+- **"Add a linter to the gate for languages where it is idiomatic."** Rust is the case for it and
+  Rust is the counter-example: `-D warnings` is green on the answer that did nothing and red on the
+  correct one, with an error count equal to the work completed (F320).
+- **"Require the subject repository to be written with exhaustive matches."** Zero sites in either
+  corpus (F319), and 2.0 does not own the code it is asked to change. Detect, do not demand.
+- **"Treat Windows as the problem and require WSL."** Tempting after F317, and it moves the failure
+  rather than removing it: the same class — a binary name that resolves to something that is not the
+  tool — produced `python3` exiting 9009 *and* the Store alias defeating v1's own fallback. Resolve
+  binaries explicitly and the platform stops mattering. (What WSL would change is left as
+  OQ-W6-12.)
+
+## Effect on fun
+
+The console gets a roster it can actually show. A resolved profile is a small, concrete,
+per-repository fact — `cargo · pytest · no runner for web/` — and it belongs on screen at mission
+start, the way a strategy game shows which units are available before the first order. It is also
+the honest version of a loading screen: the profile resolves in milliseconds and it is the first
+thing 2.0 can say about a repository it has never seen.
+
+The bigger win is that **an absent rung becomes an event instead of a silence**. The inherited gate's
+worst moment on this machine is invisible: a Node project's red suite produces no verdict, no line,
+no colour. A unit that reports *"npm: not on this machine — tests not run"* is both more honest and
+more interesting than a green tick, and it is the same shape as W3's classified failures. Nothing
+about a command centre is fun if the most common outcome is a tick that means "I did not look".
+
+And the linter result has a fun consequence worth keeping: the reds a linter produces are a map of
+**where the work happened**, which is a genuinely useful thing to draw and a terrible thing to gate
+on. Show them on the diff; never let them stop a unit.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W6-9 | Does the picture change in a language whose type checker is the build? | **answered here**: no — the variable is the subject code's catch-all arm, not the language, and the split is 1/6 vs 4/6 identically in Python, TypeScript and Rust (F318) |
+| OQ-W6-8 | Does the coverage fraction bind as a veto, or only as a report? | still open, with a second source named: where the subject code is exhaustive the *compiler* emits the site list (F318), and neither corpus is (F319), so Plan still has to |
+| OQ-W6-11 | Where does the toolchain profile live — a table shipped with 2.0, a file in the repository, or both — and who writes it for a repository 2.0 has never seen? | item 6 (isolation) and W12 (repo strategy) |
+| OQ-W6-12 | Does 2.0 ship a PATHEXT-aware spawn for Windows, or declare Node work out of scope until WSL? `Command::new("npm")` is `program not found` today (F317) | W7 (sandboxing) — it is the same seam as the job object |
+| OQ-W6-7 | *(from item 2)* Rules-only router, or rules plus a recorded model reading? | still open — nothing here bears on it |
+
+## Confidence: high on the donor facts, high on the experiment's internal validity, medium on how far it travels
+
+Every donor claim in this item was **executed**, not read: BCF's scores come from BCF's own crate
+through a path dependency, v1's two surfaces were ported byte-for-byte and run, and Claudette's
+detector, build step, parsers and classifier were vendored with line citations and driven with real
+subprocesses. Where something could not be run it is marked — the Go arm of BCF's test dispatch, and
+PHP anywhere, because neither toolchain is installed here.
+
+The controlled experiment is strong internally: 42 trees, ground truth by construction, and the
+three languages agree cell for cell within a style, which is not a subtle statistical claim. Two
+limits on how far it travels. The **defect set is chosen rather than sampled** — six candidate
+answers around one ticket — so the 1/6 and 4/6 are ratios over a constructed population, and the
+claim that the missing-work class dominates in reality comes from item 4's 431 real attempts, not
+from here. And the **task shape is one shape**: a new case in an existing vocabulary. A task that
+adds a function, changes a signature, or touches configuration would exercise a type checker
+differently, and the honest expectation is that a signature change is the case where a type checker
+earns its place in any style — untested here.
+
+Two narrower caveats. The `node --check` result (F311) is one node version on one platform and
+reads like a bug rather than a design; it was not checked against another version, and the finding
+that matters — v1 chooses the extension, and the extension chooses the parser — does not depend on
+it. And every "this binary is missing" result is a fact about this machine, which is the point
+rather than a limitation: the machine is the one 2.0 runs on.
