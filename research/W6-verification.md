@@ -2563,3 +2563,75 @@ the brief's question is not a per-worktree RAM figure at all:
 
 That is a one-line rule for the runtime W3 designed: the build/test rung is a single-flight
 resource, like the model swap, and it belongs behind the same kind of permit.
+
+### 🚨 F334 — a worktree contains the repository and none of the toolchain: 0.8–64 MB of tracked tree against 1.7–25.5 GB of ignored environment
+
+`toolchain.py` creates a fresh worktree of each repository, resolves item 5's profile in both trees,
+and runs one command in each:
+
+| repo | the worktree | what git ignores | markers, main → worktree | executed check, main → worktree |
+|---|---|---|---|---|
+| bcf | 0.8 MB / 62 files | 1.7 GB / 2,244 (`target/`) | Cargo.toml ×1 → ×1 | `cargo metadata --offline` **101 → 101** |
+| claudette | 4.7 MB / 495 | 25.5 GB / 55,135 (`target/` 25.2 GB; battery `work/`; the vscode extension's `node_modules`) | Cargo.toml ×2, package.json ×1 → same | `cargo metadata --offline` **0 → 0** |
+| v1 | 63.7 MB / 540 | 3.9 GB / 230,652 (`node_modules/` ×4, `workspace/`, `dist/`) | package.json ×6 → **×5** | `require.resolve('typescript')` **0 → 1** |
+| abcc20 | 9.4 MB / 1,080 | 5.7 GB / 56,388 (`runs/` 3.2 GB, four `target/`s) | 4 toolchains, 17 sites → **2 toolchains, 7 sites** | `require.resolve('typescript')` **0 → 1** |
+
+The profile's *markers* are tracked, so where a marker is tracked it resolves identically in the
+worktree — item 5's detector needs no isolation-specific work. Everything the marker *names* is
+ignored by design, which is the whole point of ignoring it, and so the isolated tree cannot run the
+command the profile chose. In v1's main tree `require.resolve('typescript')` answers with a path
+inside `node_modules/.pnpm/`; in the worktree it throws `MODULE_NOT_FOUND`.
+
+Three specifics worth keeping:
+
+- **v1's own agent workspace is gitignored.** The package.json that exists in the main tree and not
+  in the worktree is `workspace/package.json` — the directory every agent container mounts (F326).
+  The tree v1's agents actually work in is invisible to any git-based isolation, in v1's own layout.
+- **The markers can be mostly ignored files.** This repository declares cargo, npm, python and go
+  across 17 sites; 10 of them are spike output under `.gitignore`, so the worktree sees 7. A
+  detector that runs in the operator's tree and a detector that runs in the attempt's tree do not
+  agree, and the one that matters is the second.
+- **Detection is not resolution.** `go` is declared by three marker files here and **is not on this
+  machine**; `pnpm` — the package manager v1's own lockfile names — is not installed either; and
+  BCF cannot resolve its own dependency graph offline in *either* tree (`failed to download js-sys
+  v0.3.91`, rc=101 both). Only the last of those is a fact about isolation, and it is a fact about
+  isolation only in the sense that isolation did not cause it.
+
+And the population this project has actually measured has no git at all: **0 `.git` directories in
+the entire corpus** — every one of the 952 Q56 cells and 431 K attempts ran in a plain directory
+built by `w8-corpus`'s file plan (`workdir.rs`), median 8 KB and 10 files, 2.78 GB for the whole
+campaign. Whatever 2.0 ships must degrade to that copy, and the copy is cheap exactly when the
+subject is a fixture rather than a working repository.
+
+### F335 — OQ-W6-11 answered: the tree decides, the repository may override, the log records, and the attempt re-resolves
+
+Item 5 left the question of where the toolchain profile lives — a table shipped with 2.0, a file in
+the repository, or both — and who writes it for a repository 2.0 has never seen. The four
+repositories answer it between them.
+
+**A table shipped with 2.0 cannot be right**, because the profile is not one row. `claudette`
+declares cargo twice and npm once; this repository declares four toolchains at seventeen sites, of
+which one is the real project and the rest are fixtures and spikes. The unit is a **directory**, not
+a repository, and item 5's console line already had the right shape: `cargo · pytest · no runner for
+web/`.
+
+**Detection is the default and it travels for free** (F334): markers are tracked, so a checkout, a
+worktree and a `checkout-index` copy all resolve the same profile. Nothing has to be written for a
+repository nobody has seen — the tree is asked, not the model (F315's lesson) and not the operator.
+
+**A file in the repository is the override, and it must be a tracked file** — precisely so that it
+travels to the isolated tree the way the markers do. The precedent is this project's own corpus:
+`corpus/subjects/<id>.toml` carries markers, capabilities and a `[quirks]` block written by hand
+after something surprised the harness, and it lives *with the harness*, not inside the subject. The
+difference for 2.0 is the direction of ownership — 2.0 does not own the repositories it is asked to
+change, so its override belongs in the repository as an opt-in file, and its fallback belongs in the
+mission record.
+
+**The resolved profile is data on the event log**, not a computation repeated per rung. W3's log
+already carries what the operator saw; the profile is the same kind of fact — resolved once at
+mission start, replayable, and diffable when a run behaves differently on Tuesday because someone
+installed `go`.
+
+**And the attempt re-resolves.** F334's abcc20 row is the reason: the profile resolved in the
+operator's tree names ten sites that do not exist in the attempt's tree. A profile is a fact about a
+*directory at a time*, and an isolated attempt is a different directory.
