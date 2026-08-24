@@ -1,6 +1,6 @@
 # w6-isolation — worktrees, checkpoints and what parallel work costs
 
-Probes run 2026-08-24 for **W6 item 6 (worktrees / per-task isolation)**. Findings **F325–F33x** in
+Probes run 2026-08-24 for **W6 item 6 (worktrees / per-task isolation)**. Findings **F325–F335** in
 `research/W6-verification.md`.
 
 §11's scope for the item: *"Git worktrees or per-task isolation for parallel work. Compare overhead,
@@ -13,7 +13,7 @@ and check RAM cost against the 32GB ceiling."* Plus two inherited questions:
 - **OQ-W6-11** — where the toolchain profile lives, and who writes it for a repository 2.0 has
   never seen.
 
-Five probes. Everything is measured on the four real repositories on this machine — the three
+Six probes. Everything is measured on the four real repositories on this machine — the three
 donors and this one — rather than on a synthetic tree, because the numbers that decide the question
 are the sizes of the directories git ignores.
 
@@ -23,6 +23,7 @@ are the sizes of the directories git ignores.
 | `stale.py` | hashes every tracked file in every repo and compares with the index — is `git status` clean a claim about content? | `stale-results.json` |
 | `checkpoint.py` | the whole checkpoint cycle in a throwaway clone: snapshot, an agent's edits, snapshot, change list, a worktree **at** the snapshot, restore, and whether the snapshot survives `git gc --prune=now` | `checkpoint-results.json` |
 | `buildcache.py` | seven cargo phases on the real Rust workspace: private vs shared `CARGO_TARGET_DIR`, cold vs warm vs cross-worktree, two attempts at once on one build dir and on two, with RAM sampled throughout | `buildcache-results.json` |
+| `freshwt.py` | the case `buildcache.py` cannot see — a worktree created *after* the cache is warm (so every source file is newer than every artifact), a copied tree with no `.git`, and two cold builds at once | `freshwt-results.json` |
 | `toolchain.py` | what a fresh worktree does *not* contain: the ignored entries and their size, the toolchain profile resolved in both trees, and one executed command per repo | `toolchain-results.json` |
 
 ## Safety
@@ -47,9 +48,13 @@ clones and worktrees.
 cd research/spikes/w6-isolation
 python stale.py                      # ~20 s
 python mechanisms.py --quick         # ~30 s, everything except the full copies
-python mechanisms.py                 # adds the robocopy rows: ~25 min, and writes ~55 GB
+python mechanisms.py                 # adds the robocopy rows: ~25 min, and writes ~35 GB.
+                                     # NOTE: the v1 row must use /XJ and the abcc20 row must
+                                     # write outside the repo — see F327 for both reasons
 python checkpoint.py                 # ~30 s
-python buildcache.py                 # ~15 min, three cold cargo builds
+python buildcache.py                 # ~12 min, three cold cargo builds
+python freshwt.py                    # ~8 min, three more; the last phase takes the box
+                                     # to ~2 GB free — do not run it with a model loaded
 python toolchain.py                  # ~5 min
 ```
 
