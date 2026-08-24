@@ -63,7 +63,25 @@ Planned items:
    29 real failures**. The free structural check has now produced **0 false positives on 609 correct
    trees**, and its yield is a property of the task's shape — 9/12 on repository work against 0/29 on
    clean single-function work — so it goes first because it is free, never because of a rate.
-6. ☐ **Worktrees / per-task isolation** — overhead and RAM cost against the 32 GB ceiling.
+6. ✅ **Worktrees and per-task isolation** (F325–F335) — measured on the four real repositories on
+   this machine. **The marker is free and the working directory is not**: a worktree costs
+   0.08–0.66 s and 0.8–63.7 MB against 6–136 s and 1.7–25.5 GB to copy the same tree, because the
+   difference is not the mechanism but what git ignores. **OQ-W3-12 is answered as a composition** —
+   the checkpoint identifier is a commit sha from a temp-index snapshot (`read-tree` / `add -A` /
+   `write-tree` / `commit-tree`, 0.16 s, and it captures the files the agent created, which
+   `git stash create` **cannot**), isolation is a worktree at that sha (0.25 s), the change list is
+   the diff between two snapshots (0.024 s, exactly the six paths), restore is `read-tree -u --reset`
+   plus `clean -fd` (0.06 s, byte-exact) — and the sha **must be written to a ref**, because an
+   unreferenced snapshot does not survive `git gc --prune=now`. **W11 F249's clause is corrected**: a
+   worktree created *after* the build cache is warm compiles one crate in **24.7 s**, not 204 in 57,
+   when `CARGO_TARGET_DIR` is shared, and a copied tree with no `.git` gets the same. **The 32 GB
+   answer is a policy rather than a number**: two cold builds at once take the box to **2.3 GB free**
+   and buy **3%**, so *isolate the workspaces and serialize the gate*. Donor facts: **no donor ever
+   runs two agents against one tree**, and v1's parallel endpoint has no caller; v1's three
+   file-locking surfaces all exclude the one agent that writes code; **241 of 539 tracked files in
+   the v1 donor differ from their blobs while `git status` reports the tree clean**; and **0 of this
+   project's 1,383 measured cells is a git repository**, so the mechanism degrades to `workdir.rs`'s
+   copied file plan. OQ-W6-11 answered (F335).
 7. ☐ **Verifying the unrunnable** — docs and review output; LLM-as-judge failure modes.
 8. ☐ **Honest failure reporting** — the design against v1's zero-tests-claimed-passing defect;
    item 1's no-silent-midpoints rule is its first half.
@@ -71,9 +89,11 @@ Planned items:
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
 Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
 then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284)**;
-item 4 took **F297–F310** and item 5 took **F311–F324**, so the next free number is **F325**. W11
-item 5 (F285–F296) handed item 4 a second headroom result and item 8 its anti-pattern; item 5 hands
-item 6 the toolchain-profile question (OQ-W6-11) and item 8 the loud-`Uncertain` requirement. The numbering is one sequence across all
+item 4 took **F297–F310**, item 5 took **F311–F324** and item 6 took **F325–F335**, so the next
+free number is **F336**. W11 item 5 (F285–F296) handed item 4 a second headroom result and item 8
+its anti-pattern; item 5 handed item 6 the toolchain-profile question (OQ-W6-11, answered in F335)
+and hands item 8 the loud-`Uncertain` requirement; item 6 hands item 8 the honest-restore contract
+(F330) and W3 the checkpoint identifier it asked for (OQ-W3-12). The numbering is one sequence across all
 workstreams — check the maximum before adding, not the last number in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
@@ -2635,3 +2655,154 @@ installed `go`.
 **And the attempt re-resolves.** F334's abcc20 row is the reason: the profile resolved in the
 operator's tree names ten sites that do not exist in the attempt's tree. A profile is a fact about a
 *directory at a time*, and an isolated attempt is a different directory.
+
+## Options compared
+
+Scored against what W3 actually asked for — an identifier that restores a workspace — plus what item
+4 needs from the same mechanism (a change list) and what this box can afford:
+
+| | captures created files | restores exactly | works with no git | leaves the build cache | to take | to isolate at it |
+|---|---|---|---|---|---|---|
+| **worktree at a snapshot commit** | ✅ (F330) | ✅ byte-exact up to text attributes | ❌ | ✅ | 0.16 s | 0.25 s |
+| worktree at `HEAD` | ❌ — the operator's uncommitted work is invisible | n/a | ❌ | ✅ | — | 0.08–0.66 s |
+| `git stash create` object | ❌ **no `--include-untracked`** (F329) | partial | ❌ | ✅ | 0.05–0.07 s | via `stash apply` |
+| `git stash push -u` | ✅ | ✅ | ❌ | ✅ | mutates the working tree | — |
+| copied pre-image (`robocopy /E`) | ✅ | ✅ bytes | ✅ | ❌ it copies that too | 6–136 s, 1.7–25.5 GB | free (it *is* the tree) |
+| copied file plan (`workdir.rs`) | ✅ | ✅ | ✅ | n/a — fixtures have none | ~8 KB median | free |
+| no isolation (v1) | n/a | ❌ | ✅ | ✅ | 0 | 0 |
+
+The first row wins on every column that is not "works with no git", and the last two rows are the
+answer to that column: when the subject is a fixture rather than a repository, the copy is 8 KB and
+the question does not arise.
+
+## Recommendation
+
+**1 — The checkpoint identifier is a commit sha, produced by a temp-index snapshot, and written to a
+ref.** The recipe, measured at 0.16 s on 495 files and 0.31–0.39 s on 1,079:
+
+```
+GIT_INDEX_FILE=<scratch>  git read-tree HEAD
+GIT_INDEX_FILE=<scratch>  git add -A
+GIT_INDEX_FILE=<scratch>  git write-tree                          -> tree
+GIT_INDEX_FILE=<scratch>  git commit-tree <tree> -p HEAD -m "..."  -> the identifier
+                          git update-ref refs/abcc/checkpoints/<mission>/<seq> <sha>
+```
+
+It touches neither the index nor the working tree, it captures the files the agent created, and the
+last line is not optional: an unreferenced snapshot does not survive `git gc --prune=now` (F330).
+This is what W3 item 4's checkpoint row carries, and `Holding`/fork may promise resumability exactly
+when it is present.
+
+**2 — Isolation is a worktree at that sha, with one shared build directory.** 0.25 s to create,
+2.90 GB *not* spent per attempt, and the first build in a tree created after the cache is warm costs
+**24.7 s rather than 57** (F331). `CARGO_TARGET_DIR` is the Rust instance of a general rule: the
+toolchain profile (item 5) gains one field — *where this toolchain's build cache lives* — and 2.0
+sets it per repository, not per attempt.
+
+**3 — When the subject has no git, copy the file plan, never the directory.** 0 of this project's
+corpus is a git repository (F334); `workdir.rs` already copies an explicit, load-time resolved file
+list at a median 8 KB per cell. Two rules the probes bought the hard way (F327): the destination
+lives **outside** the tree being copied, and the cleanup uses the `\\?\` extended-length form,
+because a copy can contain a name Windows will not delete.
+
+**4 — The change list is the diff between two snapshots, and it is item 4's structural rung.**
+0.024 s, exactly the six paths the agent touched, ignored build output excluded by construction
+(F330). It replaces the directory walk *for a git subject*, and it answers the deny-list question
+item 5 left open — `.gitignore` is the repository's own answer to "is this a source file". Two
+warnings attached: never diff a snapshot against `HEAD` (F329 — v1's tree would report 241 phantom
+files), and never ask `git status` what changed (F328 — it answers from a stat cache).
+
+**5 — Isolate the workspaces; serialize the gate.** Holding N isolated attempts is cheap; building
+two at once is not — 110.8 s against ~114 s in sequence, and 2.3 GB of free RAM left on a 31.9 GB
+box with no model loaded (F333). The build/test rung is a **single-flight resource**, behind the
+same kind of permit W2 gave the model swap. W2's cap of two concurrent builders is about the model
+server, where the second sequence is worth +69%; at the build the second job is worth 3%.
+
+**6 — State the restore contract as *up to the repository's text attributes*, and mean it.** The
+snapshot round trip normalises line endings the way the repository's own `.gitattributes` says
+(219 CRLF in, 0 out, F330), and the repository with no such rule accumulated 241 divergent files
+without noticing (F328). Both are the same requirement: 2.0 must never claim a byte-exactness it
+does not have, and the honest claim is the one git itself makes.
+
+**7 — Any 2.0 code that writes inside `.git` must handle the pointer file.** In a worktree `.git` is
+a file, not a directory. Claudette already met this and chose to degrade silently — its mission
+marker lands in the PR rather than in `.git/info/exclude` (`missions.rs:428-441`). 2.0 should ask
+`git rev-parse --git-common-dir` and treat "this is a worktree" as the normal case, because under
+this recommendation it *is* the normal case.
+
+## Rejected alternatives and why
+
+- **"Copy the working directory per attempt."** 6–136 s and 1.7–25.5 GB on the four repositories
+  here, against 0.08–0.66 s and 0.8–63.7 MB for a worktree. It also follows pnpm's 2,859 junctions
+  until it is killed, copies its own destination when the scratch directory is inside the tree, and
+  can leave behind a directory Windows refuses to delete by name (F327). The copy survives in
+  exactly one role: a subject with no git, where the file plan is 8 KB.
+- **"Give each attempt its own `target/`."** 2.90 GB and ~57 s per attempt, to buy a 3% wall-clock
+  gain and take the box to 2.3 GB free (F331, F333). A shared build directory costs one lock message.
+- **"Use `git stash` for the pre-image."** `create` cannot see the files the agent wrote (F329), and
+  `push -u` gets them by mutating the working tree — the one thing a checkpoint must not do.
+- **"Run more attempts in parallel; the box is idle."** It is not. The model saturates at two
+  sequences (W2 F83), and one cargo build already saturates six physical cores.
+- **"Lock files, like v1."** Three surfaces, none of them reachable from the agent that writes
+  (F326). Isolation has to be enforced where the path is resolved, and a worktree does exactly that.
+- **"Require the subject to be a git repository."** 0 of the 1,383 measured cells in this project's
+  own corpus is one (F334).
+- **"A container per attempt."** F95/F125 already ruled out daemons for 2.0's runtime, W3 put the
+  isolation boundary at the tool child, and nothing measured here needs more: the expensive part of
+  an attempt is the build cache, which a container would have to share anyway.
+
+## Effect on fun
+
+A checkpoint sha is a save game, and it costs 0.16 s. That is the difference between a command
+centre that can offer *"roll this attempt back"* as a button and one that can only offer an apology:
+the restore is 0.06 s and exact, and the operator can be shown, before pressing it, precisely which
+six paths will change. W5's verb set asked for undo as a first-class thing; this is the mechanism
+that makes it honest rather than aspirational.
+
+The change list is the other half, and it is free. A unit that reports *"3 files, +41 −6, `target/`
+untouched"* the moment it finishes has said something true and checkable, and the same diff drives
+the map view: which files the fleet has touched this mission, drawn from data that already exists.
+
+The single-flight build is the one that will *look* best. A queue where one unit is at the forge and
+the others are visibly holding is a strategy game's natural shape, it is honest about the hardware,
+and it turns the box's real constraint into something to watch rather than something to explain. The
+alternative — two builds thrashing 31.9 GB of RAM for a 3% gain — is both slower and duller.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W3-12 | The workspace checkpoint marker: worktree, stash object, or copied pre-image | **answered here**: a temp-index snapshot commit *plus* a worktree at it (F329, F330), degrading to the copied file plan when the subject has no git (F334) |
+| OQ-W6-11 | Where the toolchain profile lives, and who writes it for an unseen repository | **answered here** (F335): the tree decides, a tracked file may override, the log records, and the attempt re-resolves |
+| OQ-W6-14 | Two attempts at **different commits** sharing one build directory — the 204 dependency units should still be shared, but this was measured at the same commit only (F331) | a second measurement, cheap, once 2.0 has two real attempts |
+| OQ-W6-15 | Does package-cache contention (F332) ever cost enough to justify a per-attempt `CARGO_HOME`, and what does a registry copy cost? | nothing yet — do not build it before something needs it |
+| OQ-W6-16 | The no-git subject with a large tree: at what size does the copied pre-image stop being affordable, and what does `Holding` say when it refuses? | W3's contract table, when the first non-fixture subject appears |
+| OQ-W6-8 | Does the coverage fraction bind as a veto, or only as a report? | still open (item 5) |
+| OQ-W6-7 | *(item 2)* Rules-only router, or rules plus a recorded model reading? | still open |
+
+## Confidence: high on the mechanism costs and the checkpoint cycle, medium on the build-cache generality
+
+Everything in this item was executed on this machine, against the repositories 2.0 will actually be
+pointed at, and the two headline corrections are both cases where reading would have got it wrong:
+`git stash create` looks like the obvious pre-image until it is run against an untracked file, and
+W11's *"a fresh worktree does not share `target/`"* survives three careful readings and dies to one
+environment variable.
+
+The checkpoint cycle is the strongest part: snapshot, change list, isolate, restore and gc, each
+measured, with the restore verified by hashing every file rather than by reading git's opinion of
+it. The mechanism costs are n=3 on four real repositories spanning 61 to 1,079 tracked files and
+0.8 MB to 25.5 GB of ignored environment.
+
+Three limits. **The build-cache result is one project, one toolchain, and two worktrees at the same
+commit** — the shape should hold for any content-addressed dependency cache, and the two cases that
+would test it (different commits, a second language) are OQ-W6-14. **The RAM numbers are this box
+with no model resident**, which is the optimistic case and still lands at 2.3 GB free; with the
+champion loaded the honest figure is worse by whatever `llama-server` holds in host memory, which
+was not measured here. And **the copy row for v1 is a bound, not a time**: a faithful copy of a pnpm
+tree was not achievable with the platform's own tool, so 58 s buys a tree whose `node_modules` is
+missing 2,859 links, and the naive copy was killed at 190 s rather than finished.
+
+One measurement here is about the machine rather than about any mechanism, and it is worth saying
+plainly: **the v1 donor's working tree holds 241 tracked files that differ from what git recorded**,
+and nothing in this item put them there. `stale.py` reports them, and the probe restored the mtime
+it found, so that repository is exactly as it was.
