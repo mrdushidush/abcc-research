@@ -76,7 +76,8 @@ Planned items:
    worktree created *after* the build cache is warm compiles one crate in **24.7 s**, not 204 in 57,
    when `CARGO_TARGET_DIR` is shared, and a copied tree with no `.git` gets the same. **The 32 GB
    answer is a policy rather than a number**: two cold builds at once take the box to **2.3 GB free**
-   and buy **3%**, so *isolate the workspaces and serialize the gate*. Donor facts: **no donor ever
+   and finish in 110.8 s against 113–135 s in sequence, so *isolate the workspaces and serialize the
+   gate*. Donor facts: **no donor ever
    runs two agents against one tree**, and v1's parallel endpoint has no caller; v1's three
    file-locking surfaces all exclude the one agent that writes code; **241 of 539 tracked files in
    the v1 donor differ from their blobs while `git status` reports the tree clean**; and **0 of this
@@ -2261,7 +2262,7 @@ caught was not the probe.
 | A copied file plan per cell | this repo `w8-corpus/src/workdir.rs` | **KEEP** — 952 cells, median 8 KB and 10 files each, and it is what runs when the subject has no git (F327) |
 | Per-file undo into a trash directory | Claudette `transcript.rs:132-154`, `commands.rs:492` | **KEEP, as a different thing** — a per-turn undo, not a workspace marker (F173) |
 | *"A fresh worktree does not share `target/`, so every isolated attempt pays a cold build"* | W11 F249 | **CORRECTED** — 56.6 s cold, **24.7 s** for a worktree created after the cache is warm, 0.4 s for one that is warm (F331) |
-| Cap concurrent builders at 2 | W2 F83 and its recommendation 5 | **BINDING, and it is about the model** — two *builds* at once buy 3% and take the box to 2.3 GB free (F333) |
+| Cap concurrent builders at 2 | W2 F83 and its recommendation 5 | **BINDING, and it is about the model** — two *builds* at once save 2–18% and take the box to 2.3 GB free (F333) |
 
 ## Findings
 
@@ -2555,7 +2556,7 @@ global cache, a language server, a docker daemon, and a `~/.npm` or `~/.cache/uv
 matters, the fix is a per-attempt `CARGO_HOME`, which costs a registry copy; that is not measured
 here and should not be built before something needs it.
 
-### 🚨 F333 — the 32 GB answer: one cold build takes the box from 17.6 GB free to 9.6, two at once take it to 2.3, and the second one buys 3%
+### 🚨 F333 — the 32 GB answer: one cold build takes the box from 17.6 GB free to 9.6, two at once take it to 2.3, and the second one saves at best a sixth of the wall clock
 
 RAM sampled every 400 ms across every phase, with **no model resident** — the optimistic case, since
 the champion is 13.6 GB of VRAM and a live `llama-server` also holds host memory:
@@ -2571,15 +2572,16 @@ An independent sampler run from a separate shell agreed within noise on the last
 2.2 GB free). Summed working sets double-count shared pages, so the free-RAM column is the honest
 one; both agree on the shape.
 
-And the second build buys almost nothing: **110.8 s for two at once against ~114 s for the same two
-in sequence**, on six physical cores that a single cargo build already saturates. So the answer to
+And the second build buys little: **110.8 s for two at once, against 113–135 s for the same two in
+sequence** — the four cold builds measured in this item span 56.6 s to 67.7 s, so the saving is
+somewhere between 2% and 18%, on six physical cores that one cargo build already saturates. So the answer to
 the brief's question is not a per-worktree RAM figure at all:
 
 > **Isolate the workspaces; serialize the gate.** Two isolated attempts are cheap to *hold* — 0.30 s
 > and 9.4 MB each, plus one shared build cache — and expensive to *build* at the same time. W2's cap
 > of two concurrent builders (F83) is a statement about the model server, where the second sequence
-> buys +69% throughput. At the build, the second concurrent job buys 3% and costs 87% of the box's
-> free memory.
+> buys +69% throughput. At the build, the second concurrent job saves at best a sixth of the wall
+> clock and costs 87% of the box's free memory.
 
 That is a one-line rule for the runtime W3 designed: the build/test rung is a single-flight
 resource, like the model swap, and it belongs behind the same kind of permit.
@@ -2678,7 +2680,8 @@ the question does not arise.
 ## Recommendation
 
 **1 — The checkpoint identifier is a commit sha, produced by a temp-index snapshot, and written to a
-ref.** The recipe, measured at 0.16 s on 495 files and 0.31–0.39 s on 1,079:
+ref.** The recipe, measured at 0.16 s on a 495-file tree and 0.31 s on a 1,079-file one (0.39 s
+on v1's, where `add -A` re-hashes the 241 files that were already divergent):
 
 ```
 GIT_INDEX_FILE=<scratch>  git read-tree HEAD
@@ -2713,10 +2716,11 @@ warnings attached: never diff a snapshot against `HEAD` (F329 — v1's tree woul
 files), and never ask `git status` what changed (F328 — it answers from a stat cache).
 
 **5 — Isolate the workspaces; serialize the gate.** Holding N isolated attempts is cheap; building
-two at once is not — 110.8 s against ~114 s in sequence, and 2.3 GB of free RAM left on a 31.9 GB
-box with no model loaded (F333). The build/test rung is a **single-flight resource**, behind the
+two at once is not — 110.8 s against 113–135 s in sequence, and 2.3 GB of free RAM left on a
+31.9 GB box with no model loaded (F333). The build/test rung is a **single-flight resource**, behind the
 same kind of permit W2 gave the model swap. W2's cap of two concurrent builders is about the model
-server, where the second sequence is worth +69%; at the build the second job is worth 3%.
+server, where the second sequence is worth +69%; at the build the second job is worth at best a
+sixth of the wall clock.
 
 **6 — State the restore contract as *up to the repository's text attributes*, and mean it.** The
 snapshot round trip normalises line endings the way the repository's own `.gitattributes` says
@@ -2737,8 +2741,8 @@ this recommendation it *is* the normal case.
   until it is killed, copies its own destination when the scratch directory is inside the tree, and
   can leave behind a directory Windows refuses to delete by name (F327). The copy survives in
   exactly one role: a subject with no git, where the file plan is 8 KB.
-- **"Give each attempt its own `target/`."** 2.90 GB and ~57 s per attempt, to buy a 3% wall-clock
-  gain and take the box to 2.3 GB free (F331, F333). A shared build directory costs one lock message.
+- **"Give each attempt its own `target/`."** 2.90 GB and 57–68 s per attempt, and running two of
+  them at once takes the box to 2.3 GB free for at best a sixth of the wall clock (F331, F333). A shared build directory costs one lock message.
 - **"Use `git stash` for the pre-image."** `create` cannot see the files the agent wrote (F329), and
   `push -u` gets them by mutating the working tree — the one thing a checkpoint must not do.
 - **"Run more attempts in parallel; the box is idle."** It is not. The model saturates at two
@@ -2766,7 +2770,8 @@ the map view: which files the fleet has touched this mission, drawn from data th
 The single-flight build is the one that will *look* best. A queue where one unit is at the forge and
 the others are visibly holding is a strategy game's natural shape, it is honest about the hardware,
 and it turns the box's real constraint into something to watch rather than something to explain. The
-alternative — two builds thrashing 31.9 GB of RAM for a 3% gain — is both slower and duller.
+alternative — two builds squeezing a 31.9 GB box down to 2.3 GB free for a fraction of the wall
+clock — is both riskier and duller.
 
 ## Open questions
 
