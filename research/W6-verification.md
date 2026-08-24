@@ -2242,3 +2242,188 @@ caught was not the probe.
 | Per-file undo into a trash directory | Claudette `transcript.rs:132-154`, `commands.rs:492` | **KEEP, as a different thing** — a per-turn undo, not a workspace marker (F173) |
 | *"A fresh worktree does not share `target/`, so every isolated attempt pays a cold build"* | W11 F249 | **CORRECTED** — 56.6 s cold, **24.7 s** for a worktree created after the cache is warm, 0.4 s for one that is warm (F331) |
 | Cap concurrent builders at 2 | W2 F83 and its recommendation 5 | **BINDING, and it is about the model** — two *builds* at once buy 3% and take the box to 2.3 GB free (F333) |
+
+## Findings
+
+### F325 — nothing in the family ever runs two agents against one tree, and the one path that could has no caller
+
+The brief's phrase is *"per-task isolation for parallel work"*. The work is the part the family
+does not have.
+
+**BCF** owns the only worktree in the three donors, and it is in the bench harness.
+`prepare_workspace` (`src/swebench.rs:260-334`) caches one clone per repository, creates
+`git worktree add --detach <workspace> <base_commit>` per instance (`:307-322`), reuses an existing
+workspace with `git reset --hard <base_commit>` plus `git clean -fd` (`:265-283`), and falls back to
+a direct clone when `worktree add` fails (`:327-334`). Two things it never does: `git worktree
+remove` and `git worktree prune` appear **nowhere in the repository**, so the metadata accumulates
+for as long as the harness runs; and it never runs two of them at once — the driver is
+`for (i, instance) in instances.iter().enumerate()` (`:884`), and `src/mission.rs` contains no
+`spawn`, no `join_all` and no `JoinSet`.
+
+**Claudette** is one session in one working directory. Its only isolation is `git_clone` into
+`~/.claudette/missions/<slug>/`, and `validate_clone_url` (`tools/git.rs:538-555`) rejects anything
+that is not `https://`, `http://`, `git@` or `ssh://` — the comment is explicit: *"Don't let the
+model talk us into `file:///` or other surprise schemes."* That is a defensible security decision
+and it means **a repository on this disk cannot be isolated by that path at all**. The one place
+Claudette anticipates a worktree is `missions.rs:428-441`: if `.git` is a pointer file rather than a
+directory, `add_marker_to_git_exclude` returns `Ok` without doing anything, and — by its own comment
+— *"the worst case is the pre-fix behaviour of the marker landing in the PR"*. The family's single
+acknowledgement of a worktree is a graceful leak.
+
+**v1** has the apparatus and no caller. `/queue/parallel-assign` (`routes/queue.ts:237-320`) is
+documented as the endpoint that *"does NOT check if agent is idle (allows parallel execution)"*, and
+it is the only caller of `ResourcePoolService.canAcquire` / `acquire` (`:283`, `:308`) in the whole
+of `packages/api/src`. Nothing calls the endpoint: the UI client posts `/queue/assign`
+(`packages/ui/src/api/client.ts:132`), `schedulerService.ts` contains no assignment call at all, and
+the only other match for the string in the repository is v1's own compiled `dist/`. This is the
+third instance of the same shape in this workstream — the retry queue whose only caller is a
+benchmark script (F299), the re-scoped-by-a-stronger-model blob with no reader (F186) — and it is worth stating as a
+rule: **in this family, the parallel path is the one that was never wired.**
+
+So there is no inherited *wiring* to port, only a mechanism that has been shown to run on this
+machine. And the parallelism 2.0 can actually use is two: W2 F83 measured aggregate throughput
+saturating at N=2 (1,541 tok/s prefill at two sequences, 1,511 at four), and W2's recommendation 5
+already caps concurrent builders there. Every cost in this item should therefore be read as "×2",
+never "×8".
+
+### F326 — v1's isolation is a scheduler's promise, and the tool that writes code is party to none of it
+
+v1 is the donor that ran multi-agent, so its answer is the one worth reading closely. There are
+three mechanisms, in three layers, and the agent that mutates the tree is excluded from all three.
+
+1. **The workspace is one directory.** `docker-compose.yml` bind-mounts `./workspace` into `api`
+   (`:110`), `agents` (`:144`) and `mcp-gateway` (`:170`) read-write, and into `backup` (`:215`)
+   read-only. The agents' file tools resolve every path against it: `FileWriteTool._run`
+   (`packages/agents/src/tools/file_ops.py:53-89`) joins `settings.WORKSPACE_PATH / path`, checks
+   only that the result does not escape the workspace, creates parents, and writes. There is no
+   task subdirectory, no lock check, and no record of which task wrote the bytes.
+2. **The `file_locks` table locks names a planner chose.** `orchestratorService.ts:170` fills a
+   task's `lockedFiles` from the decomposition (`[st.file_name]`, one declared file per subtask);
+   `taskAssigner.ts:100-120` acquires those locks at *assignment* time and skips a task whose
+   declared files collide. So the lock is a **scheduling filter over declarations**, taken before
+   the work starts, by a component that never sees a write. An agent that edits a file nobody
+   declared — the normal case, since the coder gets `file_write` with a free-text path — collides
+   with nothing.
+3. **The distributed lock is dead in every configuration.** `mcp/client.py:168-229` implements
+   `claim_file` / `release_file` against the MCP gateway, and `tools/mcp_file_ops.py` documents
+   *"distributed file locking to prevent conflicts when multiple agents"* work at once. `USE_MCP`
+   defaults to **false** (`config.py:36`); when it is true, `get_tools_for_agent` returns
+   `CODER_TOOLS_HTTP` for the coder anyway — *"Coder always uses HTTP tools, never MCP (even if
+   USE_MCP is enabled)"* (`agents/base.py:119-121`) — and the module's own comment says why the
+   question is moot: *"MCP file ops are NOT used because MCP Gateway isn't deployed"*
+   (`base.py:66-67`). A fourth surface, `FileLockService` (`services/fileLock.ts`), is a complete
+   second implementation of the same table whose only callers are its unit test and a manual
+   release button in the UI.
+
+The lesson 2.0 should take is not "add a lock". It is that **isolation has to be enforced where the
+bytes are written**, and the only place that is true of is the path the tool resolves. v1's tool
+resolves every path against one shared root, so no amount of table-keeping upstream can make two
+tasks safe. Item 4's `Measured(exit_code, stdout, stderr)` contract has the same shape: the fact has
+to be produced where it is true.
+
+### 🚨 F327 — the marker is free and the tree is not: 0.08–0.66 s against 6–136 s, and 0.8–64 MB against 1.7–25.5 GB
+
+OQ-W3-12's three candidates priced on the four real repositories, n=3, medians:
+
+| repo | tracked | worktree add | the worktree | worktree remove | `checkout-index` | `stash create` | temp-index snapshot | full copy | what the copy copies |
+|---|---|---|---|---|---|---|---|---|---|
+| bcf | 61 | **0.08 s** | 0.8 MB / 62 | 0.03 s | 0.05 s | 0.047 s | 0.085 s | 6 s | 1.7 GB / 2,342 files |
+| claudette | 494 | **0.30 s** | 4.7 MB / 495 | 0.11 s | 0.24 s | 0.064 s | 0.148 s | **136 s** | **25.5 GB** / 55,831 files |
+| v1 | 539 | **0.66 s** | 63.7 MB / 540 | 0.12 s | 0.50 s | 0.055 s | 0.385 s | 58 s † | 1.3 GB / 72,463 files † |
+| abcc20 | 1,079 | **0.63 s** | 9.4 MB / 1,080 | 0.28 s | 0.53 s | 0.070 s | 0.311 s | 62 s | 5.7 GB / 57,111 files |
+
+† the only bounded number available for v1 — see below. Multi-threaded copies (`/MT:8`) are 0.8 s /
+102 s / 21 s / 30 s on the same rows, and deleting the copy afterwards costs another 0.6–8.5 s.
+
+**The isolation marker is free at every size in this family.** A worktree of the largest repository
+here costs two thirds of a second and 9.4 MB, and `git checkout-index` — the same tree with no
+`.git` at all — is within a factor of 1.3 of it. The three-orders-of-magnitude difference is not
+between the mechanisms; it is between *tracked content* and *the working directory*, and the whole
+of it lives in what git ignores: claudette's tree is 4.7 MB of tracked files sitting under 25.5 GB
+of `target/`.
+
+The copy also has two failure modes that a worktree does not have, and both fired here:
+
+- **It follows the platform's reparse points.** v1's tree is a pnpm install: **2,859 junctions** and
+  **53,455 hard links**. `robocopy /E` follows them, so the copy expands rather than reproduces —
+  it was killed at **190 s having written 247,869 files**, more than the source contains, and still
+  climbing. With `/XJ` it finishes in 58 s and produces a `node_modules` with 2,859 missing links,
+  which is a tree the toolchain cannot use. The platform's own copy tool cannot faithfully copy the
+  platform's own package manager's output.
+- **It copies its own destination.** The first attempt at this repository put the copy in
+  `scratch/`, which is inside the repository: 453,507 files and 43.7 GB in ten minutes before it was
+  killed, from a 5.7 GB source. Obvious in hindsight, invisible in a design document, and the reason
+  the recommendation says the pre-image must live outside the tree it copies.
+
+And one Windows tail case worth recording because it cost ten minutes: the v1 copy contained a file
+named `nul`, which is a reserved device name, so `rmdir /s /q` could not delete the copy at all. It
+took `Remove-Item -LiteralPath '\?\D:\…'` to get rid of it. A mechanism that leaves a directory
+behind on this platform needs the extended-length path form in its cleanup, or it accumulates.
+
+### 🚨 F328 — `git status` clean is not a claim about content: 241 of 539 tracked files in the v1 donor differ from their blobs, and the tree reports clean
+
+This one caught the probe before the probe caught anything. `mechanisms.py` dirties one tracked
+file, measures, writes the original bytes back, and asserts the repository is clean again. On v1 the
+assert fired: a 500-line file reported as 500 insertions and 500 deletions, after a byte-for-byte
+restore.
+
+The bytes were never the problem. `git ls-files --debug .claude.md` records **size 19,754** against
+a blob of **19,254 bytes** and an mtime from February; the file on disk has been CRLF, and the blob
+LF, for months. Git's index caches `(size, mtime)` per entry and skips re-hashing when both match,
+so `git status` had never looked. Touching the file — writing back the identical bytes it already
+held — invalidated the stat entry, git re-hashed, and the difference that was always there became a
+modification attributed to whoever ran last.
+
+Scanned properly (`stale.py`: hash every tracked file the way git would, compare with the index):
+
+| repo | tracked | content differs from index | `git status` reports | hidden |
+|---|---|---|---|---|
+| bcf | 61 | 0 | 0 | 0 |
+| claudette | 494 | 0 | 0 | 0 |
+| **v1** | 539 | **241** | **0** | **241** |
+| abcc20 | 1,079 | 0 | 0 (1 untracked) | 0 |
+
+All 241 are end-of-line only, all in the same direction (CRLF on disk, LF in the blob), 56,754 CRs
+in total, and the distribution names the cause: `.ts` 74, `.tsx` 53, `.js` 52, `.md` 24, `.yml` 8,
+`.json` 6, `Modelfile` 5, `.ps1` 3 — and **zero `.py`, `.sh` or Dockerfiles**, which are exactly the
+three patterns v1's `.gitattributes` covers. The repository has an EOL policy for three globs and
+241 files fell outside it.
+
+Three consequences, and none of them is about v1:
+
+1. **A checkpoint that asks git "what changed" gets an answer conditioned on stat state.** On this
+   tree the honest answer is "241 files", the answer git gives is "nothing", and which one you get
+   depends on whether something touched an mtime since the last checkout — a formatter, an editor,
+   an agent reading and rewriting identical content.
+2. **The instrument must be content, not status.** `git hash-object` over the tracked set costs
+   under a second per repository here and cannot be fooled by a stat cache.
+3. **It is F310 again, one layer up.** Item 4 already had to normalise CRLF before comparing trees;
+   the same normalisation decides what a workspace checkpoint even means. EOL policy is not a
+   cosmetic detail of the isolation design — it is part of its semantics.
+
+### 🚨 F329 — `git stash create` cannot see the files the agent created, and the snapshot that can sweeps in everything else
+
+The pre-image candidates, on the same dirtied tree — one tracked file edited, one new file created:
+
+| repo | `git stash create` | what it captured | temp-index snapshot | what it captured |
+|---|---|---|---|---|
+| bcf | 0.047 s | 1 path: the edit | 0.085 s | 2 paths: the edit **and** the new file |
+| claudette | 0.064 s | 1 path | 0.148 s | 2 paths |
+| v1 | 0.055 s | 1 path | 0.385 s | **243 paths** |
+| abcc20 | 0.070 s | 1 path | 0.311 s | 6 paths |
+
+`git stash create` has no `--include-untracked`; the porcelain `git stash push -u` does, and it
+mutates the working tree, which is the one thing a checkpoint must not do. So the stash object
+records the modifications and **drops every file the agent created** — which, for a coding agent, is
+most of the work. That alone eliminates OQ-W3-12's second candidate.
+
+The mechanism that does capture them is plumbing: point `GIT_INDEX_FILE` at a scratch file,
+`read-tree HEAD`, `add -A`, `write-tree`, `commit-tree`. It touches neither the real index nor the
+working tree, it costs 0.085–0.385 s on trees of 61 to 1,079 files, and it produces **a commit sha —
+exactly the identifier W3 item 4 asked the checkpoint row to carry**.
+
+The v1 row is the warning that comes with it. `add -A` re-hashes everything, so the snapshot of that
+tree contains 242 modifications and one addition: the agent's two files, plus F328's 241. A
+snapshot's *contents* are therefore not a change list. **The change list is the diff between two
+snapshots taken with the same instrument** — pre-image and post-image — and never a diff against
+`HEAD`, which imports every difference that predates the task.
