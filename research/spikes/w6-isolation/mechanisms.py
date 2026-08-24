@@ -129,17 +129,51 @@ def measure_checkout_index(repo, name):
     return rows
 
 
-def measure_copy(repo, name, mt=None):
-    """robocopy the whole working directory, ignored files included."""
-    dest = SCRATCH / f"cp-{name}"
+# A copy destination must never live inside the tree being copied: robocopy
+# happily copies its own output (measured: 453,507 files and 43.7 GB in ten
+# minutes from a 5.7 GB source, F327). SCRATCH is inside this repository, so the
+# copy rows use a sibling directory instead.
+COPY_DEST = Path(r"D:\dev\_w6-copy-scratch")
+
+
+def measure_copy(repo, name, mt=None, extra=None):
+    """robocopy the whole working directory, ignored files included.
+
+    `extra=["/XJ"]` is required for any tree that carries junctions: v1's pnpm
+    install has 2,859 of them and 53,455 hard links, and without /XJ robocopy
+    follows them and expands rather than reproduces the tree — killed at 190 s
+    and 247,869 files (F327). With /XJ the copy finishes and is missing every
+    junction, which is a tree the toolchain cannot use. Both facts are the
+    finding; neither is a copy that works.
+    """
+    dest = COPY_DEST / f"cp-{name}"
+    if str(dest).lower().startswith(str(Path(repo)).lower()):
+        raise SystemExit(f"refusing: {dest} is inside {repo}")
     clean(dest)
     args = ["robocopy", repo, str(dest), "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/NP", "/R:0", "/W:0"]
+    args += extra or []
     if mt:
         args.append(f"/MT:{mt}")
     t, p = run(args, check=False)
     size, files = tree_size(dest)
-    t_del, _ = run(["cmd", "/c", "rmdir", "/s", "/q", str(dest)], check=False)
-    return {"s": t, "bytes": size, "files": files, "delete_s": t_del, "rc": p.returncode}
+    t0 = time.perf_counter()
+    # the extended-length form: a copied tree can contain a reserved device name
+    # (v1's working tree has a file called `nul`) that rmdir cannot delete
+    long_path = "\\\\?\\" + str(dest)
+    run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Remove-Item -LiteralPath '" + long_path + "' -Recurse -Force",
+        ],
+        check=False,
+    )
+    t_del = time.perf_counter() - t0
+    return {
+        "s": t, "bytes": size, "files": files, "delete_s": t_del,
+        "rc": p.returncode, "flags": (extra or []) + ([f"/MT:{mt}"] if mt else []),
+    }
 
 
 def measure_stash_create(repo, name):
@@ -259,10 +293,11 @@ def main():
         print("  temp-index snapshot...", flush=True)
         r["temp_index"] = measure_temp_index_snapshot(repo, name)
         if not quick:
-            print("  full copy (single thread)...", flush=True)
-            r["copy_1t"] = measure_copy(repo, name)
-            print("  full copy (/MT:8)...", flush=True)
-            r["copy_8t"] = measure_copy(repo, name, mt=8)
+            extra = ["/XJ"] if name == "v1" else []
+            print(f"  full copy (single thread) {extra}...", flush=True)
+            r["copy_1t" if not extra else "copy_xj_1t"] = measure_copy(repo, name, extra=extra)
+            print(f"  full copy (/MT:8) {extra}...", flush=True)
+            r["copy_8t" if not extra else "copy_xj_8t"] = measure_copy(repo, name, mt=8, extra=extra)
         _, wt2 = run(["git", "worktree", "list"], cwd=repo)
         r["worktrees_after"] = wt2.stdout.strip().splitlines()
         assert_clean(repo, allow_untracked=True)

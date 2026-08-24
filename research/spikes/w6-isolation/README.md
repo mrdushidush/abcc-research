@@ -58,5 +58,7 @@ python freshwt.py                    # ~8 min, three more; the last phase takes 
 python toolchain.py                  # ~5 min
 ```
 
-`scratch/w6-isolation/` should be empty when they finish; each probe removes its worktrees and
-temporary trees. `git worktree list` in each donor is the check.
+`scratch/w6-isolation/` should be empty when they finish, and so should `D:\dev\_w6-copy-scratch`
+— the copy rows write there rather than under the repository, because a destination inside the
+source is a destination the copy will copy (F327). `git worktree list` in each donor is the
+other check.
