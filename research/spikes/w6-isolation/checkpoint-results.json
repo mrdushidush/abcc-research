@@ -1,0 +1,92 @@
+{
+ "clone_s": 0.38,
+ "build_cache_is_ignored": true,
+ "snapshot_s0": {
+  "s": 0.157,
+  "sha": "20c796d99ea4885a3c07b4324a607258e25d0249",
+  "files_in_tree": 495
+ },
+ "snapshot_s1": {
+  "s": 0.171,
+  "sha": "df720bfa257b57d0ff6820b946b7230740941430"
+ },
+ "change_list": {
+  "s": 0.024,
+  "entries": [
+   {
+    "status": "D",
+    "path": "LICENSE-MIT"
+   },
+   {
+    "status": "A",
+    "path": "NEWFILE.md"
+   },
+   {
+    "status": "M",
+    "path": "README.md"
+   },
+   {
+    "status": "M",
+    "path": "crates/claudette/src/main.rs"
+   },
+   {
+    "status": "A",
+    "path": "crates/claudette/src/new_module.rs"
+   },
+   {
+    "status": "A",
+    "path": "docs/new-doc.md"
+   }
+  ],
+  "n": 6,
+  "expected": [
+   "LICENSE-MIT",
+   "NEWFILE.md",
+   "README.md",
+   "crates/claudette/src/main.rs",
+   "crates/claudette/src/new_module.rs",
+   "docs/new-doc.md"
+  ],
+  "correct": true,
+  "ignored_file_present": false
+ },
+ "status_for_comparison": {
+  "s": 0.081,
+  "lines": 6
+ },
+ "worktree_at_snapshot": {
+  "s": 0.251,
+  "has_created_files": true,
+  "has_edits": false,
+  "deleted_file_absent": true,
+  "build_cache_absent": true,
+  "files": 497
+ },
+ "eol_round_trip": {
+  "attributes": [
+   "README.md: text: set",
+   "README.md: eol: lf"
+  ],
+  "working_tree_crlf": 219,
+  "snapshot_blob_crlf": 0,
+  "worktree_at_snapshot_crlf": 0,
+  "bytes_identical_disk_vs_worktree": false,
+  "identical_ignoring_cr": true
+ },
+ "restore": {
+  "s": 0.058,
+  "exact_tracked_match": true,
+  "missing": [],
+  "extra": [],
+  "differing": [],
+  "build_cache_survived": true,
+  "build_cache_is_post_attempt_copy": true
+ },
+ "gc": {
+  "s": 0.47,
+  "unreferenced_survived": false,
+  "reffed_survived": true,
+  "s0_survived": false,
+  "s1_survived": false
+ }
+}

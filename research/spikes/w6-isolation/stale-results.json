@@ -1,0 +1,2200 @@
+{
+ "bcf": {
+  "tracked": 61,
+  "checked": 61,
+  "content_differs": 0,
+  "status_reports": 0,
+  "hidden_from_status": []
+ },
+ "claudette": {
+  "tracked": 494,
+  "checked": 494,
+  "content_differs": 0,
+  "status_reports": 0,
+  "hidden_from_status": []
+ },
+ "v1": {
+  "tracked": 539,
+  "checked": 539,
+  "content_differs": 241,
+  "status_reports": 0,
+  "hidden_from_status": [
+   {
+    "path": ".claude.md",
+    "index": "e7326afc61b14af28a307b2c73812501aaa8d2b2",
+    "disk": "6536180d26da09556df4f64e44449d25b8c72698",
+    "eol_only": true,
+    "blob_bytes": 19254,
+    "disk_bytes": 19754,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".dockerignore",
+    "index": "c0b73d36e175483e7526664887bd24475cfab9c8",
+    "disk": "048beb26142d5477052b23a94c56559d405e4d2c",
+    "eol_only": true,
+    "blob_bytes": 372,
+    "disk_bytes": 409,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".env.example",
+    "index": "fd520c4b2fddccee14ab4c60316217450ed981f6",
+    "disk": "bf6aa8e544ba9fe5573358d58e583c61b9ef5448",
+    "eol_only": true,
+    "blob_bytes": 5602,
+    "disk_bytes": 5769,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".gitattributes",
+    "index": "24a95a87f41634698eac4b43265f1578f4c45e02",
+    "disk": "2606d0efb51252591c8ceecb284a4f1ddfd05545",
+    "eol_only": true,
+    "blob_bytes": 121,
+    "disk_bytes": 125,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+    "index": "17fd832edf1a6b8be2a28984fd2856469fbad978",
+    "disk": "c7720933fefd2f05ff9e5e0c9a32d2ad150fb48b",
+    "eol_only": true,
+    "blob_bytes": 1887,
+    "disk_bytes": 1963,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".github/ISSUE_TEMPLATE/config.yml",
+    "index": "9d31e1a37bf2ab3fc3c99203ae7d19b590e782e7",
+    "disk": "9d923f417eb14f4179fb053d686d8f77f140715a",
+    "eol_only": true,
+    "blob_bytes": 591,
+    "disk_bytes": 602,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+    "index": "e1e809ab6fff3dc95a30379e8a22f58f496ae7a1",
+    "disk": "e53a3d670c07a01ae934fa2215642c10a2c25d44",
+    "eol_only": true,
+    "blob_bytes": 1600,
+    "disk_bytes": 1666,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".github/ISSUE_TEMPLATE/question.yml",
+    "index": "6578a8efebc11b15acbad950100bc2e790798301",
+    "disk": "b2a1ce829057816b4f1cdd52bfc54569bfb7f25c",
+    "eol_only": true,
+    "blob_bytes": 1038,
+    "disk_bytes": 1081,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".github/dependabot.yml",
+    "index": "a91b195ac1eeffcb854da3c63e8755a01c1d1938",
+    "disk": "b94535de5c4116d478f7118c8136f2d85bf5c16e",
+    "eol_only": true,
+    "blob_bytes": 3324,
+    "disk_bytes": 3459,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".github/pull_request_template.md",
+    "index": "1bfce823f0c5e222ded70ba0c21ca979e7bfdc3e",
+    "disk": "22999d1f727cc896bfd517fc5e06c45ded63e5a4",
+    "eol_only": true,
+    "blob_bytes": 639,
+    "disk_bytes": 671,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".gitignore",
+    "index": "7b2f16aa32fe89e3cd5a7000a9066a233916349d",
+    "disk": "2ca54ea450db0c4b9de16c668e70731a041aa4d8",
+    "eol_only": true,
+    "blob_bytes": 1484,
+    "disk_bytes": 1581,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": ".trivyignore",
+    "index": "7ec138426c971b9ab63ad2bbdcb77e9ea6b648f7",
+    "disk": "761bc856152edbe2fc636966c8ab0778d619a725",
+    "eol_only": true,
+    "blob_bytes": 170,
+    "disk_bytes": 175,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "CODE_OF_CONDUCT.md",
+    "index": "98a6ae54eb16092a3b4642fe10937b5b2771660a",
+    "disk": "cb334748dc8bba018e98e99621b9f160f70a25a2",
+    "eol_only": true,
+    "blob_bytes": 1474,
+    "disk_bytes": 1518,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "CONTRIBUTING.md",
+    "index": "23ab893a61f735f1dc7b7be2b82ac46bbd15326f",
+    "disk": "c218b297533b9ab1dd96bbdb662307b246f3b369",
+    "eol_only": true,
+    "blob_bytes": 15188,
+    "disk_bytes": 15763,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "LICENSE",
+    "index": "93585f6485c00a3c824de6368f97be43e1facd74",
+    "disk": "4879daf4b6443dc0d6edc264fb8098604db7f4a4",
+    "eol_only": true,
+    "blob_bytes": 1084,
+    "disk_bytes": 1105,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "QA_PLAN.md",
+    "index": "b4ff1ac1838c9a410a9a474811fd858eb56ce4a6",
+    "disk": "13b8cfeabd39d93f0bcb7be6c188eca4f932081c",
+    "eol_only": true,
+    "blob_bytes": 15380,
+    "disk_bytes": 15872,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "QA_RESULTS.md",
+    "index": "8b31d6205193a2ad1d5537499d2e0e795efaceed",
+    "disk": "3271437445fd5593de806df2343b412cbd725aaf",
+    "eol_only": true,
+    "blob_bytes": 13917,
+    "disk_bytes": 14309,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "SECURITY.md",
+    "index": "fe3067b7179c362e62ed5e0af74abc1a106b1f89",
+    "disk": "f48967e2cf82071fef09fe5032d49d1dd8c7d061",
+    "eol_only": true,
+    "blob_bytes": 10363,
+    "disk_bytes": 10679,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "SETUP_GUIDE.md",
+    "index": "bdfbf71b0524b3a4c916e23b7672897e4efd7a1d",
+    "disk": "e11a3117e3281043efa3ae9ac23694b313bd3981",
+    "eol_only": true,
+    "blob_bytes": 8647,
+    "disk_bytes": 8982,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docker-compose.hub.yml",
+    "index": "86f00c24838c81884af2382f3508a6e488709fa7",
+    "disk": "bb732891c8373ef76d143221b3eadef8fe74d8ad",
+    "eol_only": true,
+    "blob_bytes": 4220,
+    "disk_bytes": 4358,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docker-compose.mac.yml",
+    "index": "79cae9f1ff7c7cabd7d248f1da9232f4aab4be27",
+    "disk": "2e6c48aac6b40deb8c3b6567e2dc124d53724a4d",
+    "eol_only": true,
+    "blob_bytes": 1869,
+    "disk_bytes": 1920,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docker-compose.yml",
+    "index": "f51677bc8ced49c1f4f1b3b96fc09536539a67e8",
+    "disk": "c39df4f47c835234c3bbf25ef3bd405e001f37b2",
+    "eol_only": true,
+    "blob_bytes": 6463,
+    "disk_bytes": 6690,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/API.md",
+    "index": "d1ec4158abd95fb7d74e211731f9c3c4770f1a1c",
+    "disk": "59e7590a228bc0cc0f875394f7898fc72ce93e91",
+    "eol_only": true,
+    "blob_bytes": 5588,
+    "disk_bytes": 5970,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/AUDIO_EVENT_MAPPING.md",
+    "index": "4b46f403e2b6a77fd6a3c769f32373169a0cd520",
+    "disk": "61f44d3a9531809408682680affdaf9adfe17525",
+    "eol_only": true,
+    "blob_bytes": 6123,
+    "disk_bytes": 6356,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/AUDIO_TESTING_GUIDE.md",
+    "index": "dfef796fac1ad44e1a4fc29d3fd038282f13bf29",
+    "disk": "bc73472a44b8712da3c7168371b69377065b354f",
+    "eol_only": true,
+    "blob_bytes": 8134,
+    "disk_bytes": 8454,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/AUTHENTICATION.md",
+    "index": "13be2d705c1680305e374980463be82bd482934a",
+    "disk": "a438b4f703cbc5f9d75e327f32d002b7b725e711",
+    "eol_only": true,
+    "blob_bytes": 3673,
+    "disk_bytes": 3821,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/CORS.md",
+    "index": "0176156ad4438b7b6fdcebe3ecfbde8e63c8feab",
+    "disk": "dd1f9e45607faabdc053e5ccd0093a2ce5c916da",
+    "eol_only": true,
+    "blob_bytes": 6733,
+    "disk_bytes": 7001,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/DATABASE_MIGRATIONS.md",
+    "index": "ccd1fc29165ba71c9c9720bf1a8222cf2c5dec40",
+    "disk": "3173bfb6cf157e2f2cd1022d085fff78633cc669",
+    "eol_only": true,
+    "blob_bytes": 8712,
+    "disk_bytes": 9117,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/DEVELOPMENT.md",
+    "index": "7eef16788f0344eadc71f98fc13105f4a4fa046d",
+    "disk": "cf2a2beb1d72166059ed402752b78221940fe3e5",
+    "eol_only": true,
+    "blob_bytes": 4563,
+    "disk_bytes": 4773,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/ERROR_HANDLING.md",
+    "index": "997b1655111d1ac9b0fe863066697de2de0aef17",
+    "disk": "f141d6b75eeaafdd913b1152ec2df2c799c1693c",
+    "eol_only": true,
+    "blob_bytes": 6137,
+    "disk_bytes": 6433,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/FIX_FALSE_POSITIVE_COMPLETIONS.md",
+    "index": "442ee39b07d9db38f6ea524695eedd34ae303ac6",
+    "disk": "5486d1559b535027e1388c4b714c0d9c269c1510",
+    "eol_only": true,
+    "blob_bytes": 8707,
+    "disk_bytes": 8913,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/RATE_LIMITING.md",
+    "index": "01a099b70edeac72ead72d06efbcc469ee332b3e",
+    "disk": "ad515feb503f49ae101c7aff2cdac1c8381b519b",
+    "eol_only": true,
+    "blob_bytes": 7942,
+    "disk_bytes": 8307,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "docs/UI_ENHANCEMENTS_SUMMARY.md",
+    "index": "21adfa0cc873712c0e9e2684d4312c74574e7119",
+    "disk": "0c84c7e4c323be052c09e56a75d519dfec18783a",
+    "eol_only": true,
+    "blob_bytes": 9375,
+    "disk_bytes": 9660,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "modelfiles/qwen2.5-coder-16k.Modelfile",
+    "index": "06689d19a793aee4e1c2e8b1c554b6fb2bba092b",
+    "disk": "c5baca945399fefea6429fb5895aeb8219637a18",
+    "eol_only": true,
+    "blob_bytes": 805,
+    "disk_bytes": 822,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "modelfiles/qwen2.5-coder-32k.Modelfile",
+    "index": "6696f9eb5e76ee3bc782635045cea69c86f10b4a",
+    "disk": "7199bd4417b0aab5dd1b6b417ff3f1198dcbf87e",
+    "eol_only": true,
+    "blob_bytes": 809,
+    "disk_bytes": 826,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "modelfiles/qwen2.5-coder-64k.Modelfile",
+    "index": "349d2c09b2427c86d062ceea29019d547dc89634",
+    "disk": "ce069629b4edc5f6e187b21bfbccde78e05be499",
+    "eol_only": true,
+    "blob_bytes": 839,
+    "disk_bytes": 856,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "modelfiles/qwen2.5-coder-8k.Modelfile",
+    "index": "db78771bb71135c536285b717022b59473be7716",
+    "disk": "dfd7f1ca30d820c43332f3798fd558c2d4e9a740",
+    "eol_only": true,
+    "blob_bytes": 642,
+    "disk_bytes": 659,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "modelfiles/qwen3-coder-16k.Modelfile",
+    "index": "6e80f6175eb6111d953a1e82b7bcf687fbeb3394",
+    "disk": "d3b6ecb51ad2b08c62e081c7c7fbfc1786d08f74",
+    "eol_only": true,
+    "blob_bytes": 740,
+    "disk_bytes": 757,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/agents/package.json",
+    "index": "9c3ae269dc3be611e33926c692605ee714ad765a",
+    "disk": "9bec8b009839d8080febf424294984caae76d6be",
+    "eol_only": true,
+    "blob_bytes": 224,
+    "disk_bytes": 233,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/agents/pyproject.toml",
+    "index": "8a7dddf8d31a575510f0d7aa287e3dce83dca3b4",
+    "disk": "7e4017a907ba2424b9b8710dabe53ac62d00667e",
+    "eol_only": true,
+    "blob_bytes": 523,
+    "disk_bytes": 541,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/agents/pytest.ini",
+    "index": "9855d94e22e2b5d8f3e0c97450b97f2f63c30ff2",
+    "disk": "a043dfba0afb985b52d067fe8e4d008c39348b76",
+    "eol_only": true,
+    "blob_bytes": 125,
+    "disk_bytes": 131,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/prisma/migrations/20260201_simplify_complexity_model/migration.sql",
+    "index": "9d0aa95c80629ef4e045a6b01d7ba2cc2ed4ce71",
+    "disk": "55f4ad8b030fb2b0f47ebab6ff8ccfae884b4074",
+    "eol_only": true,
+    "blob_bytes": 1927,
+    "disk_bytes": 1972,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/prisma/migrations/20260227_add_missions/migration.sql",
+    "index": "360113f6d63ac5ac6819bd44ac71bfe6b114b252",
+    "disk": "4f4abc8ce7a0365d94c1c21c5d8345a2ec734d5c",
+    "eol_only": true,
+    "blob_bytes": 1296,
+    "disk_bytes": 1330,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/prisma/schema.prisma",
+    "index": "0ec8adb5a26fc4758c0450fc7b4075502dd0e094",
+    "disk": "f3e90e1fb613259c24bd1597e3f257fcdb837251",
+    "eol_only": true,
+    "blob_bytes": 14224,
+    "disk_bytes": 14580,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/prisma/seed.ts",
+    "index": "29e54c08cd6f9fe6e693033c875eded59eac2e0e",
+    "disk": "499201871b225a811f9fe7d93403bcef8ae3178f",
+    "eol_only": true,
+    "blob_bytes": 3159,
+    "disk_bytes": 3287,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/config.ts",
+    "index": "31e7f7eeae113a8f03b203bfa6b44592e293308e",
+    "disk": "77d607732267ac8ef2a88d2a3e8478e22efc73b6",
+    "eol_only": true,
+    "blob_bytes": 1332,
+    "disk_bytes": 1380,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/db/client.ts",
+    "index": "df46150962a03beeb6c4279c3b2df97d35f4d756",
+    "disk": "8285aadd3a2f7aec348705a462bb626e91d444b5",
+    "eol_only": true,
+    "blob_bytes": 340,
+    "disk_bytes": 353,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/index.ts",
+    "index": "870e6357def6e07b37912462bb3cb8099e8b8e46",
+    "disk": "27df261e0f152e24c217ac06b6a640572ab55266",
+    "eol_only": true,
+    "blob_bytes": 8869,
+    "disk_bytes": 9105,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/logger.ts",
+    "index": "8b21bc3c5880668552cf3c7844555d5afb488383",
+    "disk": "29d3fe2903c670b274012bab4fc7a334d7b696fa",
+    "eol_only": true,
+    "blob_bytes": 1913,
+    "disk_bytes": 1980,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/middleware/rateLimiter.ts",
+    "index": "d811c77f58fe026fe266fe27ef2174e201e70e12",
+    "disk": "7aed6155d4d61fe81c293b135cb4afdd0b1b0392",
+    "eol_only": true,
+    "blob_bytes": 1886,
+    "disk_bytes": 1953,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/agents.ts",
+    "index": "1c18eae6089340f3d24ed39119261e10e7b41ed8",
+    "disk": "5f3f0b7c38389110bdf2e16a2f9f5749f8cb0fca",
+    "eol_only": true,
+    "blob_bytes": 11743,
+    "disk_bytes": 12140,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/battle-claw.ts",
+    "index": "eb40504724e657c420f6768defc4814279933d6b",
+    "disk": "acf65e3a922835332172addb05641378f3e828bd",
+    "eol_only": true,
+    "blob_bytes": 3645,
+    "disk_bytes": 3738,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/budget.ts",
+    "index": "6b5bd40c400077c17ba8f7a91f6925108381aa83",
+    "disk": "51daf283f11bd114d6a32d87e367ef758b52356b",
+    "eol_only": true,
+    "blob_bytes": 3437,
+    "disk_bytes": 3554,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/chat.ts",
+    "index": "3be6381c8947a95542d1f51f86f4cebb6c822872",
+    "disk": "a890b24e10734b285b06ac6c02b65b228f18f48e",
+    "eol_only": true,
+    "blob_bytes": 2818,
+    "disk_bytes": 2911,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/code-reviews.ts",
+    "index": "b53f33a785c066166072dc19fc3016ec347ca914",
+    "disk": "bac78c8de5453d36f362c59a6502e10cad02fd62",
+    "eol_only": true,
+    "blob_bytes": 6576,
+    "disk_bytes": 6793,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/cost-metrics.ts",
+    "index": "5d6e6ad13ff99bdb36164a970b418304e7c52323",
+    "disk": "21fbea6ccda80178d059201c3379f34ca271b29d",
+    "eol_only": true,
+    "blob_bytes": 6966,
+    "disk_bytes": 7231,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/execute.ts",
+    "index": "af42fa8d984c7da90cb744a6eb7db707fe188b10",
+    "disk": "78717e8aa983ddeb63f3c992907c36523f0c12fa",
+    "eol_only": true,
+    "blob_bytes": 3883,
+    "disk_bytes": 4010,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/execution-logs.ts",
+    "index": "e743753cc2e007d5f87e5947bb1fc5a717ea256b",
+    "disk": "9f0f9bf1beb26cffe247cfa8c5606f9d8d627881",
+    "eol_only": true,
+    "blob_bytes": 4105,
+    "disk_bytes": 4220,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/memories.ts",
+    "index": "b2702245ebb52be6f6aa1a2d4874dcaa05f6623c",
+    "disk": "fe7c846d11034acc92f4d5618ca892a38a49dc43",
+    "eol_only": true,
+    "blob_bytes": 6533,
+    "disk_bytes": 6765,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/metrics.ts",
+    "index": "2c3ea439406acefa1809ac857e00553a478dd645",
+    "disk": "c64b84cc65c8d8cb336f9d85cb62453b58a2a1e8",
+    "eol_only": true,
+    "blob_bytes": 7281,
+    "disk_bytes": 7552,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/missions.ts",
+    "index": "215415b2fce44651a1d76bafb32760ca950a4bd9",
+    "disk": "6363aa5cee426302e8c4de54203acbe7645b8de1",
+    "eol_only": true,
+    "blob_bytes": 12085,
+    "disk_bytes": 12429,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/queue.ts",
+    "index": "37a30351396a8d1f42780fa9f3b6a1cb7bce8c62",
+    "disk": "5a0cc2a5d3d24e704e66a81e0d8e5abb69c8e3fa",
+    "eol_only": true,
+    "blob_bytes": 9760,
+    "disk_bytes": 10120,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/task-planning.ts",
+    "index": "f5f50c2937fbfc0998c16aa3697b9710fb056d04",
+    "disk": "61eeefb51e064ee283f74d342f2fdbdc4be96b6e",
+    "eol_only": true,
+    "blob_bytes": 5948,
+    "disk_bytes": 6171,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/tasks.ts",
+    "index": "7d9e3611e1c63f810148e8d618a39e2ebad52b08",
+    "disk": "ff4387c881ddf0be75873b8163d5a5e2505c564b",
+    "eol_only": true,
+    "blob_bytes": 9459,
+    "disk_bytes": 9776,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/training-data.ts",
+    "index": "3d2e08d8ebfabe01bcb1d49860dcb9e6a5cbb8fc",
+    "disk": "64ae2938b7de97c5ca07586e1cda6a670063de4c",
+    "eol_only": true,
+    "blob_bytes": 6416,
+    "disk_bytes": 6624,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/routes/validation.ts",
+    "index": "b761fa79bb23255368676bf889a01932fe9ddf7d",
+    "disk": "c88f6b4e53538b425c359163b589a58bbdd4a648",
+    "eol_only": true,
+    "blob_bytes": 2613,
+    "disk_bytes": 2700,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/__tests__/ollamaOptimizer.test.ts",
+    "index": "c2f6ecff0a1b1086667412ecec843e49fbede1d5",
+    "disk": "e3cd8ad1294e9a7852bad29ccf536b008f36ac81",
+    "eol_only": true,
+    "blob_bytes": 10173,
+    "disk_bytes": 10517,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/__tests__/taskAssigner.test.ts",
+    "index": "8ea8dd5a89546d7dab16c65762166a5ed379140c",
+    "disk": "cdbf8e04e1c00e66e05d850446389c0dd76bea2b",
+    "eol_only": true,
+    "blob_bytes": 13810,
+    "disk_bytes": 14203,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/agentManager.ts",
+    "index": "47ae40e10e5d4c27310419e2f8ccaf6598fb29e5",
+    "disk": "9ecf54ea833572dff0aafd2144329395259d5be5",
+    "eol_only": true,
+    "blob_bytes": 6506,
+    "disk_bytes": 6746,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/asyncValidationService.ts",
+    "index": "9fd9cdca3d6f4993f3045062d558a33f7c56dbff",
+    "disk": "bad16ffabd8bc110244b0f71bb3f86a71c97f96e",
+    "eol_only": true,
+    "blob_bytes": 17896,
+    "disk_bytes": 18408,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/autoRetryService.ts",
+    "index": "c15547a351f8c21d2a80f7bd075df2dbc9c7d5e3",
+    "disk": "840fd81ed9091c4cf15b19f8c6005b1c588b3399",
+    "eol_only": true,
+    "blob_bytes": 15288,
+    "disk_bytes": 15668,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/battleClawService.ts",
+    "index": "b9856ac2f22d105320fd09a332c92c9c64e14308",
+    "disk": "6da5e66f9173a50db033751110f3f1012bc0a042",
+    "eol_only": true,
+    "blob_bytes": 22751,
+    "disk_bytes": 23366,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/chatService.ts",
+    "index": "3f54e1a2ffc235ef637f6ed2331a106823b07b3d",
+    "disk": "52ab7a0fe3041785283ce7d4d1f905d9b10a201f",
+    "eol_only": true,
+    "blob_bytes": 22013,
+    "disk_bytes": 22690,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/codeReviewService.ts",
+    "index": "a6bc95cdc1246d089ca2303b3d38e5733276a842",
+    "disk": "a3a20f9ac99982c4bb055b57fbcfd87ad561754a",
+    "eol_only": true,
+    "blob_bytes": 20966,
+    "disk_bytes": 21611,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/complexityAssessor.ts",
+    "index": "80cc5a7becdfc3e5faa5798bb14908d9b1eaac14",
+    "disk": "ed3cca4633c9f1d49b38ceb927d98d9a89407f3c",
+    "eol_only": true,
+    "blob_bytes": 6011,
+    "disk_bytes": 6199,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/costCalculator.ts",
+    "index": "54cf1f96b6a5b2c440b32ed12f62e5e14f86465e",
+    "disk": "1cdd19d35549127a44d5cc637744546ba824a657",
+    "eol_only": true,
+    "blob_bytes": 7902,
+    "disk_bytes": 8174,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/costSavingsCalculator.ts",
+    "index": "cf65ad5ae2af5b9401a230a0e092f5d1ec5b3784",
+    "disk": "bbb1d04a0e4c80473518c7a8d857a43e7ad710e7",
+    "eol_only": true,
+    "blob_bytes": 3927,
+    "disk_bytes": 4037,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/executionLogService.ts",
+    "index": "872c2ecfc883e45fc754721c3bb0e937e79f16a2",
+    "disk": "43e78f6d23a588588760dd96c165b712911d672f",
+    "eol_only": true,
+    "blob_bytes": 2703,
+    "disk_bytes": 2806,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/executor.ts",
+    "index": "0e7d4eef53b1bfb8eb2ae6ff23db93b48b5b08dd",
+    "disk": "f0d09c718b11a7b3f4874e13012f5420a1df2073",
+    "eol_only": true,
+    "blob_bytes": 3638,
+    "disk_bytes": 3755,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/fileLock.ts",
+    "index": "3df7433f51ebade35f819ee340ecd85e2c8fbbd1",
+    "disk": "719fc34f0b0042e981f8552e6c8859a5f77eba92",
+    "eol_only": true,
+    "blob_bytes": 3791,
+    "disk_bytes": 3935,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/humanEscalation.ts",
+    "index": "e2a5954ea539c0dfbbfdc4580e7ae94be72d0ee1",
+    "disk": "e8d362f692d1fe6a7cde998fb1b60e3062c39b94",
+    "eol_only": true,
+    "blob_bytes": 4195,
+    "disk_bytes": 4348,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/mcpBridge.ts",
+    "index": "fe64ecc28dc9c260f91e9cbd78ddfb07ba6dbb3f",
+    "disk": "6d67f0d533e3284f4b110983defa9d0c58f1a4df",
+    "eol_only": true,
+    "blob_bytes": 5053,
+    "disk_bytes": 5261,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/modelResolver.ts",
+    "index": "5c569c3899f430f3bdb30e110822346d8d55bab2",
+    "disk": "1161d402734dbd3c8e3e9f501fcaec847039a90c",
+    "eol_only": true,
+    "blob_bytes": 2269,
+    "disk_bytes": 2357,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/ollamaOptimizer.ts",
+    "index": "5ab89dea76505daf5993c8825cec8a7dd63f0844",
+    "disk": "e8c2745dc74fa9c67e8c3d17546bb35fcf7db29e",
+    "eol_only": true,
+    "blob_bytes": 5371,
+    "disk_bytes": 5544,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/orchestratorService.ts",
+    "index": "775c2004132f0276c1e139861422a7de039bd8b0",
+    "disk": "529195ef45e51a824479cbb7e8941ecec4a9dbd4",
+    "eol_only": true,
+    "blob_bytes": 34229,
+    "disk_bytes": 35180,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/rateLimiter.ts",
+    "index": "1304b4de0a1d88aca0ca9db6decce6a9b37de743",
+    "disk": "4fbe02d60b72feda8151f22bdc0541d614b8d32b",
+    "eol_only": true,
+    "blob_bytes": 7454,
+    "disk_bytes": 7714,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/resourcePool.ts",
+    "index": "4dfcc4de0957b1637dee4d0dbfeb73236d9d1861",
+    "disk": "b05b2cb7431f3acd209555334f8a3e02a81974c1",
+    "eol_only": true,
+    "blob_bytes": 10422,
+    "disk_bytes": 10763,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/schedulerService.ts",
+    "index": "3fd3511895e8a2e68b5f8e2d9deec290c122c91a",
+    "disk": "3ad7faef8f365fd810e57108e6f97b096e5fbc9b",
+    "eol_only": true,
+    "blob_bytes": 7232,
+    "disk_bytes": 7471,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/successRateService.ts",
+    "index": "26952957d924324130825b4dad2d9c6c69cc053b",
+    "disk": "4be35cc25ded675dfd48b506b68738ec891287fe",
+    "eol_only": true,
+    "blob_bytes": 5711,
+    "disk_bytes": 5937,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/taskAssigner.ts",
+    "index": "27b12fffcad230f2595ec1c30d7bbaa5d8b7ce8c",
+    "disk": "77ed17e7ae573f9c7e9c8b0b55d096aa9ead1e0f",
+    "eol_only": true,
+    "blob_bytes": 5871,
+    "disk_bytes": 6103,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/taskQueue.ts",
+    "index": "2ee99e92ec3cfafad33dc609b6d5b0bd5e1b3195",
+    "disk": "e5d85f7241ef1d20065673cec63ce9805a0a883b",
+    "eol_only": true,
+    "blob_bytes": 7883,
+    "disk_bytes": 8158,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/taskRouter.ts",
+    "index": "d1b8bfae56d2cdd284ac8e3973294ee250c658a2",
+    "disk": "45ba14a1a947c51877189c0ba490e69b8f10f70a",
+    "eol_only": true,
+    "blob_bytes": 20900,
+    "disk_bytes": 21451,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/trainingDataService.ts",
+    "index": "4c87b57588f7b4d09ffc1440db954d928e71bb86",
+    "disk": "86047959d67e2d3ddf25430e6ccb25394d7f1ea2",
+    "eol_only": true,
+    "blob_bytes": 10884,
+    "disk_bytes": 11242,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/services/zipService.ts",
+    "index": "d35ef58d354f0ccbb816e1cda1e0fa49a77bb196",
+    "disk": "a266b27723c37c58cc16414873acabce39993638",
+    "eol_only": true,
+    "blob_bytes": 3999,
+    "disk_bytes": 4118,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/types/index.ts",
+    "index": "96f3299dc69911f91e2d89086997b4e84d69c51c",
+    "disk": "d546d88d497a1c909a51373623565b628b3d6225",
+    "eol_only": true,
+    "blob_bytes": 377,
+    "disk_bytes": 392,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/src/websocket/handler.ts",
+    "index": "729408f0d3fead83368ddf854c1c0f0e1f4f9a24",
+    "disk": "9185f2140472eabef7aa48fa36c41667f95a1cc5",
+    "eol_only": true,
+    "blob_bytes": 5652,
+    "disk_bytes": 5894,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/api/tsconfig.json",
+    "index": "11878d9bc11efa9c9f629cd5a976da4d4b0f7115",
+    "disk": "1dc43129d7e00f251c3c607b1ae4e8899eaee6fb",
+    "eol_only": true,
+    "blob_bytes": 330,
+    "disk_bytes": 343,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/shared/src/index.ts",
+    "index": "62364d66ef9a2755183a81927eb06487e2acd542",
+    "disk": "5ec3c400452fa1bc0bf83e218e9449f7b41f6d40",
+    "eol_only": true,
+    "blob_bytes": 10345,
+    "disk_bytes": 10815,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/shared/tsconfig.json",
+    "index": "8f24167afd41ead8cdb40d067264ea54e4cbdc62",
+    "disk": "abd7f9c78a1de26eb9ad527ef079dbce21fc54ca",
+    "eol_only": true,
+    "blob_bytes": 146,
+    "disk_bytes": 154,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/index.html",
+    "index": "039be8abde36b640e9083860b133305f990d3efb",
+    "disk": "251cb954ef5704c788ca1b31c8c142507a952902",
+    "eol_only": true,
+    "blob_bytes": 828,
+    "disk_bytes": 848,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/nginx.conf",
+    "index": "3870633ebfe73d892fe4cf1b58b31a763ed755ae",
+    "disk": "60e60fdd9a78c17a6e72324fb9ba9a1c23c6541f",
+    "eol_only": true,
+    "blob_bytes": 1228,
+    "disk_bytes": 1269,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/public/audio/README.md",
+    "index": "ef36b9df3285cf64c39326063cc366b4d71fd85f",
+    "disk": "8bf16cb65ed33a01026aab6cd85c0eeacb7d5389",
+    "eol_only": true,
+    "blob_bytes": 1344,
+    "disk_bytes": 1382,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/public/vite.svg",
+    "index": "6c5a468f86005b45d215d631a1d7997d18ba184a",
+    "disk": "6c1e7a380d2cfeb6231ca92956600587226a5aac",
+    "eol_only": true,
+    "blob_bytes": 274,
+    "disk_bytes": 278,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/App.tsx",
+    "index": "e083b245db2efb146f5cea0c81b4f95ef654b935",
+    "disk": "e4bfbd55819a7de3e7cc3b9028596d0cbd871601",
+    "eol_only": true,
+    "blob_bytes": 1638,
+    "disk_bytes": 1692,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/api/client.ts",
+    "index": "4d1fe10c5f36c880795df36abbb18b3c6998f8e8",
+    "disk": "ea949857f56b57c9239d0301a98d980305100c12",
+    "eol_only": true,
+    "blob_bytes": 17783,
+    "disk_bytes": 18446,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/audio/audioManager.ts",
+    "index": "87eaea0196dab060ae7cad202d0dbaec8ec5e6a3",
+    "disk": "33f06a1a299237b621c2dd374d34f86825c8bd6a",
+    "eol_only": true,
+    "blob_bytes": 6233,
+    "disk_bytes": 6462,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/audio/voicePacks.ts",
+    "index": "f403051551c91e6c39f58c73e5ed1040d56df70e",
+    "disk": "fc2ca2eafd7fd1c25af28f49899c7d710f8c085b",
+    "eol_only": true,
+    "blob_bytes": 14374,
+    "disk_bytes": 14645,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/AnimatedCounter.test.tsx",
+    "index": "c1100ef9688ed4182ef811df3a014b84fd195389",
+    "disk": "47a9b267b49dd215f05fe123ae0f3620932fa89f",
+    "eol_only": true,
+    "blob_bytes": 1703,
+    "disk_bytes": 1755,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/ComponentErrorBoundary.tsx",
+    "index": "3e3a32b74c5b31836edd5e782dc637de057674b7",
+    "disk": "f033c6bf0475474d25ce2005c9edb86cd0d433dd",
+    "eol_only": true,
+    "blob_bytes": 3484,
+    "disk_bytes": 3600,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/ErrorBoundary.tsx",
+    "index": "13b7b81fbc5305a39017a9cfeeb2c9c8e243dce6",
+    "disk": "3dd8a051e4a3f5438d77c2d17e1c32b06ba8e5c2",
+    "eol_only": true,
+    "blob_bytes": 5623,
+    "disk_bytes": 5791,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/StatusBadge.test.tsx",
+    "index": "06a98788c0290fd6c507d067b7b7fe708c15e89b",
+    "disk": "3eff9e0b21030e4f0e1be3618d45e568f9e7ad5c",
+    "eol_only": true,
+    "blob_bytes": 3962,
+    "disk_bytes": 4066,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/BattlefieldCamera.tsx",
+    "index": "e0bea72dbbfa8687c1011f78f0759a6cee964528",
+    "disk": "780be1c40c11417bf1da3067d2801bd97b53e68d",
+    "eol_only": true,
+    "blob_bytes": 1669,
+    "disk_bytes": 1726,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/BattlefieldCanvas.tsx",
+    "index": "a0848c06d5a71907bc0a4f0ddad5ec79de2e32f8",
+    "disk": "9e054029f8a604ea97f77291c57d2bfff7f47e0f",
+    "eol_only": true,
+    "blob_bytes": 5804,
+    "disk_bytes": 5992,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/BattlefieldLabels.tsx",
+    "index": "5153bc698478de70a6fb0d4f356c1d7b287f7603",
+    "disk": "399503e501cf323614979569675c6f14a6d3d528",
+    "eol_only": true,
+    "blob_bytes": 3009,
+    "disk_bytes": 3100,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/BattlefieldView.tsx",
+    "index": "8609148eb55ebf487265612d5a1cbd8674979146",
+    "disk": "159350a3a72938f80abe0a1571c68bd37abe4c78",
+    "eol_only": true,
+    "blob_bytes": 2792,
+    "disk_bytes": 2869,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/BuildingGeometries.ts",
+    "index": "9f1cbddb292ddafec54c733d053eb1ea2ddf0d9d",
+    "disk": "7d6a0be6154d82630529ebd2cc2eb3850cf51ef8",
+    "eol_only": true,
+    "blob_bytes": 5124,
+    "disk_bytes": 5307,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/HolographicTable.tsx",
+    "index": "a61b15ce183c0c9d7d7e2a1c6d3be3d7e1c4a061",
+    "disk": "a7b374adb848648c424942920a2b6bc8624c2b12",
+    "eol_only": true,
+    "blob_bytes": 3964,
+    "disk_bytes": 4099,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/ScanLine.tsx",
+    "index": "57d78a646ffe7e72d9d603737d0208c588496b62",
+    "disk": "61c178405f9a8a0f9303d15bd8b604a79f42c4f6",
+    "eol_only": true,
+    "blob_bytes": 1222,
+    "disk_bytes": 1267,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/battlefield/types.ts",
+    "index": "77e656650ab8a340b488b68f5f5c5e9df9b80c65",
+    "disk": "35f932d7daccd07a5877958eb973897cec47f69b",
+    "eol_only": true,
+    "blob_bytes": 4285,
+    "disk_bytes": 4417,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/chat/CTOWelcome.tsx",
+    "index": "99bb3ef340ef8ac4b21825af37fe77820193f944",
+    "disk": "be41fb04d057b5455c9b04096c0d1a7bff8b966f",
+    "eol_only": true,
+    "blob_bytes": 2087,
+    "disk_bytes": 2146,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/chat/ChatInput.tsx",
+    "index": "e1a46114a1fcd3ce8254ca5f898a01c07ae4234f",
+    "disk": "8d1d4620b59ea44eb2ae585e0a23707fdf366121",
+    "eol_only": true,
+    "blob_bytes": 1912,
+    "disk_bytes": 1971,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/chat/ChatMessage.tsx",
+    "index": "a74516ad388a5d11f29526ec87fe9120ea764ba4",
+    "disk": "9fcb62ae6fe2769dc0d32bb4d84ae0beb2569cac",
+    "eol_only": true,
+    "blob_bytes": 6748,
+    "disk_bytes": 6942,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/chat/ChatPanel.tsx",
+    "index": "e90052ce76f5f9df872a22f2ec3353d04452445e",
+    "disk": "b69e739b353d0771c053c2b9f17d748777b76bbc",
+    "eol_only": true,
+    "blob_bytes": 13541,
+    "disk_bytes": 13908,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/chat/MissionProgressTracker.tsx",
+    "index": "230d26a8d927b0882c622efa92a6abeb890a276c",
+    "disk": "e38c1a8667a314eb2be79a005ec3a6a4922bec58",
+    "eol_only": true,
+    "blob_bytes": 8371,
+    "disk_bytes": 8596,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/code-window/CodeWindow.tsx",
+    "index": "7afed8dd1a1eda65a0ff0d8055296edcad91d946",
+    "disk": "643267bd7232ca90fad35671ea6ddb52452dff9f",
+    "eol_only": true,
+    "blob_bytes": 5319,
+    "disk_bytes": 5443,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/dashboard/AgentComparison.tsx",
+    "index": "8026770e8eac10515e18aa8aa56c9fdb862dae6c",
+    "disk": "24c9cbf8f1e3c5725fa06b3f78daa1742aefca1d",
+    "eol_only": true,
+    "blob_bytes": 6221,
+    "disk_bytes": 6419,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/dashboard/ComplexityDistribution.tsx",
+    "index": "7e5d28a37273365378650f299cedff655cf918ee",
+    "disk": "15560c8e0340c5a506e31265212c50fa75a6ef05",
+    "eol_only": true,
+    "blob_bytes": 5873,
+    "disk_bytes": 6043,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/dashboard/CostDashboard.tsx",
+    "index": "6865513ad905b039061a159064bc45e3108f23c1",
+    "disk": "3c09964874627e31caf1b346348a307c025bd0b8",
+    "eol_only": true,
+    "blob_bytes": 8421,
+    "disk_bytes": 8701,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/dashboard/Dashboard.tsx",
+    "index": "ea43f5d1b1ee9f4b06905b800589216ed728edd3",
+    "disk": "bd9cc2aa4204b428a32b0a23379b4e86479cafbf",
+    "eol_only": true,
+    "blob_bytes": 1647,
+    "disk_bytes": 1694,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/dashboard/MemoryApproval.tsx",
+    "index": "7558f6baef0dcc908f15157b55b266acd2806247",
+    "disk": "77aac374b242b4f68fcffb10a936b4be519b4e63",
+    "eol_only": true,
+    "blob_bytes": 7265,
+    "disk_bytes": 7470,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/dashboard/SuccessRateChart.tsx",
+    "index": "457888826806f5714e2427e872f956994b4a6f5a",
+    "disk": "3cdffbfef4d23c1b13ed818dc9c71aba8236ca21",
+    "eol_only": true,
+    "blob_bytes": 7987,
+    "disk_bytes": 8263,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/IsometricBattlefield.tsx",
+    "index": "aa0e74c5efe0688977399142170fefe323fa3d5d",
+    "disk": "669276549ccc875335898fc010eed58d54ceeee4",
+    "eol_only": true,
+    "blob_bytes": 14843,
+    "disk_bytes": 15274,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/IsometricExplosion.tsx",
+    "index": "5ff82b70dde48ce9a24687489eb21dc8ca999eba",
+    "disk": "d459eb9ad7519c87796b6979bfcb5eb2f4187188",
+    "eol_only": true,
+    "blob_bytes": 3822,
+    "disk_bytes": 3959,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/IsometricGrid.tsx",
+    "index": "e802e1c43e496d5261ac40e9bb994befb33903f1",
+    "disk": "97042b2ad34d5f478ffa54f3f0ad10f31a5685d7",
+    "eol_only": true,
+    "blob_bytes": 1340,
+    "disk_bytes": 1388,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/IsometricLabel.tsx",
+    "index": "18dca18da5576ab12b1c6df543a80a8e844accc4",
+    "disk": "4de08d0e068dc21e30546e9ff56b9eddd36afb14",
+    "eol_only": true,
+    "blob_bytes": 3783,
+    "disk_bytes": 3923,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/IsometricProjectile.tsx",
+    "index": "d53d88981c7cd454d774ecd696b2276ce11f8540",
+    "disk": "8155a7aedad6f345e8fd8baa3e6cb02265f0cdfa",
+    "eol_only": true,
+    "blob_bytes": 2246,
+    "disk_bytes": 2339,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/IsometricTank.tsx",
+    "index": "b3daa80be76687656fc01229e7d896ce0603223b",
+    "disk": "c546b2371c310fba5783a6d51d041c5f6beb6ab0",
+    "eol_only": true,
+    "blob_bytes": 4185,
+    "disk_bytes": 4310,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/IsometricTarget.tsx",
+    "index": "2f0717b7c2566d8d1797e4bcb96ca992286851d0",
+    "disk": "ef8be1fc2320fde93d120fb83921eecaeccab139",
+    "eol_only": true,
+    "blob_bytes": 4032,
+    "disk_bytes": 4175,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/isoProjection.ts",
+    "index": "bdc2952cfd13e9cba0e836f28d783b6578a976e5",
+    "disk": "b302c1b6d60ec719e5024a649d37e55422ade6a5",
+    "eol_only": true,
+    "blob_bytes": 5707,
+    "disk_bytes": 5888,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/isometric/isometric.css",
+    "index": "140726aaf379b22101d94ac9107f695ba812bad7",
+    "disk": "a585b849b5bac58f6fe90cd3cb7de110238f025c",
+    "eol_only": true,
+    "blob_bytes": 7228,
+    "disk_bytes": 7494,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/layout/CommandCenter.tsx",
+    "index": "94e2426ab6aeb47b97990fa106a632197e17f8df",
+    "disk": "3655cc6b6d5ac48aed55e80f90f0bc7f70f12b38",
+    "eol_only": true,
+    "blob_bytes": 4732,
+    "disk_bytes": 4853,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/layout/Sidebar.tsx",
+    "index": "84b3fa8f17a4676f634effa0e151b7bd9f1dc19a",
+    "disk": "765cda4c46cc105a357744100a1ee565db84fdb8",
+    "eol_only": true,
+    "blob_bytes": 5444,
+    "disk_bytes": 5592,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/layout/ThemeSelector.tsx",
+    "index": "55ca253d17b97829a58d9154841de137351d2413",
+    "disk": "bb2c7371d82f0b7e66366688adab33fa22d44b7b",
+    "eol_only": true,
+    "blob_bytes": 2625,
+    "disk_bytes": 2691,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/layout/TopBar.tsx",
+    "index": "e31a45c67dee4b629b8c65624acb9b5bfca28681",
+    "disk": "0951dd6d2161be7dbea386cce0204de3fab75d0e",
+    "eol_only": true,
+    "blob_bytes": 17406,
+    "disk_bytes": 17815,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/main-view/ActiveMissions.tsx",
+    "index": "594d906a853323a815e5b23c4ccb8160bc587039",
+    "disk": "0ef3cafcffd94e845ec7018a154f1256c4de4059",
+    "eol_only": true,
+    "blob_bytes": 7073,
+    "disk_bytes": 7264,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/main-view/CodeReviewPanel.tsx",
+    "index": "2e2c370aa7ef5c07ea6bdc8a7dbb632af919d24f",
+    "disk": "d98bdc629d3b75657dc37f1214348ba07299a42c",
+    "eol_only": true,
+    "blob_bytes": 8024,
+    "disk_bytes": 8275,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/main-view/CreateTaskModal.tsx",
+    "index": "45c5f35c16e5a11950d9db440b019491d9ba33cc",
+    "disk": "b46879f9d3b912836447e0b61cfc12a3bd6c6913",
+    "eol_only": true,
+    "blob_bytes": 7055,
+    "disk_bytes": 7240,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/main-view/EditTaskModal.tsx",
+    "index": "a8810429f3665971dcddfde18d80bd3f264063e3",
+    "disk": "32f1acaf8fed575bdbf6da990837f30e052c0bc6",
+    "eol_only": true,
+    "blob_bytes": 5505,
+    "disk_bytes": 5660,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/main-view/TaskDetail.tsx",
+    "index": "7f40559c3a4176460fde18d7213afb8702d0f62c",
+    "disk": "532c16462e28103261e7d2c4309a33ba4a002401",
+    "eol_only": true,
+    "blob_bytes": 20579,
+    "disk_bytes": 21049,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/main-view/TaskQueue.tsx",
+    "index": "d3c8cd6880c0224ba97d999af0e80b62d1a41dda",
+    "disk": "f0a6b1a03c879b4b1b8a83b7fe48fa779eeebf5f",
+    "eol_only": true,
+    "blob_bytes": 8754,
+    "disk_bytes": 8985,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/minimap/FlowMinimap.tsx",
+    "index": "cafd5f58e9e2992dbe5655f6dd7b7b6df8cba0ea",
+    "disk": "c7f1ecbdbe809c8ea986a50046b5ab1c24aec427",
+    "eol_only": true,
+    "blob_bytes": 5055,
+    "disk_bytes": 5184,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/minimap/Minimap.tsx",
+    "index": "315e3df74d556cf04db3c3cb62564aef3f4b806f",
+    "disk": "03af9babd06913a1b0c9f5a80d78544733e2697b",
+    "eol_only": true,
+    "blob_bytes": 6211,
+    "disk_bytes": 6401,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/minimap/TimelineMinimap.tsx",
+    "index": "fe7dd32715e66dd7455a77b9e6d9be5c3420eba7",
+    "disk": "5dde889449af15993bf4167eb9a77f585f8c3048",
+    "eol_only": true,
+    "blob_bytes": 9251,
+    "disk_bytes": 9548,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/modals/SettingsModal.tsx",
+    "index": "41103712a4afce4f10e0050193f9238b95717919",
+    "disk": "04306df63c599c87537e0f91ea4dd76a7d245e7d",
+    "eol_only": true,
+    "blob_bytes": 15120,
+    "disk_bytes": 15488,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/resources/AlertPanel.tsx",
+    "index": "f10f99addec189dc6b7bfed51e7bf1f974d3cc71",
+    "disk": "874c75786b9855c7ae6e8956c72c2c087a05730b",
+    "eol_only": true,
+    "blob_bytes": 3544,
+    "disk_bytes": 3648,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/resources/ResourceBar.tsx",
+    "index": "6992882d441e131457b244f37c934c08fbfc3bac",
+    "disk": "52f012d2589858c4650a6e485d76c312be8468aa",
+    "eol_only": true,
+    "blob_bytes": 2470,
+    "disk_bytes": 2556,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/shared/AgentCard.tsx",
+    "index": "ccbb41bde2cf5280b601f6a3377625019c87a31d",
+    "disk": "3d9489326c5cf63290e4a034dffaea5b2886de8c",
+    "eol_only": true,
+    "blob_bytes": 8032,
+    "disk_bytes": 8270,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/shared/AnimatedCounter.tsx",
+    "index": "de836677a83488a686e518a3174dcdcfcbeeaa12",
+    "disk": "6767f1b17fadc5400699b2e2c5905d6455fd3910",
+    "eol_only": true,
+    "blob_bytes": 3858,
+    "disk_bytes": 4020,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/shared/ShortcutsHelp.tsx",
+    "index": "6948ead9f3b75917cf312c8deb22fc247380d463",
+    "disk": "dca85ef631c80c47408032f02e94ecd88ef99a25",
+    "eol_only": true,
+    "blob_bytes": 2586,
+    "disk_bytes": 2663,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/shared/Skeleton.tsx",
+    "index": "43fcb21a4d8ce44811416c748e7b6567452f641d",
+    "disk": "4afceb01d96d508d8b79a3db0b86492b05a80aa9",
+    "eol_only": true,
+    "blob_bytes": 2742,
+    "disk_bytes": 2839,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/shared/StatusBadge.tsx",
+    "index": "3c44a9477b78b68562771e1892b8447477bdd9d7",
+    "disk": "8afda93d9cad7d46233341355bbd076ebc8ec05e",
+    "eol_only": true,
+    "blob_bytes": 1795,
+    "disk_bytes": 1838,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/components/shared/TaskCard.tsx",
+    "index": "3353cb35a7987c1282efe5a9e5ca0eaafad352e6",
+    "disk": "c83d8dc0a49819245b84e907154a12a7da412773",
+    "eol_only": true,
+    "blob_bytes": 14933,
+    "disk_bytes": 15346,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/hooks/useAgents.ts",
+    "index": "9c6940006f4f676d397b47b0525141edb44aab45",
+    "disk": "052cf7539b58733f72342773dd00b3a832fb0e79",
+    "eol_only": true,
+    "blob_bytes": 5513,
+    "disk_bytes": 5709,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/hooks/useBattlefieldState.ts",
+    "index": "25bbc4b1de1bcd967ce779777ea3caa1f7ea1999",
+    "disk": "a49c39b1465c3ad9d529005440aecfcf5b00c569",
+    "eol_only": true,
+    "blob_bytes": 6641,
+    "disk_bytes": 6819,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/hooks/useChat.ts",
+    "index": "cd5ade861a454117eb7a604cc1f9cf2dc6c69524",
+    "disk": "3cc7ac967268ceebda86cbeb7284ec0c46504557",
+    "eol_only": true,
+    "blob_bytes": 5645,
+    "disk_bytes": 5849,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/hooks/useExecutionLogs.ts",
+    "index": "7da08b79a565f6a9f478f2fb3a053898296d1bed",
+    "disk": "2f74ed0a1d05bb5bfc3f43c6c2bb2c7f6df8c5c3",
+    "eol_only": true,
+    "blob_bytes": 5568,
+    "disk_bytes": 5759,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/hooks/useKeyboardShortcuts.ts",
+    "index": "70128f007e1fa2d03147b7ad7057ecf4ce911598",
+    "disk": "693d9410ee32cc78deb8b46e2e781c8df6de5ea0",
+    "eol_only": true,
+    "blob_bytes": 3080,
+    "disk_bytes": 3204,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/hooks/useSocket.ts",
+    "index": "cefb2297c92ea14e0ee84f27d0fe1cf9692058b0",
+    "disk": "29d4dbca4a33d32546e23e0068e6e1627007a7cb",
+    "eol_only": true,
+    "blob_bytes": 16601,
+    "disk_bytes": 17057,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/hooks/useTasks.ts",
+    "index": "2f35f901802254153d4591e2cd3df8a16d3a1ab6",
+    "disk": "77f652eda7eb80c34c6f38dcbd50a2d940a66764",
+    "eol_only": true,
+    "blob_bytes": 5092,
+    "disk_bytes": 5276,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/lib/api.ts",
+    "index": "160e99f3303f31e0537ec05389320e16666a5d96",
+    "disk": "b56afdf3979e39bda0f5759559a14fe93544f0fc",
+    "eol_only": true,
+    "blob_bytes": 1912,
+    "disk_bytes": 1996,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/main.tsx",
+    "index": "5e8b48516d2d3dcb9de6aaf06815192bf6f63998",
+    "disk": "49c4fdc2d41bd71684a7085b7f58d1d25e30e7bf",
+    "eol_only": true,
+    "blob_bytes": 346,
+    "disk_bytes": 359,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/store/uiState.ts",
+    "index": "34f13d30f31d056097d1952b454f9513a6d530d7",
+    "disk": "88067120c2e100fab4473cbde94f4eb5c8f86a22",
+    "eol_only": true,
+    "blob_bytes": 12538,
+    "disk_bytes": 12988,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/test/setup.ts",
+    "index": "e906bf7c5a06bab88bd8c4a9413a43a68fcf0feb",
+    "disk": "24233f4dedc684b1e34afa89563575cf48d4daaf",
+    "eol_only": true,
+    "blob_bytes": 987,
+    "disk_bytes": 1029,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/themes/battleclaw.ts",
+    "index": "fa2b34499830fc9461b6cb22520278b36c1ee871",
+    "disk": "9063332a2a8fa6a9e16b11c9223dd5e88c54a938",
+    "eol_only": true,
+    "blob_bytes": 680,
+    "disk_bytes": 708,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/themes/classic.ts",
+    "index": "a73453f4341ff213742650cb6af7fa318daf7949",
+    "disk": "0afd76d05cc02739abe7ed8ffaabaacfd9e8be93",
+    "eol_only": true,
+    "blob_bytes": 624,
+    "disk_bytes": 651,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/themes/index.ts",
+    "index": "ebc2267e32de8b1dbd2955ac1460785a98f907f6",
+    "disk": "c7193a81e6f749b1012848f5e8e5d2d3e20f37d4",
+    "eol_only": true,
+    "blob_bytes": 1131,
+    "disk_bytes": 1181,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/src/vite-env.d.ts",
+    "index": "da28f3e605bb17bb0cb7eb434d1180a0f27a6e77",
+    "disk": "6b4aee1be6953d8b285dcd7d34be85deb41e6960",
+    "eol_only": true,
+    "blob_bytes": 489,
+    "disk_bytes": 513,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/tsconfig.node.json",
+    "index": "97ede7ee6f2d37bd2d76e60c0b6a447bee718b05",
+    "disk": "b850582096101bf4712f6b68386524ab3d4af418",
+    "eol_only": true,
+    "blob_bytes": 233,
+    "disk_bytes": 244,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "packages/ui/vite.config.ts",
+    "index": "38e9854ab66896d655b2621ce9a2679dc85653b3",
+    "disk": "df313552d02002a69e229cabd7a06b33471c9399",
+    "eol_only": true,
+    "blob_bytes": 916,
+    "disk_bytes": 961,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/QWEN25_CODER_7B_REPORT.md",
+    "index": "da1de87cd9bfe1192cf64af27371c95eb08f6322",
+    "disk": "3456d66349d7fa68d45916fd34a17bb5e8e9dd4a",
+    "eol_only": true,
+    "blob_bytes": 7258,
+    "disk_bytes": 7486,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/QWEN25_CODER_7B_ULTIMATE_REPORT.md",
+    "index": "036ad3b6f5b654ad34fc9ec04a126363955c5102",
+    "disk": "8ba61ab00d713b45bf296e6f428bc7923b2ff66a",
+    "eol_only": true,
+    "blob_bytes": 18591,
+    "disk_bytes": 19239,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/QWEN25_CODER_7B_vs_14B_REPORT.md",
+    "index": "6fa1b668ff69913832a6126f713ae626adadf5d1",
+    "disk": "4b863b8e656eace1d76f75ad72ca072d32421ed0",
+    "eol_only": true,
+    "blob_bytes": 8243,
+    "disk_bytes": 8460,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/README.md",
+    "index": "362f522050a8ad35e8d0e499d74f06d56f88c866",
+    "disk": "50d2c67e240aa29c75f02eaf2722089974aaf36a",
+    "eol_only": true,
+    "blob_bytes": 4582,
+    "disk_bytes": 4741,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/analyze-results.js",
+    "index": "6e71baeaa6cde2293085a98e8522cd6eec519fac",
+    "disk": "9cdec6ee8a8af58d038420b7c02bfc83069b252e",
+    "eol_only": true,
+    "blob_bytes": 12697,
+    "disk_bytes": 13026,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/analyze-routing.js",
+    "index": "01c7e3614c12c0ab9f7c091ec00523c6b8a32ddc",
+    "disk": "497853c57e47d3669ba94496b16b065a7aebb41f",
+    "eol_only": true,
+    "blob_bytes": 2402,
+    "disk_bytes": 2483,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/collect-data.js",
+    "index": "2fcbfb83df9d390267cf63d78e3f693dc0ecf236",
+    "disk": "d1390f0b0bd760c0221dab10528fcc109fd79897",
+    "eol_only": true,
+    "blob_bytes": 3291,
+    "disk_bytes": 3409,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/create-comprehensive-suite.js",
+    "index": "7de79ea5907a273d219297e3b4a7f52b47402bdc",
+    "disk": "f4462b1d9613cf67ae0170f22bbfa6b991025710",
+    "eol_only": true,
+    "blob_bytes": 16882,
+    "disk_bytes": 17193,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/create-easy-test-tasks.js",
+    "index": "8bf2a334035650b1cbf533fdbfd3010fa38a8cc2",
+    "disk": "986e6ebdbd86809b33848e0bfe05b70819e6cccf",
+    "eol_only": true,
+    "blob_bytes": 4267,
+    "disk_bytes": 4428,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/create-test-suite.js",
+    "index": "39bde52f07592acde683ab89077a2ae524187972",
+    "disk": "88209d1f1853e98d432ba9a62a4dc247a448423b",
+    "eol_only": true,
+    "blob_bytes": 12514,
+    "disk_bytes": 12748,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/create-test-tasks.js",
+    "index": "696119c2acae6256ad06cf23ff958778e2b58d16",
+    "disk": "dcdb2e3d223d2adbc10e433e619f96c15ff0a82c",
+    "eol_only": true,
+    "blob_bytes": 7915,
+    "disk_bytes": 8074,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/execute-atomic-subtasks.js",
+    "index": "a765443ae2dce06f5b3bea927ddba3a359801459",
+    "disk": "14dcda9f1040ad2584b4c0d37c56aea215b3db85",
+    "eol_only": true,
+    "blob_bytes": 4687,
+    "disk_bytes": 4839,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/execute-subtasks.js",
+    "index": "e4737d8aff2802a20cbf88260d03a97010cc8313",
+    "disk": "a62668762d58a92bbaee329d29fc3550823d2be3",
+    "eol_only": true,
+    "blob_bytes": 6099,
+    "disk_bytes": 6285,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/execute-tasks.js",
+    "index": "455f83201e10c9be7a6d9eecc9a25c3ae8929da0",
+    "disk": "096ba8dfb17b3cd156397c322e0451471051dc06",
+    "eol_only": true,
+    "blob_bytes": 15010,
+    "disk_bytes": 15428,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/format-report.js",
+    "index": "722d357ed2cfb7a00759a9f3e358c9f81a8c2c9f",
+    "disk": "3a80f2b0283c44ab4d00d56262722c28eec32e61",
+    "eol_only": true,
+    "blob_bytes": 10273,
+    "disk_bytes": 10569,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/model-comparison-runner.js",
+    "index": "41949357d2de716c5e5aad703d86508c8c00f056",
+    "disk": "70511d50e2999471e2f41fcf2225e87c3b6d391d",
+    "eol_only": true,
+    "blob_bytes": 17267,
+    "disk_bytes": 17823,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/quick-run.js",
+    "index": "293bc30992468ebf7a6d3711772f5bf45857415f",
+    "disk": "755f8dbd8a33f5312a4eb472063fe354ddb3e4a3",
+    "eol_only": true,
+    "blob_bytes": 3279,
+    "disk_bytes": 3399,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/quick-test-3.js",
+    "index": "d1f634d6b97646d6b9c0d819335e0d19e828d5c0",
+    "disk": "5eef5cb0c7a1cbc8ad7f818c2ff8ecce6a66904b",
+    "eol_only": true,
+    "blob_bytes": 2987,
+    "disk_bytes": 3079,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/run-30-task-suite.js",
+    "index": "0179f1b81a916cbf4f2da003ee035a0e898f492e",
+    "disk": "47cd167ad92be1c2e30ce02151d5a9dd9d7b2f40",
+    "eol_only": true,
+    "blob_bytes": 10219,
+    "disk_bytes": 10541,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/run-diagnostic-suite.js",
+    "index": "14b8442257c914cdefd89eaf249bd7ba0619d4c6",
+    "disk": "4bcd82d9917f690a4e10066c268a0d5012597cb9",
+    "eol_only": true,
+    "blob_bytes": 2681,
+    "disk_bytes": 2768,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/run-full-test-suite.js",
+    "index": "dc20467e845a5445b5d6c189e003cbfd10be0f06",
+    "disk": "3f25dac134f47bced398af53eb85ef680d74bfa3",
+    "eol_only": true,
+    "blob_bytes": 14624,
+    "disk_bytes": 15013,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/test-cto-complex.js",
+    "index": "77feb824069780a17c8bb4e0016374eaa19ed746",
+    "disk": "5a52ed0ec6e3a5722a46102d343ab3df3588e439",
+    "eol_only": true,
+    "blob_bytes": 3707,
+    "disk_bytes": 3811,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/test-cto-review.js",
+    "index": "e5cc8b5ba5e675183900736be4e62919084d18b8",
+    "disk": "5a6330fe5c2c8c8d5d7fbf3ff64726a5ee9ad0cb",
+    "eol_only": true,
+    "blob_bytes": 1973,
+    "disk_bytes": 2029,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/test-cto.js",
+    "index": "f530cccc694704df4db2d82a2525cb3cddff39ca",
+    "disk": "64bbce73fd4f843de0f803b9788c9690e67656fd",
+    "eol_only": true,
+    "blob_bytes": 2426,
+    "disk_bytes": 2500,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/test-medium-tasks.js",
+    "index": "61ec2b6cc5673b541bf76cb746d72ff3d293171b",
+    "disk": "18d035bf350ec81b50033f66f8fc6ff2a08c4cab",
+    "eol_only": true,
+    "blob_bytes": 6057,
+    "disk_bytes": 6221,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/archive/test-qa-review.js",
+    "index": "c7bd65b5b0f913931984bde07c2eb319302c8fd2",
+    "disk": "5af949f0f0fb0f113afa0c4f82a059fd164762a3",
+    "eol_only": true,
+    "blob_bytes": 3698,
+    "disk_bytes": 3817,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/backup-before-docker-move.ps1",
+    "index": "2f4347ea52ef1b98f51de1817f66e1925e07727e",
+    "disk": "8b647cbb125fb2f51bcb8807b50d6e88dd2e337e",
+    "eol_only": true,
+    "blob_bytes": 3092,
+    "disk_bytes": 3152,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/context-size-benchmark.js",
+    "index": "c69aeac1d744908bfa697e6fabcb7e8ac6e14b87",
+    "disk": "2219882c193c6c485b326efb1a25c55bff974185",
+    "eol_only": true,
+    "blob_bytes": 20017,
+    "disk_bytes": 20490,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/generate-arch-context.js",
+    "index": "b43354cce5109a7a556412525d9fb3422b4b0614",
+    "disk": "9516f3c973b9dad6d954f1c0786ae77ad4f9383f",
+    "eol_only": true,
+    "blob_bytes": 7299,
+    "disk_bytes": 7529,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/grok-integration-test.js",
+    "index": "21b3ce2a237520814c56f5e6c2b022983277cb64",
+    "disk": "388da75791d2b41de4266705898ad71678f1a3e6",
+    "eol_only": true,
+    "blob_bytes": 19109,
+    "disk_bytes": 19563,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/health-check.js",
+    "index": "7fa738d1c5793dcaf3b94cb4e96227885e4834bf",
+    "disk": "89852bf9a711d1ee1ceb35b3ea388c9073500d75",
+    "eol_only": true,
+    "blob_bytes": 19964,
+    "disk_bytes": 20568,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/landing-page-decomposition-test.js",
+    "index": "02c8de72c29620efc532d41333539a24c94ba018",
+    "disk": "a1ec66992463d2aeec91e1bcc2c2b96b88215aff",
+    "eol_only": true,
+    "blob_bytes": 52851,
+    "disk_bytes": 53909,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/mac-preflight.js",
+    "index": "a8f58f76f690b8a41842f78b4ef189c74a4a54b2",
+    "disk": "d52f81aa85a1e0e73427f8ea026f3cc39a64b583",
+    "eol_only": true,
+    "blob_bytes": 9082,
+    "disk_bytes": 9305,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/move-docker-to-d-drive.ps1",
+    "index": "09049f9b2250d600b2fe44cbeae6193865d9c346",
+    "disk": "5d4519184f65e304a7b27b339115d50b9293a027",
+    "eol_only": true,
+    "blob_bytes": 4132,
+    "disk_bytes": 4231,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/nginx-hub.conf",
+    "index": "86e8f388498cd54f4c02eda6c4ef4bb7ec1ed28d",
+    "disk": "73d79090af454bb4921393ec62460ec7754ce31a",
+    "eol_only": true,
+    "blob_bytes": 1232,
+    "disk_bytes": 1273,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-battle-test-5.js",
+    "index": "4e80b6fc0e4f5536a3602315ade24e289ccc440b",
+    "disk": "b6e69632f963f74c50bfe6d19d4c746cc35e69a7",
+    "eol_only": true,
+    "blob_bytes": 9269,
+    "disk_bytes": 9495,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-quality-comparison.js",
+    "index": "743824821b096625099c3ec6f606e1f603a4de21",
+    "disk": "d564f2b70f0349db98380ea30f4b5a709efdf300",
+    "eol_only": true,
+    "blob_bytes": 21488,
+    "disk_bytes": 22038,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-quick-test-5.js",
+    "index": "3005eb7c1e727872403a765f3102f5faaf541800",
+    "disk": "5541942e7ed261a0558bba6f55c06027336e2ebf",
+    "eol_only": true,
+    "blob_bytes": 7980,
+    "disk_bytes": 8177,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-stress-results-go.json",
+    "index": "5ab57a23543ca59f279b141dca61d3c33dd75afe",
+    "disk": "dffe37556b7cc489e10a65480a18bafda7a62294",
+    "eol_only": true,
+    "blob_bytes": 3409,
+    "disk_bytes": 3602,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-stress-test-apps.js",
+    "index": "6b250085b2083e209b288062901501aec6cceca6",
+    "disk": "3fd2b89b606e9cc2049435d9f50f9a31b5fd98ae",
+    "eol_only": true,
+    "blob_bytes": 50241,
+    "disk_bytes": 51493,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-stress-test-php.js",
+    "index": "07239c30da6200345186cc1297142a4c137fc8e1",
+    "disk": "8cfa198418cccc203445a0d522575ce612c48b6b",
+    "eol_only": true,
+    "blob_bytes": 26024,
+    "disk_bytes": 26677,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-stress-test-qwen3-8b.js",
+    "index": "1a759786a65f847e64d342aa3628a9744b072358",
+    "disk": "b29cef8a3d92ab242b6dc540ee22593a2c097cd7",
+    "eol_only": true,
+    "blob_bytes": 22218,
+    "disk_bytes": 22721,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ollama-stress-test-qwen3-coder.js",
+    "index": "f126024fb83f256633d722060999fe8325ac3fbb",
+    "disk": "2808e47c7fcd3f3bf3a6d9d26382a68d0a16a779",
+    "eol_only": true,
+    "blob_bytes": 23326,
+    "disk_bytes": 23850,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/overnight-improve.js",
+    "index": "af9cf38ba64e535e2328a14acf0c773b030ef072",
+    "disk": "6e9f56aa7aef157f26d847e3888fc452c2ce82b1",
+    "eol_only": true,
+    "blob_bytes": 47493,
+    "disk_bytes": 48275,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/qa-stress-test.js",
+    "index": "d4a6edc946e149e01a5814a71a9693539702cbed",
+    "disk": "1880489dce904c244c11f290ab4b2bf9a3562abd",
+    "eol_only": true,
+    "blob_bytes": 18862,
+    "disk_bytes": 19293,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/run-full-tier-test.js",
+    "index": "3d53879853021d901118d2a2a00cb530e7d567c7",
+    "disk": "92778466fa22ff0997975566f806758dfa2ce747",
+    "eol_only": true,
+    "blob_bytes": 20089,
+    "disk_bytes": 20547,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/security-scan.ps1",
+    "index": "7df4a8fa5f7df6102915cc7e1554644188110818",
+    "disk": "59c8868ff1f061c91acca6c4dbbfbc60a0525456",
+    "eol_only": true,
+    "blob_bytes": 2112,
+    "disk_bytes": 2174,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-16k-vs-32k.js",
+    "index": "2d21e13750a43c04768582494ffe478a7dfb1e31",
+    "disk": "72e5e744a3b9e7e517360bc7e47ee2ee9e0e7aaf",
+    "eol_only": true,
+    "blob_bytes": 10079,
+    "disk_bytes": 10378,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-atomic-decomposition.js",
+    "index": "4eda3596967cfd0d711273ee2b8d6f664d754ca4",
+    "disk": "aea12b01a2df2505fcd3e193359d9bb80cab9a66",
+    "eol_only": true,
+    "blob_bytes": 3801,
+    "disk_bytes": 3917,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-decomposition.js",
+    "index": "d7b06e0a95f650fbc2ea3ffc9efee262720f730f",
+    "disk": "6a010930786e47cc35849104c1d9cf1e5e471ecc",
+    "eol_only": true,
+    "blob_bytes": 4283,
+    "disk_bytes": 4414,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-mission-16k-vs-32k.js",
+    "index": "ddb014339074efea1eba6dabef28c6bc84c0f0e7",
+    "disk": "a215f9cca2600c4c48ee61631c240d80eccb20c3",
+    "eol_only": true,
+    "blob_bytes": 7125,
+    "disk_bytes": 7342,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-mission.js",
+    "index": "209ec9af99eafd27ba72cb8b04d25a95569890ed",
+    "disk": "6dd6397d37e5a8aa0f2490ed3374622d3c889547",
+    "eol_only": true,
+    "blob_bytes": 7389,
+    "disk_bytes": 7593,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-ollama.js",
+    "index": "2b9e553b49a1a696e564b344d21fc45394114b4b",
+    "disk": "01472b06209836f846afcbd6f5a9931fa694d13d",
+    "eol_only": true,
+    "blob_bytes": 11746,
+    "disk_bytes": 12098,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-parallel.js",
+    "index": "081376d15769ac693477a4a0f7b8b6fa8e6259c5",
+    "disk": "5b12d68654c9c6f0a239696c7ad24fac5fc7384a",
+    "eol_only": true,
+    "blob_bytes": 14120,
+    "disk_bytes": 14541,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-remote-mission.js",
+    "index": "60822ed848916ca2d2b205cccc783733040cdabf",
+    "disk": "ea6dcee63d432ca52d8f56956a5d0c4910103ee0",
+    "eol_only": true,
+    "blob_bytes": 5564,
+    "disk_bytes": 5695,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-suite.js",
+    "index": "36a1db088b230581b76a1ed0fee41d18be6b4979",
+    "disk": "5eac002803e6c132ee89b39ce9e2d0151a34258b",
+    "eol_only": true,
+    "blob_bytes": 5173,
+    "disk_bytes": 5341,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/test-tiers.js",
+    "index": "8eb66263b0bc4cc1c0cbbaae393cc4b15bdf8fc7",
+    "disk": "98f5e7e292fdedaf2802c11f26be567f07655135",
+    "eol_only": true,
+    "blob_bytes": 14909,
+    "disk_bytes": 15325,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ultimate-100-task-test.js",
+    "index": "aff976e98b9a5b4457284865c5635789f66ff9c2",
+    "disk": "c3e5c9da06cebcd4c9353785cca192b0b5684eda",
+    "eol_only": true,
+    "blob_bytes": 155681,
+    "disk_bytes": 159202,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/ultimate-system-stress-test.js",
+    "index": "e9b1433f4c15b5a16ded954c7d815609bf482989",
+    "disk": "8c185ca1ad0ad63bd66a1ade1730149618e5cda1",
+    "eol_only": true,
+    "blob_bytes": 66801,
+    "disk_bytes": 67907,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/verify-false-positive-fix.js",
+    "index": "1849ffbb90db6ee4333e2af0268d9adcc08b844a",
+    "disk": "a418fc05ff657736d595416444cec304bc3d0404",
+    "eol_only": true,
+    "blob_bytes": 11948,
+    "disk_bytes": 12300,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "scripts/verify-system.js",
+    "index": "d652d71f5632257f45ddd2603664372f39275893",
+    "disk": "f67c8e2b4d5e685b829b03d9cb139f06b3b6b1ed",
+    "eol_only": true,
+    "blob_bytes": 5491,
+    "disk_bytes": 5646,
+    "direction": "disk_crlf_blob_lf"
+   },
+   {
+    "path": "tsconfig.base.json",
+    "index": "68632fe1908da2e6ef758841b4a9fd656bb60a2a",
+    "disk": "5247ad4a1e77821a979687b280eb91e78815cead",
+    "eol_only": true,
+    "blob_bytes": 364,
+    "disk_bytes": 380,
+    "direction": "disk_crlf_blob_lf"
+   }
+  ]
+ },
+ "abcc20": {
+  "tracked": 1079,
+  "checked": 1079,
+  "content_differs": 0,
+  "status_reports": 1,
+  "hidden_from_status": []
+ }
+}

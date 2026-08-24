@@ -2166,3 +2166,79 @@ reads like a bug rather than a design; it was not checked against another versio
 that matters — v1 chooses the extension, and the extension chooses the parser — does not depend on
 it. And every "this binary is missing" result is a fact about this machine, which is the point
 rather than a limitation: the machine is the one 2.0 runs on.
+
+---
+
+# Item 6 — worktrees and per-task isolation
+
+## Question
+
+§11's scope: *"Git worktrees or per-task isolation for parallel work. Compare overhead, and check
+RAM cost against the 32GB ceiling."*
+
+Two other workstreams have already aimed a narrower question at this item.
+
+- **OQ-W3-12**, which arrives as W3 item 4's fifth recommendation: *"the checkpoint row must carry
+  an identifier that can restore the workspace, and `Holding`/fork must refuse to promise
+  resumability without one."* F173 measured the hole — the event log restores exactly what the
+  operator saw and nothing about what the agent touched — and named three candidate mechanisms: a
+  git worktree, a git stash object, or a copied pre-image tree.
+- **OQ-W6-11**, from item 5: where the toolchain profile lives, and who writes it for a repository
+  2.0 has never seen. It lands here because a worktree is precisely the case where a profile
+  resolved in one directory is asked about another.
+
+W11 F249 also left a number to check rather than to inherit. It priced isolation at **~4.7×** the
+incremental cost on a real Rust project — 104.2 s from a fresh clone against 22.3 s incremental —
+and explained it in a clause: *"a fresh worktree does not share `target/`, so every isolated attempt
+pays a cold build."* That clause is an assumption about a tool, and it is testable.
+
+So the item is three questions, and only the first is the brief's:
+
+1. **What does isolation cost** — wall clock, disk, and RAM against a 32 GB box that is already
+   holding a model.
+2. **What identifies a workspace state** well enough that a checkpoint row can restore it.
+3. **Does the toolchain survive the move**, given that everything it needs is what git ignores.
+
+## Method
+
+Six probes in `research/spikes/w6-isolation/`, run against the four real repositories on this
+machine — the three donors and this one — rather than against a synthetic tree, because the numbers
+that decide the question are the sizes of the directories git ignores.
+
+| probe | what it does | output |
+|---|---|---|
+| `stale.py` | hashes every tracked file in every repo the way git would, and compares with the index | `stale-results.json` |
+| `mechanisms.py` | prices `git worktree add`/`remove`, `git checkout-index`, `git stash create`, the temp-index snapshot, and a full `robocopy` of the working directory, per repo, n=3 | `mechanisms-results.json` |
+| `checkpoint.py` | the whole cycle in a throwaway clone: snapshot → an agent's edits → snapshot → change list → a worktree **at** the snapshot → restore → `git gc --prune=now` | `checkpoint-results.json` |
+| `buildcache.py` | seven cargo phases on the real Rust workspace: private against shared `CARGO_TARGET_DIR`, cold against warm against cross-worktree, and two attempts at once on one build directory and on two, with RAM sampled throughout | `buildcache-results.json` |
+| `freshwt.py` | the case `buildcache.py` could not see — a worktree created *after* the cache is warm, a copied tree with no `.git` at all, and two cold builds at once | `freshwt-results.json` |
+| `toolchain.py` | what a fresh worktree does not contain: the ignored entries and their size, the profile resolved in both trees, and one executed command per repo | `toolchain-results.json` |
+
+Host as measured: git 2.54.0.windows.1, cargo 1.95.0, node 24.15.0, 12 logical cores (i5-10500),
+31.9 GB RAM, and every repository on the same SATA SSD (Samsung 870 EVO) as the scratch space.
+`pnpm` — the package manager v1's own lockfile names — is **not installed on this host**, which is
+data rather than a gap, and no model was resident during the RAM measurements, which is the
+optimistic case.
+
+Because the probes run against David's working repositories, the safety rule is stated once: they
+add a worktree and remove it, and they write objects with `git stash create` and `commit-tree`,
+which touch neither the index, the working tree, nor any ref. Every repo's `git status` and
+`git worktree list` are asserted clean before and after, and the one file each probe edits is
+restored byte for byte.
+
+That rule is where the first finding came from. It fired on the second repository, and what it
+caught was not the probe.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| Git worktrees, the family's one use | BCF `swebench.rs:260-330` | **KEEP the mechanism, not the wiring** — a sequential bench harness, never pruned, and it falls back to a full clone (F325) |
+| A clone per mission | Claudette `tools/mission.rs`, `tools/git.rs:538-555` | **CANNOT TRANSFER** — `validate_clone_url` refuses `file://` and local paths by design, so a repository on this disk cannot be isolated by that path at all (F325) |
+| One shared workspace directory | v1 `docker-compose.yml:110,144,170`, `tools/file_ops.py:53-89` | **DISCARD** — one host directory mounted read-write into three services, and the tool that writes takes no lock (F326) |
+| A `file_locks` table | v1 `schema.prisma:121-133`, `taskAssigner.ts:100-120`, `fileLock.ts` | **DISCARD** — the lock names files a *planner* declared, is taken at assignment, and has a second implementation with no production caller (F326) |
+| MCP distributed file locks | v1 `mcp/client.py:168-229`, `agents/base.py:66-67,119-121`, `config.py:36` | **DEAD IN EVERY CONFIGURATION** — off by default, explicitly bypassed for the only agent that writes code, and the gateway is not deployed (F326) |
+| A copied file plan per cell | this repo `w8-corpus/src/workdir.rs` | **KEEP** — 952 cells, median 8 KB and 10 files each, and it is what runs when the subject has no git (F327) |
+| Per-file undo into a trash directory | Claudette `transcript.rs:132-154`, `commands.rs:492` | **KEEP, as a different thing** — a per-turn undo, not a workspace marker (F173) |
+| *"A fresh worktree does not share `target/`, so every isolated attempt pays a cold build"* | W11 F249 | **CORRECTED** — 56.6 s cold, **24.7 s** for a worktree created after the cache is warm, 0.4 s for one that is warm (F331) |
+| Cap concurrent builders at 2 | W2 F83 and its recommendation 5 | **BINDING, and it is about the model** — two *builds* at once buy 3% and take the box to 2.3 GB free (F333) |

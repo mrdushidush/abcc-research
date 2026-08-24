@@ -1,0 +1,230 @@
+{
+ "repo": "D:\\dev\\claudette",
+ "cmd": [
+  "cargo",
+  "test",
+  "--workspace",
+  "--no-run",
+  "--offline"
+ ],
+ "phases": {
+  "A_cold_private": {
+   "label": "wt1 private target",
+   "s": 67.72,
+   "rc": 0,
+   "crates_compiled": 204,
+   "blocked_on_lock": false,
+   "lock_lines": [],
+   "stderr_tail": [
+    "  Executable tests\\battery_verify.rs (target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+    "  Executable tests\\doc_consistency.rs (target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ],
+   "ram": {
+    "samples": 127,
+    "peak_procs": 21,
+    "peak_toolchain_ws_mb": 11577.2,
+    "min_free_ram_mb": 9622.0,
+    "max_free_ram_mb": 17562.0
+   },
+   "target_bytes": 2904205810,
+   "target_files": 2832
+  },
+  "B_cold_shared": {
+   "label": "wt2 shared target, empty",
+   "s": 62.35,
+   "rc": 0,
+   "crates_compiled": 204,
+   "blocked_on_lock": false,
+   "lock_lines": [],
+   "stderr_tail": [
+    "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+    "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ],
+   "ram": {
+    "samples": 114,
+    "peak_procs": 21,
+    "peak_toolchain_ws_mb": 11832.2,
+    "min_free_ram_mb": 9695.1,
+    "max_free_ram_mb": 17049.2
+   },
+   "target_bytes": 2904309992,
+   "target_files": 2832
+  },
+  "C_warm_cross": {
+   "label": "wt1 onto wt2's shared cache",
+   "s": 0.46,
+   "rc": 0,
+   "crates_compiled": 0,
+   "blocked_on_lock": false,
+   "lock_lines": [],
+   "stderr_tail": [
+    "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+    "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ],
+   "ram": {
+    "samples": 1,
+    "peak_procs": 2,
+    "peak_toolchain_ws_mb": 59.6,
+    "min_free_ram_mb": 16855.4,
+    "max_free_ram_mb": 16855.4
+   }
+  },
+  "D_noop_shared": {
+   "label": "wt1 again, unchanged",
+   "s": 0.47,
+   "rc": 0,
+   "crates_compiled": 0,
+   "blocked_on_lock": false,
+   "lock_lines": [],
+   "stderr_tail": [
+    "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+    "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ],
+   "ram": {
+    "samples": 1,
+    "peak_procs": 2,
+    "peak_toolchain_ws_mb": 59.1,
+    "min_free_ram_mb": 16842.9,
+    "max_free_ram_mb": 16842.9
+   }
+  },
+  "E_edit_shared": {
+   "label": "wt1, one file edited",
+   "s": 3.73,
+   "rc": 0,
+   "crates_compiled": 1,
+   "blocked_on_lock": false,
+   "lock_lines": [],
+   "stderr_tail": [
+    "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+    "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ],
+   "ram": {
+    "samples": 8,
+    "peak_procs": 6,
+    "peak_toolchain_ws_mb": 2504.8,
+    "min_free_ram_mb": 14993.0,
+    "max_free_ram_mb": 17083.7
+   }
+  },
+  "F_conc_shared": {
+   "wt2": {
+    "label": "wt2",
+    "s": 3.93,
+    "rc": 0,
+    "crates_compiled": 1,
+    "blocked_on_lock": true,
+    "lock_lines": [
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache"
+    ],
+    "stderr_tail": [
+     "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+     "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+     "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+    ]
+   },
+   "wt1": {
+    "label": "wt1",
+    "s": 4.06,
+    "rc": 0,
+    "crates_compiled": 0,
+    "blocked_on_lock": true,
+    "lock_lines": [
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache"
+    ],
+    "stderr_tail": [
+     "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+     "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+     "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-shared-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+    ]
+   },
+   "wall_s": 4.06,
+   "ram": {
+    "samples": 8,
+    "peak_procs": 8,
+    "peak_toolchain_ws_mb": 2712.5,
+    "min_free_ram_mb": 15211.8,
+    "max_free_ram_mb": 17060.0
+   }
+  },
+  "G_prep_cold_priv2": {
+   "label": "wt2 private target, cold",
+   "s": 63.82,
+   "rc": 0,
+   "crates_compiled": 204,
+   "blocked_on_lock": false,
+   "lock_lines": [],
+   "stderr_tail": [
+    "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-priv2-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+    "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-priv2-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-priv2-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ],
+   "ram": {
+    "samples": 117,
+    "peak_procs": 21,
+    "peak_toolchain_ws_mb": 11927.4,
+    "min_free_ram_mb": 9853.1,
+    "max_free_ram_mb": 17292.3
+   }
+  },
+  "G_conc_private": {
+   "wt2": {
+    "label": "wt2",
+    "s": 4.77,
+    "rc": 0,
+    "crates_compiled": 1,
+    "blocked_on_lock": true,
+    "lock_lines": [
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache"
+    ],
+    "stderr_tail": [
+     "  Executable tests\\battery_verify.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-priv2-target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+     "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-priv2-target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+     "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\bc-priv2-target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+    ]
+   },
+   "wt1": {
+    "label": "wt1",
+    "s": 4.78,
+    "rc": 0,
+    "crates_compiled": 1,
+    "blocked_on_lock": true,
+    "lock_lines": [
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache",
+     "    Blocking waiting for file lock on package cache"
+    ],
+    "stderr_tail": [
+     "  Executable tests\\battery_verify.rs (target\\debug\\deps\\battery_verify-4e9595d658820725.exe)",
+     "  Executable tests\\doc_consistency.rs (target\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+     "  Executable tests\\offline_egress.rs (target\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+    ]
+   },
+   "wall_s": 4.78,
+   "ram": {
+    "samples": 9,
+    "peak_procs": 12,
+    "peak_toolchain_ws_mb": 5276.3,
+    "min_free_ram_mb": 12611.6,
+    "max_free_ram_mb": 16613.4
+   }
+  }
+ },
+ "disk": {
+  "private_target_bytes": 2904205810,
+  "shared_target_bytes": 2933895418,
+  "priv2_target_bytes": 2933657324,
+  "worktree_checkout_bytes": -2928949836
+ }
+}

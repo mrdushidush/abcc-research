@@ -1,0 +1,696 @@
+{
+ "host": {
+  "reps": 3,
+  "quick": true
+ },
+ "repos": {
+  "bcf": {
+   "path": "D:\\dev\\battle-command-forge",
+   "tracked_files": 61,
+   "worktrees_before": [
+    "D:/dev/battle-command-forge d6c1601 [main]"
+   ],
+   "worktree": [
+    {
+     "add_s": 0.12094160000015108,
+     "remove_s": 0.03191859999969893,
+     "bytes": 849501,
+     "files": 62
+    },
+    {
+     "add_s": 0.07967230000031122,
+     "remove_s": 0.03143959999943036,
+     "bytes": 849501,
+     "files": 62
+    },
+    {
+     "add_s": 0.07947819999935746,
+     "remove_s": 0.03155319999859785,
+     "bytes": 849501,
+     "files": 62
+    }
+   ],
+   "checkout_index": [
+    {
+     "s": 0.04990100000031816,
+     "bytes": 849441,
+     "files": 61
+    },
+    {
+     "s": 0.04665920000115875,
+     "bytes": 849441,
+     "files": 61
+    },
+    {
+     "s": 0.046136199998727534,
+     "bytes": 849441,
+     "files": 61
+    }
+   ],
+   "stash_create": {
+    "runs": [
+     {
+      "s": 0.06667620000007446,
+      "sha": "0cc372a2e4e47409887243360c18dd120ab5a193"
+     },
+     {
+      "s": 0.04685240000071644,
+      "sha": "0cc372a2e4e47409887243360c18dd120ab5a193"
+     },
+     {
+      "s": 0.04641969999829598,
+      "sha": "0cc372a2e4e47409887243360c18dd120ab5a193"
+     }
+    ],
+    "captured_paths": [
+     "M\t.github/ISSUE_TEMPLATE/bug_report.md"
+    ],
+    "captured_untracked": false,
+    "diffstat": [
+     " 1 file changed, 2 insertions(+)"
+    ]
+   },
+   "temp_index": {
+    "runs": [
+     {
+      "s": 0.10857940000096278,
+      "commit": "ce7deb92cbf1b1c153a4d0fca5f26ef16ffd7785"
+     },
+     {
+      "s": 0.08544459999939136,
+      "commit": "ce7deb92cbf1b1c153a4d0fca5f26ef16ffd7785"
+     },
+     {
+      "s": 0.08522120000088762,
+      "commit": "ce7deb92cbf1b1c153a4d0fca5f26ef16ffd7785"
+     }
+    ],
+    "captured_paths": [
+     "M\t.github/ISSUE_TEMPLATE/bug_report.md",
+     "A\tw6-isolation-probe-untracked.txt"
+    ],
+    "captured_untracked": true
+   },
+   "worktrees_after": [
+    "D:/dev/battle-command-forge d6c1601 [main]"
+   ],
+   "copy_1t": {
+    "s": 6.0524172999994335,
+    "bytes": 1702523919,
+    "files": 2342,
+    "delete_s": 0.5717237000008026,
+    "rc": 1
+   },
+   "copy_8t": {
+    "s": 0.7964968999986013,
+    "bytes": 1702523919,
+    "files": 2342,
+    "delete_s": 0.5580952999989677,
+    "rc": 1
+   }
+  },
+  "claudette": {
+   "path": "D:\\dev\\claudette",
+   "tracked_files": 494,
+   "worktrees_before": [
+    "D:/dev/claudette                  af3f804 [main]",
+    "D:/dev/claudette-research-control 602ca72 (detached HEAD)"
+   ],
+   "worktree": [
+    {
+     "add_s": 0.30286619999969844,
+     "remove_s": 0.11645189999944705,
+     "bytes": 4705985,
+     "files": 495
+    },
+    {
+     "add_s": 0.2737926999998308,
+     "remove_s": 0.11187969999991765,
+     "bytes": 4705985,
+     "files": 495
+    },
+    {
+     "add_s": 0.31375670000124956,
+     "remove_s": 0.11164180000014312,
+     "bytes": 4705985,
+     "files": 495
+    }
+   ],
+   "checkout_index": [
+    {
+     "s": 0.23769440000069153,
+     "bytes": 4705930,
+     "files": 494
+    },
+    {
+     "s": 0.23588660000132222,
+     "bytes": 4705930,
+     "files": 494
+    },
+    {
+     "s": 0.23531560000083118,
+     "bytes": 4705930,
+     "files": 494
+    }
+   ],
+   "stash_create": {
+    "runs": [
+     {
+      "s": 0.08332580000023881,
+      "sha": "bf27781a327633f07d105851fe8c52c8fbb79c59"
+     },
+     {
+      "s": 0.05663559999993595,
+      "sha": "bf27781a327633f07d105851fe8c52c8fbb79c59"
+     },
+     {
+      "s": 0.06384689999867987,
+      "sha": "0f3d0215ff8ff73ab8a6c775bdbca323457bb261"
+     }
+    ],
+    "captured_paths": [
+     "M\t.github/CODE_OF_CONDUCT.md"
+    ],
+    "captured_untracked": false,
+    "diffstat": [
+     " 1 file changed, 2 insertions(+)"
+    ]
+   },
+   "temp_index": {
+    "runs": [
+     {
+      "s": 0.20818700000017998,
+      "commit": "227fd606279979733d6d93694aaeda892e837e6f"
+     },
+     {
+      "s": 0.14373579999846697,
+      "commit": "227fd606279979733d6d93694aaeda892e837e6f"
+     },
+     {
+      "s": 0.1483963999999105,
+      "commit": "227fd606279979733d6d93694aaeda892e837e6f"
+     }
+    ],
+    "captured_paths": [
+     "M\t.github/CODE_OF_CONDUCT.md",
+     "A\tw6-isolation-probe-untracked.txt"
+    ],
+    "captured_untracked": true
+   },
+   "worktrees_after": [
+    "D:/dev/claudette                  af3f804 [main]",
+    "D:/dev/claudette-research-control 602ca72 (detached HEAD)"
+   ],
+   "copy_1t": {
+    "s": 135.93541820000064,
+    "bytes": 25510687332,
+    "files": 55831,
+    "delete_s": 8.163425700000516,
+    "rc": 1
+   },
+   "copy_8t": {
+    "s": 102.18007099999886,
+    "bytes": 25510687332,
+    "files": 55831,
+    "delete_s": 7.6606434999994235,
+    "rc": 1
+   }
+  },
+  "v1": {
+   "path": "D:\\dev\\agent-battle-command-center",
+   "tracked_files": 539,
+   "worktrees_before": [
+    "D:/dev/agent-battle-command-center d5528ea [main]"
+   ],
+   "quick": true,
+   "worktree": [
+    {
+     "add_s": 0.6582127000001492,
+     "remove_s": 0.12011170000005222,
+     "bytes": 63698560,
+     "files": 540
+    },
+    {
+     "add_s": 0.672054599999683,
+     "remove_s": 0.12158259999887377,
+     "bytes": 63698560,
+     "files": 540
+    },
+    {
+     "add_s": 0.661101099998632,
+     "remove_s": 0.12235399999917718,
+     "bytes": 63698560,
+     "files": 540
+    }
+   ],
+   "checkout_index": [
+    {
+     "s": 0.5267160999992484,
+     "bytes": 63698494,
+     "files": 539
+    },
+    {
+     "s": 0.5039617000002181,
+     "bytes": 63698494,
+     "files": 539
+    },
+    {
+     "s": 0.49820739999995567,
+     "bytes": 63698494,
+     "files": 539
+    }
+   ],
+   "stash_create": {
+    "runs": [
+     {
+      "s": 0.07132589999855554,
+      "sha": "135607788d492d528ed0baf721d11ee09b0967b2"
+     },
+     {
+      "s": 0.05520719999913126,
+      "sha": "135607788d492d528ed0baf721d11ee09b0967b2"
+     },
+     {
+      "s": 0.054047899999204674,
+      "sha": "135607788d492d528ed0baf721d11ee09b0967b2"
+     }
+    ],
+    "captured_paths": [
+     "M\tCHANGELOG.md"
+    ],
+    "captured_untracked": false,
+    "diffstat": [
+     " 1 file changed, 2 insertions(+)"
+    ]
+   },
+   "temp_index": {
+    "runs": [
+     {
+      "s": 0.8599386999994749,
+      "commit": "fc81b5c75226b15ab737bd2551bf173669e0475e"
+     },
+     {
+      "s": 0.3853415000012319,
+      "commit": "54186b4517d0e9006cf993413c69417416922386"
+     },
+     {
+      "s": 0.3713497000007919,
+      "commit": "54186b4517d0e9006cf993413c69417416922386"
+     }
+    ],
+    "captured_paths": [
+     "M\t.claude.md",
+     "M\t.dockerignore",
+     "M\t.env.example",
+     "M\t.gitattributes",
+     "M\t.github/ISSUE_TEMPLATE/bug_report.yml",
+     "M\t.github/ISSUE_TEMPLATE/config.yml",
+     "M\t.github/ISSUE_TEMPLATE/feature_request.yml",
+     "M\t.github/ISSUE_TEMPLATE/question.yml",
+     "M\t.github/dependabot.yml",
+     "M\t.github/pull_request_template.md",
+     "M\t.gitignore",
+     "M\t.trivyignore",
+     "M\tCHANGELOG.md",
+     "M\tCODE_OF_CONDUCT.md",
+     "M\tCONTRIBUTING.md",
+     "M\tLICENSE",
+     "M\tQA_PLAN.md",
+     "M\tQA_RESULTS.md",
+     "M\tSECURITY.md",
+     "M\tSETUP_GUIDE.md",
+     "M\tdocker-compose.hub.yml",
+     "M\tdocker-compose.mac.yml",
+     "M\tdocker-compose.yml",
+     "M\tdocs/API.md",
+     "M\tdocs/AUDIO_EVENT_MAPPING.md",
+     "M\tdocs/AUDIO_TESTING_GUIDE.md",
+     "M\tdocs/AUTHENTICATION.md",
+     "M\tdocs/CORS.md",
+     "M\tdocs/DATABASE_MIGRATIONS.md",
+     "M\tdocs/DEVELOPMENT.md",
+     "M\tdocs/ERROR_HANDLING.md",
+     "M\tdocs/FIX_FALSE_POSITIVE_COMPLETIONS.md",
+     "M\tdocs/RATE_LIMITING.md",
+     "M\tdocs/UI_ENHANCEMENTS_SUMMARY.md",
+     "M\tmodelfiles/qwen2.5-coder-16k.Modelfile",
+     "M\tmodelfiles/qwen2.5-coder-32k.Modelfile",
+     "M\tmodelfiles/qwen2.5-coder-64k.Modelfile",
+     "M\tmodelfiles/qwen2.5-coder-8k.Modelfile",
+     "M\tmodelfiles/qwen3-coder-16k.Modelfile",
+     "M\tpackages/agents/package.json",
+     "M\tpackages/agents/pyproject.toml",
+     "M\tpackages/agents/pytest.ini",
+     "M\tpackages/api/prisma/migrations/20260201_simplify_complexity_model/migration.sql",
+     "M\tpackages/api/prisma/migrations/20260227_add_missions/migration.sql",
+     "M\tpackages/api/prisma/schema.prisma",
+     "M\tpackages/api/prisma/seed.ts",
+     "M\tpackages/api/src/config.ts",
+     "M\tpackages/api/src/db/client.ts",
+     "M\tpackages/api/src/index.ts",
+     "M\tpackages/api/src/logger.ts",
+     "M\tpackages/api/src/middleware/rateLimiter.ts",
+     "M\tpackages/api/src/routes/agents.ts",
+     "M\tpackages/api/src/routes/battle-claw.ts",
+     "M\tpackages/api/src/routes/budget.ts",
+     "M\tpackages/api/src/routes/chat.ts",
+     "M\tpackages/api/src/routes/code-reviews.ts",
+     "M\tpackages/api/src/routes/cost-metrics.ts",
+     "M\tpackages/api/src/routes/execute.ts",
+     "M\tpackages/api/src/routes/execution-logs.ts",
+     "M\tpackages/api/src/routes/memories.ts",
+     "M\tpackages/api/src/routes/metrics.ts",
+     "M\tpackages/api/src/routes/missions.ts",
+     "M\tpackages/api/src/routes/queue.ts",
+     "M\tpackages/api/src/routes/task-planning.ts",
+     "M\tpackages/api/src/routes/tasks.ts",
+     "M\tpackages/api/src/routes/training-data.ts",
+     "M\tpackages/api/src/routes/validation.ts",
+     "M\tpackages/api/src/services/__tests__/ollamaOptimizer.test.ts",
+     "M\tpackages/api/src/services/__tests__/taskAssigner.test.ts",
+     "M\tpackages/api/src/services/agentManager.ts",
+     "M\tpackages/api/src/services/asyncValidationService.ts",
+     "M\tpackages/api/src/services/autoRetryService.ts",
+     "M\tpackages/api/src/services/battleClawService.ts",
+     "M\tpackages/api/src/services/chatService.ts",
+     "M\tpackages/api/src/services/codeReviewService.ts",
+     "M\tpackages/api/src/services/complexityAssessor.ts",
+     "M\tpackages/api/src/services/costCalculator.ts",
+     "M\tpackages/api/src/services/costSavingsCalculator.ts",
+     "M\tpackages/api/src/services/executionLogService.ts",
+     "M\tpackages/api/src/services/executor.ts",
+     "M\tpackages/api/src/services/fileLock.ts",
+     "M\tpackages/api/src/services/humanEscalation.ts",
+     "M\tpackages/api/src/services/mcpBridge.ts",
+     "M\tpackages/api/src/services/modelResolver.ts",
+     "M\tpackages/api/src/services/ollamaOptimizer.ts",
+     "M\tpackages/api/src/services/orchestratorService.ts",
+     "M\tpackages/api/src/services/rateLimiter.ts",
+     "M\tpackages/api/src/services/resourcePool.ts",
+     "M\tpackages/api/src/services/schedulerService.ts",
+     "M\tpackages/api/src/services/successRateService.ts",
+     "M\tpackages/api/src/services/taskAssigner.ts",
+     "M\tpackages/api/src/services/taskQueue.ts",
+     "M\tpackages/api/src/services/taskRouter.ts",
+     "M\tpackages/api/src/services/trainingDataService.ts",
+     "M\tpackages/api/src/services/zipService.ts",
+     "M\tpackages/api/src/types/index.ts",
+     "M\tpackages/api/src/websocket/handler.ts",
+     "M\tpackages/api/tsconfig.json",
+     "M\tpackages/shared/src/index.ts",
+     "M\tpackages/shared/tsconfig.json",
+     "M\tpackages/ui/index.html",
+     "M\tpackages/ui/nginx.conf",
+     "M\tpackages/ui/public/audio/README.md",
+     "M\tpackages/ui/public/vite.svg",
+     "M\tpackages/ui/src/App.tsx",
+     "M\tpackages/ui/src/api/client.ts",
+     "M\tpackages/ui/src/audio/audioManager.ts",
+     "M\tpackages/ui/src/audio/voicePacks.ts",
+     "M\tpackages/ui/src/components/AnimatedCounter.test.tsx",
+     "M\tpackages/ui/src/components/ComponentErrorBoundary.tsx",
+     "M\tpackages/ui/src/components/ErrorBoundary.tsx",
+     "M\tpackages/ui/src/components/StatusBadge.test.tsx",
+     "M\tpackages/ui/src/components/battlefield/BattlefieldCamera.tsx",
+     "M\tpackages/ui/src/components/battlefield/BattlefieldCanvas.tsx",
+     "M\tpackages/ui/src/components/battlefield/BattlefieldLabels.tsx",
+     "M\tpackages/ui/src/components/battlefield/BattlefieldView.tsx",
+     "M\tpackages/ui/src/components/battlefield/BuildingGeometries.ts",
+     "M\tpackages/ui/src/components/battlefield/HolographicTable.tsx",
+     "M\tpackages/ui/src/components/battlefield/ScanLine.tsx",
+     "M\tpackages/ui/src/components/battlefield/types.ts",
+     "M\tpackages/ui/src/components/chat/CTOWelcome.tsx",
+     "M\tpackages/ui/src/components/chat/ChatInput.tsx",
+     "M\tpackages/ui/src/components/chat/ChatMessage.tsx",
+     "M\tpackages/ui/src/components/chat/ChatPanel.tsx",
+     "M\tpackages/ui/src/components/chat/MissionProgressTracker.tsx",
+     "M\tpackages/ui/src/components/code-window/CodeWindow.tsx",
+     "M\tpackages/ui/src/components/dashboard/AgentComparison.tsx",
+     "M\tpackages/ui/src/components/dashboard/ComplexityDistribution.tsx",
+     "M\tpackages/ui/src/components/dashboard/CostDashboard.tsx",
+     "M\tpackages/ui/src/components/dashboard/Dashboard.tsx",
+     "M\tpackages/ui/src/components/dashboard/MemoryApproval.tsx",
+     "M\tpackages/ui/src/components/dashboard/SuccessRateChart.tsx",
+     "M\tpackages/ui/src/components/isometric/IsometricBattlefield.tsx",
+     "M\tpackages/ui/src/components/isometric/IsometricExplosion.tsx",
+     "M\tpackages/ui/src/components/isometric/IsometricGrid.tsx",
+     "M\tpackages/ui/src/components/isometric/IsometricLabel.tsx",
+     "M\tpackages/ui/src/components/isometric/IsometricProjectile.tsx",
+     "M\tpackages/ui/src/components/isometric/IsometricTank.tsx",
+     "M\tpackages/ui/src/components/isometric/IsometricTarget.tsx",
+     "M\tpackages/ui/src/components/isometric/isoProjection.ts",
+     "M\tpackages/ui/src/components/isometric/isometric.css",
+     "M\tpackages/ui/src/components/layout/CommandCenter.tsx",
+     "M\tpackages/ui/src/components/layout/Sidebar.tsx",
+     "M\tpackages/ui/src/components/layout/ThemeSelector.tsx",
+     "M\tpackages/ui/src/components/layout/TopBar.tsx",
+     "M\tpackages/ui/src/components/main-view/ActiveMissions.tsx",
+     "M\tpackages/ui/src/components/main-view/CodeReviewPanel.tsx",
+     "M\tpackages/ui/src/components/main-view/CreateTaskModal.tsx",
+     "M\tpackages/ui/src/components/main-view/EditTaskModal.tsx",
+     "M\tpackages/ui/src/components/main-view/TaskDetail.tsx",
+     "M\tpackages/ui/src/components/main-view/TaskQueue.tsx",
+     "M\tpackages/ui/src/components/minimap/FlowMinimap.tsx",
+     "M\tpackages/ui/src/components/minimap/Minimap.tsx",
+     "M\tpackages/ui/src/components/minimap/TimelineMinimap.tsx",
+     "M\tpackages/ui/src/components/modals/SettingsModal.tsx",
+     "M\tpackages/ui/src/components/resources/AlertPanel.tsx",
+     "M\tpackages/ui/src/components/resources/ResourceBar.tsx",
+     "M\tpackages/ui/src/components/shared/AgentCard.tsx",
+     "M\tpackages/ui/src/components/shared/AnimatedCounter.tsx",
+     "M\tpackages/ui/src/components/shared/ShortcutsHelp.tsx",
+     "M\tpackages/ui/src/components/shared/Skeleton.tsx",
+     "M\tpackages/ui/src/components/shared/StatusBadge.tsx",
+     "M\tpackages/ui/src/components/shared/TaskCard.tsx",
+     "M\tpackages/ui/src/hooks/useAgents.ts",
+     "M\tpackages/ui/src/hooks/useBattlefieldState.ts",
+     "M\tpackages/ui/src/hooks/useChat.ts",
+     "M\tpackages/ui/src/hooks/useExecutionLogs.ts",
+     "M\tpackages/ui/src/hooks/useKeyboardShortcuts.ts",
+     "M\tpackages/ui/src/hooks/useSocket.ts",
+     "M\tpackages/ui/src/hooks/useTasks.ts",
+     "M\tpackages/ui/src/lib/api.ts",
+     "M\tpackages/ui/src/main.tsx",
+     "M\tpackages/ui/src/store/uiState.ts",
+     "M\tpackages/ui/src/test/setup.ts",
+     "M\tpackages/ui/src/themes/battleclaw.ts",
+     "M\tpackages/ui/src/themes/classic.ts",
+     "M\tpackages/ui/src/themes/index.ts",
+     "M\tpackages/ui/src/vite-env.d.ts",
+     "M\tpackages/ui/tsconfig.node.json",
+     "M\tpackages/ui/vite.config.ts",
+     "M\tscripts/QWEN25_CODER_7B_REPORT.md",
+     "M\tscripts/QWEN25_CODER_7B_ULTIMATE_REPORT.md",
+     "M\tscripts/QWEN25_CODER_7B_vs_14B_REPORT.md",
+     "M\tscripts/README.md",
+     "M\tscripts/archive/analyze-results.js",
+     "M\tscripts/archive/analyze-routing.js",
+     "M\tscripts/archive/collect-data.js",
+     "M\tscripts/archive/create-comprehensive-suite.js",
+     "M\tscripts/archive/create-easy-test-tasks.js",
+     "M\tscripts/archive/create-test-suite.js",
+     "M\tscripts/archive/create-test-tasks.js",
+     "M\tscripts/archive/execute-atomic-subtasks.js",
+     "M\tscripts/archive/execute-subtasks.js",
+     "M\tscripts/archive/execute-tasks.js",
+     "M\tscripts/archive/format-report.js",
+     "M\tscripts/archive/model-comparison-runner.js",
+     "M\tscripts/archive/quick-run.js",
+     "M\tscripts/archive/quick-test-3.js",
+     "M\tscripts/archive/run-30-task-suite.js",
+     "M\tscripts/archive/run-diagnostic-suite.js",
+     "M\tscripts/archive/run-full-test-suite.js",
+     "M\tscripts/archive/test-cto-complex.js",
+     "M\tscripts/archive/test-cto-review.js",
+     "M\tscripts/archive/test-cto.js",
+     "M\tscripts/archive/test-medium-tasks.js",
+     "M\tscripts/archive/test-qa-review.js",
+     "M\tscripts/backup-before-docker-move.ps1",
+     "M\tscripts/context-size-benchmark.js",
+     "M\tscripts/generate-arch-context.js",
+     "M\tscripts/grok-integration-test.js",
+     "M\tscripts/health-check.js",
+     "M\tscripts/landing-page-decomposition-test.js",
+     "M\tscripts/mac-preflight.js",
+     "M\tscripts/move-docker-to-d-drive.ps1",
+     "M\tscripts/nginx-hub.conf",
+     "M\tscripts/ollama-battle-test-5.js",
+     "M\tscripts/ollama-quality-comparison.js",
+     "M\tscripts/ollama-quick-test-5.js",
+     "M\tscripts/ollama-stress-results-go.json",
+     "M\tscripts/ollama-stress-test-apps.js",
+     "M\tscripts/ollama-stress-test-php.js",
+     "M\tscripts/ollama-stress-test-qwen3-8b.js",
+     "M\tscripts/ollama-stress-test-qwen3-coder.js",
+     "M\tscripts/overnight-improve.js",
+     "M\tscripts/qa-stress-test.js",
+     "M\tscripts/run-full-tier-test.js",
+     "M\tscripts/security-scan.ps1",
+     "M\tscripts/test-16k-vs-32k.js",
+     "M\tscripts/test-atomic-decomposition.js",
+     "M\tscripts/test-decomposition.js",
+     "M\tscripts/test-mission-16k-vs-32k.js",
+     "M\tscripts/test-mission.js",
+     "M\tscripts/test-ollama.js",
+     "M\tscripts/test-parallel.js",
+     "M\tscripts/test-remote-mission.js",
+     "M\tscripts/test-suite.js",
+     "M\tscripts/test-tiers.js",
+     "M\tscripts/ultimate-100-task-test.js",
+     "M\tscripts/ultimate-system-stress-test.js",
+     "M\tscripts/verify-false-positive-fix.js",
+     "M\tscripts/verify-system.js",
+     "M\ttsconfig.base.json",
+     "A\tw6-isolation-probe-untracked.txt"
+    ],
+    "captured_untracked": true
+   },
+   "worktrees_after": [
+    "D:/dev/agent-battle-command-center d5528ea [main]"
+   ],
+   "copy_1t": {
+    "aborted": true,
+    "s_at_abort": 189.69417520000025,
+    "files_at_abort": 247869,
+    "note": "robocopy /E follows pnpm's junctions and expands the tree; killed, not finished"
+   },
+   "reparse_points": {
+    "junction_dirs": 2859,
+    "hardlink_files": 53455
+   },
+   "copy_xj_1t": {
+    "s": 57.71,
+    "bytes": 1345232150,
+    "files": 72463,
+    "rc": 1,
+    "delete_s": 0.19
+   },
+   "copy_xj_8t": {
+    "s": 20.68,
+    "bytes": 1345232150,
+    "files": 72463,
+    "rc": 1,
+    "delete_s": 0.17
+   }
+  },
+  "abcc20": {
+   "path": "D:\\dev\\ABCC_20_powerd_by_claudette",
+   "tracked_files": 1079,
+   "worktrees_before": [
+    "D:/dev/ABCC_20_powerd_by_claudette 39aac8b [main]"
+   ],
+   "quick": true,
+   "worktree": [
+    {
+     "add_s": 0.6256126000007498,
+     "remove_s": 0.2794356999984302,
+     "bytes": 9420960,
+     "files": 1080
+    },
+    {
+     "add_s": 0.6522196000005351,
+     "remove_s": 0.27875760000097216,
+     "bytes": 9420960,
+     "files": 1080
+    },
+    {
+     "add_s": 0.5873460999991948,
+     "remove_s": 0.28240419999929145,
+     "bytes": 9420960,
+     "files": 1080
+    }
+   ],
+   "checkout_index": [
+    {
+     "s": 0.5315805999998702,
+     "bytes": 9420890,
+     "files": 1079
+    },
+    {
+     "s": 0.5633190000007744,
+     "bytes": 9420890,
+     "files": 1079
+    },
+    {
+     "s": 0.5300563000000693,
+     "bytes": 9420890,
+     "files": 1079
+    }
+   ],
+   "stash_create": {
+    "runs": [
+     {
+      "s": 0.1074903999997332,
+      "sha": "9c10215d483dfb3d15744346c7b4010a431b7ddb"
+     },
+     {
+      "s": 0.06550869999955466,
+      "sha": "9c10215d483dfb3d15744346c7b4010a431b7ddb"
+     },
+     {
+      "s": 0.07003009999971255,
+      "sha": "9c10215d483dfb3d15744346c7b4010a431b7ddb"
+     }
+    ],
+    "captured_paths": [
+     "M\tRESEARCH_BRIEF.md"
+    ],
+    "captured_untracked": false,
+    "diffstat": [
+     " 1 file changed, 2 insertions(+)"
+    ]
+   },
+   "temp_index": {
+    "runs": [
+     {
+      "s": 0.33208639999975276,
+      "commit": "865fff98b1964e67ba29d8070419afd65a26d9d6"
+     },
+     {
+      "s": 0.31129540000074485,
+      "commit": "eb8c93915aa0c5791a76f94c96132bc69da80824"
+     },
+     {
+      "s": 0.3025732000005519,
+      "commit": "eb8c93915aa0c5791a76f94c96132bc69da80824"
+     }
+    ],
+    "captured_paths": [
+     "M\tRESEARCH_BRIEF.md",
+     "A\tresearch/spikes/w6-isolation/mechanisms-results.json",
+     "A\tresearch/spikes/w6-isolation/mechanisms.py",
+     "A\tresearch/spikes/w6-isolation/stale-results.json",
+     "A\tresearch/spikes/w6-isolation/stale.py",
+     "A\tw6-isolation-probe-untracked.txt"
+    ],
+    "captured_untracked": true
+   },
+   "worktrees_after": [
+    "D:/dev/ABCC_20_powerd_by_claudette 39aac8b [main]"
+   ],
+   "copy_1t": {
+    "s": 61.88,
+    "bytes": 5680689168,
+    "files": 57111,
+    "rc": 1,
+    "delete_s": 8.49,
+    "dest_outside_source": true
+   },
+   "copy_8t": {
+    "s": 29.65,
+    "bytes": 5680689318,
+    "files": 57111,
+    "rc": 1,
+    "delete_s": 8.76,
+    "dest_outside_source": true
+   },
+   "self_recursive_copy_note": {
+    "dest_inside_source": true,
+    "killed_at_s": 600,
+    "files": 453507,
+    "bytes": 45820000000,
+    "note": "robocopy /E with the destination inside the source tree copies its own output"
+   }
+  }
+ }
+}

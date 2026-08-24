@@ -1,0 +1,76 @@
+{
+ "A_cold_fill": {
+  "s": 56.58,
+  "rc": 0,
+  "crates_compiled": 204,
+  "tail": [
+   "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+   "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+  ]
+ },
+ "B_fresh_worktree": {
+  "s": 24.65,
+  "rc": 0,
+  "crates_compiled": 1,
+  "tail": [
+   "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+   "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+  ],
+  "src_newer_than_cache": true
+ },
+ "B2_second_run": {
+  "s": 0.43,
+  "rc": 0,
+  "crates_compiled": 0,
+  "tail": [
+   "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+   "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+  ]
+ },
+ "C_back_to_a": {
+  "s": 0.41,
+  "rc": 0,
+  "crates_compiled": 0,
+  "tail": [
+   "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+   "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+  ]
+ },
+ "D_copied_tree": {
+  "s": 24.97,
+  "rc": 0,
+  "crates_compiled": 1,
+  "tail": [
+   "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+   "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-shared\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+  ]
+ },
+ "E_two_cold_at_once": {
+  "wall_s": 110.78,
+  "a": {
+   "s": 110.69,
+   "rc": 0,
+   "crates_compiled": 204,
+   "tail": [
+    "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-target-a\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-target-a\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ]
+  },
+  "b": {
+   "s": 110.78,
+   "rc": 0,
+   "crates_compiled": 204,
+   "tail": [
+    "  Executable tests\\doc_consistency.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-target-b\\debug\\deps\\doc_consistency-eb2d9708b2f85afa.exe)",
+    "  Executable tests\\offline_egress.rs (D:\\dev\\ABCC_20_powerd_by_claudette\\scratch\\w6-isolation\\fw-target-b\\debug\\deps\\offline_egress-489b56c0d52d2afd.exe)"
+   ]
+  },
+  "ram": {
+   "samples": 151,
+   "peak_procs": 42,
+   "peak_toolchain_ws_mb": 23292.6,
+   "min_free_ram_mb": 2315.4,
+   "max_free_ram_mb": 17520.7
+  }
+ }
+}
