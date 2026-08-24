@@ -2427,3 +2427,139 @@ tree contains 242 modifications and one addition: the agent's two files, plus F3
 snapshot's *contents* are therefore not a change list. **The change list is the diff between two
 snapshots taken with the same instrument** — pre-image and post-image — and never a diff against
 `HEAD`, which imports every difference that predates the task.
+
+### F330 — the whole checkpoint cycle, measured: 0.16 s to take, 0.02 s to diff, 0.25 s to hand to an isolated attempt, 0.06 s to undo — and the identifier is collectable
+
+`checkpoint.py` runs the cycle W3 asked for, in a throwaway clone of claudette (495 files) carrying
+a 4 MB ignored build artifact, with an agent that edits two tracked files, creates three, deletes
+one, and rewrites the build output:
+
+| step | mechanism | cost | result |
+|---|---|---|---|
+| snapshot the pre-image | temp index → `write-tree` → `commit-tree` | **0.157 s** | one sha |
+| snapshot the post-image | the same | **0.171 s** | one sha |
+| the change list | `git diff --name-status S0 S1` | **0.024 s** | **exactly the 6 paths, and no ignored file** |
+| isolate at a state | `git worktree add --detach <dir> S1` | **0.251 s** | 497 files: the created files present, the deleted one gone, no build cache |
+| restore the pre-image | `read-tree -u --reset S0` + `clean -fd` | **0.058 s** | byte-exact against the pre-attempt fingerprint; the build cache untouched |
+
+Four things this settles.
+
+**The identifier exists and it is a commit sha.** `git worktree add` takes any commit, and a
+snapshot *is* a commit, so the operator's uncommitted work — including files git has never tracked —
+can be handed to an isolated attempt without committing anything to a branch, polluting the reflog,
+or touching the operator's index.
+
+**The change list is free and it is the structural check.** Item 4's one instrument that fires
+(*did the change touch any source file*) is a diff between two snapshots, at 0.024 s, with the
+ignored build output excluded by construction. No directory walk, no CRLF normalisation, no
+deny-list of extensions: `.gitignore` already answers "is this a source file" for the repository it
+belongs to.
+
+**The restore is exact and it leaves the build cache alone.** `clean -fd` without `-x` removes what
+the agent created and keeps `target/`, which is what makes the next attempt cheap (F331).
+
+**And the identifier is collectable.** An unreferenced snapshot commit did **not** survive
+`git gc --prune=now` — neither did S0 or S1 — while the one written to `refs/abcc/checkpoints/probe`
+did. Git ran gc in 0.47 s here, and `gc --auto` runs on its own schedule inside ordinary commands.
+So the checkpoint row may carry the sha, but the *mechanism* must write a ref: **an identifier with
+no reference is a promise of resumability that the storage layer is entitled to break.**
+
+One caveat, and it is the same axis as F328. The snapshot goes through git's own filters, so what it
+captures is the repository's *normalised* content. Claudette's `.gitattributes` says `* text=auto
+eol=lf`; the probe's agent wrote CRLF; the working file held **219 CRLF**, the snapshot blob **0**,
+and the worktree materialised from it **0**. The trees are identical ignoring CR and not identical
+byte for byte. For a checkpoint whose contract is *restore the workspace*, the honest statement is
+**restore up to the repository's own text attributes** — which is what its own tools would do to
+those bytes at the next `git add` anyway, and is not what a `robocopy` pre-image would have done.
+
+### 🚨 F331 — the cold build is not the price of isolation: 56.6 s cold, 24.7 s for a worktree created after the cache is warm, 0.4 s for one that is
+
+W11 F249 measured isolation at ~4.7× on this Rust workspace and explained it in a clause: *"a fresh
+worktree does not share `target/`, so every isolated attempt pays a cold build."* The clause is an
+assumption about cargo, and `CARGO_TARGET_DIR` is a documented environment variable, so it is
+testable. `cargo test --workspace --no-run --offline`, on worktrees of `claudette`:
+
+| phase | build directory | wall | crates compiled |
+|---|---|---|---|
+| cold, private `target/` inside the worktree | its own | **67.7 s** | 204 |
+| cold, shared `CARGO_TARGET_DIR`, empty | shared | 62.4 s | 204 |
+| a *second* worktree onto that warm shared directory | shared | **0.46 s** | **0** |
+| the same worktree again, nothing changed | shared | 0.47 s | 0 |
+| one source file edited | shared | 3.7 s | 1 |
+| **a worktree created *after* the cache was warm** | shared | **24.7 s** | **1** |
+| that worktree, second run | shared | 0.43 s | 0 |
+| back to the first worktree | shared | 0.41 s | 0 |
+| **a copied tree with no `.git` at all** (`checkout-index`) | shared | **25.0 s** | **1** |
+
+The third row is the one that looks too good, and the sixth is why it is reported separately. Cargo
+decides freshness by mtime, and in the third row both worktrees predated every artifact, which is
+the favourable case. `freshwt.py` runs the realistic one — cold-fill the shared directory from one
+worktree, *then* create the second, so every source file is newer than every artifact (asserted:
+`src_newer_than_cache: true`). That worktree recompiles the workspace crate and relinks the test
+binaries — **one crate, 24.7 s** — and does not touch the 204 dependencies. Its second run is 0.43 s,
+and the first worktree is still 0.41 s, so the two do not thrash each other.
+
+The last row matters for the subjects that have no git at all: a tree materialised by
+`git checkout-index`, with no `.git`, gets the same 25.0 s. **The build cache does not care how the
+tree was made; it cares where the artifacts live.**
+
+So the price of isolating an attempt on a real Rust project is **24.7 s once, then 0.4 s**, plus
+0.30 s for the worktree — not a 104 s cold build. The 4.7× F249 measured is real and it is the price
+of a *fresh clone with its own build directory*, which is one implementation of isolation and the
+most expensive one. Disk follows the same split: a private `target/` is **2.90 GB per attempt**; one
+shared directory is 2.93 GB total.
+
+The tested condition is two worktrees at the same commit, which is the shape of two attempts at one
+task. Two attempts at *different* commits share the 204 dependency units (same versions, same
+features) and differ in the workspace crate, so the shape should hold; that case is not measured.
+
+### F332 — what serializes two isolated attempts is cargo's package-cache lock, and a private build directory does not remove it
+
+Both concurrency phases print the same line, three times each, in both configurations:
+
+```
+    Blocking waiting for file lock on package cache
+```
+
+| phase | build directories | wall | per-attempt |
+|---|---|---|---|
+| two attempts, one shared `CARGO_TARGET_DIR` | shared | 4.06 s | 4.06 s / 3.93 s, blocked |
+| two attempts, one private target each | separate | 4.78 s | 4.78 s / 4.77 s, blocked |
+
+The lock named is not the build directory — it is `CARGO_HOME`'s package cache, which both processes
+share because they share `~/.cargo`. **Isolating the workspace does not isolate the toolchain's
+global state**, and the contention survives every workspace-level mechanism in this item. At this
+size it costs well under a second and the honest reading is "free"; the reason to record it is that
+the *shape* is the one that bites later — the same shared-state seam covers a package manager's
+global cache, a language server, a docker daemon, and a `~/.npm` or `~/.cache/uv`. If it ever
+matters, the fix is a per-attempt `CARGO_HOME`, which costs a registry copy; that is not measured
+here and should not be built before something needs it.
+
+### 🚨 F333 — the 32 GB answer: one cold build takes the box from 17.6 GB free to 9.6, two at once take it to 2.3, and the second one buys 3%
+
+RAM sampled every 400 ms across every phase, with **no model resident** — the optimistic case, since
+the champion is 13.6 GB of VRAM and a live `llama-server` also holds host memory:
+
+| phase | processes | peak toolchain working set | free RAM |
+|---|---|---|---|
+| one cold build | 21 | 11.6 GB | 17.6 → **9.6 GB** |
+| one incremental build (1 crate) | 6 | 2.5 GB | 15.0 GB |
+| two incremental builds at once | 12 | 5.3 GB | 12.6 GB |
+| **two cold builds at once** | **42** | **23.3 GB** | 17.5 → **2.3 GB** |
+
+An independent sampler run from a separate shell agreed within noise on the last row (21.6 GB peak,
+2.2 GB free). Summed working sets double-count shared pages, so the free-RAM column is the honest
+one; both agree on the shape.
+
+And the second build buys almost nothing: **110.8 s for two at once against ~114 s for the same two
+in sequence**, on six physical cores that a single cargo build already saturates. So the answer to
+the brief's question is not a per-worktree RAM figure at all:
+
+> **Isolate the workspaces; serialize the gate.** Two isolated attempts are cheap to *hold* — 0.30 s
+> and 9.4 MB each, plus one shared build cache — and expensive to *build* at the same time. W2's cap
+> of two concurrent builders (F83) is a statement about the model server, where the second sequence
+> buys +69% throughput. At the build, the second concurrent job buys 3% and costs 87% of the box's
+> free memory.
+
+That is a one-line rule for the runtime W3 designed: the build/test rung is a single-flight
+resource, like the model swap, and it belongs behind the same kind of permit.
