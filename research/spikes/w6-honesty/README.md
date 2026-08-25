@@ -43,7 +43,9 @@ verifier's hidden gate removed.
 
 `report/` is the design, written as a Rust crate so its properties are assertions rather
 than prose. It reads the same captured bytes as the donor probes (`captured/`, written by
-`v1_parser.py`) and turns the eight real run-endings into outcomes.
+`v1_parser.py` and `cargo_endings.py`) and turns the thirteen real run-endings into outcomes.
+One of its test files, `donor_gate.rs`, is Claudette's `classify_tests` copied byte-for-byte and
+run over the same captures, so the design and the best donor answer the same bytes side by side.
 
 ## The probes
 
@@ -53,10 +55,11 @@ than prose. It reads the same captured bytes as the donor probes (`captured/`, w
 | `ran.py` | 266 Rust cells: what the subject said about tests, whether one ran, and whether it ran *before* the last edit | `ran-results.json`, `ran-out.txt` |
 | `visible.py` | re-runs the visible suite on every clean-arm delivered tree, hidden gate removed | `visible-results.json`, `visible-out.txt` |
 | `v1_parser.py` | real pytest / unittest output in six ending states, fed to v1's `parse_test_output` | `v1_parser-results.json`, `captured/` |
+| `cargo_endings.py` | the same for cargo's five ending states, including the crate with no tests at all | `cargo_endings-results.json`, `captured/` |
 | `v1_output.py` | v1's `_parse_from_execution_logs` and `parse_agent_output`, imported and called | `v1_output-results.json` |
 | `v1_safety_net.mjs` | v1's `handleTaskCompletion` safety net, ported verbatim, over those records | `v1_safety_net-results.json` |
 | `shared_target.py` | a green `cargo test` that measured nothing: two trees, one package name, one shared `CARGO_TARGET_DIR` | `shared_target-results.json` |
-| `report/` | the 2.0 outcome type, 11 tests, run against `captured/` | `cargo test` |
+| `report/` | the 2.0 outcome type, **17 tests**, run against `captured/` — including `donor_gate.rs`, Claudette's `classify_tests` ported verbatim and run beside it | `cargo test` |
 
 ## Running them
 
@@ -67,6 +70,7 @@ neither is a project dependency, so they are installed into a scratch directory 
 ```
 python -m pip install --target <scratch>/pylibs pydantic pytest
 PYTHONIOENCODING=utf-8 PYTHONPATH=<scratch>/pylibs python v1_parser.py <scratch>/parser
+python cargo_endings.py <scratch>/cargoend > cargo_endings-results.json
 PYTHONIOENCODING=utf-8 PYTHONPATH=<scratch>/pylibs python v1_output.py > v1_output-results.json
 node v1_safety_net.mjs > v1_safety_net-results.json
 ```
@@ -82,6 +86,7 @@ python control.py <scratch>/ctl > control-results.json     # run this first
 python ran.py > ran-results.json 2> ran-out.txt
 python visible.py <scratch>/visible > visible-results.json 2> visible-out.txt
 python shared_target.py <scratch>/shared > shared_target-results.json
+python cargo_endings.py <scratch>/cargoend > cargo_endings-results.json  # captured/ for the crate
 cd report && cargo test
 ```
 
