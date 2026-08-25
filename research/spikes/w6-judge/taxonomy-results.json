@@ -1,0 +1,392 @@
+{
+ "rows": [
+  {
+   "task": "Q01",
+   "cls": "signalled",
+   "fails": "already_a_slug_is_stable",
+   "case": "slugify(\"already-a-slug\")",
+   "expected": "\"already-a-slug\"",
+   "actual": "\"alreadyaslug\"",
+   "quote": "Make sure it produces clean slugs for whatever titles people throw at it.",
+   "note": "'-' is not alphanumeric and is not a space, so the agent's match arm drops it; feeding a slug back in is not stable. The ticket's example makes '-' the separator but never says a hyphen survives.",
+   "sha": "2f026af92584428f",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786811844322/Q01__control"
+   ]
+  },
+  {
+   "task": "Q03",
+   "cls": "implied",
+   "fails": "zero_people_no_panic",
+   "case": "split_bill(7, 0)",
+   "expected": "[]",
+   "actual": "panics (divide by zero)",
+   "quote": null,
+   "note": "the remainder distribution is correct. The ticket names no zero case.",
+   "sha": "7d272eecc3197b4b",
+   "lang": "rust",
+   "n_cells": 3,
+   "uids": [
+    "q56/w8-1786256305205/Q03__gated",
+    "q56/w8-1786808290277/Q03__control",
+    "q56/w8-1786815053791/Q03__control"
+   ]
+  },
+  {
+   "task": "Q03",
+   "cls": "stated",
+   "fails": "remainder_sums_exact_2 (and zero_people_no_panic)",
+   "case": "split_bill(10, 4)",
+   "expected": "[3, 3, 2, 2]",
+   "actual": "[4, 2, 2, 2]",
+   "quote": "while keeping the split as even as possible",
+   "note": "the whole remainder goes to shares[0]. Also panics at people == 0, which is the `implied` half of the same tree.",
+   "sha": "e45a172aa82aea9c",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786256305205/Q03__control"
+   ]
+  },
+  {
+   "task": "Q03",
+   "cls": "implied",
+   "fails": "zero_people_no_panic",
+   "case": "split_bill(7, 0)",
+   "expected": "[]",
+   "actual": "panics (divide by zero)",
+   "quote": null,
+   "note": "same shape as 7d272e, written differently.",
+   "sha": "e82fc26978b60565",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786811844322/Q03__control"
+   ]
+  },
+  {
+   "task": "Q05",
+   "cls": "signalled",
+   "fails": "blank_lines_skipped",
+   "case": "parse_kv(\"a=1\\n\\n   \\nb=2\")",
+   "expected": "Ok({\"a\": \"1\", \"b\": \"2\"})",
+   "actual": "Err(\"line 2: missing '='\")",
+   "quote": "Callers pass whole config files, so make sure it handles them gracefully.",
+   "note": "a blank line in a config file is the canonical case, and the clause points at it without deciding it.",
+   "sha": "341857425332f6b8",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786256305205/Q05__control"
+   ]
+  },
+  {
+   "task": "Q05",
+   "cls": "signalled",
+   "fails": "blank_lines_skipped",
+   "case": "parse_kv(\"a=1\\n\\n   \\nb=2\")",
+   "expected": "Ok({\"a\": \"1\", \"b\": \"2\"})",
+   "actual": "Err(\"line 2: missing '='\")",
+   "quote": "Callers pass whole config files, so make sure it handles them gracefully.",
+   "note": "same as 341857 with a different binding style.",
+   "sha": "a7b711ff7041ac0a",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786811844322/Q05__control"
+   ]
+  },
+  {
+   "task": "Q07",
+   "cls": "stated",
+   "fails": "ties_broken_alphabetically",
+   "case": "word_frequencies(\"cherry banana apple\")",
+   "expected": "[(\"apple\",1), (\"banana\",1), (\"cherry\",1)]",
+   "actual": "[(\"cherry\",1), (\"banana\",1), (\"apple\",1)]",
+   "quote": "breaking ties alphabetically",
+   "note": "sorts ascending by (count, word) and then calls .reverse(), which reverses the tie order too. Decidable from the ticket alone.",
+   "sha": "c87bafa532f5fc73",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786815053791/Q07__control"
+   ]
+  },
+  {
+   "task": "Q25",
+   "cls": "implied",
+   "fails": "test_integer_dollar_string",
+   "case": "total_cents([\"5\"])",
+   "expected": "500",
+   "actual": "ValueError: not enough values to unpack",
+   "quote": null,
+   "note": "p.split(\".\") on a price with no decimal point. The ticket only ever shows prices with a point.",
+   "sha": "4e4cfe591d9296f4",
+   "lang": "python",
+   "n_cells": 4,
+   "uids": [
+    "q56/w8-1786256305205/Q25__gated",
+    "q56/w8-1786808290277/Q25__control",
+    "q56/w8-1786811844322/Q25__control",
+    "q56/w8-1786815053791/Q25__control"
+   ]
+  },
+  {
+   "task": "Q40",
+   "cls": "implied",
+   "fails": "same listener added twice fires twice",
+   "case": "e.on(\"e\", bump); e.on(\"e\", bump); e.emit(\"e\")",
+   "expected": "bump called twice",
+   "actual": "bump called once",
+   "quote": null,
+   "note": "listeners are held in a Set, which silently dedupes. The ticket says 'every listener registered ... in the order they were added' and does not settle whether registration is a set or a list, so the ticket does not decide the multiplicity.",
+   "sha": "c0852d9ec290c1a1",
+   "lang": "typescript",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786811844322/Q40__control"
+   ]
+  },
+  {
+   "task": "Q45",
+   "cls": "mechanical",
+   "fails": "the whole script",
+   "case": "bash solution.sh < input.txt",
+   "expected": "the non-comment, non-blank lines",
+   "actual": "nothing at all",
+   "quote": null,
+   "note": "the file is ONE line: `#!/usr/bin/env bash`n# Strip ...`ngrep ...`n` \u2014 PowerShell's backtick-n escape written literally into a bash script. As bash the whole line is a comment, so the script produces no output. `bash -n` is green on it (it is valid), and so is the structural check (the file was modified).",
+   "sha": "89a76d26debbc8ca",
+   "lang": "shell",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786815053791/Q45__control"
+   ]
+  },
+  {
+   "task": "Q46",
+   "cls": "implied",
+   "fails": "range 5..3",
+   "case": "printf 'l1..l10' | bash solution.sh 5 3",
+   "expected": "nothing",
+   "actual": "line 5",
+   "quote": null,
+   "note": "`sed -n \"5,3p\"` prints the single line at the start address. The ticket names START past the end of INPUT, not START past END; the reference solution guards it with a comment saying exactly that.",
+   "sha": "826b4b7126b5167d",
+   "lang": "shell",
+   "n_cells": 2,
+   "uids": [
+    "q56/w8-1786256305205/Q46__control",
+    "q56/w8-1786808290277/Q46__control"
+   ]
+  },
+  {
+   "task": "Q46",
+   "cls": "stated",
+   "fails": "range 8..100",
+   "case": "printf 'l1..l10' | bash solution.sh 8 100",
+   "expected": "lines 8, 9, 10",
+   "actual": "lines 1..10",
+   "quote": "if END is past the end of input, print through the last line",
+   "note": "`head -n 100 | tail -n 93` on 10 lines is the whole file. The ticket names this edge and fixes its answer.",
+   "sha": "b952a1e351b4a00f",
+   "lang": "shell",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786815053791/Q46__control"
+   ]
+  },
+  {
+   "task": "Q49",
+   "cls": "mechanical",
+   "fails": "the whole script (does not terminate)",
+   "case": "printf '  hi  \\n' | bash solution.sh",
+   "expected": "hi",
+   "actual": "never returns",
+   "quote": null,
+   "note": "`s=\"${s#[[:space]]}\"` \u2014 the character class is misspelled (`[[:space]]`, not `[[:space:]]`), so the parameter expansion strips nothing while the `[[ =~ ]]` guard keeps matching. Measured: the regex matches a leading space and the expansion returns the string unchanged, so the while loop is infinite.",
+   "sha": "666fdcaa71b4080d",
+   "lang": "shell",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786808290277/Q49__control"
+   ]
+  },
+  {
+   "task": "Q49",
+   "cls": "implied",
+   "fails": "output line structure",
+   "case": "printf '  hi  \\n' | bash solution.sh",
+   "expected": "hi\\n",
+   "actual": "hi (no trailing newline)",
+   "quote": null,
+   "note": "`printf '%s'` replaces `echo`, dropping the newline `normalize` used to emit; the sed also carries a literal \\xEF\\xBB\\xBF that sed does not interpret. The ticket asks about whitespace, not line structure.",
+   "sha": "79abd449e5eaa69c",
+   "lang": "shell",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786256305205/Q49__control"
+   ]
+  },
+  {
+   "task": "Q51",
+   "cls": "signalled",
+   "fails": "test_whitespace_tolerated",
+   "case": "parse_duration(\"1h 30m\")",
+   "expected": "5400",
+   "actual": "ValueError: invalid duration",
+   "quote": "Make it robust for the kinds of strings people actually type.",
+   "note": "the validating regex is `(\\d+\\s*[hms])+`: the `\\s*` sits between the number and the unit, so a space BETWEEN tokens is rejected. The agent thought about whitespace and put it in the wrong place.",
+   "sha": "968ea7fde157d0df",
+   "lang": "python",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786815053791/Q51__control"
+   ]
+  },
+  {
+   "task": "Q51",
+   "cls": "signalled",
+   "fails": "test_whitespace_tolerated",
+   "case": "parse_duration(\"1h 30m\")",
+   "expected": "5400",
+   "actual": "ValueError: invalid duration string",
+   "quote": "Make it robust for the kinds of strings people actually type.",
+   "note": "same defect via `^\\s*(?:(\\d+)\\s*([hms]))+$`.",
+   "sha": "ba11c73639fe9d4d",
+   "lang": "python",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786808290277/Q51__control"
+   ]
+  },
+  {
+   "task": "Q51",
+   "cls": "signalled",
+   "fails": "test_whitespace_tolerated",
+   "case": "parse_duration(\"1h 30m\")",
+   "expected": "5400",
+   "actual": "ValueError: Invalid duration string",
+   "quote": "Make it robust for the kinds of strings people actually type.",
+   "note": "same defect via `re.fullmatch(r'(?:(\\d+)\\s*([hms]))+', s)`.",
+   "sha": "fc24feae1327d477",
+   "lang": "python",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786256305205/Q51__control"
+   ]
+  },
+  {
+   "task": "Q52",
+   "cls": "stated",
+   "fails": "capacity_zero_never_panics",
+   "case": "RingBuffer::new(0); r.push(1)",
+   "expected": "len 0, to_vec []",
+   "actual": "panics (% by zero)",
+   "quote": "and for any capacity",
+   "note": "`% self.capacity` with capacity 0.",
+   "sha": "04b8a23c59c50fb2",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786256305205/Q52__control"
+   ]
+  },
+  {
+   "task": "Q52",
+   "cls": "stated",
+   "fails": "capacity_zero_never_panics",
+   "case": "RingBuffer::new(0); r.push(1)",
+   "expected": "len 0, to_vec []",
+   "actual": "panics (% by zero)",
+   "quote": "and for any capacity",
+   "note": "the agent also wrote ELEVEN tests of its own, all green, covering capacity 1, multiple wraps and overwrite order \u2014 and none of them capacity 0.",
+   "sha": "27cd7053d844146c",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786811844322/Q52__control"
+   ]
+  },
+  {
+   "task": "Q52",
+   "cls": "stated",
+   "fails": "capacity_zero_never_panics",
+   "case": "RingBuffer::new(0); r.push(1)",
+   "expected": "len 0, to_vec []",
+   "actual": "panics (remove(0) on an empty Vec)",
+   "quote": "and for any capacity",
+   "note": "a different mechanism for the same case: len()==capacity==0 takes the overwrite branch.",
+   "sha": "28345f8d03bfa560",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786256305205/Q52__gated"
+   ]
+  },
+  {
+   "task": "Q52",
+   "cls": "stated",
+   "fails": "capacity_zero_never_panics",
+   "case": "RingBuffer::new(0); r.push(1)",
+   "expected": "len 0, to_vec []",
+   "actual": "panics (% by zero)",
+   "quote": "and for any capacity",
+   "note": "same as 27cd70's mechanism.",
+   "sha": "c49cab1db5cbc2a7",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786808290277/Q52__control"
+   ]
+  },
+  {
+   "task": "Q53",
+   "cls": "undecided",
+   "fails": "empty input",
+   "case": "parseCsv(\"\")",
+   "expected": "[]",
+   "actual": "[[\"\"]]",
+   "quote": null,
+   "note": "the ticket says a trailing newline must not produce an extra empty row and says nothing about empty input. The agent wrote its own probe file `_quick_test.mjs` containing the line `// Empty input -> one empty row (standard CSV behavior)` \u2014 it saw the ambiguity, decided it, and decided against the hidden test.",
+   "sha": "75f09792c29b38b2",
+   "lang": "node",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786815053791/Q53__control"
+   ]
+  },
+  {
+   "task": "Q56",
+   "cls": "stated",
+   "fails": "shorter_is_zero_padded",
+   "case": "compare_versions(\"1.2.0\", \"1.2\")",
+   "expected": "Equal",
+   "actual": "Greater",
+   "quote": "Versions with different numbers of components compare as if the shorter one is padded with trailing zeros",
+   "note": "`(Some(_), None) => return Ordering::Greater` \u2014 the padding rule is stated in the ticket and in the doc comment above the function.",
+   "sha": "9d3a55a1fc3dba31",
+   "lang": "rust",
+   "n_cells": 1,
+   "uids": [
+    "q56/w8-1786815053791/Q56__control"
+   ]
+  }
+ ],
+ "trees": {
+  "signalled": 6,
+  "stated": 8,
+  "implied": 6,
+  "mechanical": 2,
+  "undecided": 1
+ },
+ "cells": {
+  "signalled": 6,
+  "stated": 8,
+  "implied": 12,
+  "mechanical": 2,
+  "undecided": 1
+ }
+}

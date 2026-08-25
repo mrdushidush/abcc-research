@@ -2811,3 +2811,266 @@ One measurement here is about the machine rather than about any mechanism, and i
 plainly: **the v1 donor's working tree holds 241 tracked files that differ from what git recorded**,
 and nothing in this item put them there. `stale.py` reports them, and the probe restored the mtime
 it found, so that repository is exactly as it was.
+
+---
+
+# Item 7 — verifying the unrunnable
+
+## Question
+
+§11's line is *"Verifying documentation and review output where there is no test to run.
+LLM-as-judge reliability and its known failure modes."* It carries a trap that has to be
+disarmed before any number is quoted: **a population with no test also has no ground truth**,
+so a reliability figure measured on one is an opinion about an opinion. Every donor number in
+this family has that shape — BCF's 7.5 average, v1's graduated review, the +3.65 critic
+inflation — and item 1 voided them for exactly this reason.
+
+So the question is asked in three parts, each with an answer key:
+
+1. **OQ-W6-13, inherited from item 5.** The Q56 `control` and `gated` arms hold 29 real
+   failures on which no deterministic rung in five languages fires (F321, F322). What *are*
+   they? They are also the closest thing this project has to the unrunnable case with an
+   answer key: the visible suite is green on every one, so at the moment the agent stopped
+   there was no test it could have run that would have told it the truth — and the hidden
+   reviewer tests are a key nobody in the loop can see.
+2. **What does a model reviewer buy on exactly that population**, shown exactly what the agent
+   could see? And does *demanding a concrete input* — a review finding shaped `call → expected
+   → actual` rather than a paragraph — change the answer, and can the finding then be run?
+3. **What holds for documentation**, which is the artifact the brief actually names: what can a
+   free mechanical rung check, what needs a reader, and which of the LLM-as-judge failure modes
+   in the literature reproduce on this model on this box?
+
+## Method
+
+Eight probes in `research/spikes/w6-judge/`. Two populations, both with ground truth that was
+re-measured rather than read; three of the eight execute donor code rather than paraphrase it.
+
+- **The 29, assembled and classified.** `common.py` joins item 4's re-run verdicts
+  (`../w6-headroom/results-q56.json`, the suite verifier re-executed rather than the campaign's
+  recorded verdict) to the preserved workdirs, strips the verifier's own residue — showing a
+  judge the hidden tests is showing it the answer key — and deduplicates by the content of the
+  tree the agent left: **29 failure cells are 23 distinct trees, and the 36 clean-arm passes on
+  those same tasks are 34** (12 of the 13 tasks have one; Q03 has none), so 57 trees over 65
+  cells. `census.py` dumps ticket, diff, reference
+  solution and hidden assertions for every failing tree; `taxonomy.py` carries the hand
+  classification and **asserts every quoted ticket clause is a substring of the ticket the agent
+  was actually given**, because a classification whose evidence is a quotation is worth nothing
+  until the quotation is checked.
+- **The champion as reviewer, two arms, same 57 trees.** `judge.py` shows the ticket, the files
+  the agent left and the fact that the project's own tests are green — and nothing else. The
+  `verdict` arm returns the VerdictWire schema W11 item 3 shipped (rationale, defects, then
+  `call` last, which F263 says is not a style choice). The `edge` arm returns the same context
+  under a schema that demands concrete cases: `why`, `call`, `expected`, `actual`.
+- **Running the reviewer's own findings.** `check.py` takes every case the `edge` arm named,
+  wraps it in a per-language driver (a Rust `examples/` binary under `catch_unwind`, a Python
+  driver, a node/TypeScript dynamic import, a bash command line), and runs it twice — against
+  the tree the agent left and against the suite's reference solution. A case where the two
+  disagree is a finding that is *true*; a case where they agree is a finding that is *false*,
+  however well argued; a case that will not run is not a finding. The reference solution is an
+  oracle that would not exist in a real run: what the number is for is the precision of a model
+  reviewer's concrete claims, which is a property of the reviewer.
+- **The free rung for prose, on a real corpus.** `citations.py` runs an address-level check over
+  **43 authored documents, 1,672,216 bytes** — this repository's research documents, the harness
+  crates' READMEs, the prestudy dossiers, the corpus SPEC and the brief — resolving finding
+  numbers, open-question ids and `file:line` citations against this repository and the three
+  donor checkouts, and checking fenced code quotations line for line against the file they cite.
+- **A real document with planted defects.** `docgate.py` takes `docs/status_lifecycle.md` from
+  the K suite's `finish_the_cancelled_status` and the reference solution it describes — a
+  document that is true of its code sentence by sentence — and builds seven variants, each with
+  exactly one planted defect applied as an anchored substitution. Six are false statements about
+  the code; the seventh states nothing false and drops three of the five rules, which is F281's
+  shape. Three arms: the pointwise gate, position bias (every pair in both slots) and verbosity
+  bias (the faithful document against itself padded, and the padded *defective* document against
+  the terse faithful one).
+- **The donors, executed rather than read.** `v1_review.mjs` ports v1's `getReviewDecision`
+  (`codeReviewService.ts:110-160`) and the router's type switch (`taskRouter.ts:200-213`)
+  byte-for-byte from `d5528ea` and runs them over the donor's own unit-test inputs and over four
+  synthetic task streams. `bcf-doc/` takes a path dependency on the pinned BCF checkout and calls
+  `verifier::verify_project` on a three-file documentation project, which is the artifact the
+  brief names arriving at the donor's own gate.
+
+Held constants: champion `qwen3.6-35b-a3b-mtp@iq3_s` at `-c 65536 --gpu max --parallel 1`,
+temperature 0, `max_tokens` 8192, schema-constrained; the server's command line records
+`--cache-type-k/v q8_0 --flash-attn on --kv-unified --batch-size 2048 --spec-type draft-mtp`.
+Donor commits v1 `d5528ea`, BCF `d6c1601`, Claudette `af3f804`.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| "No rung fires on any of the 29" | item 5, F321/F322 | **CORRECTED** — one does, and it is noise: `ruff` TRY004 on one Q51 tree, the same lint firing on two *correct* answers to the same task (F336) |
+| The verdict has no score | W11 item 3, F247 | **KEEP** — the binary is what a gate consumes, and this item measures the binary and the case list separately |
+| Reasoning first, decidable field last | W11 item 3, F263 | **KEEP, and it is not enough** — the ordering survives, and the field still contradicts the reasoning above it (F339) |
+| A reviewer is decided by what it is shown | W11 item 4, F280–F282 | **EXTENDED** — the *schema* is the other half: the same model, same context, changes verdict when the output shape demands a concrete input (F339) |
+| Generated criteria carry no positive control | W11 item 4, F277 | **ANSWERED for review output** — a case shaped `call → expected → actual` has one for free: run it on the pre-image (F340) |
+| Generated tests ratify a wrong change | item 4, F305 | **CONFIRMED on real agent behaviour** — three of the 23 wrong trees ship the agent's own green tests, one of which asserts the opposite of the hidden test (F337) |
+| A project BCF cannot read scores 5.0 | item 5, F313 | **KEEP, and it settles the doc case** — a documentation deliverable is that case exactly: 7.00 with a perfect critique against a lowest gate of 8.00 |
+| `Option<bool>` for "could not run" | item 5, F317 | **KEEP, and it is incomplete** — the successor's own check folds "no checker for this artifact" into the same variant as "the feature is off" (F348) |
+
+## Findings
+
+### 🚨 F336 — OQ-W6-13 answered: the 29 are one class of mistake, and the axis that matters is not the language but whether the ticket's own words decide the case — 8 of 29 they do, 12 of 29 nothing does but the domain, and 2 are not reasoning failures at all
+
+Item 5 left the question as an open row: *"The Q56 clean arms hold 29 real failures and no rung
+fires on any of them. What are they? K's taxonomy (F302) does not transfer — these are one-file
+tasks where the file was always written."*
+
+They are, without exception, **the same mistake**: the code does the stated main case and gets a
+boundary wrong. Every one of the 23 distinct trees compiles, lints, type-checks and passes the
+visible suite; every one is a plausible answer a competent reader would sign off; and every one
+dies on exactly one input. That is why no rung fires — there is nothing malformed to find.
+
+What separates them is **what decides the failing input**, and that axis is the one that sets
+whether a reviewer with no tools could possibly catch it:
+
+| class | what decides the case | trees | cells | languages |
+|---|---|---:|---:|---|
+| `stated` | the ticket's own words fix the expected value | 8 | 8 | rust 7, shell 1 |
+| `signalled` | the ticket has a generality clause pointing at edges and does not say what the answer is | 6 | 6 | python 3, rust 3 |
+| `implied` | the ticket does not mention the case; the domain decides it | 6 | 12 | python 4, rust 4, shell 3, typescript 1 |
+| `undecided` | neither the ticket nor the domain decides it | 1 | 1 | node 1 |
+| `mechanical` | not a reasoning failure: the artifact was mangled, or it does not terminate | 2 | 2 | shell 2 |
+| | | **23** | **29** | |
+
+`taxonomy.py` carries the classification with the ticket clause quoted verbatim for every
+`stated` and `signalled` row, and asserts each quote is a substring of the prompt the agent was
+given. The clauses are things like *"while keeping the split as even as possible"* (Q03),
+*"breaking ties alphabetically"* (Q07), *"if END is past the end of input, print through the last
+line"* (Q46), *"and for any capacity"* (Q52) and *"Versions with different numbers of components
+compare as if the shorter one is padded with trailing zeros"* (Q56) — five sentences that fully
+determine the answer, in tickets whose author never wrote a test for them.
+
+Four things in the table are worth pulling out.
+
+**The `implied` class is the biggest by cells and the hardest by construction.** `split_bill(7, 0)`
+panics; `total_cents(["5"])` throws because the agent split on `"."`; an `EventEmitter` holding its
+listeners in a `Set` fires a twice-registered listener once; `sed -n "5,3p"` prints line 5 for the
+range 5..3. Nothing in any of those tickets names the case. The reference solution for Q46
+*comments* the trap — "*a start past the end is a degenerate (empty) range. Guard it, because
+`sed -n "5,3p"` would otherwise print the single line at the start address*" — which is a task
+author writing down the domain knowledge the ticket deliberately withheld.
+
+**The one `undecided` case is the most interesting artifact in the corpus.** Q53's ticket says a
+trailing newline must not produce an extra empty row and says nothing at all about empty input.
+The agent wrote its own probe file, `_quick_test.mjs`, containing the line
+`// Empty input → one empty row (standard CSV behavior)`. It saw the ambiguity, decided it,
+recorded its decision in a comment, and decided against the hidden test. There is no reviewer,
+model or human, that could have called that wrong from the ticket; what a reviewer could have done
+is *notice that a decision was made*.
+
+**Two of the 29 are not model failures.** Q45's whole file is one line —
+`` #!/usr/bin/env bash`n# Strip comment and blank lines from stdin.`ngrep -v "^\s*#" ... `` — a
+PowerShell backtick-n escape written literally into a bash script, which as bash is a single
+comment producing no output at all. `bash -n` is green on it because it is valid; the free
+structural check is green on it because the file was modified. Q49's `normalize()` misspells the
+character class (`[[:space]]`, not `[[:space:]]`), so `${s#[[:space]]}` strips nothing while the
+`[[ =~ ]]` guard keeps matching — measured directly: the regex matches a leading space and the
+expansion returns the string unchanged, so the `while` loop never ends.
+
+**And that last one carries a correction to the corpus's own ground truth.** Its recorded verdict
+is `FAIL` at **228,287 ms**, against a 130–302 ms median for the same task's other cells. Re-run
+here under a 300 s cap it does not terminate and returns **no verdict at all**. So one of the 29
+"failures" is a hang whose recorded classification depends on who killed it and when — which is
+item 2's `Uncertain(timeout)` rule arriving as data rather than as a design preference.
+
+**One further correction, to item 5's own headline.** F321 and F322 say no rung goes red on any of
+the 29. Re-reading the same cells rung by rung, **one does**: `ruff` reports `TRY004` on the Q51
+tree that raises `ValueError` for a non-`str` argument. It is not a detection. The same lint fires
+on **two of the correct answers to the same task** and on none of the others, and the line it
+flags has nothing to do with the whitespace handling that fails. The honest statement is *one of the
+twelve rungs goes red on one of the 29 failures, and that specific lint goes red on BOTH of the two
+correct answers to the same task and on one of its three wrong ones* — while `ruff` across the clean arms is red on 12 of 251 correct
+trees against 1 of 29 wrong ones. That is the shape item 5 already found in Rust (F320) and item
+4's own lesson restated: a linter's reds are a property of the code's style, not of its
+correctness.
+
+### 🚨 F337 — the agents wrote 22 tests of their own, all green, on trees that are wrong — and writing tests is not a signal of correctness at all
+
+Item 4 measured generated tests on constructed artifacts and found them ratifying a wrong change
+6 of 9 times when written after it (F305). Here the same thing happens unprompted, in the real
+population, and it can be counted because the agent's tests are in the tree it left.
+
+| | rust/python trees | trees that added `#[test]` / `def test_` | assertions added |
+|---|---:|---:|---:|
+| wrong (`FAIL`) | 16 | **3** | **22** |
+| right (`PASS`) | 18 | 2 | 15 |
+
+Every one of those 22 assertions passes: `cargo test` is green on all 14 Rust failure cells.
+
+The Q52 tree is the clearest. The agent implemented a ring buffer and wrote **eleven** tests of
+its own — under capacity, exactly full, overwrite, multiple wraps, capacity 1, order preservation
+after two overwrites, `to_vec` on empty, cloning a `String` — and not one of them is
+`RingBuffer::new(0)`, which is the case the ticket's *"and for any capacity"* names and the hidden
+test checks. The agent's tests cover the shape of the problem it was thinking about. Q01 is the
+same: five new tests for punctuation, repeated spaces, leading and trailing space, unicode and
+empty input, and none for feeding a slug back in, which is the one that fails.
+
+And the node tree is worse than uninformative. Q53's agent added `_quick_test.mjs` and used it to
+**record the wrong convention as a comment** rather than to test anything —
+`// Empty input → one empty row (standard CSV behavior)`, with a `console.log` and no assertion.
+
+The rate is the finding: **3 of 16 wrong trees wrote tests against 2 of 18 right ones.** A tree
+carrying the author's own green tests is not more likely to be correct, and a gate that counted
+"the agent wrote tests" as evidence would be reading noise. This is the mechanical reason item 4's
+recommendation — generated tests are advisory, never binding — survives contact with real agent
+behaviour.
+
+### 🚨 F338 — a model judge shown a green measurement approves 19 of 22 wrong answers, and the three it catches are all cases the ticket's own words decide
+
+The `verdict` arm shows the champion the ticket, the files the agent left, and one measurement —
+*the project's own test suite is green* — and asks for the VerdictWire schema W11 item 3 shipped.
+That is the entire information set the agent itself had. 57 trees, temperature 0, one call each.
+
+| truth | call | trees | cells |
+|---|---|---:|---:|
+| FAIL | `fail` | **3** | 3 |
+| FAIL | `pass` | 19 | 25 |
+| FAIL | *(empty payload)* | 1 | 1 |
+| PASS | `pass` | 32 | 34 |
+| PASS | `fail` | 1 | 1 |
+| PASS | *(empty payload)* | 1 | 1 |
+
+**3 of the 22 wrong trees that got an answer are caught. 1 of 33 correct trees is failed.** Split
+by F336's axis, the three catches are not distributed at random:
+
+| class | wrong trees | caught |
+|---|---:|---:|
+| `stated` | 8 | **2** |
+| `signalled` | 6 | **1** |
+| `implied` | 6 | 0 |
+| `undecided` | 1 | 0 |
+| `mechanical` | 2 | 0 |
+
+All three are real and correctly diagnosed. On Q56 the rationale is *"the current logic immediately
+returns `Ordering::Greater` … without checking if the remaining components in the longer version"*
+are zero; on Q46 it identifies the `head | tail` pipeline and the edge the ticket names; on Q51 it
+quotes the regex and explains that it permits a space between a number and its unit but not
+between units. **A reviewer with no tools, reading the ticket carefully, catches the cases the
+ticket decides and nothing else.** That is a completely reasonable thing for a reader to be, and it
+is not a gate: an instrument that a wrong answer walks past 86% of the time is a report.
+
+Three things about the misses matter more than the rate.
+
+**The model is not blind to the edge; it argues the edge away.** On the Q03 tree whose remainder
+distribution is correct and which panics at `people == 0`, the rationale says so explicitly and
+then dismisses it: *"The only edge case is `people == 0`, which causes a division-by-zero panic.
+However, this is standard Rust behavior for invalid input and falls outside the scope of the
+ticket's requirements."* The hidden test disagrees. Nothing about that reasoning is careless — it
+is a scope judgement, made in the absence of anyone to ask, and it is the `implied` class's whole
+difficulty in one sentence.
+
+**Two calls of 56 spent the entire 8,192-token budget on reasoning and returned an empty string.**
+`finish_reason: length`, `completion_tokens: 8192`, `reasoning_tokens: 8192`, content `""`. That is
+F282's and F284's failure mode reproduced on the champion in the Judge role, at **3.6%** — low, and
+not zero, and a gate that treats a missing payload as anything but `Uncertain` is deciding by
+coin-flip 1 time in 28.
+
+**And the single false-fail is the most instructive row in the table.** On a *correct* Q45 tree the
+model produced a well-formed verdict whose rationale argues, correctly and in detail, that the
+solution is right — and then stops mid-sentence at *"ignoring inline hashes (e.g., `` `code =  ``"*,
+emits `"defects": []`, and emits `"call": "fail"`. `finish_reason` is **`stop`**; 992 completion
+tokens; the JSON parses; the schema is satisfied. **A gate reading `call` gets a red with no defect
+attached and a rationale that says the code is fine.** No schema catches this, because the schema
+is not violated. The cheap defence is a consistency rule the type system can carry — a `fail` with
+an empty defect list is not a verdict — and it is the same shape as item 1's diagnosis: the family's
+verification failures are defaults that pretend to be measurements.

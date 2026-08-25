@@ -1,0 +1,12 @@
+[package]
+name = "bcf-doc"
+version = "0.1.0"
+edition = "2021"
+
+# Path dependency on the pinned donor checkout, exactly as `w6-language/bcf-probe`
+# does it. The probe calls BCF's own verifier rather than reimplementing it.
+[dependencies]
+battlecommand-forge = { path = "../../../../../battle-command-forge" }
+serde_json = "1"
+
+[workspace]

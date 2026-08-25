@@ -1,0 +1,162 @@
+{
+ "donor": "d5528ea",
+ "cases": [
+  {
+   "name": "donor test 'should not review decomposition tasks'",
+   "task": {
+    "type": "decomposition",
+    "status": "completed"
+   },
+   "shouldReview": false,
+   "reason": "No review needed (Ollama: 1/5, All: 1/10)",
+   "assertion_holds": true,
+   "skipped_for_the_stated_reason": false
+  },
+  {
+   "name": "donor test 'should not review debug tasks'",
+   "task": {
+    "type": "debug",
+    "status": "completed"
+   },
+   "shouldReview": false,
+   "reason": "No review needed (Ollama: 1/5, All: 1/10)",
+   "assertion_holds": true,
+   "skipped_for_the_stated_reason": false
+  },
+  {
+   "name": "taskType: 'decomposition' (the field getReviewDecision reads)",
+   "task": {
+    "taskType": "decomposition",
+    "status": "completed"
+   },
+   "shouldReview": false,
+   "reason": "Skipping decomposition task type",
+   "assertion_holds": true,
+   "skipped_for_the_stated_reason": true
+  },
+  {
+   "name": "taskType: 'debug' (the field getReviewDecision reads)",
+   "task": {
+    "taskType": "debug",
+    "status": "completed"
+   },
+   "shouldReview": false,
+   "reason": "Skipping debug task type",
+   "assertion_holds": true,
+   "skipped_for_the_stated_reason": true
+  },
+  {
+   "name": "taskType: 'review' (the field getReviewDecision reads)",
+   "task": {
+    "taskType": "review",
+    "status": "completed"
+   },
+   "shouldReview": false,
+   "reason": "Skipping review task type",
+   "assertion_holds": true,
+   "skipped_for_the_stated_reason": true
+  },
+  {
+   "name": "ten 'refactor' tasks at complexity 9, one service instance",
+   "reviewers": [
+    null,
+    null,
+    null,
+    null,
+    "haiku",
+    null,
+    null,
+    null,
+    null,
+    "haiku"
+   ],
+   "reviewed": 2
+  },
+  {
+   "name": "30 tasks, all ollama",
+   "haiku": 6,
+   "opus": 0,
+   "unreviewed": 24
+  },
+  {
+   "name": "30 tasks, alternating sonnet / ollama",
+   "haiku": 3,
+   "opus": 0,
+   "unreviewed": 27
+  },
+  {
+   "name": "30 tasks, alternating ollama / sonnet (the same stream, other phase)",
+   "haiku": 3,
+   "opus": 3,
+   "unreviewed": 24
+  },
+  {
+   "name": "30 tasks, all sonnet",
+   "haiku": 0,
+   "opus": 3,
+   "unreviewed": 27
+  },
+  {
+   "name": "complexity undefined on the Opus tick (task #10, non-ollama)",
+   "reviewer": null,
+   "reason": "No review needed (Ollama: 9/5, All: 10/10)"
+  },
+  {
+   "name": "complexity 0 on the Opus tick (task #10, non-ollama)",
+   "reviewer": null,
+   "reason": "No review needed (Ollama: 9/5, All: 10/10)"
+  },
+  {
+   "name": "complexity 5 on the Opus tick (task #10, non-ollama)",
+   "reviewer": null,
+   "reason": "No review needed (Ollama: 9/5, All: 10/10)"
+  },
+  {
+   "name": "complexity 5.5 on the Opus tick (task #10, non-ollama)",
+   "reviewer": "opus",
+   "reason": "Opus review: Task #10 (every 10th, complexity 5.5 > 5)"
+  },
+  {
+   "name": "complexity 9 on the Opus tick (task #10, non-ollama)",
+   "reviewer": "opus",
+   "reason": "Opus review: Task #10 (every 10th, complexity 9.0 > 5)"
+  }
+ ],
+ "vocabulary": {
+  "shared_TaskType": [
+   "code",
+   "test",
+   "review",
+   "debug",
+   "refactor"
+  ],
+  "route_zod_enum": [
+   "code",
+   "test",
+   "review",
+   "debug",
+   "refactor",
+   "decomposition"
+  ],
+  "in_route_not_in_type": [
+   "decomposition"
+  ],
+  "skip_review_types": [
+   "review",
+   "decomposition",
+   "debug"
+  ],
+  "skip_entries_not_in_shared_type": [
+   "decomposition"
+  ],
+  "documentation_task_type": false
+ },
+ "type_score": {
+  "code": 0.5,
+  "test": 1.5,
+  "review": 2.5,
+  "debug": 0,
+  "refactor": 0,
+  "decomposition": 3
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "as_markdown": {
+  "avg_score": 5.0,
+  "files_scored": [],
+  "final_with_perfect_critique": 7.0,
+  "tests_run": false
+ },
+ "as_python_the_default": {
+  "avg_score": 5.0,
+  "files_scored": [],
+  "final_with_perfect_critique": 7.0,
+  "tests_run": true
+ },
+ "donor": "d6c1601",
+ "files_in_dir": [
+  "CHANGELOG.md",
+  "README.md",
+  "status_lifecycle.md"
+ ],
+ "gate_c1_c6": 9.199999809265137,
+ "gate_c7_c8": 8.5,
+ "gate_c9_plus": 8.0,
+ "passes_lowest_gate_with_perfect_critique": false
+}

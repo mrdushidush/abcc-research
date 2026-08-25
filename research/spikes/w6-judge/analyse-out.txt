@@ -1,0 +1,80 @@
+
+==========================================================================
+OQ-W6-13: what the 29 clean-arm failures are
+==========================================================================
+class         trees  cells
+stated            8      8
+signalled         6      6
+implied           6     12
+undecided         1      1
+mechanical        2      2
+TOTAL            23     29
+
+==========================================================================
+verdict arm: the model's binary call against the suite verifier
+==========================================================================
+truth    call      trees  cells
+FAIL     <empty>       1      1
+FAIL     fail          3      3
+FAIL     pass         19     25
+PASS     <empty>       1      1
+PASS     fail          1      1
+PASS     pass         32     34
+
+caught 3/22 wrong trees (3/28 cells); false-failed 1/33 correct trees
+empty payloads: 2
+
+==========================================================================
+verdict arm: caught, by what decides the failing case (OQ-W6-13's axis)
+==========================================================================
+class         trees  caught  cells  caught
+stated            8       2      8       2
+signalled         6       1      6       1
+implied           6       0     12       0
+undecided         1       0      1       0
+mechanical        2       0      2       0
+TOTAL            23       3     29       3
+
+==========================================================================
+edge arm: the model's binary call against the suite verifier
+==========================================================================
+truth    call      trees  cells
+FAIL     pass          2      4
+
+caught 0/2 wrong trees (0/4 cells); false-failed 0/0 correct trees
+empty payloads: 0
+
+==========================================================================
+edge arm: caught, by what decides the failing case (OQ-W6-13's axis)
+==========================================================================
+class         trees  caught  cells  caught
+stated            1       0      1       0
+implied           1       0      3       0
+TOTAL             2       0      4       0
+
+==========================================================================
+edge arm: the derived gate — 'the reviewer named at least one case'
+==========================================================================
+truth    derived   trees  cells
+FAIL     fail          1      1
+FAIL     pass          1      3
+
+==========================================================================
+edge arm: does the model's own `call` agree with its own cases?
+==========================================================================
+  cases  cases -> call pass     1
+  none   cases -> call pass     1
+
+==========================================================================
+edge arm: cases produced, by class
+==========================================================================
+  implied        1 trees,   0 cases named
+  stated         1 trees,   1 cases named
+
+==========================================================================
+docgate pointwise: a planted falsehood in a real document
+==========================================================================
+document                 needs code  call    defects  kind
+faithful                 None        pass          0  none
+
+caught 0/0 planted defects; false-failed 0/1 faithful documents

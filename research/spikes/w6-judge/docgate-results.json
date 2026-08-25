@@ -1,0 +1,346 @@
+[
+ {
+  "key": "free:faithful",
+  "arm": "free",
+  "doc": "faithful",
+  "defect": null,
+  "kind": "none",
+  "references": [],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:wrong_constant",
+  "arm": "free",
+  "doc": "wrong_constant",
+  "defect": "wrong_constant",
+  "kind": "a number that is wrong",
+  "references": [],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:phantom_symbol",
+  "arm": "free",
+  "doc": "phantom_symbol",
+  "defect": "phantom_symbol",
+  "kind": "a function that does not exist",
+  "references": [
+   "status.is_retryable"
+  ],
+  "unresolved": [
+   "status.is_retryable"
+  ],
+  "verdict": "fail"
+ },
+ {
+  "key": "free:wrong_type",
+  "arm": "free",
+  "doc": "wrong_type",
+  "defect": "wrong_type",
+  "kind": "a return type that is wrong",
+  "references": [
+   "summary.counts"
+  ],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:wrong_default",
+  "arm": "free",
+  "doc": "wrong_default",
+  "defect": "wrong_default",
+  "kind": "a default that is wrong",
+  "references": [],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:reversed_semantics",
+  "arm": "free",
+  "doc": "reversed_semantics",
+  "defect": "reversed_semantics",
+  "kind": "a rule stated backwards; also contradicts item 3",
+  "references": [
+   "charges.is_chargeable"
+  ],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:stale_transition",
+  "arm": "free",
+  "doc": "stale_transition",
+  "defect": "stale_transition",
+  "kind": "a transition table that is wrong",
+  "references": [],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:true_but_incomplete",
+  "arm": "free",
+  "doc": "true_but_incomplete",
+  "defect": "true_but_incomplete",
+  "kind": "nothing false; three of five rules deleted",
+  "references": [],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:faithful_padded",
+  "arm": "free",
+  "doc": "faithful_padded",
+  "defect": null,
+  "kind": "none, plus 350 words",
+  "references": [],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "free:wrong_constant_padded",
+  "arm": "free",
+  "doc": "wrong_constant_padded",
+  "defect": "wrong_constant",
+  "kind": "a number that is wrong, plus 350 words",
+  "references": [],
+  "unresolved": [],
+  "verdict": "pass"
+ },
+ {
+  "key": "point:faithful",
+  "arm": "pointwise",
+  "doc": "faithful",
+  "defect": null,
+  "needs_code": null,
+  "kind": "none",
+  "truth": "the document is true of the code",
+  "payload": {
+   "rationale": "Every claim made in the document accurately reflects the behavior and structure of the provided code. Here is a point-by-point verification:\n\n1. **Statuses & Terminality**: The `TERMINAL` set in `status.py` correctly includes `DONE`, `FAILED`, and `CANCELLED`. The `ACTIVE` set matches the non-terminal statuses.\n2. **Transitions**: The `TRANSITIONS` dictionary exactly matches the document's rules: `cancelled` is only reachable from `queued` or `running`, and `failed` \u2192 `queued` is the sole legal transition out of a terminal status (aside from cancellation).\n3. **Semantics 1 (Terminal)**: `is_terminal()` correctly returns True for cancelled jobs, preventing them from being treated as in-flight.\n4. **Semantics 2 (SLA Breach/Clock Stops)**: `sla.py`'s `finished_at()` returns `ended_at` for all terminal statuses (including `cancelled`), effectively stopping the clock at cancellation time as specified.\n5. **Semantics 3 (Not Chargeable)**: `charges.py`'s `is_chargeable()` explicitly excludes both `FAILED` and `CANCELLED` statuses, preventing billing for cancelled work.\n6. **Semantics 4 (Must Not Retry)**: `retry.py`'s `should_retry()` returns False if the job status is `CANCELLED`, enforcing the rule that cancellations override operator instructions.\n7. **Semantics 5 (Own Bucket)**: `summary.py` defines a dedicated `cancelled` bucket in `BUCKETS` and explicitly counts cancelled jobs into it, avoiding folding them into `failed` or `other`. The failure/completion rates correctly exclude cancelled jobs from the denominator.\n\nThe document's warning about consumers handling the new status is a developer guideline rather than a factual claim about current code state. In this codebase, all consumers (`status`, `retry`, `summary`, `sla`, `charges`) correctly handle `cancelled` as specified. No claims are false, and no rules enforced by the code are missing from the document.",
+   "defects": [],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 2873,
+   "completion_tokens": 6563,
+   "total_tokens": 9436,
+   "completion_tokens_details": {
+    "reasoning_tokens": 6085
+   }
+  },
+  "wall_s": 115.47,
+  "error": null
+ },
+ {
+  "key": "point:wrong_constant",
+  "arm": "pointwise",
+  "doc": "wrong_constant",
+  "defect": "wrong_constant",
+  "needs_code": true,
+  "kind": "a number that is wrong",
+  "truth": "retry.py sets MAX_ATTEMPTS = 3",
+  "payload": {
+   "rationale": "I have compared every claim in `docs/status_lifecycle.md` against the provided Python codebase. Two explicit rules/claims in the document contradict the actual implementation:\n\n1. **MAX_ATTEMPTS Value Mismatch**: The document states that the retry policy allows up to **5** attempts before a job is abandoned (`see MAX_ATTEMPTS`). However, `jobs/retry.py` explicitly defines `MAX_ATTEMPTS = 3`. This is a direct factual error in the documentation.\n\n2. **SLA Breach Semantics for Cancelled Jobs**: Rule #2 states that a cancelled job is **NOT** an SLA breach and that \"the deadline no longer applies to it.\" The code in `jobs/sla.py` does not exempt `CANCELLED` jobs from breach checks. It calculates `finished_at` using `job.ended_at` for any terminal status, and `is_breached()` will still return `True` if a cancelled job's `ended_at` exceeds its calculated deadline. The code enforces standard SLA logic regardless of cancellation, violating the documented rule.\n\nAll other claims (terminal statuses, transition graph, chargeability, bucket counts, and requeue rules) are accurately reflected in the code.",
+   "defects": [
+    {
+     "path": "docs/status_lifecycle.md",
+     "severity": "high",
+     "description": "Document claims `MAX_ATTEMPTS` allows up to **5** attempts, but `jobs/retry.py` sets it to **3**."
+    },
+    {
+     "path": "docs/status_lifecycle.md",
+     "severity": "medium",
+     "description": "Document rule #2 states cancelled jobs are NOT an SLA breach and the deadline no longer applies. `jobs/sla.py` does not explicitly exempt `CANCELLED` status from `is_breached()` checks, meaning a job cancelled after its deadline would still be flagged as breached."
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 2901,
+   "completion_tokens": 5636,
+   "total_tokens": 8537,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5188
+   }
+  },
+  "wall_s": 121.31,
+  "error": null
+ },
+ {
+  "key": "point:phantom_symbol",
+  "arm": "pointwise",
+  "doc": "phantom_symbol",
+  "defect": "phantom_symbol",
+  "needs_code": true,
+  "kind": "a function that does not exist",
+  "truth": "status.py exports is_terminal / is_active / is_known, not is_retryable",
+  "payload": {
+   "rationale": "I have carefully compared every semantic claim in `docs/status_lifecycle.md` against the provided Python modules (`jobs/status.py`, `jobs/retry.py`, `jobs/summary.py`, `jobs/sla.py`, `jobs/charges.py`).\n\n1. **Statuses & Terminality**: The document states `queued` and `running` are non-terminal, while `done`, `failed`, and `cancelled` are terminal. This matches `status.TERMINAL` and `status.ACTIVE` exactly.\n2. **Transitions**: The document states `cancelled` is only reachable from `queued` or `running`. This matches the `TRANSITIONS` dictionary in `status.py`.\n3. **Semantics of `cancelled`**:\n   - *Terminal*: Enforced by code (`is_terminal`, `sla.finished_at`, `charges.is_chargeable`).\n   - *Not an SLA breach / Clock stops*: Enforced by `sla.finished_at` returning `job.ended_at` for terminal statuses, stopping the accrual window.\n   - *Not chargeable*: Enforced by `charges.is_chargeable` explicitly rejecting `FAILED` and `CANCELLED`.\n   - *Must not be retried*: Enforced by `retry.should_retry` returning `False` for `CANCELLED`, and `status.TRANSITIONS` having no outgoing edges from `CANCELLED`.\n   - *Own bucket in counts*: Enforced by `summary.BUCKETS` and the explicit `elif job.status == st.CANCELLED:` branch.\n4. **Requeueing**: The document states only `failed -> queued` is legal out of a terminal status. This matches `status.TRANSITIONS` exactly (`CANCELLED: frozenset()`).\n5. **False/Inaccurate Claim**: The document instructs developers to `Call status.is_retryable(job) rather than comparing against FAILED by hand; it is the supported way to ask the question.` **This claim is false.** There is no function named `is_retryable` in `jobs/status.py` or anywhere else in the provided codebase. The retry logic resides in `jobs/retry.should_retry`, which checks multiple conditions (status, attempts, kind), not just a simple comparison against `FAILED`.\n\nAll other claims accurately reflect the constants, transitions, and module behaviors defined in the code.",
+   "defects": [
+    {
+     "path": "docs/status_lifecycle.md",
+     "severity": "high",
+     "description": "The document references a non-existent function `status.is_retryable(job)`. This function does not exist in `jobs/status.py` or any other provided module. The retry logic is implemented in `jobs/retry.should_retry`, which evaluates multiple conditions (attempt count, job kind, and status), contradicting the document's implication that it simply replaces a comparison against `FAILED`."
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 2903,
+   "completion_tokens": 6059,
+   "total_tokens": 8962,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5414
+   }
+  },
+  "wall_s": 181.59,
+  "error": null
+ },
+ {
+  "key": "point:wrong_type",
+  "arm": "pointwise",
+  "doc": "wrong_type",
+  "defect": "wrong_type",
+  "needs_code": true,
+  "kind": "a return type that is wrong",
+  "truth": "summary.counts() returns a dict keyed by bucket name",
+  "payload": {
+   "rationale": "I have carefully compared every claim in `docs/status_lifecycle.md` against the provided Python modules (`status.py`, `retry.py`, `summary.py`, `sla.py`, `charges.py`). The document accurately describes the status vocabulary, terminal states, transition graph, retry policy, chargeability rules, and bucket structure. However, two specific claims are factually incorrect or describe behavior not enforced by the code:\n\n1. **Return type of `summary.counts()`**: The document states that `summary.counts()` \"returns a list of `(bucket, count)` pairs\". In reality, the function returns a Python `dict` mapping bucket names to integer counts.\n2. **SLA Breach Exemption for Cancelled Jobs**: The document claims that a cancelled job \"is NOT an SLA breach\" and \"the deadline no longer applies to it.\" While the code correctly stops the clock at `ended_at` for terminal statuses (including `CANCELLED`), it does not explicitly exclude cancelled jobs from being marked as breached. If a job is cancelled *after* its deadline, `sla.is_breached()` will still return `True`, violating the document's rule that cancellations should not count against SLA compliance.\n\nAll other claims (terminal status definitions, transition constraints, retry restrictions, chargeability exclusions, and bucket assignments) are accurately reflected in the code.",
+   "defects": [
+    {
+     "path": "docs/status_lifecycle.md",
+     "severity": "medium",
+     "description": "The document claims `summary.counts()` returns a list of `(bucket, count)` pairs. The actual implementation returns a dictionary (`{b: 0 for b in BUCKETS}`). While the logic correctly isolates `cancelled` into its own bucket, the data structure description is factually wrong."
+    },
+    {
+     "path": "docs/status_lifecycle.md",
+     "severity": "high",
+     "description": "The document asserts that cancelled jobs \"are NOT an SLA breach\" and \"the deadline no longer applies to it.\" The code in `sla.py` does not explicitly exempt `CANCELLED` status from breach evaluation. If a job is cancelled after its `deadline`, `is_breached()` will still evaluate `finished_at > deadline` as `True`, incorrectly flagging the cancellation as an SLA violation."
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 2905,
+   "completion_tokens": 5899,
+   "total_tokens": 8804,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5364
+   }
+  },
+  "wall_s": 195.97,
+  "error": null
+ },
+ {
+  "key": "point:wrong_default",
+  "arm": "pointwise",
+  "doc": "wrong_default",
+  "defect": "wrong_default",
+  "needs_code": true,
+  "kind": "a default that is wrong",
+  "truth": "sla.py sets DEFAULT_SLA_SECONDS = 3600",
+  "payload": null,
+  "raw": "{\n  \"rationale\": \"The user wants me to act as a Judge and evaluate a document (`docs/status_lifecycle.md`) against a set of Python code files (`jobs/status.py`, `jobs/retry.py`, `jobs/summary.py`, `jobs/sla.py`, `jobs/charges.py`). I need to check if every claim in the document is true for the provided code. If any claim is false, or if a rule enforced by the code is missing from the document, I must point it out.\\n\\nLet's break down the claims in the document and verify them against the code.\\n\\n**Document Claims:**\\n1. **Statuses & Terminality:**\\n   - `queued`: not terminal\\n   - `running`: not terminal\\n   - `done`: terminal\\n   - `failed`: terminal\\n   - `cancelled`: terminal\\n   *Code check (`status.py`):*\\n   `TERMINAL = frozenset({DONE, FAILED, CANCELLED})` -> Matches.\\n   `ACTIVE = frozenset({QUEUED, RUNNING})` -> Matches.\\n\\n2. **Transitions:**\\n   - `cancelled` is reachable from `queued` or `running` and nowhere else.\\n   *Code check (`status.py`):*\\n   `TRANSITIONS = { QUEUED: frozenset({RUNNING, CANCELLED, FAILED}), RUNNING: frozenset({DONE, FAILED, CANCELLED}), ... }` -> Matches.\\n\\n3. **Semantics of `cancelled`:**\\n   1. It is TERMINAL. Nothing waits on it or treats it as in flight.\\n      *Code check:* `is_terminal(CANCELLED)` returns True. `TERMINAL` set includes it. Matches.\\n   2. It is NOT an SLA breach. The clock stops at cancellation. A job with no `sla_seconds` falls back to default (doc says 1800, code says 3600). Wait, let's check the doc claim about ",
+  "usage": {
+   "prompt_tokens": 2904,
+   "completion_tokens": 8192,
+   "total_tokens": 11096,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5470
+   }
+  },
+  "wall_s": 194.63,
+  "error": null
+ },
+ {
+  "key": "point:reversed_semantics",
+  "arm": "pointwise",
+  "doc": "reversed_semantics",
+  "defect": "reversed_semantics",
+  "needs_code": true,
+  "kind": "a rule stated backwards; also contradicts item 3",
+  "truth": "charges.is_chargeable returns False for CANCELLED",
+  "payload": {
+   "rationale": "The document contains one major false claim regarding the code, and internally contradicts itself on that same point.\n\n**False Claim:** The 'Billing note' section states: `Cancelled work IS chargeable: charges.is_chargeable counts it like any other terminal job, because the compute was really spent.`\n\n**Why it's false:** In `jobs/charges.py`, the `is_chargeable` function explicitly returns `False` for jobs with a `CANCELLED` status:\n```python\nif job.status in (st.FAILED, st.CANCELLED):\n    return False\n```\nThe code aligns perfectly with Semantics 3 of the document itself (`**It is NOT chargeable.** We do not bill for work the customer told us to stop.`), but directly contradicts the later 'Billing note' section. The claim that `charges.is_chargeable` counts cancelled jobs like other terminal jobs is factually incorrect relative to the provided code.\n\nAll other claims in the document accurately reflect the code's behavior:\n- Status definitions and terminality (`status.py`) match.\n- Transition rules (`TRANSITIONS` dict) correctly restrict cancellation to `queued`/`running` states only.\n- Retry logic (`retry.py`) correctly prevents retrying cancelled jobs.\n- SLA evaluation (`sla.py`) correctly stops the clock at `ended_at` for terminal statuses, preventing false breaches on cancellations.\n- Counting buckets (`summary.py`) explicitly separates `cancelled` into its own bucket and excludes it from failure/completion rate denominators as intended.",
+   "defects": [
+    {
+     "path": "/Billing note",
+     "severity": "high",
+     "description": "The document falsely claims that cancelled work IS chargeable and that `charges.is_chargeable` counts it like other terminal jobs. The code explicitly excludes `CANCELLED` status from being chargeable, returning False immediately."
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 2906,
+   "completion_tokens": 3399,
+   "total_tokens": 6305,
+   "completion_tokens_details": {
+    "reasoning_tokens": 2961
+   }
+  },
+  "wall_s": 160.91,
+  "error": null
+ },
+ {
+  "key": "point:stale_transition",
+  "arm": "pointwise",
+  "doc": "stale_transition",
+  "defect": "stale_transition",
+  "needs_code": true,
+  "kind": "a transition table that is wrong",
+  "truth": "TRANSITIONS[DONE] is empty; only FAILED -> QUEUED is legal",
+  "payload": {
+   "rationale": "Every claim in `docs/status_lifecycle.md` is **true** and accurately reflected in the provided codebase. The code correctly implements every rule, constant, transition, and semantic behavior described in the document.\n\nHere is a point-by-point verification:\n\n1. **Status Definitions & Terminal/Active Sets**: \n   - Doc defines `queued`, `running`, `done`, `failed`, `cancelled`. Code (`status.py`) defines these exact constants.\n   - Doc states `done`, `failed`, `cancelled` are terminal; `queued`, `running` are active. Code matches exactly with the `TERMINAL` and `ACTIVE` frozensets.\n\n2. **Transitions**: \n   - Doc: \"`cancelled` is reachable from either active status and from nowhere else.\"\n   - Code: `TRANSITIONS` dict explicitly lists `CANCELLED` only under `QUEUED` and `RUNNING`, with empty sets for terminal states. Matches perfectly.\n\n3. **Semantics of `cancelled`**:\n   - **(1) It is TERMINAL.** -> Code includes it in the `TERMINAL` set and `is_terminal()` returns True. \u2705\n   - **(2) It is NOT an SLA breach / clock stops at cancellation.** -> `sla.py`'s `finished_at()` returns `job.ended_at` for any terminal status (including cancelled), meaning time no longer accrues against `now`. \u2705\n   - **(3) It is NOT chargeable.** -> `charges.py`'s `is_chargeable()` explicitly returns `False` if status is `FAILED` or `CANCELLED`. \u2705\n   - **(4) It MUST NOT be retried.** -> `retry.py`'s `should_retry()` explicitly returns `False` for `CANCELLED` jobs. \u2705\n   - **(5) It gets its OWN bucket in every count.** -> `summary.py` defines `\"cancelled\"` as a distinct key in `BUCKETS` and explicitly increments it in the `counts()` function, preventing it from skewing failure/completion rates or hiding in `\"other\"`. \u2705\n\n4. **Requeueing Logic**: \n   - Doc: \"`done` \u2192 `queued` is legal... failure can be transient.\"\n   - Code: `TRANSITIONS` allows both `DONE -> QUEUED` and `FAILED -> QUEUED`, aligning with the retry policy described.\n\n5. **Development Warning / Default Branchs**: \n   - The document's warning about default branches swallowing the 5th status is a guideline for future maintenance. The current code avoids this risk by explicitly handling all statuses in conditionals (`summary.py`) and using dictionary `.get()` with safe defaults (`status.py`), so no rule enforcement is missing or violated.\n\n**Conclusion**: Every claim made in the document is factually correct regarding the provided code, and the code enforces all described business rules without contradiction. No false claims or missing rules were found.",
+   "defects": [],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 2873,
+   "completion_tokens": 6896,
+   "total_tokens": 9769,
+   "completion_tokens_details": {
+    "reasoning_tokens": 6224
+   }
+  },
+  "wall_s": 183.04,
+  "error": null
+ },
+ {
+  "key": "point:true_but_incomplete",
+  "arm": "pointwise",
+  "doc": "true_but_incomplete",
+  "defect": "true_but_incomplete",
+  "needs_code": false,
+  "kind": "nothing false; three of five rules deleted",
+  "truth": "every remaining sentence is true of the code",
+  "payload": {
+   "rationale": "The document claims that a cancelled job is NOT an SLA breach, stating 'the deadline no longer applies to it.' However, the code in `jobs/sla.py` does not implement this exemption. The `is_breached` function calculates `finished_at(job, now)` as `ended_at` for any terminal status (including CANCELLED), and then compares it against `deadline(job)`. There is no conditional to return False for cancelled jobs. Therefore, a job that was cancelled after exceeding its SLA duration will still be marked as breached by the code, directly contradicting the document's rule.",
+   "defects": [
+    {
+     "path": "docs/status_lifecycle.md",
+     "severity": "high",
+     "description": "Claim 'It is NOT an SLA breach' is false relative to the code. The `sla.py` module calculates SLA breaches for cancelled jobs based on their `ended_at` time without any special-case exemption, meaning they can still be marked as breached if they ran past their deadline before cancellation."
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 2756,
+   "completion_tokens": 4419,
+   "total_tokens": 7175,
+   "completion_tokens_details": {
+    "reasoning_tokens": 4162
+   }
+  },
+  "wall_s": 160.68,
+  "error": null
+ }
+]

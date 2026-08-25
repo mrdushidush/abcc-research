@@ -1,0 +1,319 @@
+[
+ {
+  "key": "Q03:e45a172aa82aea9c",
+  "arm": "edge",
+  "task": "Q03",
+  "lang": "rust",
+  "truth": "FAIL",
+  "n_cells": 1,
+  "uids": [
+   "q56/w8-1786256305205/Q03__control"
+  ],
+  "changed": [
+   "src/lib.rs"
+  ],
+  "added": [],
+  "prompt_chars": 1669,
+  "payload": {
+   "reading": "The ticket requires that when a bill doesn't divide evenly, the returned shares must still sum to exactly `total_cents` while keeping the split \"as even as possible.\" The agent's fix adds the entire remainder to `shares[0]`. While this guarantees the sum matches `total_cents`, it violates the \"as even as possible\" constraint whenever the remainder is greater than 1, because one person ends up paying significantly more than others (difference > 1 cent). To satisfy the requirement, the remainder must be distributed across multiple people so that no two shares differ by more than 1 cent.",
+   "cases": [
+    {
+     "why": "The code adds all remainder to index 0. When `total_cents % people > 1`, this creates a difference of more than 1 cent between the first person's share and everyone else's, violating \"as even as possible.\" The correct behavior is to distribute the remainder one-by-one across people so shares differ by at most 1.",
+     "call": "split_bill(10, 4)",
+     "expected": "[3, 3, 2, 2] (or any permutation with two 3s and two 2s)",
+     "actual": "[4, 2, 2, 2]"
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 538,
+   "completion_tokens": 4807,
+   "total_tokens": 5345,
+   "completion_tokens_details": {
+    "reasoning_tokens": 4499
+   }
+  },
+  "error": null,
+  "wall_s": 73.22
+ },
+ {
+  "key": "Q03:7d272eecc3197b4b",
+  "arm": "edge",
+  "task": "Q03",
+  "lang": "rust",
+  "truth": "FAIL",
+  "n_cells": 3,
+  "uids": [
+   "q56/w8-1786256305205/Q03__gated",
+   "q56/w8-1786808290277/Q03__control",
+   "q56/w8-1786815053791/Q03__control"
+  ],
+  "changed": [
+   "src/lib.rs"
+  ],
+  "added": [],
+  "prompt_chars": 1656,
+  "payload": {
+   "reading": "The provided implementation correctly satisfies the ticket's requirements for all valid inputs where `people > 0`. \n\n- **Sum correctness**: The code calculates `share = total_cents / people` and `remainder = total_cents % people`. It then adds `1` to exactly `remainder` of the shares. Mathematically, `(share * (people - remainder)) + ((share + 1) * remainder)` simplifies to `share * people + remainder`, which equals `total_cents`. Thus, no cents are missing.\n- **Evenness**: Every person receives either `share` or `share + 1` cents. This guarantees the split is as even as possible (difference between any two shares is at most 1).\n\nThe only edge case is `people == 0`, which causes a division-by-zero panic. However, this is standard Rust behavior for invalid input and falls outside the scope of the ticket's requirements. Since the code correctly handles all inputs implied by the ticket, there are no defects to report.",
+   "cases": [],
+   "call": "pass"
+  },
+  "raw": null,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 540,
+   "completion_tokens": 5345,
+   "total_tokens": 5885,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5094
+   }
+  },
+  "error": null,
+  "wall_s": 76.44
+ },
+ {
+  "key": "Q05:341857425332f6b8",
+  "arm": "edge",
+  "task": "Q05",
+  "lang": "rust",
+  "truth": "FAIL",
+  "n_cells": 1,
+  "uids": [
+   "q56/w8-1786256305205/Q05__control"
+  ],
+  "changed": [
+   "src/lib.rs"
+  ],
+  "added": [],
+  "prompt_chars": 1704,
+  "payload": {
+   "reading": "The ticket explicitly states that callers pass whole config files and the function should handle them gracefully. Standard config files almost always contain blank lines (and sometimes comments). The current implementation treats any line without an '=' as a fatal error, which violates the 'graceful handling' requirement for typical file contents.",
+   "cases": [
+    {
+     "why": "Config files commonly have empty lines between sections or at the end. The ticket's instruction to handle whole config files gracefully implies these should be skipped rather than triggering a parse failure.",
+     "call": "parse_kv(\"key1 = val1\\n\\nkey2 = val2\")",
+     "expected": "Ok({\"key1\": \"val1\", \"key2\": \"val2\"})",
+     "actual": "Err(\"line 3: missing '='\")"
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 522,
+   "completion_tokens": 4184,
+   "total_tokens": 4706,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3973
+   }
+  },
+  "error": null,
+  "wall_s": 173.3
+ },
+ {
+  "key": "Q25:4e4cfe591d9296f4",
+  "arm": "edge",
+  "task": "Q25",
+  "lang": "python",
+  "truth": "FAIL",
+  "n_cells": 4,
+  "uids": [
+   "q56/w8-1786256305205/Q25__gated",
+   "q56/w8-1786808290277/Q25__control",
+   "q56/w8-1786811844322/Q25__control",
+   "q56/w8-1786815053791/Q25__control"
+  ],
+  "changed": [
+   "solution.py"
+  ],
+  "added": [],
+  "prompt_chars": 1426,
+  "payload": null,
+  "raw": "",
+  "finish_reason": "length",
+  "usage": {
+   "prompt_tokens": 464,
+   "completion_tokens": 8192,
+   "total_tokens": 8656,
+   "completion_tokens_details": {
+    "reasoning_tokens": 8192
+   }
+  },
+  "error": null,
+  "wall_s": 194.33
+ },
+ {
+  "key": "Q51:fc24feae1327d477",
+  "arm": "edge",
+  "task": "Q51",
+  "lang": "python",
+  "truth": "FAIL",
+  "n_cells": 1,
+  "uids": [
+   "q56/w8-1786256305205/Q51__control"
+  ],
+  "changed": [
+   "solution.py"
+  ],
+  "added": [],
+  "prompt_chars": 2031,
+  "payload": null,
+  "raw": "",
+  "finish_reason": "length",
+  "usage": {
+   "prompt_tokens": 632,
+   "completion_tokens": 8192,
+   "total_tokens": 8824,
+   "completion_tokens_details": {
+    "reasoning_tokens": 8192
+   }
+  },
+  "error": null,
+  "wall_s": 174.71
+ },
+ {
+  "key": "Q52:04b8a23c59c50fb2",
+  "arm": "edge",
+  "task": "Q52",
+  "lang": "rust",
+  "truth": "FAIL",
+  "n_cells": 1,
+  "uids": [
+   "q56/w8-1786256305205/Q52__control"
+  ],
+  "changed": [
+   "src/lib.rs"
+  ],
+  "added": [],
+  "prompt_chars": 3332,
+  "payload": {
+   "reading": "The implementation correctly follows the circular buffer logic for any capacity > 0. The `head` and `tail` pointers are managed properly: `tail` remains at 0 until the buffer fills up, after which it advances alongside `head` to maintain the oldest-to-newest ordering required by `to_vec()`. The example from the ticket (capacity 3, pushes 1,2,3,4 resulting in [2,3,4]) is handled correctly. No functional defects exist for valid inputs specified or implied by the ticket.",
+   "cases": [],
+   "call": "pass"
+  },
+  "raw": null,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 975,
+   "completion_tokens": 7987,
+   "total_tokens": 8962,
+   "completion_tokens_details": {
+    "reasoning_tokens": 7841
+   }
+  },
+  "error": null,
+  "wall_s": 217.5
+ },
+ {
+  "key": "Q52:28345f8d03bfa560",
+  "arm": "edge",
+  "task": "Q52",
+  "lang": "rust",
+  "truth": "FAIL",
+  "n_cells": 1,
+  "uids": [
+   "q56/w8-1786256305205/Q52__gated"
+  ],
+  "changed": [
+   "src/lib.rs"
+  ],
+  "added": [],
+  "prompt_chars": 2434,
+  "payload": {
+   "reading": "The implementation functionally matches the ticket's example and description for any capacity > 0, correctly maintaining insertion order (oldest to newest) in `data` and overwriting the oldest element when full. However, there are two deviations from a robust public API contract:\n\n1. **Unnecessary `T: Clone` bound on the entire impl block**: The ticket specifies keeping the public API as given (`new`, `push`, `len`, `is_empty`, `to_vec`). While `to_vec()` inherently requires cloning elements, binding the entire implementation to `T: Clone` unnecessarily restricts methods like `new()`, `len()`, and `is_empty()` to only work with cloneable types. These methods should be available for any `T`.\n2. **Panic on `capacity == 0`**: If initialized with `capacity = 0`, calling `.push(item)` will panic due to attempting to remove from an empty vector (`self.data.remove(0)`). A ring buffer contract implies it should either gracefully ignore pushes or handle the zero-capacity case without panicking.",
+   "cases": [
+    {
+     "why": "The `T: Clone` bound on the impl block restricts methods that don't require cloning (like `len()` and `is_empty()`) to only work with cloneable types, deviating from the implied general-purpose public API.",
+     "call": "RingBuffer::<String>::new(3).len()",
+     "expected": "Works for any type T, not just Clone types.",
+     "actual": "Fails to compile if T does not implement Clone."
+    },
+    {
+     "why": "The ticket implies a buffer that holds at most `capacity` items. Pushing into a zero-capacity buffer should not panic; it should either be a no-op or handle the edge case gracefully.",
+     "call": "RingBuffer::<i32>::new(0).push(42)",
+     "expected": "No-op (buffer remains empty) or graceful handling",
+     "actual": "Panics with index out of bounds on `self.data.remove(0)`"
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 731,
+   "completion_tokens": 6574,
+   "total_tokens": 7305,
+   "completion_tokens_details": {
+    "reasoning_tokens": 6085
+   }
+  },
+  "error": null,
+  "wall_s": 144.04
+ },
+ {
+  "key": "Q51:ba11c73639fe9d4d",
+  "arm": "edge",
+  "task": "Q51",
+  "lang": "python",
+  "truth": "FAIL",
+  "n_cells": 1,
+  "uids": [
+   "q56/w8-1786808290277/Q51__control"
+  ],
+  "changed": [
+   "solution.py"
+  ],
+  "added": [],
+  "prompt_chars": 1980,
+  "payload": null,
+  "raw": "{\n  \"reading\": \"The ticket requires the function to be 'robust for the kinds of strings people actually type'. The current implementation uses a strict regex that rejects trailing whitespace and spaces between unit groups, while inconsistently allowing leading whitespace. This violates the robustness requirement.\",\n  \"cases\": [\n    {\n      \"why\": \"The ticket explicitly asks for robustness against typical user input. People frequently copy-paste duration strings with trailing spaces or separate units with spaces. The current regex `^\\u001b[32m\\u001b[0m...\\u001b[32m$\\u001b[0m` anchors to the end of the string, causing it to reject valid-looking inputs and raise ValueError instead.\",\n      \"call\": \"parse_duration(\\\"1h \\\")\",\n      \"expected\": \"\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n",
+  "finish_reason": "length",
+  "usage": {
+   "prompt_tokens": 623,
+   "completion_tokens": 8192,
+   "total_tokens": 8815,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5453
+   }
+  },
+  "error": null,
+  "wall_s": 187.95
+ },
+ {
+  "key": "Q52:c49cab1db5cbc2a7",
+  "arm": "edge",
+  "task": "Q52",
+  "lang": "rust",
+  "truth": "FAIL",
+  "n_cells": 1,
+  "uids": [
+   "q56/w8-1786808290277/Q52__control"
+  ],
+  "changed": [
+   "src/lib.rs"
+  ],
+  "added": [],
+  "prompt_chars": 4758,
+  "payload": {
+   "reading": "The implementation correctly satisfies all requirements specified in the ticket. The ring buffer logic accurately tracks the `head` (oldest item index) and `len`, correctly handles wrapping around the underlying vector, and properly overwrites the oldest item when full. The `to_vec()` method correctly iterates from the head to reconstruct the contents in order from oldest to newest. All provided tests pass, and the logic holds for any number of wraps and valid capacities (\u22651). \n\nNo defects found.",
+   "cases": [],
+   "call": "pass"
+  },
+  "raw": null,
+  "finish_reason": "stop",
+  "usage": {
+   "prompt_tokens": 1495,
+   "completion_tokens": 7297,
+   "total_tokens": 8792,
+   "completion_tokens_details": {
+    "reasoning_tokens": 7163
+   }
+  },
+  "error": null,
+  "wall_s": 165.36
+ }
+]
