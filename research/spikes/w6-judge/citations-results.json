@@ -1,23 +1,24 @@
 {
  "heads": {
-  "self": "05dfd91",
+  "self": "582660a",
   "v1": "d5528ea",
   "bcf": "d6c1601",
   "claudette": "af3f804"
  },
  "docs": 44,
- "bytes": 1695867,
+ "bytes": 1747742,
  "findings": {
-  "defined": 328,
-  "headings": 332,
-  "distinct_referenced": 339,
-  "total_references": 2453,
+  "defined": 338,
+  "headings": 342,
+  "distinct_referenced": 347,
+  "total_references": 2553,
   "dangling": {
    "22": {
-    "count": 3,
+    "count": 7,
     "docs": [
      "harness/crates/w8-corpus/README.md",
      "harness/crates/w8-import-q56/README.md",
+     "research/W6-verification.md",
      "research/W8-q56-import.md"
     ]
    },
@@ -48,7 +49,7 @@
     ]
    },
    "27": {
-    "count": 4,
+    "count": 6,
     "docs": [
      "harness/crates/w8-import-q56/README.md",
      "research/W6-verification.md",
@@ -56,37 +57,27 @@
     ]
    },
    "28": {
-    "count": 5,
+    "count": 7,
     "docs": [
      "harness/crates/hw-probe/README.md",
      "harness/crates/w8-corpus/README.md",
      "harness/crates/w8-import-q56/README.md",
      "harness/crates/w8-run/README.md",
+     "research/W6-verification.md",
      "research/W8-q56-import.md"
     ]
    },
    "29": {
-    "count": 4,
+    "count": 9,
     "docs": [
      "harness/crates/w8-import-q56/README.md",
      "harness/crates/w8-run/README.md",
+     "research/W6-verification.md",
      "research/W8-q56-import.md"
     ]
    },
-   "339": {
+   "349": {
     "count": 2,
-    "docs": [
-     "research/W6-verification.md"
-    ]
-   },
-   "340": {
-    "count": 1,
-    "docs": [
-     "research/W6-verification.md"
-    ]
-   },
-   "348": {
-    "count": 1,
     "docs": [
      "research/W6-verification.md"
     ]
@@ -112,17 +103,17 @@
   }
  },
  "open_questions": {
-  "defined": 92,
-  "distinct_referenced": 92,
-  "total_references": 263,
+  "defined": 96,
+  "distinct_referenced": 96,
+  "total_references": 272,
   "dangling": {}
  },
  "citations": {
-  "unique": 740,
+  "unique": 752,
   "by_status": {
-   "ok": 388,
-   "ambiguous": 341,
-   "no such file": 10,
+   "ok": 397,
+   "ambiguous": 343,
+   "no such file": 11,
    "past EOF": 1
   },
   "quoted": 30,
@@ -2787,6 +2778,30 @@
     "a": 428,
     "b": 441,
     "status": "ambiguous",
+    "tree": null
+   },
+   {
+    "doc": "research/W6-verification.md",
+    "path": "Cargo.toml",
+    "a": 57,
+    "b": 57,
+    "status": "ambiguous",
+    "tree": null
+   },
+   {
+    "doc": "research/W6-verification.md",
+    "path": "runtime/conversation.rs",
+    "a": 753,
+    "b": 754,
+    "status": "ambiguous",
+    "tree": null
+   },
+   {
+    "doc": "research/W6-verification.md",
+    "path": "path/relative/to/repo.rs",
+    "a": 12,
+    "b": 18,
+    "status": "no such file",
     "tree": null
    },
    {

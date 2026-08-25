@@ -39,42 +39,161 @@ TOTAL            23       3     29       3
 edge arm: the model's binary call against the suite verifier
 ==========================================================================
 truth    call      trees  cells
-FAIL     pass          2      4
+FAIL     <empty>       6      9
+FAIL     fail          3      3
+FAIL     pass         14     17
+PASS     <empty>      11     11
+PASS     pass         23     25
 
-caught 0/2 wrong trees (0/4 cells); false-failed 0/0 correct trees
-empty payloads: 0
+caught 3/17 wrong trees (3/20 cells); false-failed 0/23 correct trees
+empty payloads: 17
 
 ==========================================================================
 edge arm: caught, by what decides the failing case (OQ-W6-13's axis)
 ==========================================================================
 class         trees  caught  cells  caught
-stated            1       0      1       0
-implied           1       0      3       0
-TOTAL             2       0      4       0
+stated            8       2      8       2
+signalled         6       0      6       0
+implied           6       1     12       1
+undecided         1       0      1       0
+mechanical        2       0      2       0
+TOTAL            23       3     29       3
 
 ==========================================================================
 edge arm: the derived gate — 'the reviewer named at least one case'
 ==========================================================================
 truth    derived   trees  cells
-FAIL     fail          1      1
-FAIL     pass          1      3
+FAIL     fail         11     11
+FAIL     pass         12     18
+PASS     fail          5      5
+PASS     pass         29     31
 
 ==========================================================================
 edge arm: does the model's own `call` agree with its own cases?
 ==========================================================================
-  cases  cases -> call pass     1
-  none   cases -> call pass     1
+  cases  cases -> call fail     2
+  cases  cases -> call pass     14
+  none   cases -> call None     17
+  none   cases -> call fail     1
+  none   cases -> call pass     23
 
 ==========================================================================
 edge arm: cases produced, by class
 ==========================================================================
-  implied        1 trees,   0 cases named
-  stated         1 trees,   1 cases named
+  implied        6 trees,   1 cases named
+  mechanical     2 trees,   1 cases named
+  signalled      6 trees,   5 cases named
+  stated         8 trees,   8 cases named
+  undecided      1 trees,   0 cases named
+
+==========================================================================
+what the schema costs: the same 57 trees under two output shapes
+==========================================================================
+arm        median ctok  median reason  median wall  hit the cap   empty
+verdict           2472           2267        38.3s            2       2
+edge              6870           6729       104.1s           17      17
+
+Every empty payload in both arms is `finish_reason: length` at the cap.
+
+==========================================================================
+check.py: running the reviewer's own cases against agent tree vs reference
+==========================================================================
+truth    status          cases
+FAIL     agrees              2
+FAIL     discriminates      13
+PASS     agrees              3
+PASS     discriminates       1
+PASS     unrunnable          1
+
+all cases: {'discriminates': 14, 'agrees': 5, 'unrunnable': 1}  (n=20)
+
+==========================================================================
+check.py: per tree — did the reviewer name a case that really discriminates?
+==========================================================================
+  truth FAIL  at least one discriminating case: False  1
+  truth FAIL  at least one discriminating case: True   10
+  truth PASS  at least one discriminating case: False  4
+  truth PASS  at least one discriminating case: True   1
+
+==========================================================================
+check.py: discriminating cases on WRONG trees, by class
+==========================================================================
+  implied      0/1 cases discriminate
+  mechanical   1/1 cases discriminate
+  signalled    5/5 cases discriminate
+  stated       7/8 cases discriminate
+
+==========================================================================
+the derived gate over the WHOLE population: 'named a case that discriminates'
+==========================================================================
+truth    gate fires    trees
+FAIL     False            13
+FAIL     True             10
+PASS     False            33
+PASS     True              1
+
+catches 10/23 wrong trees; fires on 1/34 correct trees
+
+==========================================================================
+the three gates side by side, all scored over all 57 trees
+==========================================================================
+gate                         catches wrong   fires on correct
+verdict `call == fail`                3/23               1/34
+edge `call == fail`                   3/23               0/34
+edge named any case                  11/23               5/34
+edge case discriminates              10/23               1/34
 
 ==========================================================================
 docgate pointwise: a planted falsehood in a real document
 ==========================================================================
 document                 needs code  call    defects  kind
 faithful                 None        pass          0  none
+faithful_padded          None        pass          0  none, plus 350 words
+phantom_symbol           True        pass          1  a function that does not exist
+reversed_semantics       True        pass          1  a rule stated backwards; also contradicts item 3
+stale_transition         True        pass          0  a transition table that is wrong
+true_but_incomplete      False       pass          1  nothing false; three of five rules deleted
+wrong_constant           True        pass          2  a number that is wrong
+wrong_constant_padded    True        pass          2  a number that is wrong, plus 350 words
+wrong_default            True        None          0  a default that is wrong
+wrong_type               True        pass          2  a return type that is wrong
 
-caught 0/0 planted defects; false-failed 0/1 faithful documents
+caught 0/7 planted defects; false-failed 0/2 faithful documents
+
+==========================================================================
+docgate pointwise: did the defect list name the PLANT?
+==========================================================================
+document                 call    defects  names plant  evidence
+phantom_symbol           pass          1  True         is_retryable
+reversed_semantics       pass          1  True         is_chargeable
+stale_transition         pass          0  False        -
+true_but_incomplete      pass          1  False        -
+wrong_constant           pass          2  True         MAX_ATTEMPTS
+wrong_constant_padded    pass          2  True         MAX_ATTEMPTS
+wrong_default            None          0  False        -
+wrong_type               pass          2  True         counts()
+
+named the plant in 5/8 defective documents (the padded variant counted separately); gated on it 0
+
+==========================================================================
+docgate position: the same pair in both slots
+==========================================================================
+defect                 defect first           faithful first         stable
+phantom_symbol         chose B   (right=True ) chose A   (right=True ) True
+reversed_semantics     chose B   (right=True ) chose A   (right=True ) True
+stale_transition       chose B   (right=True ) chose A   (right=True ) True
+true_but_incomplete    chose B   (right=True ) chose A   (right=True ) True
+wrong_constant         chose B   (right=True ) chose A   (right=True ) True
+wrong_default          chose B   (right=True ) chose A   (right=True ) True
+wrong_type             chose B   (right=True ) chose A   (right=True ) True
+
+correct in 14/14 orderings; order-stable on 7/7 pairs
+slot preference: A 7, B 7, equal 0
+
+==========================================================================
+docgate verbosity: padding against nothing, and padding against truth
+==========================================================================
+  A=faithful_padded          B=faithful                 chose A      expected equal
+  A=faithful                 B=faithful_padded          chose B      expected equal
+  A=faithful                 B=wrong_constant_padded    chose A      expected A
+  A=wrong_constant_padded    B=faithful                 chose B      expected B

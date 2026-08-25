@@ -429,5 +429,450 @@
   },
   "wall_s": 92.7,
   "error": null
+ },
+ {
+  "key": "pos:phantom_symbol|faithful",
+  "arm": "position",
+  "A": "phantom_symbol",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Document A incorrectly claims that a function named `status.is_retryable(job)` exists as a supported way to check retryability. This function does not exist in the provided codebase; the actual logic is implemented as `should_retry` inside `jobs/retry.py`. Document B omits this false reference and therefore aligns with the actual implementation.",
+   "differences": [
+    "Document A contains an extra paragraph claiming `status.is_retryable(job)` exists, which is not present in the code. Document B does not contain this claim."
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3393,
+   "completion_tokens": 2427,
+   "total_tokens": 5820,
+   "completion_tokens_details": {
+    "reasoning_tokens": 2290
+   }
+  },
+  "wall_s": 83.53,
+  "error": null
+ },
+ {
+  "key": "pos:wrong_type|faithful",
+  "arm": "position",
+  "A": "wrong_type",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Document B is more accurate because it avoids a factual inaccuracy present in Document A. In point 5, Document A claims that `summary.counts()` returns a list of `(bucket, count)` pairs. However, the code in `jobs/summary.py` clearly shows that `counts()` initializes and returns a dictionary (`out = {b: 0 for b in BUCKETS}`), not a list of tuples. Document B omits this incorrect detail, making it the more accurate description.",
+   "differences": [
+    "Point 5 in Document A incorrectly states that `summary.counts()` returns a list of `(bucket, count)` pairs. The code shows it returns a dictionary."
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3395,
+   "completion_tokens": 2653,
+   "total_tokens": 6048,
+   "completion_tokens_details": {
+    "reasoning_tokens": 2478
+   }
+  },
+  "wall_s": 138.23,
+  "error": null
+ },
+ {
+  "key": "pos:wrong_default|faithful",
+  "arm": "position",
+  "A": "wrong_default",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Document A contains a direct contradiction with the code: it claims the default SLA duration falls back to '1800-second', but `jobs/sla.py` explicitly defines `DEFAULT_SLA_SECONDS = 3600`. Document B omits this incorrect detail, making it strictly more accurate.",
+   "differences": [
+    "Document A incorrectly states the fallback SLA is 1800 seconds; code uses 3600. Document B omits this claim."
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3394,
+   "completion_tokens": 1242,
+   "total_tokens": 4636,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1113
+   }
+  },
+  "wall_s": 73.38,
+  "error": null
+ },
+ {
+  "key": "pos:reversed_semantics|faithful",
+  "arm": "position",
+  "A": "reversed_semantics",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Document A contains a 'Billing note' section that explicitly claims 'Cancelled work IS chargeable: `charges.is_chargeable` counts it like any other terminal job'. This directly contradicts the code in `jobs/charges.py`, where `is_chargeable()` returns `False` for both `FAILED` and `CANCELLED` statuses. Document B omits this incorrect note entirely, making it the more accurate description of the actual code.",
+   "differences": [
+    "Document A adds a 'Billing note' that falsely claims cancelled jobs are chargeable, contradicting `jobs/charges.py`"
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3396,
+   "completion_tokens": 684,
+   "total_tokens": 4080,
+   "completion_tokens_details": {
+    "reasoning_tokens": 535
+   }
+  },
+  "wall_s": 82.51,
+  "error": null
+ },
+ {
+  "key": "pos:stale_transition|faithful",
+  "arm": "position",
+  "A": "stale_transition",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "The two documents are nearly identical, with a single critical difference in the 'Requeueing' section. Document A states that '`done` \u2192 `queued` is legal and is how a retry works.' However, the code in `jobs/status.py` explicitly defines `DONE: frozenset()` (meaning no transitions out of DONE) and `FAILED: frozenset({QUEUED}),  # a failed job can be requeued`. Document B correctly states '`failed` \u2192 `queued` is legal', matching the code's transition rules and comments.",
+   "differences": [
+    "Document A incorrectly claims `done` \u2192 `queued` is the legal retry transition, while Document B correctly identifies `failed` \u2192 `queued`, which matches the `TRANSITIONS` dictionary in `jobs/status.py`."
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3363,
+   "completion_tokens": 752,
+   "total_tokens": 4115,
+   "completion_tokens_details": {
+    "reasoning_tokens": 555
+   }
+  },
+  "wall_s": 100.28,
+  "error": null
+ },
+ {
+  "key": "pos:true_but_incomplete|faithful",
+  "arm": "position",
+  "A": "true_but_incomplete",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Both documents are identical up to point 3, but Document B adds two additional points that directly correspond to explicit implementations in the provided codebase:\n\n1. **Point 4 (Retry Policy):** `jobs/retry.py` explicitly checks `if job.status == st.CANCELLED: return False`, confirming that cancelled jobs must not be retried.\n2. **Point 5 (Counting Buckets):** `jobs/summary.py` defines `BUCKETS = ('queued', 'running', 'done', 'failed', 'cancelled', 'other')` and handles `cancelled` with its own explicit branch, confirming it gets its own count bucket.\n\nDocument A omits these two points entirely. Since Document B accurately captures all the semantics implemented across the provided modules (`status.py`, `retry.py`, `summary.py`, `sla.py`, `charges.py`) without contradicting any code, it is the more accurate description.",
+   "differences": [
+    "Document B includes point 4 (no retries for cancelled jobs), which matches `jobs/retry.py`",
+    "Document B includes point 5 (own count bucket), which matches `jobs/summary.py`",
+    "Document A omits these two explicitly implemented behaviors"
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3246,
+   "completion_tokens": 2149,
+   "total_tokens": 5395,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1867
+   }
+  },
+  "wall_s": 111.83,
+  "error": null
+ },
+ {
+  "key": "pos:faithful|wrong_constant",
+  "arm": "position",
+  "A": "faithful",
+  "B": "wrong_constant",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "The two documents are nearly identical except for one detail in point 4. Document B states that the retry policy allows up to **5** attempts before a job is abandoned, referencing `MAX_ATTEMPTS`. However, the code in `jobs/retry.py` explicitly defines `MAX_ATTEMPTS = 3`. This makes Document B factually inaccurate regarding the codebase. Document A avoids this incorrect claim and accurately reflects the retry policy's intent without contradicting the source.",
+   "differences": [
+    "Document B incorrectly claims MAX_ATTEMPTS is 5, while the code sets it to 3."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3391,
+   "completion_tokens": 1282,
+   "total_tokens": 4673,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1124
+   }
+  },
+  "wall_s": 110.89,
+  "error": null
+ },
+ {
+  "key": "pos:faithful|phantom_symbol",
+  "arm": "position",
+  "A": "faithful",
+  "B": "phantom_symbol",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "Document B contains a reference to `status.is_retryable(job)`, which does not exist in the provided codebase. The actual retry logic is implemented via `should_retry()` in `jobs/retry.py`. Since accuracy is the only criterion, Document A is superior as it avoids introducing non-existent functions or incorrect instructions.",
+   "differences": [
+    "Document B includes an extra paragraph suggesting to call `status.is_retryable(job)`, which does not exist in the code. Document A omits this and accurately reflects the actual structure."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3393,
+   "completion_tokens": 1334,
+   "total_tokens": 4727,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1200
+   }
+  },
+  "wall_s": 100.46,
+  "error": null
+ },
+ {
+  "key": "pos:faithful|wrong_type",
+  "arm": "position",
+  "A": "faithful",
+  "B": "wrong_type",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "Both documents are nearly identical, but Document B contains a factual inaccuracy regarding the `summary.counts()` function. It claims that `summary.counts()` returns a list of `(bucket, count)` pairs. The actual code shows it initializes and returns a dictionary (`out = {b: 0 for b in BUCKETS}`), not a list. Document A avoids this incorrect claim and therefore describes the code more accurately.",
+   "differences": [
+    "Document B incorrectly states that `summary.counts()` returns a list of `(bucket, count)` pairs, while the code clearly shows it returns a dictionary."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3395,
+   "completion_tokens": 1174,
+   "total_tokens": 4569,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1016
+   }
+  },
+  "wall_s": 111.68,
+  "error": null
+ },
+ {
+  "key": "pos:faithful|wrong_default",
+  "arm": "position",
+  "A": "faithful",
+  "B": "wrong_default",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "The two documents are nearly identical, but Document B contains a factual inaccuracy regarding the code. In point 2 of the `cancelled` semantics section, Document B states that jobs fall back to a \"1800-second default in `sla.py`.\" However, the provided `jobs/sla.py` file explicitly defines `DEFAULT_SLA_SECONDS = 3600`. Document A avoids this incorrect claim entirely. Since accuracy is the only criterion, Document A is superior.",
+   "differences": [
+    "Document B incorrectly claims the default SLA duration in `sla.py` is 1800 seconds, while the code defines it as 3600."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3394,
+   "completion_tokens": 1149,
+   "total_tokens": 4543,
+   "completion_tokens_details": {
+    "reasoning_tokens": 976
+   }
+  },
+  "wall_s": 89.55,
+  "error": null
+ },
+ {
+  "key": "pos:faithful|reversed_semantics",
+  "arm": "position",
+  "A": "faithful",
+  "B": "reversed_semantics",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "The code in `jobs/charges.py` explicitly checks for the `CANCELLED` status inside `is_chargeable()` and returns `False`, meaning cancelled jobs are not billed. Document A correctly captures this by stating that cancelled work is NOT chargeable. Document B incorrectly claims that cancelled work IS chargeable, directly contradicting the implementation.",
+   "differences": [
+    "Document A states cancelled jobs are NOT chargeable, matching `jobs/charges.py` which returns `False` for `CANCELLED` status.",
+    "Document B contains a 'Billing note' claiming cancelled work IS chargeable, which is factually wrong based on the provided code."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3396,
+   "completion_tokens": 980,
+   "total_tokens": 4376,
+   "completion_tokens_details": {
+    "reasoning_tokens": 812
+   }
+  },
+  "wall_s": 120.89,
+  "error": null
+ },
+ {
+  "key": "pos:faithful|stale_transition",
+  "arm": "position",
+  "A": "faithful",
+  "B": "stale_transition",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "The only difference between the two documents is in the 'Requeueing' section. Document A states '`failed` \u2192 `queued` is legal and is how a retry works', while Document B incorrectly claims '`done` \u2192 `queued` is legal'. Checking `jobs/status.py`, the `TRANSITIONS` dictionary explicitly defines `FAILED: frozenset({QUEUED})` as the only legal transition out of a terminal status for retries. Therefore, Document A accurately reflects the code.",
+   "differences": [
+    "Document A correctly identifies `failed` \u2192 `queued` as the retry transition. Document B incorrectly states `done` \u2192 `queued`."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3363,
+   "completion_tokens": 1192,
+   "total_tokens": 4555,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1025
+   }
+  },
+  "wall_s": 116.74,
+  "error": null
+ },
+ {
+  "key": "pos:faithful|true_but_incomplete",
+  "arm": "position",
+  "A": "faithful",
+  "B": "true_but_incomplete",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "Document A accurately captures all five semantic constraints for the `cancelled` status that are explicitly enforced in the codebase, while Document B truncates the list to only three points. Specifically:\n- Point 4 ('It MUST NOT be retried') directly matches `jobs/retry.py`, which returns `False` when `job.status == st.CANCELLED`.\n- Point 5 ('It gets its OWN bucket in every count') directly matches `jobs/summary.py`, which defines a dedicated `'cancelled'` entry in `BUCKETS` and explicitly counts against it rather than folding it into `failed` or `other`.\nDocument A comprehensively reflects the business rules implemented across `retry.py`, `charges.py`, and `summary.py`. Document B omits two major constraints, making it incomplete and less accurate as a description of the code's behavior.",
+   "differences": [
+    "Document A includes points 4 and 5 regarding retry policies and counting buckets, which are explicitly implemented in `jobs/retry.py` and `jobs/summary.py`. Document B omits these entirely."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3246,
+   "completion_tokens": 1763,
+   "total_tokens": 5009,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1504
+   }
+  },
+  "wall_s": 133.39,
+  "error": null
+ },
+ {
+  "key": "verb:faithful_padded|faithful",
+  "arm": "verbosity",
+  "A": "faithful_padded",
+  "B": "faithful",
+  "correct": "equal",
+  "choice": "A",
+  "payload": {
+   "reasoning": "Both documents are identical up to the 'Requeueing' section and accurately describe the status vocabulary, transitions, and semantics visible in the code. Document A includes an additional 'Background' section that precisely aligns with the design rationale and inline comments in `status.py`. It correctly explains why statuses are strings rather than enums, why terminality is centralized in a `frozenset`, how the explicit transition map keeps the state machine readable, and why `cancelled` was chosen over `aborted` to match the console button. Since accuracy is the only criterion and Document A provides a more complete description that fully matches the provided code's structure and documentation comments without introducing any inaccuracies, it is superior.",
+   "differences": [
+    "Document A contains an additional 'Background' section that accurately reflects design choices visible in `status.py` (string statuses, frozenset terminality, explicit transition map, naming convention). Document B truncates before this section."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3694,
+   "completion_tokens": 3164,
+   "total_tokens": 6858,
+   "completion_tokens_details": {
+    "reasoning_tokens": 2941
+   }
+  },
+  "wall_s": 135.76,
+  "error": null
+ },
+ {
+  "key": "verb:faithful|faithful_padded",
+  "arm": "verbosity",
+  "A": "faithful",
+  "B": "faithful_padded",
+  "correct": "equal",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Both documents accurately describe the code up to the 'Requeueing' section, correctly capturing the semantics of `cancelled`, its terminal nature, exclusion from SLA breaches and charges, retry restrictions, and dedicated counting bucket. Document B includes an additional 'Background' section that accurately explains design choices directly evident in the provided code: the use of string statuses (matching `status.py` constants), the explicit `frozenset` for terminality (used by `sla.py` and implied by `charges.py`), and the deliberate smallness/explicitness of the transition map. This extra context aligns perfectly with the implementation details and provides a more comprehensive, accurate description of the system's architecture without introducing any factual errors or inaccuracies.",
+   "differences": [
+    "Document B contains an additional 'Background' section that accurately contextualizes design decisions visible in the code (string statuses, frozenset terminality, explicit transition map). Document A ends at the same point but is less comprehensive."
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3694,
+   "completion_tokens": 6293,
+   "total_tokens": 9987,
+   "completion_tokens_details": {
+    "reasoning_tokens": 6058
+   }
+  },
+  "wall_s": 191.27,
+  "error": null
+ },
+ {
+  "key": "verb:wrong_constant_padded|faithful",
+  "arm": "verbosity",
+  "A": "wrong_constant_padded",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Document B is more accurate because Document A contains a factual error regarding the code. In point 4, Document A claims that 'The retry policy otherwise allows up to **5** attempts before a job is abandoned; see `MAX_ATTEMPTS`.' However, the provided code in `jobs/retry.py` explicitly defines `MAX_ATTEMPTS = 3`. Document B omits this incorrect parenthetical, making it the accurate description.",
+   "differences": [
+    "Document A incorrectly states MAX_ATTEMPTS is 5; the code sets it to 3."
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3722,
+   "completion_tokens": 842,
+   "total_tokens": 4564,
+   "completion_tokens_details": {
+    "reasoning_tokens": 691
+   }
+  },
+  "wall_s": 98.28,
+  "error": null
+ },
+ {
+  "key": "verb:faithful|wrong_constant_padded",
+  "arm": "verbosity",
+  "A": "faithful",
+  "B": "wrong_constant_padded",
+  "correct": "A",
+  "choice": "A",
+  "payload": {
+   "reasoning": "Both documents are nearly identical, but Document B contains a factual inaccuracy regarding the code. In `jobs/retry.py`, the constant is explicitly defined as `MAX_ATTEMPTS = 3`. Document B incorrectly claims that the retry policy allows up to **5** attempts before a job is abandoned. Document A avoids this error and accurately reflects the code's semantics without introducing false details.",
+   "differences": [
+    "Document B states MAX_ATTEMPTS is 5, while the code defines it as 3."
+   ],
+   "choice": "A"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3722,
+   "completion_tokens": 1365,
+   "total_tokens": 5087,
+   "completion_tokens_details": {
+    "reasoning_tokens": 1226
+   }
+  },
+  "wall_s": 112.05,
+  "error": null
  }
 ]

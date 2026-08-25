@@ -34,12 +34,17 @@ silently miss.
 | `taxonomy.py` | the hand classification, with every `stated`/`signalled` quote asserted against the ticket | `taxonomy-results.json` |
 | `judge.py` | the champion as reviewer over all 57 trees, two arms: `verdict` (pass/fail) and `edge` (name concrete cases) | `judge-verdict.json`, `judge-edge.json` |
 | `check.py` | runs every case the `edge` arm named against the agent's tree and the reference solution | `check-results.json` |
-| `citations.py` | the free rung for prose: findings, open questions, `file:line` addresses and code quotations over 43 authored documents | `citations-results.json` |
+| `citations.py` | the free rung for prose: findings, open questions, `file:line` addresses and code quotations over 44 authored documents | `citations-results.json` |
 | `docgate.py` | planted defects in a real document; pointwise gate, position bias, verbosity bias | `docgate-results.json` |
 | `v1_review.mjs` | v1's `getReviewDecision` and the router's type switch, ported verbatim from `d5528ea` and run | `v1-review-results.json` |
 | `analyse.py` | reads the result files and prints the tables the workstream document quotes | `analyse-out.txt` |
 
 Everything model-facing is resumable: re-running fills in missing keys only.
+
+**Status: complete.** All four result files are full — `judge-verdict.json` and
+`judge-edge.json` at 57 trees each, `check-results.json` at 20 cases, `docgate-results.json`
+at 38 rows over four arms. `python analyse.py > analyse-out.txt` reproduces every table
+quoted in F336–F345 of `research/W6-verification.md`.
 
 ## Held constants
 
@@ -56,7 +61,7 @@ The server's own command line for this session:
 
 Donor commits: v1 `d5528ea`, BCF `d6c1601`, Claudette `af3f804`.
 
-## Four traps this spike walked into, all of them recorded in the code
+## Six traps this spike walked into, all of them recorded in the code
 
 1. **The checker's yield is a measurement of the checker.** `citations.py` reported 40
    dangling finding references, then 21, then 12, then 9, as it learned that this corpus
@@ -75,3 +80,16 @@ Donor commits: v1 `d5528ea`, BCF `d6c1601`, Claudette `af3f804`.
 4. **cp1252 truncates a census.** `python census.py > out.txt` died on the first em dash
    in a ticket and left a file that looked complete. `census.py` now opens its own output
    with `encoding="utf-8", newline="\n"`.
+5. **The clean baseline was not clean, and the model under test found it.** `docgate.py`'s
+   `faithful` document is a real spec written by a task author against real code, and every
+   variant is planted against it — so it is the arm's control. It carries a claim the
+   reference solution does not implement: rule 2 says a cancelled job's deadline no longer
+   applies, and `sla.is_breached` still compares `finished_at` against it. The model raised
+   it, at `high`, on three of the ten documents. It is left in place and recorded as
+   `KNOWN_DISCREPANCY`, because a spec whose own implementation does not quite match it is
+   the population 2.0 will be pointed at — but it means the `faithful` row is a **lower
+   bound** on the false-positive rate and not a measurement of it.
+6. **A rate conditioned on answering is not a rate.** The `edge` arm lost 17 of 57 calls to
+   the token cap and named a case on 16 trees; scoring "did the reviewer's case discriminate"
+   over those 16 gives 10 of 11, and over all 57 trees it gives 10 of 23. `analyse.py` prints
+   the second. Item 26 and item 28 of the memory file, a third time.

@@ -1,0 +1,16 @@
+--- judge done ---
+10 documents: faithful, wrong_constant, phantom_symbol, wrong_type, wrong_default, reversed_semantics, stale_transition, true_but_incomplete, faithful_padded, wrong_constant_padded
+[pointwise]
+10 documents: faithful, wrong_constant, phantom_symbol, wrong_type, wrong_default, reversed_semantics, stale_transition, true_but_incomplete, faithful_padded, wrong_constant_padded
+[position]
+10 documents: faithful, wrong_constant, phantom_symbol, wrong_type, wrong_default, reversed_semantics, stale_transition, true_but_incomplete, faithful_padded, wrong_constant_padded
+[verbosity]
+--- docgate done ---
+16 trees with at least one case
+  Q56:9be91412f81ca002#0       agrees         compare_versions("99999999999999999999", "1")
+  Q05:029a60842f1cc37a#0       discriminates  parse_kv("key=value\n# this is a comment")
+  Q53:86812d565443c993#0       agrees         parseCsv('a,')
+  Q49:77dd0d45f2d24322#0       agrees         printf '-n test  \n' | bash solution.sh
+  Q40:f015ce11edaf358c#0       unrunnable     ee.on('x', () => console.log(1));
+ee.once('x', () =>
+--- check done ---

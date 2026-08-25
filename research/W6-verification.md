@@ -83,15 +83,43 @@ Planned items:
    the v1 donor differ from their blobs while `git status` reports the tree clean**; and **0 of this
    project's 1,383 measured cells is a git repository**, so the mechanism degrades to `workdir.rs`'s
    copied file plan. OQ-W6-11 answered (F335).
-7. ☐ **Verifying the unrunnable** — docs and review output; LLM-as-judge failure modes.
+7. ✅ **Verifying the unrunnable** (F336–F348) — measured on two populations that both have an
+   answer key: **57 agent trees** on which no deterministic rung in five languages fires (the 29
+   real clean-arm failures plus their 34 matched passes, deduplicated by tree content), and **ten
+   documents** against the code they describe. **OQ-W6-13 is answered**: the 29 are boundary cases,
+   and the axis is not the language but whether the ticket's own words decide the failing input —
+   8 of 29 they do, 12 of 29 nothing decides it but the domain, and 2 are not reasoning failures at
+   all. **A model verdict is not a gate**: 3 of 23 wrong trees, 1 false fail in 34, and **two of the
+   three catches do not survive a change to the output schema**, so `call` is not measuring a
+   property of the tree. **What it is, is a report that contradicts itself** — on 14 of 16 trees it
+   names the failing input and answers `pass`, and on documents it names the planted falsehood at
+   `high` severity and approves the artifact anyway on **every one of the seven that answered**. **The instrument that works is
+   execution**: run the reviewer's own `call → expected → actual` and 13 of 15 claims on wrong trees
+   really discriminate, catching **10 of 23** against 1 of 34 false — three times the recall of the
+   same model's own verdict, from the same call. Demanding that schema is **not** free: 2.8× the
+   decode, 2.7× the wall clock and 17 of 57 calls lost to the token cap, every one legibly
+   `finish_reason: length`. **The judge has no absolute scale** — 0 of 8 pointwise against **14 of 14
+   pairwise** on the same defects, order-stable on 7 of 7 pairs, so the thing to show a judge is the
+   *other artifact*, which item 6 produces in 0.16 s. Position bias did not reproduce at all;
+   verbosity bias did, weakly, and only on a genuine tie. The free rung for prose checks **addresses
+   and nothing else**: 1,873 unique addresses across four corpora, one provably stale citation, 0
+   false positives — and **1 of 7 planted document defects**, the one that is an address rather than
+   an assertion. It also found that **F22–F29 are cited 23 times in six documents and defined in
+   none**. Donor facts, all executed: **BCF cannot pass a documentation project at any complexity**
+   (5.00 → 7.00 against a gate of 8.00, and it builds a virtualenv to run pytest over markdown);
+   **v1 has no documentation task type** and puts its only prose type, `review`, on
+   `SKIP_REVIEW_TYPES`, whose two unit tests both pass for the wrong reason; **v1's frontier review
+   tier fires 0 times in 30 all-local tasks** because every multiple of 10 is a multiple of 5; and
+   Claudette's `CheckOutcome` refuses to fold a timeout into "clean" and folds *"there is no checker
+   for this artifact"* into it three lines later.
 8. ☐ **Honest failure reporting** — the design against v1's zero-tests-claimed-passing defect;
    item 1's no-silent-midpoints rule is its first half.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
 Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
 then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284)**;
-item 4 took **F297–F310**, item 5 took **F311–F324** and item 6 took **F325–F335**, so the next
-free number is **F336**. W11 item 5 (F285–F296) handed item 4 a second headroom result and item 8
+item 4 took **F297–F310**, item 5 took **F311–F324**, item 6 took **F325–F335** and item 7 took
+**F336–F348**, so the next free number is **F349**. W11 item 5 (F285–F296) handed item 4 a second headroom result and item 8
 its anti-pattern; item 5 handed item 6 the toolchain-profile question (OQ-W6-11, answered in F335)
 and hands item 8 the loud-`Uncertain` requirement; item 6 hands item 8 the honest-restore contract
 (F330) and W3 the checkpoint identifier it asked for (OQ-W3-12). The numbering is one sequence across all
@@ -2870,7 +2898,7 @@ re-measured rather than read; three of the eight execute donor code rather than 
   oracle that would not exist in a real run: what the number is for is the precision of a model
   reviewer's concrete claims, which is a property of the reviewer.
 - **The free rung for prose, on a real corpus.** `citations.py` runs an address-level check over
-  **43 authored documents, 1,672,216 bytes** — this repository's research documents, the harness
+  **44 authored documents, 1.75 MB** — this repository's research documents, the harness
   crates' READMEs, the prestudy dossiers, the corpus SPEC and the brief — resolving finding
   numbers, open-question ids and `file:line` citations against this repository and the three
   donor checkouts, and checking fenced code quotations line for line against the file they cite.
@@ -3074,3 +3102,662 @@ attached and a rationale that says the code is fine.** No schema catches this, b
 is not violated. The cheap defence is a consistency rule the type system can carry — a `fail` with
 an empty defect list is not a verdict — and it is the same shape as item 1's diagnosis: the family's
 verification failures are defaults that pretend to be measurements.
+
+### 🚨 F339 — the same model, the same trees, one field changed in the schema: 2.8× the decode, 30% of the calls destroyed, and a binary that catches three either way but not the same three
+
+The `edge` arm is the `verdict` arm with exactly one thing different — the output schema. Same 57
+trees, same model, same context, same temperature, same 8,192-token budget. Where `verdict` asks
+for a rationale, a defect list and a `call`, `edge` asks for a rationale, a list of cases shaped
+`{why, call, expected, actual}`, and the same `call`.
+
+| arm | median completion tokens | median reasoning tokens | median wall | hit the 8,192 cap | empty payload |
+|---|---:|---:|---:|---:|---:|
+| `verdict` | 2,472 | 2,267 | 38.3 s | 2 | 2 |
+| `edge` | **6,870** | **6,729** | **104.1 s** | **17** | **17** |
+
+**Asking for a concrete input costs 2.8× the decode and 2.7× the wall clock, and it destroys 17 of
+57 calls outright.** Every empty payload in both arms is `finish_reason: length` at the cap — the
+model spent the whole budget reasoning and emitted nothing. W11 item 4 called the schema the cheap
+intervention next to swapping the model (F280, F284). On this population it is not cheap: per
+answered call it costs 2.8× where swapping to the 27B costs 4.6× (F284), and it fails 30% of the
+time rather than 3.6%.
+
+The one thing that redeems it is that this failure is *legible*. `finish_reason: length` with an
+empty string is a fact the caller can read, and 17 of 17 have it. That is the opposite of F338's
+false-fail, where the schema was satisfied, the JSON parsed, and the rationale contradicted the
+field. **A budget that runs out is a better failure than a verdict that is wrong**, and a gate that
+maps it to `Uncertain` is correct by construction.
+
+The binary is no better under the new schema, and the interesting part is *how* it is no better:
+
+| arm | caught | which trees |
+|---|---:|---|
+| `verdict` `call == fail` | 3/23 | Q46, Q51, Q56 |
+| `edge` `call == fail` | 3/23 | Q07, Q40, Q56 |
+| both | **1** | Q56 |
+| either | 5 | |
+
+**Two of the three catches do not survive a change to the output schema, in either direction.** The
+same model, reading the same tree, at temperature 0, says `fail` under one schema and `pass` under
+the other — and Q46 is the instructive one, because under the schema where it said `pass` it also
+produced the correct failing input. `call` is not measuring a property of the tree.
+
+And that is the general case, not the exception. Of the 16 trees where the model named at least one
+concrete case, **its own `call` agrees with its own cases twice.** Fourteen times it names the
+input, states what the code should return, states what it does return — and answers `pass`.
+
+On Q46 the rationale quotes the ticket's own words, *"if START is past the end, print nothing"*,
+explains that `head -n "$end"` still reads the whole input, and offers
+`printf 'l1\nl2\nl3\n' | bash solution.sh 4 4`, expected empty, actual `l3`. That case is correct:
+run it, and the agent's script prints `l3` where the reference prints nothing. The `call` field on
+that verdict is `pass`.
+
+Where the cases are, and are not:
+
+| | wrong trees (23) | correct trees (34) |
+|---|---:|---:|
+| named at least one case | **11** | 5 |
+| answered, named none | 6 | 18 |
+| empty payload | 6 | 11 |
+
+Twenty cases in total, 15 of them on wrong trees. Of the six wrong trees that answered and named
+nothing, five say `pass` — a reviewer that has decided the code is fine is not withholding a case
+it has, it does not have one.
+
+### 🚨 F340 — a review finding you can execute is worth three times its author's own verdict: 13 of 15 cases named on wrong trees really discriminate, 10 of 23 wrong trees caught against 1 of 34 false, and that one belongs to the oracle
+
+`check.py` takes every one of the 20 cases the `edge` arm produced, wraps it in a per-language
+driver, and runs it twice — against the tree the agent left and against the suite's reference
+solution. This is the positive control F277 said the donors' generated criteria never carry, and it
+is the only measurement in this item that does not ask anyone's opinion about anything.
+
+| | cases |
+|---|---:|
+| **discriminates** — the two trees disagree; the finding is true | **14** |
+| **agrees** — both trees produce the same value; the finding is false | 5 |
+| **unrunnable** — the call does not execute at all | 1 |
+
+Split by whether the tree was really wrong:
+
+| truth | discriminates | agrees | unrunnable |
+|---|---:|---:|---:|
+| FAIL | **13** | 2 | 0 |
+| PASS | 1 | 3 | 1 |
+
+**On the trees that are wrong, 13 of 15 concrete claims are true** — the model that names an input
+is usually right about it, which is a different and much better instrument than the model that
+names a verdict. By F336's axis: `stated` 7/8, `signalled` 5/5, `mechanical` 1/1, `implied` 0/1.
+The class the ticket's words decide is the class whose cases run.
+
+The three gates, all scored over all 57 trees rather than over the 16 that produced a case — the
+same three trees F338 reported as 3 of 22, rebased onto the whole population so the four rows are
+comparable:
+
+| gate | catches wrong | fires on correct |
+|---|---:|---:|
+| `verdict` `call == fail` | 3/23 | 1/34 |
+| `edge` `call == fail` | 3/23 | 0/34 |
+| the reviewer named any case at all | 11/23 | 5/34 |
+| **the reviewer named a case that discriminates** | **10/23** | **1/34** |
+
+**Executing the reviewer's own findings triples the recall of the reviewer's own verdict at the
+same false-positive rate** — and it does it by throwing away the field the model is most confident
+about and keeping the one it can be checked on.
+
+The single false positive is worth more than the ten catches. On a *correct* Q05 tree the reviewer
+offered `parse_kv("key=value\n# this is a comment")`, expecting `Ok({"key": "value"})`. Run it: the
+agent's tree returns `Err("line 2: missing '=' in '# this is a comment'")` and the reference returns
+`Err("malformed line (no '='): \"# this is a comment\"")`. **Both refuse the input. They word the
+refusal differently, and a string comparison calls that a difference.** The reviewer was right that
+the tree does not accept comments; it was wrong that this distinguishes the tree from the
+reference; and the harness was wrong to score two `Err` values as disagreement. **The instrument's
+one false positive is the instrument's own equality rule, not the model's claim** — and in 2.0 the
+comparison is against the pre-image of the same tree, where a changed error message is a real
+change that a reviewer *should* surface.
+
+The unrunnable case is the honest bound. On a correct Q40 tree the reviewer offered three lines of
+JavaScript registering two listeners and emitting, with an expectation written as a sentence
+(*"Both listeners execute, printing `1` then `2` ... All registered listeners for the event are
+invoked exactly once"*). It is a good description of a test and it is not a call. **1 of 20 findings
+is prose wearing a schema's clothes**, and the check that catches it is trying to run it.
+
+Two costs to state plainly. Every case is a process — a Rust `examples/` binary under
+`catch_unwind`, a `node --input-type=module`, a `bash -c` — and on this box those ran in seconds
+against the 104 s median the reviewer took to produce them; **the execution is free next to the call
+that generated it.** And `check.py` used the reference solution as an oracle, which does not exist
+in a real run. What survives that is the number this finding is for: the precision of a model
+reviewer's concrete claims, **13 of 15** on the population where nothing else fires.
+
+### 🚨 F341 — on a document the model names the planted falsehood, marks it `high`, and approves the document anyway: 5 of 8 found, 0 of 8 gated
+
+`docgate.py`'s pointwise arm shows the champion the five modules of the K suite's
+`finish_the_cancelled_status` reference solution and one document, and asks whether every claim in
+the document is true of the code. Ten documents: the real `docs/status_lifecycle.md`, seven variants
+each carrying one planted defect applied as an anchored substitution, and two padded controls — so
+**eight defective documents carrying seven distinct defects**, the eighth being `wrong_constant`
+again with 350 words appended.
+
+| document | planted defect | defects named | `call` |
+|---|---|---:|---|
+| `faithful` | — | 0 | `pass` |
+| `faithful_padded` | — (plus 350 words) | 0 | `pass` |
+| `wrong_constant` | `MAX_ATTEMPTS` is 5; the code says 3 | 2 | `pass` |
+| `wrong_constant_padded` | the same, plus 350 words | 2 | `pass` |
+| `phantom_symbol` | cites `status.is_retryable`, which does not exist | 1 | `pass` |
+| `wrong_type` | `summary.counts()` returns pairs; the code returns a dict | 2 | `pass` |
+| `reversed_semantics` | cancelled work IS chargeable; the code says it is not | 1 | `pass` |
+| `stale_transition` | a transition table that is wrong | 0 | `pass` |
+| `wrong_default` | a default that is wrong | — | *(empty payload)* |
+| `true_but_incomplete` | nothing false; three of five rules deleted | 1 | `pass` |
+
+**The defect list names the plant in 5 of the 8 defective documents. The `call` field says `fail` on
+none of them.** Not once. And the descriptions are not hedged:
+
+> `severity: high` — *"Document claims `MAX_ATTEMPTS` allows up to 5 attempts, but `jobs/retry.py`
+> sets it to 3."*
+
+> `severity: high` — *"The document references a non-existent function `status.is_retryable(job)`.
+> This function does not exist in `jobs/status.py` or any other provided module."*
+
+> `severity: high` — *"The document falsely claims that cancelled work IS chargeable ... The code
+> explicitly excludes CANCELLED status from being chargeable, returning False immediately."*
+
+Each of those is correct, specific, cites the file, and sits under `"call": "pass"`. This is F338's
+contradiction on the other population and in a sharper form: on code the model argues the edge away
+before deciding (*"this is standard Rust behavior ... falls outside the scope"*); here it does not
+argue anything away — it states the falsehood and approves the artifact in the same object.
+
+**So the gate is 0 of 8 and the report is 5 of 8, and the difference between them is one line of
+consuming code.** A `pass` carrying a `high` defect is not a verdict. Reading the defect list and
+ignoring `call` turns this arm from a broken gate into a working one, on this population, for free.
+
+Two more things the arm produced that were not planted.
+
+**The base document is not perfectly faithful, and the model found what the probe did not know was
+there.** Rule 2 of the real document says a cancelled job *"is NOT an SLA breach ... the deadline no
+longer applies to it."* The reference solution stops the clock — `finished_at` returns `ended_at`
+for any terminal status — but `is_breached` still compares that against the deadline. Measured
+directly against the refsol: a CANCELLED job with `queued_at=0`, `sla_seconds=100`, `ended_at=5000`
+gives `is_breached == True`. The model raised exactly this, on three of the ten documents, at
+`high`: *"`sla.py` does not explicitly exempt CANCELLED status from breach evaluation."* It is
+right. **A control built by hand from a real document and its real reference solution held a defect
+its author did not see, and the model under test found it** — which is the population 2.0 will
+actually be pointed at, and the reason the `faithful` row is a lower bound on the false-positive
+rate rather than a measurement of it.
+
+**And it found it on three documents of ten, not on ten of ten.** The same true-but-unimplemented
+claim is present in every one of the ten, including `faithful`, where the model reported nothing. A
+reviewer that surfaces a real defect 30% of the times it is shown it is a sampler, not a check —
+the same instability F339 measured on the code population, in the report rather than the verdict.
+
+### 🚨 F342 — the judge has no absolute scale: 0 of 8 as a gate on one document, 14 of 14 as a choice between two, and the only textbook bias that reproduces is a preference for the longer document when nothing else separates them
+
+The brief asks for LLM-as-judge's *known failure modes*. Two of the canonical ones are position bias
+and verbosity bias, and both were run here as designed — every defective document against the
+faithful one in both slot orders, and the faithful document against itself padded with 350 words.
+
+**Position bias does not reproduce.** Seven pairs, fourteen orderings, and the model is right in
+every one of them:
+
+| defect | defective document shown first | shown second | order-stable |
+|---|---|---|---|
+| `wrong_constant` | correct | correct | yes |
+| `phantom_symbol` | correct | correct | yes |
+| `wrong_type` | correct | correct | yes |
+| `wrong_default` | correct | correct | yes |
+| `reversed_semantics` | correct | correct | yes |
+| `stale_transition` | correct | correct | yes |
+| `true_but_incomplete` | correct | correct | yes |
+
+**14 of 14 orderings correct, 7 of 7 pairs order-stable, slot preference A 7 / B 7.** Every planted
+defect is caught — including `stale_transition` and `wrong_default`, on which the pointwise arm
+produced nothing at all, and `true_but_incomplete`, which contains no false statement and is F281's
+shape.
+
+That is the finding, and it is not about position. **The same model, the same defects, the same
+code, the same temperature: shown one document it approves it, shown two it picks the right one
+every time.** 0 of 8 against 14 of 14. Pointwise judgement asks for a threshold the model does not
+have; pairwise asks for a comparison, which is a question it can answer. This is F280's axis — what
+the reviewer is *shown* — in the strongest form it has taken in this project: **the thing to show a
+judge is the other artifact.**
+
+**Verbosity bias does reproduce, weakly, and it is dominated.** The padding is 350 words of true
+design rationale that makes no new claim about behaviour, and the system prompt says in as many
+words that *"length, tone and polish are not"* criteria:
+
+| A | B | chose | correct answer |
+|---|---|---|---|
+| `faithful_padded` | `faithful` | **A** | equal |
+| `faithful` | `faithful_padded` | **B** | equal |
+| `faithful` | `wrong_constant_padded` | A | A |
+| `wrong_constant_padded` | `faithful` | B | B |
+
+**On the tie it picks the longer document both times, in both slot orders — and it converts length
+into accuracy to justify it**: *"Document A provides a more complete description ... Since accuracy
+is the only criterion."* More complete is not more accurate, and the `equal` option was in the
+schema and was never used. But one factual difference beats 350 words of padding, in both orderings,
+and the rationale names the difference: *"Document A incorrectly states MAX_ATTEMPTS is 5; the code
+sets it to 3."*
+
+So the ranking on which the pairwise arm scores 14 of 14 is not fragile to the two biases the
+literature warns about — it is fragile to a *tie*, and a tie is exactly where a gate should abstain
+rather than choose. **`equal` must be in the schema, and a judge that never returns it on a pair
+that is genuinely equal is a judge whose comparisons are worth reading and whose ties are not.**
+
+### F343 — the free rung on a document reaches the one defect that is an address, and only that one: 1 of 7
+
+Before any model, the same question item 4 asked of code: what can a machine check on this document
+without reading it? The prose analogue of the structural rung is symbol existence — every backticked
+`module.name` or `name()` the document mentions must exist in the code it describes.
+
+| document | call-shaped references | unresolved | verdict |
+|---|---:|---|---|
+| `phantom_symbol` | 1 | `status.is_retryable` | **fail** |
+| `wrong_type` | 1 | — | pass |
+| `reversed_semantics` | 1 | — | pass |
+| the other seven | 0 | — | pass |
+
+**1 of 7 planted defects, 0 false positives on the two faithful documents.** The one it reaches is
+the one that is an address rather than an assertion, and it reaches it for nothing — no model, no
+toolchain, milliseconds. The other six cite symbols that all resolve perfectly: `MAX_ATTEMPTS`
+exists and is 3, `summary.counts()` exists and returns a dict, `charges.is_chargeable` exists and
+returns False for cancelled work. **Every one of the six is a true sentence about a symbol that
+exists, saying the wrong thing about it.**
+
+The coverage number matters as much as the yield. This document — a real one, written by a task
+author about real code — contains **at most one call-shaped reference per variant.** It is prose
+about behaviour, not an API reference, and the rung has almost nothing to bite on. That is the
+honest shape of the free rung for documentation: worth running because it costs nothing and never
+lies, and silent about substantially everything a document says.
+
+### 🚨 F344 — the free rung for prose checks addresses and nothing else: 1,873 of them across four documentation corpora, and exactly one points past the end of the file it names
+
+`citations.py` is the documentation analogue of item 4's structural check — the thing a machine can
+own without reading. Three kinds of claim in a research document are addresses rather than
+assertions: a finding number must be defined somewhere, an open-question id must be defined
+somewhere, and a `file:line` citation must name a file that exists and is at least that long. A
+fenced block introduced by a citation is a fourth and stronger kind — a *quotation*, which can be
+compared with the file line for line.
+
+Run over this repository's **44 authored documents, 1.75 MB** — the workstream documents, the harness crates' READMEs, the prestudy dossiers, the corpus SPEC and the brief —
+resolving against this repository and the three donor checkouts — the corpus includes this
+document, so the counts are of the corpus at the commit that closes this item:
+
+| | count |
+|---|---:|
+| findings defined | 338, by 342 headings |
+| finding references | **2,553**, over 347 distinct numbers |
+| dangling finding references | **9 numbers** — eight are one story (F345), cited **23 times across six documents** once this finding's own naming of the range is excluded; the ninth is this document's *"the next free number is F349"* note, a forward reference the convention creates once per item |
+| open questions defined / referenced | 96 / 96, over 271 references |
+| dangling open questions | **0** |
+| `file:line` citations, unique | **752** |
+| — resolve, and in range | 397 (53%) |
+| — ambiguous under any mechanical rule | 343 (46%) |
+| — name no file in the resolution set | 11 (1%) |
+| — **point past the end of the file** | **1** |
+| citations that quote the code they cite | 30 |
+| — quotation matches the file line for line | 7 |
+| — differs | 7, and all of them are paraphrase or an introducing citation that is not the block's source |
+
+And the same address check on each donor's own documentation, resolved against its own tree:
+
+| corpus | head | docs | citations | ok | no such file | ambiguous | past EOF |
+|---|---|---:|---:|---:|---:|---:|---:|
+| v1 | `d5528ea` | 65 | 752 | 636 | 24 | 92 | **0** |
+| BCF | `d6c1601` | 12 | **0** | — | — | — | — |
+| Claudette | `af3f804` | 163 | 369 | 51 | 39 | 279 | **0** |
+| this repo | `582660a` | 44 | 752 | 397 | 11 | 343 | **1** |
+
+**1,873 unique addresses across four corpora and one provable stale citation** — W5's F100
+cites `crates/claudette/src/tui_events.rs:75-88` and the file ends at line 87. (The quoted enum is
+really at 73–87, so even that one is an address off by one around content that is right.) BCF's
+twelve documents cite their own code by line **zero** times, which is its own kind of answer.
+
+Three things this measurement is worth more for than its yield.
+
+**The checker's number is a measurement of the checker.** It reported **40** dangling finding
+references, then 21, then 12, then 9, as it learned that this corpus defines a finding in **five**
+different ways — `### F158 —`, `### 🚨 F158 —`, `### F35.`, `## 4. F54 —`, and a bold paragraph
+`**F41.**`. Open questions have two conventions and a status marker. Every one of the first 31
+"errors" was the rule, not the corpus. The same happened twice more: attributing a fenced block to
+"the citation within three lines above" produced 12 documentation errors of which all 12 were the
+rule, and resolving a bare `Cargo.toml:57` to a workspace's 23-line root manifest produced five
+"past EOF" citations in the successor's documentation that were the rule again. **Every loosening of
+the attribution manufactured defects, and no tightening ever cost a real one.**
+
+**What is checkable is about half of what is written, at best.** A bare basename —
+`orchestrator.py:43`, which is how most of this corpus cites — is not an address until a resolution
+rule is fixed, and 46% of the citations here have no unambiguous target across four
+trees. The convention that would make the rung meaningful is one line long (*cite a
+repository-relative path*), and its value is prospective: it does not find today's errors, it makes
+tomorrow's findable.
+
+**And the rung is silent about every claim.** The documentation errors this project has actually
+found, it found by hand, and the two that were cross-reference errors — F193 and F88, each cited as
+saying something it does not say — pointed at findings that **exist**. Existence-checking would have
+passed both. That is the honest bound on this instrument, and F343 is the same bound measured
+against planted defects: it verifies that an address resolves, never that the sentence around it is
+true.
+
+### 🚨 F345 — eight finding numbers are cited 23 times across six documents in this repository and defined in none of them
+
+The one residue the corrected checker leaves is a real defect and it is a single story. **F22
+through F29** are referenced **21 times in five documents**, plus twice in this one before item 7 —
+`harness/crates/w8-run/README.md`, `harness/crates/w8-corpus/README.md`,
+`harness/crates/w8-import-q56/README.md`, `harness/crates/hw-probe/README.md`,
+`research/W8-q56-import.md` and, as of item 5, `research/W6-verification.md` itself — in
+load-bearing sentences: *"third time CRLF has produced a difference that looks like a finding and is
+not (cf. F21, F22)"*, *"76 of the 90 tasks ship an empty fixture (F29)"*, *"it prints an advert
+instead of running code (F27)"*. **None of the eight is defined anywhere in the repository**, under
+any of the five conventions, and `git log --diff-filter=D -- '*.md'` shows no document was ever
+deleted.
+
+They exist in the private memory directory. `memory/abcc-2-w8-state.md` says of
+`harness/crates/w8-import/`: *"Its README is the design record; findings F22-F27 below"* — and
+`harness/crates/w8-import/README.md` contains **six headings and no finding numbers at all**. The
+memory file then defines F28 and F29 itself, under a heading that names two findings at once
+(`### F28-F29, both found by building the loader`), which is a sixth convention and outside the
+repository.
+
+This is worth a finding of its own because of what it is evidence for. **The repository's
+cross-reference integrity had never been checked**, in 91 commits and 1.7 MB of prose, by anyone;
+the check costs milliseconds; and it found a defect that only a mechanical pass would ever find,
+because a human reading any one of those documents sees a citation that looks exactly like the
+2,500-odd that resolve. One caveat the checker itself cannot resolve: **this finding is now the
+largest single citer of the eight numbers it is about**, so the raw dangling count at head is
+higher than the defect. The defect is the 23 load-bearing references; the rest is this document
+discussing them. It is the documentation-shaped version of item 4's cheapest rung — free,
+narrow, and worth running because it is free.
+
+### 🚨 F346 — the family has no word for a documentation deliverable, and the one artifact type that is pure prose is the one type its reviewer is told to skip
+
+Executed, not read. `bcf-doc/` takes a path dependency on the pinned BCF checkout and calls
+`verifier::verify_project` on a three-file documentation project — the K suite's real status
+lifecycle spec, a README and a CHANGELOG.
+
+BCF's per-file mapping (`verifier.rs:73-81`) is `py | ts | js | rs | go | cpp` and `_ => continue`,
+so no file is scored, `file_reports` is empty, and `avg_score` falls to the `5.0` literal at
+`verifier.rs:96` — which W11 item 3 identified as the family's `Uncertain` spelled as a passing-ish
+number (F258). Measured:
+
+| | files scored | avg | final with a **perfect** critique | lowest gate |
+|---|---:|---:|---:|---:|
+| `language = "markdown"` | 0 | 5.00 | **7.00** | 8.00 |
+| `language = "python"` (BCF's default, F315) | 0 | 5.00 | **7.00** | 8.00 |
+
+**A documentation deliverable cannot pass BCF's gate at any complexity, however good it is**, and it
+cannot fail it for any reason to do with its content. This is F313's mechanism arriving at the
+artifact the brief names. One incidental measurement is worth recording: under the default `python`
+language the run printed `Creating venv... Installing dependencies in venv... pytest: no tests
+found` — **BCF builds a Python virtualenv and runs pytest against a directory of markdown.**
+
+v1 is more explicit about it. Its task vocabulary is
+`TaskType = 'code' | 'test' | 'review' | 'debug' | 'refactor'`
+(`packages/shared/src/index.ts:53`), and the route accepts a sixth, `'decomposition'`, that the type
+does not contain (`packages/api/src/routes/tasks.ts:13`). **There is no documentation task type**, so
+a documentation deliverable is a `code` task and goes to the same validation command item 5 measured
+running 1 of 13 real commands (F312).
+
+And the one type in the vocabulary that is unambiguously prose with no test — `review` — is on
+`SKIP_REVIEW_TYPES` (`codeReviewService.ts:54`), alongside `decomposition` and `debug`. **The
+family's only reviewer is explicitly told not to look at review output.**
+
+Two more facts fell out of running the donor's own decision function over the donor's own test
+inputs (`v1_review.mjs`, ported byte-for-byte from `d5528ea`):
+
+- **Both unit tests for the skip list pass for the wrong reason.**
+  `codeReviewService.test.ts:34-48` builds `{ type: 'decomposition', status: 'completed' }` and
+  asserts `shouldReview === false`. `getReviewDecision` reads `task.taskType`, which is `undefined`,
+  so the skip never fires; the returned reason is `"No review needed (Ollama: 1/5, All: 1/10)"` —
+  the *scheduler* declining, not the skip list. Run with the field the code actually reads, the
+  reason becomes `"Skipping decomposition task type"`. **The skip list has never been exercised by
+  its own tests.**
+- **`refactor` and `debug` score 0 in the router's complexity switch** (`taskRouter.ts:200-213`,
+  which has cases for `code`, `test`, `review` and `decomposition` only), so the two task types most
+  likely to be a rewrite with no new behaviour are the two the router treats as the simplest.
+
+### 🚨 F347 — v1's frontier review tier fires zero times in thirty tasks in exactly the regime the project was built for, because the cheaper tier's schedule divides the expensive one's
+
+v1's graduated review is two schedules over two counters (`codeReviewService.ts:139-155`): Haiku when
+`isOllamaTask && ollamaTaskCounter % 5 == 0`, Opus when `complexity > 5 && allTaskCounter % 10 == 0`.
+The Haiku branch returns first. When every task is executed locally the two counters are equal — and
+**every multiple of 10 is a multiple of 5**, so the Opus branch is unreachable.
+
+Run over four task streams, complexity 9 throughout, one service instance each:
+
+| stream | haiku | opus | unreviewed |
+|---|---:|---:|---:|
+| 30 tasks, all `ollama` | 6 | **0** | 24 |
+| 30 tasks, alternating sonnet / ollama | 3 | **0** | 27 |
+| 30 tasks, alternating ollama / sonnet — *the same stream, other phase* | 3 | 3 | 24 |
+| 30 tasks, all sonnet | 0 | 3 | 27 |
+
+**All-local is the premise of the entire project**, and it is the row where the expensive reviewer
+never runs. Whether it runs at all is decided by the *phase* of the model stream, which is not a
+property anyone chose. This is F270 and F271 with a mechanism attached: the tier table is not a
+policy, it is an interference pattern between two counters.
+
+`isOllamaTask` is `executedByModel === 'ollama' || !executedByModel`, so a task with no recorded
+model counts as local — the provenance F271 called invented. And the complexity default is a falsy
+coalesce, `task.complexity || 5`, against a strict `complexity > 5`: measured on the Opus tick with a
+non-local model, complexity `undefined`, `0` and `5` all decline, and `5.5` and `9` review. **A task
+whose complexity was never recorded, or was honestly recorded as zero, can never receive the frontier
+review** — the same `||` defect W11 item 2 found destroying a reviewer's zero, in the other
+direction.
+
+### 🚨 F348 — the successor refuses to fold a timeout into "clean" and folds "there is no checker for this artifact" into it three lines later
+
+Claudette's post-edit check is the most careful gate in the family, and its enum says so:
+
+```rust
+/// A timeout is deliberately NOT folded into "clean". A check that never
+/// finished has verified nothing, and reporting silence there is exactly how a
+/// corrupt file slips through unnoticed (roast CHECK-01).
+pub(crate) enum CheckOutcome { Skipped, Passed, Failed(String), TimedOut(u64) }
+```
+
+`Skipped` covers three different situations (`post_edit_check.rs:289-299`): the feature is off, the
+process is offline, and **no check command matched this file type**. `builtin_cmd` maps `.rs`, `.py`,
+`.go`, `.js`, `.mjs` and `.cjs`; everything else returns `None`, and the donor's own test asserts it
+for `["ts", "tsx", "md", "toml"]` and for an extensionless path (`post_edit_check.rs:483-491`).
+
+The single call site (`runtime/conversation.rs:753-754`) then writes
+`CheckOutcome::Skipped | CheckOutcome::Passed => None`.
+
+So **editing a document produces exactly the observable result of editing a Rust file that
+compiles**: nothing is appended, and the model that just wrote the document is told the same thing
+either way. The type carries the distinction the design argued for and the consumer discards it —
+which is item 1's diagnosis restated for the unrunnable artifact, and the reason item 5's
+`Option<bool>` ruling (F317) is necessary and not sufficient. What 2.0 needs is not a third Boolean
+but a *reason*: `Uncertain(NoCheckerFor(".md"))` is a different fact from `Uncertain(FeatureOff)`,
+and only one of them should ever reach an operator.
+
+## Options compared
+
+Every row is scored on this item's own populations: 57 agent trees on which no deterministic rung
+fires, and ten documents against the code they describe.
+
+| For an artifact with no test | What it costs | What it buys |
+|---|---|---|
+| **Nothing** — accept the artifact | free | v1's answer for documentation (no task type) and for review output (`SKIP_REVIEW_TYPES`); Claudette's answer for every file its table does not map; BCF's 5.00 → 7.00 against a gate of 8.00 (F346, F348) |
+| **An address rung** — do the citations resolve, do the symbols exist | milliseconds, no toolchain, no model | 1 of 7 planted document defects, 1 stale citation in 1,873, 8 dangling finding numbers. **Zero false positives once the attribution rule is tight**, and silent about every claim (F343, F344, F345) |
+| **A model verdict** — the shipped `pass`/`fail` field | one call, 38 s median | **3 of 23** wrong trees, 1 false fail in 34, 2 empty payloads in 57 — and 2 of the 3 catches do not survive a change to the output schema. On documents, **0 of 8** (F338, F339, F341) |
+| **A model report, verdict discarded** — read the defect list, not the call | the same call | **5 of 8** planted document defects, named at `high` under `call: pass`. On code the two agree, so this buys nothing there (F338, F341) |
+| **A model report shaped as concrete cases** — `call → expected → actual` | **2.8× the decode, 2.7× the wall clock, 17 of 57 calls lost to the token cap** | 11 of 23 wrong trees produce a runnable case; the model's own verdict contradicts its own cases 14 times in 16 (F339) |
+| **Running the reviewer's cases** — execute each named case | one process per case, seconds — free next to the 104 s call that produced it | **10 of 23** wrong trees, 1 of 34 false, and that one is the harness's string equality, not the model's claim. 13 of 15 concrete claims on wrong trees are true (F340) |
+| **A pairwise comparison** — this artifact against another | one call, and you must have the other artifact | **14 of 14** orderings correct, order-stable on 7 of 7 pairs, including two defects the pointwise arm missed entirely. Fails only on a genuine tie, where it prefers the longer document (F342) |
+| **A second model** | a 26.3 s swap plus 4.6× decode | measured in W11 item 4 and rejected: a better reader, an unusable component (F284) |
+
+## Recommendation
+
+**1 — A model verdict is a report, never a gate.** On the population where nothing else fires, the
+shipped binary catches 3 of 23 wrong answers and false-fails 1 of 34 right ones; on documents it
+catches 0 of 8. That is not a weak gate, it is not a gate. And it is worse than weak, it is
+*unstable*: change nothing but the output schema and it catches a different three, overlapping the
+first three in one tree (F339). 2.0's `Verdict::call` stays advisory and never binds a merge.
+
+**2 — A verdict that contradicts its own report is `Uncertain`, in both directions.** On
+documentation the same call *finds the defect and then approves the artifact* — the wrong constant,
+the non-existent function and the reversed billing rule are all named at `high` severity under
+`call: "pass"`. On code, the model that names the failing input answers `pass` 14 times in 16. The
+rule that is right on both populations is a consistency check the type system can carry: **a `fail`
+with an empty defect list is not a verdict, and a `pass` carrying a `high` defect or a concrete
+failing case is not a verdict either.** Both are `Uncertain`, both stop the gate rather than
+deciding it, and both are free. The single false-fail in the whole code arm and five of the eight
+document defects are caught by that one rule and by nothing else.
+
+**3 — Demand a concrete case, and budget for it, because it is not free.** W11 item 4 found the
+deciding axis is what the reviewer is *shown* (F280); this item adds the other half — what it is
+*asked to emit*. Same model, same context, same temperature: a schema whose leaf is
+`{why, call, expected, actual}` produces a runnable falsification on 11 of 23 wrong trees where the
+paragraph produced 3. It also costs 2.8× the decode and loses 17 of 57 calls to the token cap
+(F339). So: ask for the case, give it a budget that reflects the ask, and treat
+`finish_reason: length` as `Uncertain` rather than as silence. **An empty payload with a legible
+reason is a better failure than a well-formed verdict that is wrong.**
+
+**4 — A review finding is verified by running it, and item 6 already built the machine.** A finding
+that names an input is falsifiable: run it on the snapshot commit (item 6's
+`read-tree` / `write-tree` / `commit-tree` pre-image, 0.16 s) and on the tree as it stands. Differ →
+the finding is real and the reviewer earned its keep. Same → the reviewer is wrong, and the operator
+should never see it. Will not run → it was never a finding. Measured: **10 of 23 wrong trees caught
+against 1 of 34 false**, three times the recall of the same model's own verdict at the same
+false-positive rate, and 13 of 15 concrete claims on wrong trees are true (F340). **This is the
+answer to "verifying review output": you do not verify the prose, you require the prose to carry
+something you can execute.** It closes F277's gap — a generated criterion with no positive control —
+for free, because the pre-image *is* the control.
+
+One implementation note that the one false positive pays for: **compare the way the suite compares,
+not the way a string does.** The single false fire in 34 was two `Err` values with different
+wording. Against a pre-image that difference is a real change and should be surfaced; against a
+reference it is noise. Say which comparison is being made, in the finding.
+
+**5 — If a model must judge, give it the other artifact, not a threshold.** The strongest single
+result in this item: the same model, the same defects, the same code, the same temperature scores
+**0 of 8 pointwise and 14 of 14 pairwise** (F341, F342). Absolute judgement asks for a scale the
+model does not have; comparison asks a question it can answer, and it answered every one — including
+the two defects the pointwise arm missed completely and the one that contains no false statement at
+all. Item 6 hands 2.0 the second artifact for 0.16 s: **the pre-image is the other document.** Where
+there is genuinely nothing to compare against, that is exactly the case where the verdict is a report
+and rule 1 applies.
+
+**6 — `equal` must be in the schema, and a tie must be allowed to be a tie.** The pairwise arm's only
+error is on a pair that is genuinely equal, where it prefers the longer document in both slot orders
+and converts length into accuracy to justify it (F342). Position bias did not reproduce at all —
+14 of 14, order-stable on 7 of 7 — so the failure mode to design against here is not the one the
+literature names first. A comparison whose `equal` branch is never taken is a comparison that will
+manufacture a preference when there is none.
+
+**7 — Run the address rung on documentation because it is free, and never call it verification.** It
+found 1 stale citation in 1,873 addresses and 8 dangling finding numbers in 2,553
+references, at zero false positives (F344, F345), and it reaches 1 of 7 planted document defects —
+the one that is an address rather than an assertion (F343). Six of seven planted defects cite symbols
+that resolve perfectly, including a reversed billing rule and a wrong return type.
+
+**8 — Ship one citation convention, and its value is prospective.** 46% of this corpus's
+citations are a bare basename with no unambiguous target. `path/relative/to/repo.rs:12-18` is one
+line of convention and it turns 343 unresolvable addresses into checkable ones. Do the same
+for finding ids: one definition form, checked in CI. And **quote what you cite** — 30 of
+752 citations here are followed by the code they name, and a quotation can be checked
+against the file line for line while an address cannot.
+
+**9 — `Uncertain` needs a reason, not a Boolean.** Claudette's `CheckOutcome::Skipped` folds "the
+feature is off", "we are offline" and "there is no checker for a `.md` file" into one variant, and
+its single call site then folds that into `Passed` (F348). 2.0's `Uncertain(why)` carries the why,
+and the console shows *no checker for this artifact* as a different line from *check disabled*.
+
+**10 — Review output is reviewed.** v1 puts `review` on `SKIP_REVIEW_TYPES` (F346). In 2.0 the
+artifact with no test is exactly the artifact that most needs a second reading, and the second
+reading is cheap because it is the same model in a fresh call reading the diff (W11 F280).
+
+## Rejected alternatives and why
+
+- **"Score the artifact 1–10 and threshold it."** BCF's shape, and item 1 voided the ladder. This
+  item adds the mechanism: the model has no absolute scale to threshold. 0 of 8 pointwise against
+  14 of 14 pairwise on the same defects (F342), and a documentation project scores exactly 5.00
+  because nothing was read at all (F346).
+- **"Trust the defect list on code the way it works on documents."** On documents, reading the
+  defects and ignoring `call` turns 0 of 8 into 5 of 8. On code it buys nothing — the defect list
+  and the binary agree, and the derived gate is the same 3 of 23 (F338). The rule that transfers is
+  the *contradiction* check, not "prefer the report".
+- **"Have the reviewer write a test."** F337 measured what agents' own tests are worth on this
+  population: 22 green tests on trees that are wrong, one asserting the opposite of the hidden test.
+  A test written by the same reasoning that produced the artifact ratifies it. The case in F340 is
+  different in one specific way: it is run against a tree the reviewer did not write — the pre-image
+  — so agreement is evidence rather than tautology.
+- **"Swap in a bigger model for the judge."** W11 item 4 measured it (F284): a better reader, and an
+  unusable component — it burned the whole budget and returned nothing 3 of 3 on a correct answer, at
+  4.6× the decode plus a 26.3 s swap. This item reproduced that failure mode on the champion at 30%
+  under a demanding schema (F339); a larger model would make it worse, not better.
+- **"Check documentation by regenerating it and diffing."** Not measured, and it is the wrong shape:
+  it makes the model's own output the standard, which is F280's failure with an extra step. The
+  comparison that works is against something with independent provenance — the pre-image, or the code
+  itself.
+- **"Grade prose with an embedding or a similarity score."** Nothing in this corpus needs it. Every
+  defect that mattered here was a specific false sentence about a specific symbol, and both
+  instruments that reached them — the address rung and the pairwise comparison — are exact.
+
+## Effect on fun
+
+The unit that finishes a documentation task and says *"clean"* is lying, and the console has no way
+to know. That is the state today in all three donors. The change that matters for the operator is
+small and entirely mechanical: **a fourth outcome with a reason in it.** *No checker for this
+artifact* is a legitimate thing for a unit to report, it is honest, and it is a different colour on
+the map from *checks passed* — which means the operator can see, at a glance, which of the fleet's
+finished work has actually been measured and which has only been asserted.
+
+The reviewer's concrete case is the part that will read best. A finding that says *"this is fragile"*
+is an opinion an operator has to arbitrate; a finding that says `split_bill(10, 4)` → expected
+`[3,3,2,2]`, got `[4,2,2,2]`, **and carries a green tick because the harness ran it against the
+pre-image**, is a fact. That is a genuinely different feel: the review panel stops being a wall of
+advice and becomes a short list of things that were tried and did happen, with the ones that did not
+reproduce already filtered out before anyone read them.
+
+And the pairwise result gives the console a verb it did not have. *Compare* — this attempt against
+the checkpoint, this document against the one it replaces — is a question the model answers 14 times
+out of 14, on the same material where *approve* answers 0 of 8. A command centre that asks its
+analysts to rank rather than to certify is asking them something they are good at, and the operator
+keeps the decision, which is where W5 put it.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W6-13 | What the 29 clean-arm failures are, and whether anything can reach them | **answered here** (F336): they are boundary cases, the axis is whether the ticket's own words decide the failing input, and 8 of 29 they do |
+| OQ-W6-17 | The pairwise gate against a **pre-image** rather than against a hand-built rival: does 14 of 14 survive when the second artifact is the previous version of the same file? | item 6's snapshot plus one real edit; cheap, and it is the form 2.0 would actually ship |
+| OQ-W6-18 | What token budget makes the `edge` schema stop failing? 8,192 lost 30% of the calls; the model's median was 6,870 | one re-run at 16,384, one arm, ~2 hours of GPU |
+| OQ-W6-19 | Does running the reviewer's case against the **pre-image** rather than a reference solution hold the 13-of-15 precision? The oracle used here does not exist in production | 2.0's first real attempt, or a re-run of `check.py` against item 6's snapshot commits |
+| OQ-W6-20 | Is the `pass`-with-a-`high`-defect contradiction a property of this model or of the schema? W11 F263 fixed the field order; the contradiction survives it | one arm at a different temperature, and one on a different model, when there is a reason to load one |
+| OQ-W6-8 | Does the coverage fraction bind as a veto, or only as a report? | still open (item 5) |
+| OQ-W6-7 | *(item 2)* Rules-only router, or rules plus a recorded model reading? | still open |
+
+## Confidence: high on the donor facts and on the code population, medium on how far the document numbers travel
+
+The donor half is executed rather than read — `v1_review.mjs` runs v1's own decision function over
+v1's own test inputs, `bcf-doc/` calls BCF's verifier on a real documentation project, and the
+Claudette finding is a call site read against the enum three files away. The interference pattern in
+F347 is not an inference from the source; it is four task streams run through the ported function.
+
+The code population is the strongest measurement here. 57 trees with a hidden answer key that no
+participant could see, deduplicated by content, with the verifier's residue stripped before anything
+was shown to a model, and every classification's quoted ticket clause asserted as a substring of the
+ticket the agent actually received. The judge arms are n=1 per tree at temperature 0, which is the
+right shape for a gate but means the 3-of-23 and 10-of-23 rates carry the sampling noise of 23
+trees — the interval on 3/23 is wide, and the finding that survives it is not the rate but the
+*direction*: the executable claim beats the binary by a factor, on the same calls.
+
+Three limits worth stating. **The document arm is one document, one code base, seven planted
+defects** — 0 of 8 pointwise and 14 of 14 pairwise are a large gap on a small n, and the mechanism
+(no absolute scale, a working relative one) is the part to carry forward, not the fractions.
+**`check.py` used the reference solution as an oracle**, which is exactly what production does not
+have; OQ-W6-19 is the honest version of that measurement. And **the base document was not perfectly
+faithful** — the model found a real defect its author had not seen (F341), so the `faithful` row is a
+lower bound on the false-positive rate and not a measurement of it. That is the third time in this
+workstream that a constructed clean baseline turned out to be an untested claim.
+
+One thing this item did *not* find, and it is worth recording as an absence: **no LLM-as-judge
+failure mode from the literature reproduced as the dominant problem.** Position bias: absent, 14 of
+14. Verbosity bias: present, weak, dominated by one fact. Self-preference: not testable here, one
+model. What actually failed was simpler and is not in the usual list — **the model reliably finds the
+defect and then approves the artifact**, in one object, in the same call, on both populations.
+
+---

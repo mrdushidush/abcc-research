@@ -118,6 +118,74 @@ def edge_extra(rows, tax):
         print(f"  {c:<12} {t:>3} trees, {k:>3} cases named")
 
 
+def cost_table(arms):
+    """What the schema costs. Same model, same trees, same 8,192-token budget —
+    the only thing that differs between the two arms is what the schema asks for."""
+    hr("what the schema costs: the same 57 trees under two output shapes")
+    print(f"{'arm':<9} {'median ctok':>12} {'median reason':>14} "
+          f"{'median wall':>12} {'hit the cap':>12} {'empty':>7}")
+    for label, rows in arms:
+        ct = sorted(r["usage"]["completion_tokens"] for r in rows if r.get("usage"))
+        rt = sorted((r["usage"].get("completion_tokens_details") or {})
+                    .get("reasoning_tokens", 0) for r in rows if r.get("usage"))
+        wl = sorted(r["wall_s"] for r in rows if r.get("wall_s"))
+        cap = sum(1 for r in rows
+                  if r.get("usage") and r["usage"]["completion_tokens"] >= 8192)
+        empty = sum(1 for r in rows if r.get("payload") is None)
+        med = lambda xs: xs[len(xs) // 2] if xs else 0
+        print(f"{label:<9} {med(ct):>12.0f} {med(rt):>14.0f} "
+              f"{med(wl):>11.1f}s {cap:>12} {empty:>7}")
+    print()
+    print("Every empty payload in both arms is `finish_reason: length` at the cap.")
+
+
+def derived_gate(edge, check, tax):
+    """The gate the check arm licenses, scored over ALL 57 trees rather than over
+    the 16 that produced a case — a rate conditioned on answering is not a rate
+    (item 26, item 28)."""
+    hr("the derived gate over the WHOLE population: 'named a case that discriminates'")
+    disc = collections.defaultdict(set)
+    for r in check:
+        disc[r["tree"]].add(r["status"])
+    n = collections.Counter()
+    for r in edge:
+        sts = disc.get(r["key"], set())
+        fired = "discriminates" in sts
+        n[(r["truth"], fired)] += 1
+    print(f"{'truth':<8} {'gate fires':<12} {'trees':>6}")
+    for k in sorted(n, key=lambda k: (k[0], str(k[1]))):
+        print(f"{k[0]:<8} {str(k[1]):<12} {n[k]:>6}")
+    wrong_hit = n[("FAIL", True)]
+    wrong_tot = n[("FAIL", True)] + n[("FAIL", False)]
+    right_hit = n[("PASS", True)]
+    right_tot = n[("PASS", True)] + n[("PASS", False)]
+    print(f"\ncatches {wrong_hit}/{wrong_tot} wrong trees; "
+          f"fires on {right_hit}/{right_tot} correct trees")
+
+    hr("the three gates side by side, all scored over all 57 trees")
+    def score(rows, fire):
+        w = sum(1 for r in rows if r["truth"] == "FAIL" and fire(r))
+        wt = sum(1 for r in rows if r["truth"] == "FAIL")
+        c = sum(1 for r in rows if r["truth"] == "PASS" and fire(r))
+        ct = sum(1 for r in rows if r["truth"] == "PASS")
+        return w, wt, c, ct
+    verdict = load("judge-verdict.json") or []
+    rowsets = [
+        ("verdict `call == fail`", verdict,
+         lambda r: (r.get("payload") or {}).get("call") == "fail"),
+        ("edge `call == fail`", edge,
+         lambda r: (r.get("payload") or {}).get("call") == "fail"),
+        ("edge named any case", edge,
+         lambda r: bool((r.get("payload") or {}).get("cases"))),
+        ("edge case discriminates", edge,
+         lambda r: "discriminates" in disc.get(r["key"], set())),
+    ]
+    print(f"{'gate':<26} {'catches wrong':>15} {'fires on correct':>18}")
+    for label, rows, fire in rowsets:
+        w, wt, c, ct = score(rows, fire)
+        print(f"{label:<26} {f'{w}/{wt}':>15} {f'{c}/{ct}':>18}")
+
+
 def check_table(rows, tax):
     hr("check.py: running the reviewer's own cases against agent tree vs reference")
     n = collections.Counter((r["truth"], r["status"]) for r in rows)
@@ -156,6 +224,49 @@ def check_table(rows, tax):
         print(f"  {c:<12} {b}/{a} cases discriminate")
 
 
+# Did the pointwise defect list name the PLANTED defect, or something else? The
+# distinction matters because the base document is not perfectly faithful
+# (docgate.py's KNOWN_DISCREPANCY), so "produced a defect" and "found the plant"
+# are different facts. Each entry is the substring that must appear in some
+# defect description for the plant to count as named; an entry that stops
+# matching raises rather than silently re-scoring the arm.
+PLANT_EVIDENCE = {
+    "wrong_constant":        "MAX_ATTEMPTS",
+    "wrong_constant_padded": "MAX_ATTEMPTS",
+    "phantom_symbol":        "is_retryable",
+    "wrong_type":            "counts()",
+    "reversed_semantics":    "is_chargeable",
+    "stale_transition":      None,
+    "wrong_default":         None,
+    "true_but_incomplete":   None,
+}
+
+
+def docgate_plants(point):
+    hr("docgate pointwise: did the defect list name the PLANT?")
+    print(f"{'document':<24} {'call':<7} {'defects':>7}  {'names plant':<12} evidence")
+    named = tot = 0
+    for r in sorted(point, key=lambda r: r["doc"]):
+        if not r["defect"]:
+            continue
+        tot += 1
+        want = PLANT_EVIDENCE[r["doc"]]
+        text = " ".join(d.get("description", "")
+                        for d in ((r["payload"] or {}).get("defects") or []))
+        hit = bool(want) and want in text
+        if want:
+            assert hit, f"{r['doc']}: evidence {want!r} no longer present"
+        named += hit
+        pay = r["payload"] or {}
+        print(f"{r['doc']:<24} {str(pay.get('call')):<7} "
+              f"{len(pay.get('defects') or []):>7}  {str(hit):<12} {want or '-'}")
+    gated = sum(1 for r in point
+                if r["defect"] and (r["payload"] or {}).get("call") == "fail")
+    print()
+    print(f"named the plant in {named}/{tot} defective documents "
+          f"(the padded variant counted separately); gated on it {gated}")
+
+
 def docgate_tables(rows):
     point = [r for r in rows if r["arm"] == "pointwise"]
     if point:
@@ -172,6 +283,7 @@ def docgate_tables(rows):
         cfp = [r for r in clean if (r["payload"] or {}).get("call") == "fail"]
         print(f"\ncaught {len(caught)}/{len(planted)} planted defects; "
               f"false-failed {len(cfp)}/{len(clean)} faithful documents")
+        docgate_plants(point)
 
     pos = [r for r in rows if r["arm"] == "position"]
     if pos:
@@ -227,9 +339,13 @@ def main():
     if e:
         judge_table(e, tax, "edge arm")
         edge_extra(e, tax)
+    if v and e:
+        cost_table([("verdict", v), ("edge", e)])
     c = load("check-results.json")
     if c:
         check_table(c, tax)
+        if e:
+            derived_gate(e, c, tax)
     d = load("docgate-results.json")
     if d:
         docgate_tables(d)
