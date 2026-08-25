@@ -320,13 +320,36 @@ print()
 multi = {k: v for k, v in reps.items() if len(v) > 1}
 if multi:
     print("=== E. repeatability at temperature 0.0 ===")
-    per_arm = defaultdict(lambda: [0, 0])
-    for (suite, tid, arm), rs in multi.items():
-        vals = [r["value"] for r in rs]
-        per_arm[arm][1] += 1
-        per_arm[arm][0] += 1 if len(set(vals)) == 1 else 0
-    for arm, (same, n) in sorted(per_arm.items()):
-        print("  %-17s identical across reps on %d of %d tasks" % (arm, same, n))
+    print("  !! Two different facts, kept apart: whether the VALUE moved between two")
+    print("  identical calls, and whether the call ANSWERED at all.  Pooling them")
+    print("  reports a failed call as a changed reading.")
+    print("  %-17s %8s %8s %8s   %-18s %s"
+          % ("arm", "both ok", "same", "max |d|", "deltas", "answer flipped"))
+    for arm in ARM_ORDER:
+        both, same, deltas, flipped = 0, 0, [], 0
+        for (suite, tid, a), rs in multi.items():
+            if a != arm:
+                continue
+            vals = [r["value"] for r in sorted(rs, key=lambda r: r["rep"])]
+            if any(v is None for v in vals):
+                if not all(v is None for v in vals):
+                    flipped += 1
+                continue
+            both += 1
+            if len(set(vals)) == 1:
+                same += 1
+            else:
+                deltas.append(vals[-1] - vals[0])
+        if not both and not flipped:
+            continue
+        print("  %-17s %8d %8d %8s   %-18s %d"
+              % (arm, both, same,
+                 max(abs(d) for d in deltas) if deltas else 0,
+                 sorted(deltas) if deltas else "-", flipped))
+    print()
+    print("  A no-think arm is a deterministic function of its input at temperature 0;")
+    print("  every arm that runs a reasoning trace is not, and the arm with the longest")
+    print("  trace is the least stable.")
     print()
 
 

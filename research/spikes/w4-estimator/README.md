@@ -49,7 +49,11 @@ disk.
    from zero; the schema's field order moves **17%** of the readings. **F383**
 9. **Task kind and language carry no signal**: `kind` 7-fold CV ρ −0.239 / AUC 0.375, permutation
    **p = 0.908**. **OQ-W4-5 closes: no.** **F384**
-10. **A *perfect* a-priori oracle spends more attempts than reacting** — 1.286 vs 1.118 per task on
+10. **The trace is where the nondeterminism lives.** At temperature 0.0, repeated byte-identical
+    calls: both no-think arms **20 of 20 identical**, every trace arm drifts (`v1_schema` 17 of 20),
+    and `pass_pct` answered both times on only **13 of 20** — its 13% failure rate is a coin flip
+    redrawn per call, not a property of the task. **F381, F383**
+11. **A *perfect* a-priori oracle spends more attempts than reacting** — 1.286 vs 1.118 per task on
     Q56 — because a task that fails is identified by failing. The ceiling is negative before the
     estimator's own cost. **F385**
 
@@ -107,7 +111,11 @@ python analyze.py > analyze-out.txt
    budgets (item 2's trap 9). And K is **3 tasks**: corroboration, never a number.
 8. **U100 is 10 tasks and all of them are `kind = bugfix`**, so no group statistic is available there
    at all.
-9. **The estimator reads the prompt only.** Item 2 already measured the workspace (ρ(fixture bytes,
+9. 🚨 **Do not pool "the value changed" with "the call failed".** The first repeatability table said
+   `pass_pct` was identical on 10 of 20 — counting a rep that returned nothing as a changed reading.
+   Separated: 13 answered twice, the value moved on 4 of those, and the *answering* flipped on 6.
+   The second number is the interesting one and the pooled figure hid it.
+10. **The estimator reads the prompt only.** Item 2 already measured the workspace (ρ(fixture bytes,
    pass) = −0.069), so this is not the gap it looks like — but it is stated rather than assumed. See
    OQ-W4-13.
 

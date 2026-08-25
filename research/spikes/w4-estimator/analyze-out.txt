@@ -1,6 +1,6 @@
 === 0. what ran ===
-  estimator calls: 414 over 69 tasks x 6 arms x reps [0]
-  calls with no usable value: 11
+  estimator calls: 534 over 69 tasks x 6 arms x reps [0, 1]
+  calls with no usable value: 18
      q56/Q02 pass_pct rep0  finish=length parse=no_json out=6000
      q56/Q04 pass_pct rep0  finish=length parse=no_json out=6000
      q56/Q09 pass_pct rep0  finish=length parse=no_json out=6000
@@ -12,6 +12,7 @@
      q56/Q51 v1_verbatim rep0  finish=length parse=no_json out=6000
      q56/Q53 v1_verbatim rep0  finish=length parse=no_json out=6000
      u100/fix_sql_inject pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q01 pass_pct rep1  finish=length parse=no_json out=6000
 
 === A. what an estimate COSTS, against Q56's 19.1 s median attempt (F372) ===
   arm                   n    p50 s   p90 s   max s  p50 out  p50 thk    fail
@@ -84,6 +85,22 @@
   v1_schema        vs v1_nothink        n=69  identical 43 (62%)  mean shift +0.19  range -2..+2   [the reasoning trace: on vs off, same schema]
   v1_verbatim      vs v1_schema         n=67  identical 51 (76%)  mean shift +0.04  range -2..+1   [free text vs constrained, same rubric]
   pass_pct         vs pass_pct_nothink  n=60  identical 32 (53%)  mean shift -0.18  range -75..+15   [the reasoning trace on the pass estimate]
+
+=== E. repeatability at temperature 0.0 ===
+  !! Two different facts, kept apart: whether the VALUE moved between two
+  identical calls, and whether the call ANSWERED at all.  Pooling them
+  reports a failed call as a changed reading.
+  arm                both ok     same  max |d|   deltas             answer flipped
+  v1_verbatim             19       18        1   [1]                0
+  v1_schema               20       17        1   [1, 1, 1]          0
+  v1_schema_rf            20       19        1   [1]                0
+  pass_pct                13        9        5   [3, 5, 5, 5]       6
+  v1_nothink              20       20        0   -                  0
+  pass_pct_nothink        20       20        0   -                  0
+
+  A no-think arm is a deterministic function of its input at temperature 0;
+  every arm that runs a reasoning trace is not, and the arm with the longest
+  trace is the least stable.
 
 === F. calibration: the estimate against the base rate it is estimating ===
   -- q56: measured control pass rate 88.2% over 280 cells

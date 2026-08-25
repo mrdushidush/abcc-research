@@ -1326,6 +1326,11 @@ reasoning trace and never emitted the two-token payload. 9 of the 11 no-value ca
 are this arm. `v1_verbatim` lost 2 the same way; the two `nothink` arms lost none, and would have lost
 none at `max_tokens: 300`.
 
+**And that 13% is not a property of the task — it is a coin flip.** Of 20 tasks called twice,
+`pass_pct` answered both times on only **13**; **6 flipped** between answering and returning nothing,
+at temperature 0.0 with a byte-identical request. So a router built on this arm would not have a set
+of tasks it cannot score; it would have a 13% chance of scoring nothing, redrawn per call.
+
 **Why the harder question scores worse is the useful part.** Predicting *"will this pass"* requires
 knowing what the hidden tests check. Predicting *"how complex is this"* requires only reading the
 prompt. The model does the second competently and the first not at all — and being asked the second
@@ -1385,6 +1390,30 @@ Same rubric, same schema, same sampler; the only difference is whether the trace
 distinguishable from zero. The trace changes 38% of the individual readings and does not improve their
 ordering. On the pass question it is worse: `pass_pct` vs `pass_pct_nothink` agree on only 53%, with a
 range of **−75 to +15 points**, and the *cheap* arm is the one that ranks worse.
+
+**And the trace is where the nondeterminism lives.** Twenty tasks called twice at temperature 0.0,
+byte-identical requests:
+
+| arm | answered both times | identical | max Δ | answer flipped |
+|---|---|---|---|---|
+| `v1_verbatim` | 19 | 18 | 1 | 0 |
+| `v1_schema` | 20 | 17 | 1 | 0 |
+| `v1_schema_rf` | 20 | 19 | 1 | 0 |
+| `pass_pct` | **13** | 9 | **5** | **6** |
+| `v1_nothink` | 20 | **20** | **0** | 0 |
+| `pass_pct_nothink` | 20 | **20** | **0** | 0 |
+
+**Both no-think arms are exactly reproducible; every arm that runs a trace is not, and the arm with
+the longest trace is the least stable.** At temperature 0 the payload is a deterministic function of
+its input when nothing precedes it — the drift is the trace accumulating over ~1,500 tokens and
+dragging the answer with it. A "recorded model reading" that moves between identical calls is not a
+field a downstream decision can be reproduced from, which is a second reason (after F379) that if one
+is recorded at all it should be the 2-second one.
+
+⚠ **The first version of this table said `pass_pct` was identical on 10 of 20 and that was two facts
+pooled into one.** A rep where the call *failed* was being counted as a changed reading. Separated,
+the value moved on 4 of the 13 that answered and the *answering* flipped on 6 — which is the more
+interesting half and was invisible in the pooled number.
 
 **Emission order** (W11 item 3's finding, tested here on a routing input): `v1_schema` emits
 `complexity` then `reasoning`, `v1_schema_rf` reverses it. **57 of 69 identical (83%)**, shifts in
@@ -1470,7 +1499,9 @@ no complexity score.
 
 2. **If a score is wanted for a human to look at, it is a report and it is the 2-second one.**
    `v1_nothink` on the bare server, 2.00 s, 106 output tokens, no reasoning trace, recorded as an
-   observation on W3's event log and never read by a gate. That is W6 item 7's ruling — a model
+   observation on W3's event log and never read by a gate. It is also the only version that is
+   **exactly reproducible** — 20 of 20 identical on a repeat, against 17 of 20 for the same schema
+   with the trace on (F383) — which matters more for a recorded field than its correlation does. That is W6 item 7's ruling — a model
    verdict is a report and never a gate — applied one layer up, and the honest label on it is
    *"the model's reading of the request, which does not predict the outcome"*.
 
@@ -1562,6 +1593,10 @@ one that happened, not the one a score predicted.
   integer in two independent arms is not a sampling question.
 - **High** on F385, which is arithmetic over the measured failure rates and does not depend on any
   estimator's quality.
+- **High** on the repeatability split in F383: 20 of 20 against 17 of 20 is not a marginal
+  difference, and the no-think arms returned byte-identical values on every one of 40 repeated calls.
+  ⚠ The repeat is **one** extra call per task on **20** tasks, so it establishes that the trace arms
+  drift and the no-think arms did not drift *here*; it does not bound the drift's size.
 - **Deliberately low on every ordering in F379.** The bootstrap is in the finding because the point
   estimates should not be quoted without it: every paired difference spans zero and six of nine
   intervals include the coin. **Do not cite "prompt bytes beats the model" as a result** — the result
