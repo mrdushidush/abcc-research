@@ -1,0 +1,63 @@
+=== A. peak prompt occupancy (FLOOR), all 945 Q56 cells with a marker ===
+  n=945  min 5201  p50 5898  p90 7948  max 13066
+  median preamble (system prompt + tool schemas) = 4874  -> 83% of the median peak
+  cells whose FLOOR exceeds v1 8K (deprecated)     (  8192):   74 / 945
+  cells whose FLOOR exceeds v1 16K default         ( 16384):    0 / 945
+  cells whose FLOOR exceeds v1 32K top local       ( 32768):    0 / 945
+  cells whose FLOOR exceeds this run's num_ctx     ( 61440):    0 / 945
+  cells with NO turn-end marker: 7 -> [('Q07', 'gated'), ('Q13', 'redirect-first-edit'), ('Q35', 'control'), ('Q40', 'deny-first-edit'), ('Q43', 'redirect-first-edit'), ('Q44', 'gated'), ('Q49', 'control')]
+
+=== B. cumulative cost vs peak occupancy: the two are not one axis ===
+  n=945  spearman(peak_floor, tokens_in_cumulative) = +0.892
+  tokens_in cumulative: min 15399  p50 42170  max 445661   ratio max/max-occupancy = 34.1x
+
+=== C. does v1's score predict outcome / cost / occupancy?  BY ARM ===
+  -- control  (280 cells, 56 tasks)
+       spearman(score, pass rate    ) = -0.101
+       spearman(score, tokens_in    ) = -0.091
+       spearman(score, peak_floor   ) = -0.072
+       spearman(score, iterations   ) = -0.100
+       spearman(score, wall_clock_s ) = +0.002
+  -- gated  (112 cells, 56 tasks)
+       spearman(score, pass rate    ) = +0.016
+       spearman(score, tokens_in    ) = +0.047
+       spearman(score, peak_floor   ) = +0.129
+       spearman(score, iterations   ) = -0.014
+       spearman(score, wall_clock_s ) = +0.098
+  -- redirect-first-edit  (280 cells, 56 tasks)
+       spearman(score, pass rate    ) = +0.117
+       spearman(score, tokens_in    ) = +0.083
+       spearman(score, peak_floor   ) = +0.206
+       spearman(score, iterations   ) = +0.063
+       spearman(score, wall_clock_s ) = +0.119
+  -- deny-first-edit  (280 cells, 56 tasks)
+       spearman(score, pass rate    ) = +0.023
+       spearman(score, tokens_in    ) = +0.017
+       spearman(score, peak_floor   ) = +0.109
+       spearman(score, iterations   ) = +0.007
+       spearman(score, wall_clock_s ) = +0.133
+
+=== D. what does predict a control failure, if not the score? ===
+  spearman(v1 score      , control failure rate) = +0.101
+  spearman(prompt words  , control failure rate) = +0.187
+  spearman(peak_floor    , control failure rate) = +0.405
+  spearman(tokens_in     , control failure rate) = +0.326
+  spearman(iterations    , control failure rate) = +0.320
+
+  by donor 'kind' (control arm):
+    bugfix            80.0%  ( 24/ 30)   mean v1 score 2.58
+    api-misuse        83.3%  ( 25/ 30)   mean v1 score 2.17
+    implement-spec    85.6%  ( 77/ 90)   mean v1 score 2.64
+    error-handling    88.0%  ( 22/ 25)   mean v1 score 3.00
+    boundary          88.6%  ( 31/ 35)   mean v1 score 1.79
+    multi-file        90.0%  ( 18/ 20)   mean v1 score 2.50
+    refactor         100.0%  ( 20/ 20)   mean v1 score 2.62
+    concurrency      100.0%  ( 10/ 10)   mean v1 score 4.00
+    perf             100.0%  ( 20/ 20)   mean v1 score 2.75
+
+  by language (control arm):
+    rust          78.6%  ( 55/ 70)   mean v1 score 2.54
+    shell         82.5%  ( 33/ 40)   mean v1 score 1.81
+    python        90.7%  ( 68/ 75)   mean v1 score 2.57
+    typescript    95.6%  ( 43/ 45)   mean v1 score 2.72
+    node          96.0%  ( 48/ 50)   mean v1 score 3.00

@@ -1,0 +1,34 @@
+tasks scanned: 149
+substring occurrences by class: {"INFLECTION":67,"COMPOUND":56,"EMBEDDED":21}
+tasks with >=1 EMBEDDED-only keyword hit (a false fire): 16
+tasks whose SEMANTIC tier score changes once EMBEDDED-only hits are dropped: 2
+  [{"suite":"q56","id":"Q07","raw":2,"clean":0},{"suite":"u100","id":"coffee_about","raw":2,"clean":0}]
+
+EMBEDDED false fires by keyword:
+  add            6  padded, padding, onadd
+  handle         3  errorhandler, notehandlers
+  api            2  capitalized, escaping
+  graph          2  paragraph
+  write          1  overwrites
+  print          1  sprintf
+  parse          1  queryparser
+  component      1  decodeuricomponent
+
+every EMBEDDED false fire:
+  q56/Q07                          high:'api' inside 'capitalized'
+  q56/Q52                          low:'write' inside 'overwrites'
+  q56/Q56                          low:'add' inside 'padded'
+  u100/coffee_about                 high:'graph' inside 'paragraph'
+  u100/coffee_hero                  low:'add' inside 'padding'
+  u100/fix_xss_reflect              high:'api' inside 'escaping'
+  u100/go_fizzbuzz                  low:'print' inside 'sprintf'
+  u100/node_error_handler           moderate:'handle' inside 'errorhandler'
+  u100/node_note_handlers           moderate:'handle' inside 'notehandlers'
+  u100/node_query_parser            moderate:'parse' inside 'queryparser'
+  u100/node_query_parser            high:'component' inside 'decodeuricomponent'
+  u100/node_server_main             moderate:'handle' inside 'notehandlers'
+  u100/portfolio_hero               low:'add' inside 'padding'
+  u100/saas_hero                    low:'add' inside 'padding'
+  u100/sec_jwt_simple               low:'add' inside 'padding'
+  u100/tm_add_task                  low:'add' inside 'onadd'
+  u100/tm_task_counter              high:'graph' inside 'paragraph'

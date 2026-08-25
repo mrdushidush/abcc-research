@@ -1,0 +1,2 @@
+cells with transcript: 952   with a marker: 945
+peak_floor  min 5201  median 5898  max 13066

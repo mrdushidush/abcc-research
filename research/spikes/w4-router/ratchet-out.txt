@@ -1,0 +1,20 @@
+tasks: 149
+rules score: min 1.5  p50 3.5  max 6
+tasks where the model half is CALLED (rules <= 8): 149/149
+
+over the 149 x 10 (task, model answer) grid:
+  model taken outright     802   53.8%
+  averaged                 530   35.6%
+  damped toward rules      158   10.6%
+
+model answer at which it is taken OUTRIGHT: min 4  p50 6  max 8
+  tasks where a model answer of 4 already wins outright: 34/149
+  tasks where a model answer of 6 already wins outright: 116/149
+
+what final score is REACHABLE, per task, over model answers 1..10:
+  can reach >= 7 (32K / remote tier): 149/149
+  can reach >= 9 (extreme):           149/149
+  can reach 10 (Sonnet):              149/149
+
+floor: what the rules alone guarantee (model answer 1, worst case):
+  min 1.2  p50 2.5  max 4.0

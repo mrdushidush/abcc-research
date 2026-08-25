@@ -1,0 +1,13 @@
+=== tasks reaching BCF's C7 WITHOUT the html/landing-page/website floor ===
+  k/finish_the_cancelled_status  BCF 7  (not web-floored)  v1 6
+  u100/py_todo_handlers  BCF 7  (not web-floored)  v1 4.5
+
+=== does EITHER donor scorer predict Q56 control failure? ===
+  spearman(v1 rule score  , failure rate) = +0.101
+  spearman(BCF rule_score , failure rate) = +0.219
+
+=== u100 cells available: 155 over 10 distinct tasks, variants ['control', 'deny-first-edit', 'gated', 'redirect-first-edit'] ===
+  BCF-web-floored (C7) tasks : 14/15 pass = 93.3%
+  everything else            : 126/140 pass = 90.0%
+  spearman(v1 rule score  , u100 failure rate) = -0.465
+  spearman(BCF rule_score , u100 failure rate) = -0.203

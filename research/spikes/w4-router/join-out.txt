@@ -1,0 +1,49 @@
+cells loaded: 952  from runs: ['w8-1786245496371', 'w8-1786256305205', 'w8-1786552205081', 'w8-1786566151404', 'w8-1786570814013', 'w8-1786808290277', 'w8-1786811844322', 'w8-1786815053791']
+variants: ['control', 'deny-first-edit', 'gated', 'redirect-first-edit']
+
+=== 1. v1 tier assignment over 149 corpus tasks (its own scorer) ===
+  C1-C6 -> local 16K                149
+  min 1.5  max 6  median 3.5
+
+=== 2. Q56 pass rate by v1 complexity score, STRATIFIED BY ARM ===
+  score |              control |      deny-first-edit |                gated |  redirect-first-edit
+    1.5 |      82.4% ( 70/ 85) |      50.6% ( 43/ 85) |      82.4% ( 28/ 34) |      74.1% ( 63/ 85)
+    2.0 |      96.7% ( 29/ 30) |      83.3% ( 25/ 30) |     100.0% ( 12/ 12) |      93.3% ( 28/ 30)
+    2.5 |      98.2% ( 54/ 55) |      74.5% ( 41/ 55) |      95.5% ( 21/ 22) |      78.2% ( 43/ 55)
+    3.0 |     100.0% (  5/  5) |      80.0% (  4/  5) |     100.0% (  2/  2) |     100.0% (  5/  5)
+    3.5 |      85.3% ( 81/ 95) |      51.6% ( 49/ 95) |      89.5% ( 34/ 38) |      74.7% ( 71/ 95)
+    4.0 |      60.0% (  3/  5) |      80.0% (  4/  5) |      50.0% (  1/  2) |     100.0% (  5/  5)
+    4.5 |     100.0% (  5/  5) |      80.0% (  4/  5) |     100.0% (  2/  2) |     100.0% (  5/  5)
+
+=== 3. Does the score predict anything? (control arm, per task) ===
+  n tasks = 56, control cells = 280
+  spearman(score, pass rate     ) = -0.101
+  spearman(score, iterations    ) = -0.100
+  spearman(score, tokens_in     ) = -0.091
+  spearman(score, wall_clock_s  ) = +0.002
+
+=== 4. hardest and easiest control tasks vs v1's score ===
+  HARDEST (lowest control pass rate):
+    Q03  pass 0/5  score 1.5  lang rust       kind bugfix
+    Q46  pass 1/5  score 1.5  lang shell      kind boundary
+    Q05  pass 2/5  score 3.5  lang rust       kind error-handling
+    Q25  pass 2/5  score 1.5  lang python     kind api-misuse
+    Q51  pass 2/5  score 3.5  lang python     kind implement-spec
+    Q52  pass 2/5  score 3.5  lang rust       kind implement-spec
+    Q07  pass 3/5  score 4.0  lang rust       kind api-misuse
+    Q49  pass 3/5  score 1.5  lang shell      kind multi-file
+  EASIEST:
+    Q44  pass 5/5  score 2.5  lang shell      kind implement-spec
+    Q47  pass 5/5  score 1.5  lang shell      kind error-handling
+    Q48  pass 5/5  score 1.5  lang shell      kind api-misuse
+    Q50  pass 5/5  score 2.5  lang shell      kind implement-spec
+    Q54  pass 5/5  score 1.5  lang python     kind implement-spec
+    Q55  pass 5/5  score 2.5  lang typescript kind implement-spec
+
+=== 5. difficulty vs context: measured tokens_in on control ===
+  tokens_in: min 21873  median 41776  max 356311
+  tasks whose MEAN control tokens_in exceeds v1's 16K tier: 56/56
+  ... exceeds v1's 32K tier:                                38/56
+  per-cell control tokens_in > 16384: 276/278
+  per-cell control tokens_in > 32768: 163/278
+  per-cell ALL-ARM tokens_in > 16384: 893/945  max 445661

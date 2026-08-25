@@ -1,0 +1,38 @@
+scored by BCF: 149   by v1: 149
+
+=== BCF rule_score distribution (its own Tier::from_score) ===
+  scores: [(1, 1), (2, 24), (3, 31), (4, 46), (5, 21), (6, 6), (7, 20)]
+  C1-C3 Trivial      56
+  C4-C6 Moderate     73
+  C7-C8 Complex      20
+  C9-C10 Expert       0
+
+=== per suite ===
+  q56   n= 56  BCF min 1 p50 3.0 max 5   |   v1 min 1.5 p50 2.5 max 4.5
+  u100  n= 90  BCF min 2 p50 4.0 max 7   |   v1 min 1.5 p50 3.5 max 6
+  k     n=  3  BCF min 5 p50 6 max 7   |   v1 min 4 p50 4 max 6
+
+=== BCF vs v1, same task ===
+  n=149  mean(BCF - v1) = +0.81  median +0.5
+  BCF >= 7 (its Complex tier): 20
+  v1  >= 7 (its 32K tier):     0
+  largest disagreements (BCF - v1):
+    u100/saas_testimonials             BCF  7  v1  1.5   diff +5.5
+    u100/saas_pricing                  BCF  7  v1  1.5   diff +5.5
+    u100/saas_footer                   BCF  7  v1  1.5   diff +5.5
+    u100/portfolio_contact             BCF  7  v1  1.5   diff +5.5
+    u100/sec_sanitize_html             BCF  7  v1  2.0   diff +5.0
+    u100/coffee_hero                   BCF  7  v1  2.0   diff +5.0
+    u100/portfolio_skills              BCF  7  v1  2.5   diff +4.5
+    u100/portfolio_projects            BCF  7  v1  2.5   diff +4.5
+    u100/coffee_menu                   BCF  7  v1  2.5   diff +4.5
+    u100/coffee_contact                BCF  7  v1  2.5   diff +4.5
+    u100/saas_hero                     BCF  7  v1  3.0   diff +4.0
+    u100/tm_index                      BCF  7  v1  3.5   diff +3.5
+
+=== BCF's two v1-absent rules, counted over the corpus ===
+  prompts containing html/landing page/website -> score floored to 7: 18
+  prompts containing 'project' (in BCF's EXTREME list, +3): 2
+  both: 2
+  of the 18 web-floored, BCF scores >= 7: 18
+  web-floored by suite: {'u100': 18}
