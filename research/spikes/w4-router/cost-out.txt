@@ -1,0 +1,117 @@
+==============================================================================
+(a) THE LOCAL RUNG: what one attempt costs, per suite and per arm
+==============================================================================
+suite  arm                      n  wall50  wall90 wallmax tok_in50 tok_out50  iter50
+q56    control                280    19.1   107.0   600.0    39486     1101       7
+q56    deny-first-edit        280    20.7    54.6   600.0    33192     1403       6
+q56    gated                  112    16.7    57.9   600.0    35211     1006       6
+q56    redirect-first-edit    280    32.0    75.4   600.0    59269     2253      10
+u100   control                 77    13.9    38.3   300.0    21387      795       5
+u100   deny-first-edit          7     8.5    10.0    17.6    15348      577       3
+u100   gated                   76    14.3    53.5   208.6    26979      891       6
+u100   redirect-first-edit     76    22.2    45.4   101.6    45644     1424       8
+k-champ-40 control                 18   110.8   285.6   629.1   239329     6094      18
+k-27b-40 control                 18   858.8  1086.4  2400.0   315284    21226      19
+k-champ-budget control                 18   120.4   171.1   506.9   180018     5067      13
+
+==============================================================================
+(b) THE ONLY ALTERNATIVE RUNG THE BUDGET ALLOWS: another attempt
+==============================================================================
+pass@k over repeated cells, control arm only (an interfered arm prices a
+different experiment). k attempts cost k x the per-attempt wall clock.
+
+  q56: 56 tasks at exactly n=5 repeats (repeat counts seen: [5])
+     mean attempt wall clock 46.9 s   median 19.1 s
+     pass@1: 88.2%   cumulative cost 47 s/task
+     pass@2: 94.6%   cumulative cost 94 s/task   marginal +6.4% for 46.9 s  = 8.227 pp/min
+     pass@3: 96.8%   cumulative cost 141 s/task   marginal +2.1% for 46.9 s  = 2.742 pp/min
+     pass@4: 97.9%   cumulative cost 188 s/task   marginal +1.1% for 46.9 s  = 1.371 pp/min
+     pass@5: 98.2%   cumulative cost 234 s/task   marginal +0.4% for 46.9 s  = 0.457 pp/min
+     P(next attempt passes | k already failed), updating on the failures:
+        k=0: 88.2%   <- the unconditional pass rate
+        k=1: 43.6%
+        k=2: 31.0%
+        k=3: 22.4%
+        k=4: 16.6%
+     tasks that NEVER pass in 5 tries: 1 (Q03)
+     tasks that ALWAYS pass: 40 of 56  -> the retry budget only ever
+     matters on the remaining 15
+
+  u100: 10 tasks at exactly n=8 repeats (repeat counts seen: [8])
+     mean attempt wall clock 29.0 s   median 13.9 s
+     pass@1: 88.8%   cumulative cost 29 s/task
+     pass@2: 99.3%   cumulative cost 58 s/task   marginal +10.5% for 29.0 s  = 21.805 pp/min
+     pass@3: 100.0%   cumulative cost 87 s/task   marginal +0.7% for 29.0 s  = 1.478 pp/min
+     pass@4: 100.0%   cumulative cost 116 s/task   marginal +0.0% for 29.0 s  = 0.000 pp/min
+     pass@5: 100.0%   cumulative cost 145 s/task   marginal +0.0% for 29.0 s  = 0.000 pp/min
+     pass@6: 100.0%   cumulative cost 174 s/task   marginal +0.0% for 29.0 s  = 0.000 pp/min
+     P(next attempt passes | k already failed), updating on the failures:
+        k=0: 88.8%   <- the unconditional pass rate
+        k=1: 81.9%
+        k=2: 79.8%
+        k=3: 78.0%
+        k=4: 76.7%
+     tasks that NEVER pass in 8 tries: 0 (-)
+     tasks that ALWAYS pass: 3 of 10  -> the retry budget only ever
+     matters on the remaining 7
+
+  k-champ-40: 3 tasks at exactly n=6 repeats (repeat counts seen: [6])
+     mean attempt wall clock 175.7 s   median 110.8 s
+     pass@1: 66.7%   cumulative cost 176 s/task
+     pass@2: 86.7%   cumulative cost 351 s/task   marginal +20.0% for 175.7 s  = 6.829 pp/min
+     pass@3: 93.3%   cumulative cost 527 s/task   marginal +6.7% for 175.7 s  = 2.276 pp/min
+     pass@4: 97.8%   cumulative cost 703 s/task   marginal +4.4% for 175.7 s  = 1.517 pp/min
+     pass@5: 100.0%   cumulative cost 879 s/task   marginal +2.2% for 175.7 s  = 0.759 pp/min
+     pass@6: 100.0%   cumulative cost 1054 s/task   marginal +0.0% for 175.7 s  = 0.000 pp/min
+     P(next attempt passes | k already failed), updating on the failures:
+        k=0: 66.7%   <- the unconditional pass rate
+        k=1: 50.0%
+        k=2: 38.9%
+        k=3: 34.8%
+        k=4: 33.7%
+     tasks that NEVER pass in 6 tries: 0 (-)
+     tasks that ALWAYS pass: 0 of 3  -> the retry budget only ever
+     matters on the remaining 3
+
+  k-27b-40: 3 tasks at exactly n=6 repeats (repeat counts seen: [6])
+     mean attempt wall clock 842.0 s   median 858.8 s
+     pass@1: 72.2%   cumulative cost 842 s/task
+     pass@2: 93.3%   cumulative cost 1684 s/task   marginal +21.1% for 842.0 s  = 1.504 pp/min
+     pass@3: 98.3%   cumulative cost 2526 s/task   marginal +5.0% for 842.0 s  = 0.356 pp/min
+     pass@4: 100.0%   cumulative cost 3368 s/task   marginal +1.7% for 842.0 s  = 0.119 pp/min
+     pass@5: 100.0%   cumulative cost 4210 s/task   marginal +0.0% for 842.0 s  = 0.000 pp/min
+     pass@6: 100.0%   cumulative cost 5052 s/task   marginal +0.0% for 842.0 s  = 0.000 pp/min
+     P(next attempt passes | k already failed), updating on the failures:
+        k=0: 72.2%   <- the unconditional pass rate
+        k=1: 63.3%
+        k=2: 56.1%
+        k=3: 52.3%
+        k=4: 50.8%
+     tasks that NEVER pass in 6 tries: 0 (-)
+     tasks that ALWAYS pass: 0 of 3  -> the retry budget only ever
+     matters on the remaining 3
+
+==============================================================================
+(c) THE PRICE LIST: every alternative to 'try again', in the same units
+==============================================================================
+  reference attempt cost: Q56 control mean 46.9 s / median 19.1 s;  K mean 175.7 s / median 110.8 s
+  model swap, round trip         23.77 s = 1.24 median Q56 attempts / 0.21 median K   [W2 F79]
+  model swap, re-measured        26.30 s = 1.37 median Q56 attempts / 0.24 median K   [W11 F284]
+  then every token costs           4.6 x decode on the bigger model            [W11 F284]
+  head rewrite of the prompt      4.60 x a warm turn (full cold prefill)       [W11 item 2]
+  prefix cache, left intact    saves 79.7% of TTFT, and ONE token at the front
+                               annihilates it                                [W2 F81]
+  second model co-resident     impossible: 1,210 MiB free vs a 4.41 GB model [W11 F275]
+  a cloud rung                 not a tier: zero cloud spend is standing
+
+  THE ONE COMPARISON A ROUTER CAN ACTUALLY MAKE, in points of pass rate per minute:
+     retry once on the same rung: +6.4 pp for 19.1 s = 20.1 pp/min
+     swap to the 27B and attempt : W1 F87/F88 measured it LEVEL on verdicts (8/9),
+        so <=0 pp, for 26.3 s of swap plus 5.2x the attempt = 125.9 s = 6.6 retries
+
+  AND THE SAME COMPARISON RE-MEASURED HEAD TO HEAD ON THE HARD SUITE (K, 3 tasks,
+  18 cells each, both at max_iterations=40, same fixtures, same verifier):
+     champion  median attempt   110.8 s   timeouts 0
+     27B       median attempt   858.8 s   timeouts 5   = 7.75x the champion
+
+wrote D:\dev\ABCC_20_powerd_by_claudette\research\spikes\w4-router\cost.jsonl

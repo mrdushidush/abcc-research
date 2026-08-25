@@ -1,0 +1,158 @@
+==============================================================================
+0 - the fixture, per suite: what the agent is handed before it reads a line
+==============================================================================
+  q56    56 tasks | fixture bytes min      77 med     415 max    3928 | files med   2 max   4 | lines med    13 max    151 | prompt words med  72
+  u100   10 tasks | fixture bytes min      63 med      97 max     160 | files med   1 max   1 | lines med     3 max      5 | prompt words med  44
+  k       3 tasks | fixture bytes min   41739 med   42636 max   74508 | files med  20 max  32 | lines med  1189 max   1502 | prompt words med 119
+
+==============================================================================
+1 - WHAT SETS OCCUPANCY: the fixture, or the effort spent inside it?
+==============================================================================
+   rho over CELLS, within one suite and one arm, so neither suite mix nor
+   arm mix can carry the number.
+
+  q56 / control (n=278 cells, 56 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.048
+      rho(occupancy, fixture_files                     ) = -0.031
+      rho(occupancy, fixture_lines                     ) = +0.119
+      rho(occupancy, prompt_words                      ) = +0.299
+      rho(occupancy, iterations (rounds actually run)  ) = +0.836
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.879
+
+  q56 / deny-first-edit (n=279 cells, 56 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.266
+      rho(occupancy, fixture_files                     ) = +0.297
+      rho(occupancy, fixture_lines                     ) = +0.197
+      rho(occupancy, prompt_words                      ) = +0.251
+      rho(occupancy, iterations (rounds actually run)  ) = +0.815
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.865
+
+  q56 / gated (n=110 cells, 56 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.116
+      rho(occupancy, fixture_files                     ) = +0.080
+      rho(occupancy, fixture_lines                     ) = +0.126
+      rho(occupancy, prompt_words                      ) = +0.266
+      rho(occupancy, iterations (rounds actually run)  ) = +0.835
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.879
+
+  q56 / redirect-first-edit (n=278 cells, 56 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.233
+      rho(occupancy, fixture_files                     ) = +0.182
+      rho(occupancy, fixture_lines                     ) = +0.188
+      rho(occupancy, prompt_words                      ) = +0.212
+      rho(occupancy, iterations (rounds actually run)  ) = +0.739
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.810
+
+  u100 / control (n=76 cells, 10 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.185
+      rho(occupancy, fixture_files                     ) = n/a
+      rho(occupancy, fixture_lines                     ) = +0.122
+      rho(occupancy, prompt_words                      ) = +0.141
+      rho(occupancy, iterations (rounds actually run)  ) = +0.940
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.971
+
+  u100 / gated (n=76 cells, 10 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.116
+      rho(occupancy, fixture_files                     ) = n/a
+      rho(occupancy, fixture_lines                     ) = +0.077
+      rho(occupancy, prompt_words                      ) = +0.150
+      rho(occupancy, iterations (rounds actually run)  ) = +0.930
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.967
+
+  u100 / redirect-first-edit (n=76 cells, 10 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.178
+      rho(occupancy, fixture_files                     ) = n/a
+      rho(occupancy, fixture_lines                     ) = +0.171
+      rho(occupancy, prompt_words                      ) = +0.205
+      rho(occupancy, iterations (rounds actually run)  ) = +0.853
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.906
+
+  k / control (n=49 cells, 3 tasks)
+      rho(occupancy, fixture_bytes                     ) = +0.196
+      rho(occupancy, fixture_files                     ) = +0.296
+      rho(occupancy, fixture_lines                     ) = -0.296
+      rho(occupancy, prompt_words                      ) = -0.296
+      rho(occupancy, iterations (rounds actually run)  ) = +0.358
+      rho(occupancy, tokens_in (cumulative COST)       ) = +0.658
+
+==============================================================================
+2 - VARIANCE DECOMPOSITION: is occupancy a property of the TASK or of the RUN?
+==============================================================================
+   If occupancy is a fixture property it is nearly constant within a task and
+   varies between tasks. If it is an effort property the reverse holds.
+
+  q56 / control: 278 cells over 56 tasks
+      between-task variance share: 65.6%   within-task: 34.4%
+      within-task spread (max-min) over 56 repeated tasks: med 1020  max 7187 tokens
+      per-task mean occupancy: min 5477  med 5994  max 10192  (max/min = 1.86x)
+
+  q56 / deny-first-edit: 279 cells over 56 tasks
+      between-task variance share: 50.4%   within-task: 49.6%
+      within-task spread (max-min) over 56 repeated tasks: med 1043  max 7211 tokens
+      per-task mean occupancy: min 5339  med 6026  max 8964  (max/min = 1.68x)
+
+  u100 / control: 76 cells over 10 tasks
+      between-task variance share: 13.8%   within-task: 86.2%
+      within-task spread (max-min) over 10 repeated tasks: med 2592  max 12765 tokens
+      per-task mean occupancy: min 5553  med 5959  max 8113  (max/min = 1.46x)
+
+  k / control: 49 cells over 3 tasks
+      between-task variance share: 8.1%   within-task: 91.9%
+      within-task spread (max-min) over 3 repeated tasks: med 15384  max 17498 tokens
+      per-task mean occupancy: min 16338  med 16971  max 19108  (max/min = 1.17x)
+
+==============================================================================
+3 - DO THE TWO AXES MOVE TOGETHER? occupancy vs difficulty, per arm
+==============================================================================
+   Difficulty = the task's pass rate in that arm. A task is a point.
+
+  q56 / control (56 tasks, pass rate 88.2% pooled)
+      rho(mean occupancy  , pass rate) = -0.405
+      rho(fixture_bytes   , pass rate) = -0.069
+      rho(prompt_words    , pass rate) = -0.187
+      rho(mean iterations , pass rate) = -0.320
+      rho(fixture_bytes  , mean occupancy) = +0.041
+
+  q56 / deny-first-edit (56 tasks, pass rate 60.7% pooled)
+      rho(mean occupancy  , pass rate) = +0.082
+      rho(fixture_bytes   , pass rate) = -0.077
+      rho(prompt_words    , pass rate) = +0.220
+      rho(mean iterations , pass rate) = +0.219
+      rho(fixture_bytes  , mean occupancy) = +0.176
+
+  q56 / gated (56 tasks, pass rate 89.3% pooled)
+      rho(mean occupancy  , pass rate) = -0.197
+      rho(fixture_bytes   , pass rate) = -0.047
+      rho(prompt_words    , pass rate) = -0.083
+      rho(mean iterations , pass rate) = -0.240
+      rho(fixture_bytes  , mean occupancy) = +0.141
+
+  q56 / redirect-first-edit (56 tasks, pass rate 78.6% pooled)
+      rho(mean occupancy  , pass rate) = +0.099
+      rho(fixture_bytes   , pass rate) = +0.091
+      rho(prompt_words    , pass rate) = +0.258
+      rho(mean iterations , pass rate) = +0.114
+      rho(fixture_bytes  , mean occupancy) = +0.266
+
+  u100 / control (10 tasks, pass rate 88.8% pooled)
+      rho(mean occupancy  , pass rate) = -0.368
+      rho(fixture_bytes   , pass rate) = +0.026
+      rho(prompt_words    , pass rate) = -0.271
+      rho(mean iterations , pass rate) = -0.515
+      rho(fixture_bytes  , mean occupancy) = +0.564
+
+  u100 / gated (10 tasks, pass rate 83.8% pooled)
+      rho(mean occupancy  , pass rate) = -0.013
+      rho(fixture_bytes   , pass rate) = +0.089
+      rho(prompt_words    , pass rate) = +0.400
+      rho(mean iterations , pass rate) = +0.019
+      rho(fixture_bytes  , mean occupancy) = +0.079
+
+  u100 / redirect-first-edit (10 tasks, pass rate 80.0% pooled)
+      rho(mean occupancy  , pass rate) = +0.195
+      rho(fixture_bytes   , pass rate) = +0.447
+      rho(prompt_words    , pass rate) = +0.070
+      rho(mean iterations , pass rate) = +0.259
+      rho(fixture_bytes  , mean occupancy) = +0.418
+
+wrote D:\dev\ABCC_20_powerd_by_claudette\research\spikes\w4-router\axes.jsonl (1254 rows)

@@ -1,8 +1,9 @@
 # W4 — Routing, escalation and the complexity model
 
-**Status: OPEN — started 2026-08-25.** §14 orders W4 after the W3 + W6 + W11 block, and that block
-closed on 2026-08-25 (`d3a17a5`). Findings continue the family numbering from **F360**. Built one
-item at a time in §13 format.
+**Status: OPEN — started 2026-08-25, items 1 and 2 of 6 closed.** §14 orders W4 after the
+W3 + W6 + W11 block, and that block closed on 2026-08-25 (`d3a17a5`). Findings continue the family
+numbering from **F360**; the workstream now runs to **F375**. Built one item at a time in §13
+format.
 
 Planned items:
 
@@ -11,10 +12,12 @@ Planned items:
    does it need rescaling now that the base agent is far stronger?"* Answered by executing both
    donors' scorers over **149 real coding tasks** and joining the result to **952 measured agent
    attempts**. The answer is not a rescaling.
-2. ⬜ **Difficulty, context and cost as three axes** — §11's *"Separate the two things V1 conflated:
-   task difficulty and required context length"*, plus the cost-model bullet. Item 1 has already
-   measured all three over the Q56 population; this item turns the measurement into the routing
-   inputs 2.0 actually carries, and prices a tier change against W2's swap cost.
+2. ✅ **Difficulty, context and cost as three axes** (F368–F375) — §11's *"Separate the two things
+   V1 conflated: task difficulty and required context length"*, plus the cost-model bullet. The two
+   axes are genuinely independent and neither is routable: required context is not a property of the
+   request at all (ρ = +0.048 against the workspace's bytes, +0.836 against the rounds the agent
+   actually ran), the constant F363 found was a fact about donor fixtures, and the only rung the
+   budget can buy is another attempt — priced, with its yield curve and its stopping rule.
 3. ⬜ **The estimator: rules, a recorded model reading, or neither** — **OQ-W6-7**, twice deferred.
    §11's *"Whether the Haiku semantic assessment pass is still worth paying for, or whether the local
    base agent can now score complexity itself for free."* Item 1 changes this question's shape: see
@@ -320,6 +323,17 @@ has a surprising shape:** required context is not a routing dimension at all on 
 constant plus noise. The dimension that varies is *how much work the attempt turned out to be*, which
 is F362's finding and is not knowable in advance.
 
+🚨 **QUALIFIED IN PLACE BY F368 AND F369 (item 2, 2026-08-25). Read those before quoting this.**
+Two corrections, neither of which moves the headline. (1) **The word "floor" is wrong.** Calibrated
+against the server's own tokenizer — `tokens_in / iterations`, an exact real-token lower bound on the
+peak — the recovered number sits **below** that bound on **61 of these 945 cells**. It is an estimate
+good to about ±10–20%, not a bound; and all 12 cells in this project with no occupancy sample at all
+are **timeouts**, so the population excludes the longest-running cells. On the exact bound, 0 of 945
+still exceed 16K; under a linear growth model, 2 of 945 do and the count above 8K rises from 74 to
+158. (2) **The constant is the fixture's.** On the K suite — 42 KB fixtures instead of 415 bytes —
+the same agent runs at p50 **16,125** and 8 of 18 champion cells cross 16,384. "Context is a
+constant" is a statement about donor fixtures, not about agent work.
+
 ⚠ Scope, because this number is a floor and its population is one suite: 945 cells of **one subject**
 on **one battery of single-turn tasks**. Q56 tasks hand the agent a small fixture and one prompt. A
 multi-turn session on a large repository is a different measurement and this says nothing about it —
@@ -589,3 +603,462 @@ sample makes harder to claim, not easier.
 What would raise it: cells from a multi-turn repository suite with `peak_prompt_tokens` captured
 natively (OQ-W4-1), and item 3's direct measurement of the model as an estimator against the
 word-count baseline (OQ-W4-3).
+
+---
+
+# Item 2 — difficulty, context and cost as three axes
+
+## Question
+
+§11 gives this item two bullets:
+
+> *"Separate the two things V1 conflated: task difficulty and required context length. They are
+> independent routing dimensions and V1 mapped both onto one 8K/16K/32K axis."*
+>
+> *"Cost model: per-task tokens and wall-clock across tiers, so routing optimizes against a real
+> objective."*
+
+Item 1 measured all three quantities on Q56 and found the complexity score predicts none of them.
+This item asks the sharper questions that follow. **What actually sets occupancy?** **Is required
+context knowable before dispatch at all?** And **what is the router buying**, in seconds, when it
+chooses anything other than "run it".
+
+It opens with a debt. F363 — *context is a constant, 0 of 945 cells exceed 16K* — rests entirely on
+`ctx_recover.py` parsing the subject's own `ctx ~N/60k` gauge out of transcripts, because
+`peak_prompt_tokens` is absent from every Q56 cell. Before anything is built on that number it has to
+be checked against an instrument that is not itself. That check is F368 and it came back mixed.
+
+## Method
+
+Four passes, all desk work over cells already on disk. Spike `research/spikes/w4-router/`.
+
+1. **`ctx_calibrate.py`** — recovers occupancy from every transcript in three populations and
+   compares it to (a) the natively captured `peak_prompt_tokens` on the 49 K/W11 cells that have it,
+   and (b) `tokens_in / iterations`, which is the **server's own tokenizer count** averaged over the
+   turn's requests and therefore an exact real-token lower bound on the peak.
+2. **`axes.py`** — profiles every task's fixture (bytes, files, lines) and prompt, joins it to the
+   per-cell occupancy, and asks what occupancy correlates with, per suite **and per arm**.
+3. **`cost.py`** — the per-attempt cost distribution, `pass@k` over the repeated cells, the
+   conditional value of the next retry given the failures already burnt, and the price list of every
+   alternative rung.
+4. Source reading in the subject and the harness to establish what each instrument *is*.
+
+**Populations, and they are three different regimes rather than one corpus:**
+
+| | tasks | cells scanned | fixture bytes (min / med / max) | model |
+|---|---|---|---|---|
+| Q56 | 56 | 952 | 77 / 415 / 3,928 | champion |
+| U100 | 10 | 248 | 63 / 97 / 160 | champion |
+| K, champion @ `max_iterations = 40` | 3 | 18 | 41,739 / 42,636 / 74,508 | champion |
+| K, 27B @ `max_iterations = 40` | 3 | 18 | same fixtures | `qwen3.8-27b` |
+| K, champion @ budget 12 / 20 (W11) | 3 | 18 | same fixtures | champion |
+
+🚨 **The K family is stratified by model *and* by iteration budget and never pooled.** Six of its
+eighteen families ran the 27B; `w11-b12` and `w11-b20` capped the loop at 12 and 20 rounds, which
+caps occupancy and cost by construction. A pooled "K" row would be memory item 26's error twice over.
+Q56 and U100 are stratified by arm throughout, for the same reason.
+
+## Inherited
+
+- **F362/F363 (item 1)** — the numbers this item calibrates and extends.
+- **W2 F79 / W11 F284** — the swap costs 23.77 s / 26.3 s round trip plus 4.6× the decode.
+- **W1 F87–F88** — the 27B tied on verdicts at 5.2× the wall clock on the earlier battery.
+- **W2 F81** — the prefix cache saves 79.7% of TTFT and one token at the front annihilates it.
+- **W11 F275** — co-residency is arithmetically impossible: 1,210 MiB free against a 4.41 GB model.
+- **W11 item 5** — a loop budget must count *rounds*, not seconds.
+- **W6 item 8** — `Measured | Unmeasured(Why)`; a record that cannot say "not measured" lies by
+  omission.
+- **F59** — the token baseline stepped 10% between sessions, so cross-session token deltas are
+  untrustworthy; every comparison below is within one instrument.
+
+## Findings
+
+### 🚨 F368 — the recovered gauge is faithful to the field and neither of them is a floor: measured against the server's own tokenizer it falls *below* an exact lower bound on 61 of 945 cells
+
+Two checks, and they answer different questions.
+
+**Check A, parser fidelity: 49 of 49 exact.** Every K and W11 cell that carries
+`peak_prompt_tokens` natively agrees with the transcript recovery to the token. **This proves less
+than it looks.** `w8-run/src/main.rs:985` computes the native field as `peak_ctx + preamble_tokens_in`
+— the same arithmetic over the same gauge, captured live instead of re-read. Agreement establishes
+that the parser is faithful. It establishes nothing about the gauge.
+
+**Check B, the gauge against a real tokenizer.** The same marker line carries a second instrument
+that item 1 read only as cost:
+
+| field | what it is | units |
+|---|---|---|
+| `ctx ~N/60k` | `estimate_session_tokens` — `bytes/4 + 1` per content block, omitting the system prompt and tool schemas (claudette `compact.rs:27`, `:433-446`) | an estimate |
+| `in=` | `summary.usage.input_tokens` ← OpenAI `usage.prompt_tokens` (`api.rs:896-899`, `:1172-1176`) — **the server's tokenizer**, cumulative over the turn's requests | exact |
+
+`iterations` is incremented once per loop pass and each pass issues exactly one request
+(`conversation.rs:437`; the graceful iteration-cap landing adds one request *and* one increment, so
+the identity holds there too). So `tokens_in / iterations` is the **mean real prompt tokens per
+request**, and a mean never exceeds a max: it is an **exact real-token lower bound on the peak**.
+
+| population | recovered peak ÷ real mean, p50 | min | cells where the recovered peak is **below** the exact floor |
+|---|---|---|---|
+| Q56, 945 cells | 1.093 | 0.944 | **61 / 945 = 6.5%** |
+| U100, 235 cells | 1.223 | 1.013 | 0 / 235 |
+| K + W11, 49 cells | 1.205 | 0.900 | 1 / 49 |
+
+**So the recovered number is not a floor on the peak. It is an estimate good to roughly ±10–20%, and
+on 6.5% of Q56 cells it is provably low.** F363's docstring claim that it *"understates four ways, so
+if it says a cell crossed a threshold the cell crossed it"* is right about each of the four
+mechanisms and wrong about their sum: the gauge is compared against a real-token quantity, and
+`bytes/4` runs *high* on code and JSON, which are denser than the ~3.39 chars/token the prose
+correction assumed.
+
+**And there is a fifth mechanism nobody listed, which is the one that matters.** Of 1,254 scanned
+cells, **12 carry no occupancy sample at all — and all 12 are `status = timeout`** (7 of 952 Q56, 5 of
+54 K/W11). The gauge prints at turn end; a cell killed by the clock never reaches turn end. So the
+occupancy population systematically **excludes the cells that ran longest**, which are exactly the
+cells with the most context. The selection is not random and it points one way.
+
+**Effect on F363, stated so it can be quoted without a footnote:** the *headline survives, the word
+"floor" does not.* Re-tested on the exact real-token lower bound, **0 of 945** Q56 cells exceed 16K;
+under a linear within-turn growth model (`peak ≈ 2 × mean − preamble`) **2 of 945** do, and the count
+above the deprecated 8K rises from 74 to 158. Quote F363 as *"p50 ≈ 5.9K, essentially nothing near
+16K, ±20%"*, not as a bound.
+
+### 🚨 F369 — the constant is a property of the fixture, not of agent work: on a 42 KB repository the same agent runs at 2.7× the occupancy and crosses v1's 16K line. OQ-W4-1 closes **no**
+
+The three populations differ in fixture size by two orders of magnitude, and occupancy tracks that
+and nothing else about the task.
+
+| | fixture bytes, median | occupancy p50 (recovered) | max | real-token floor p50 | cells provably > 16K |
+|---|---|---|---|---|---|
+| U100, 235 cells | 97 | 5,867 | 18,167 | 5,136 | **0 / 235** |
+| Q56, 945 cells | 415 | 5,898 | 13,066 | 5,706 | **0 / 945** |
+| K champion @ 40, 18 cells | 42,636 | **16,125** | 21,245 | 14,089 | **2 / 18** |
+| K 27B @ 40, 13 cells | 42,636 | **22,375** | 30,567 | 18,531 | **8 / 13** |
+
+On the gauge itself, **8 of 18** champion K cells and **12 of 13** 27B K cells exceed 16,384; under
+the linear peak model, **14 of 18** champion cells do and one exceeds 32,768.
+
+**OQ-W4-1 asked whether "context is a constant" survives multi-turn repository work. It does not.**
+Q56 and U100 hand the agent a few hundred bytes; the K suite hands it 20–32 files and ~1,200 lines,
+and the same model on the same box runs at 2.7× the occupancy and pushes past the boundary the
+complexity score exists to unlock. F363's constant was a fact about donor fixtures.
+
+⚠ **Two limits on this, both real.** K is **three tasks**, so this is a regime demonstration and not a
+distribution. And the 27B's larger occupancy is partly its own tokenizer and partly its longer
+sessions — it is not evidence that the harder model *needs* more context.
+
+**The one place in the donor corpora where the line is crossed says the same thing.** The only two
+U100 cells above 16K are the same task, `fix_missing_validation`, at **41 iterations — the iteration
+cap plus the landing call** — and both **failed**. They crossed the boundary by looping, not by being
+big.
+
+### 🚨 F370 — "required context length" is not a property of the task: occupancy is set by the loop, at ρ ≈ +0.8 to +0.9, against ρ ≤ +0.30 for every a-priori measure of the workspace
+
+ρ over cells, within one suite and one arm, so neither the suite mix nor the arm mix can carry it.
+
+| suite / arm | n | fixture bytes | fixture lines | prompt words | **iterations** | cumulative tokens |
+|---|---|---|---|---|---|---|
+| q56 / control | 278 | +0.048 | +0.119 | +0.299 | **+0.836** | +0.879 |
+| q56 / deny-first-edit | 279 | +0.266 | +0.197 | +0.251 | **+0.815** | +0.865 |
+| q56 / gated | 110 | +0.116 | +0.126 | +0.266 | **+0.835** | +0.879 |
+| q56 / redirect-first-edit | 278 | +0.233 | +0.188 | +0.212 | **+0.739** | +0.810 |
+| u100 / control | 76 | +0.185 | +0.122 | +0.141 | **+0.940** | +0.971 |
+| u100 / gated | 76 | +0.116 | +0.077 | +0.150 | **+0.930** | +0.967 |
+| u100 / redirect-first-edit | 76 | +0.178 | +0.171 | +0.205 | **+0.853** | +0.906 |
+
+**Every a-priori measure of the workspace sits at or below +0.30. The number of rounds the agent
+actually ran sits at +0.74 to +0.94, in every suite and every arm.**
+
+The variance decomposition says the same thing from the other side. Occupancy does differ
+systematically between Q56 tasks — 65.6% of the control arm's variance is between-task — but **that
+component is not a size effect**: ρ(fixture bytes, per-task mean occupancy) = **+0.041**, and the
+whole between-task range is 5,477 → 10,192, a factor of **1.86** against a within-task spread whose
+median is 1,020 tokens and whose maximum is 7,187. On U100 and K the between-task share collapses to
+13.8% and 8.1%. What separates one task's occupancy from another's is how much work it induced, not
+how much text it shipped.
+
+**This is the item's central result and it is stronger than "the two axes are independent".** §11
+asks the router to route on *required context length*. That quantity is not knowable before dispatch,
+because it is not a property of the request — it is a property of the attempt, and it is the same
+quantity as effort, which F362 already showed arrives too late to route on. The part of context that
+*is* knowable before dispatch — the preamble, and the bytes on disk — the router can **measure
+exactly and for free**, and it does not vary.
+
+### F371 — the two axes really are independent, and that is precisely why neither one routes
+
+Per-task, per-arm, difficulty being the task's pass rate in that arm.
+
+| suite / arm | tasks | ρ(fixture bytes, pass) | ρ(occupancy, pass) | ρ(iterations, pass) | ρ(fixture bytes, occupancy) |
+|---|---|---|---|---|---|
+| q56 / control | 56 | **−0.069** | −0.405 | −0.320 | +0.041 |
+| q56 / gated | 56 | −0.047 | −0.197 | −0.240 | +0.141 |
+| q56 / deny-first-edit | 56 | −0.077 | **+0.082** | +0.219 | +0.176 |
+| q56 / redirect-first-edit | 56 | +0.091 | **+0.099** | +0.114 | +0.266 |
+| u100 / control | 10 | **+0.026** | −0.368 | −0.515 | +0.564 |
+| u100 / gated | 10 | +0.089 | −0.013 | +0.019 | +0.079 |
+| u100 / redirect-first-edit | 10 | +0.447 | +0.195 | +0.259 | +0.418 |
+
+**§11 is right that v1 conflated two independent things**: the a-priori size of the workspace and the
+difficulty of the task are uncorrelated (−0.069 and +0.026 on the two clean arms). Separating them is
+the correct move. It just does not produce two routable axes — it produces one axis with no a-priori
+estimator that beats ρ = +0.219 (item 1), and one axis with no a-priori variation to estimate.
+
+**The apparent coupling between occupancy and difficulty is effort, and the interference arms prove
+it by reversing its sign.** On control, more occupancy means more failure (−0.405). On
+`deny-first-edit` and `redirect-first-edit` — arms where extra rounds are the *operator's* doing —
+the sign flips positive (+0.082, +0.099). A signal that inverts when the cause of the rounds changes
+is a measure of the rounds, not of the task.
+
+### 🚨 F372 — the cost model has one rung, and the escalation rung is 7.75× the wall clock for nothing measurable
+
+**(a) What one attempt costs.** Median over cells, per suite and per arm:
+
+| suite / arm | n | wall p50 | wall p90 | tokens_in p50 | tokens_out p50 | rounds p50 |
+|---|---|---|---|---|---|---|
+| q56 / control | 280 | 19.1 s | 107.0 s | 39,486 | 1,101 | 7 |
+| q56 / gated | 112 | 16.7 s | 57.9 s | 35,211 | 1,006 | 6 |
+| q56 / deny-first-edit | 280 | 20.7 s | 54.6 s | 33,192 | 1,403 | 6 |
+| q56 / redirect-first-edit | 280 | 32.0 s | 75.4 s | 59,269 | 2,253 | 10 |
+| u100 / control | 77 | 13.9 s | 38.3 s | 21,387 | 795 | 5 |
+| **K champion @ 40** | 18 | **110.8 s** | 285.6 s | 239,329 | 6,094 | 18 |
+| **K 27B @ 40** | 18 | **858.8 s** | 1,086.4 s | 315,284 | 21,226 | 19 |
+| K champion @ budget 12/20 | 18 | 120.4 s | 171.1 s | 180,018 | 5,067 | 13 |
+
+**(b) The price of every alternative, in the same units.**
+
+| alternative | price | source |
+|---|---|---|
+| **another attempt on the same rung** | **1.00 attempt** | this item |
+| model swap, round trip | 23.77 s = **1.24** median Q56 attempts | W2 F79 |
+| model swap, re-measured | 26.30 s = **1.37** median Q56 attempts | W11 F284 |
+| …and then every token | **4.6×** the decode | W11 F284 |
+| a router that rewrites the head of the prompt | **4.60×** a warm turn (full cold prefill) | W11 item 2 |
+| leaving the prefix alone | saves **79.7%** of TTFT; one token at the front annihilates it | W2 F81 |
+| a second model, co-resident | **impossible**: 1,210 MiB free vs a 4.41 GB model | W11 F275 |
+| a cloud rung | not a tier — zero cloud spend is standing | David, 2026-08-07 |
+
+**(c) The swap, re-measured head to head on the hard suite.** W1 F87–F88 priced the 27B at 5.2× on
+the earlier battery. K runs both models over the same three fixtures, the same verifier and the same
+`max_iterations = 40`:
+
+| | median attempt | timeouts | pass@1 | per-task pass rate |
+|---|---|---|---|---|
+| champion | **110.8 s** (max 629.1) | **0 / 18** | 66.7% | 0.33 / 0.83 / 0.83 |
+| `qwen3.8-27b` | **858.8 s** | **5 / 18** | 72.2% | 0.83 / 0.83 / 0.50 |
+
+**7.75× the wall clock, and the 5.5-point pass@1 difference is one task each way over 18 cells.** The
+27B wins the task the champion is worst at and loses the one the champion is best at. And the
+multiplier is a **lower bound**: four of the 27B's cells were truncated by their timeout (three at
+900 s, one at 2,400 s), which only shortens the measurement. Its dominant failure mode on this box is
+the clock, not the reasoning — the champion's slowest cell, 629.1 s, is below the 27B's median.
+
+### 🚨 F373 — the retry curve flattens after two, and 40 of 56 tasks never needed one
+
+`pass@k` by the unbiased estimator over repeated cells, control arm only.
+
+| | pass@1 | @2 | @3 | @4 | @5 |
+|---|---|---|---|---|---|
+| Q56, 56 tasks × 5 | 88.2% | **94.6%** (+6.4) | 96.8% (+2.1) | 97.9% (+1.1) | 98.2% (+0.4) |
+| U100, 10 tasks × 8 | 88.8% | **99.3%** (+10.5) | 100.0% (+0.7) | 100.0% | 100.0% |
+| K champion @ 40, 3 tasks × 6 | 66.7% | **86.7%** (+20.0) | 93.3% (+6.7) | 97.8% (+4.4) | 100.0% (+2.2) |
+| K 27B @ 40, 3 tasks × 6 | 72.2% | 93.3% (+21.1) | 98.3% (+5.0) | 100.0% | 100.0% |
+
+**The second attempt buys 6.4 to 21.1 points. The third buys 0.7 to 6.7. The fourth and fifth buy
+noise.** In pass-rate points per minute at the median Q56 attempt: retry #2 is **20.1 pp/min**; the
+swap-and-attempt is 125.9 s for a difference W1 measured as level, so **≤ 0 pp/min** — and on K the
+same comparison is 110.8 s for +20.0 pp against 858.8 s for a tie.
+
+**And the budget is mostly irrelevant.** On Q56, **40 of 56 tasks pass all five times and 1 (Q03)
+passes none**; the retry budget can only change the outcome on the remaining 15. On U100 it is 7 of
+10; on K, 3 of 3.
+
+⚠ The repeats are **separate runs**, so `pass@k` mixes sampling variance with run-to-run variance;
+F59 saw the token baseline move 10% between sessions. This overstates the value of a retry, in the
+direction of making retries look better than resampling within one session would.
+
+### 🚨 F374 — the first failure is worth 44 points of information, and no a-priori score in this project is worth 5
+
+`pass@k` prices a budget chosen *before* the first attempt. A circuit breaker needs the value of the
+*next* attempt given the ones already burnt — and those failures are evidence about which task this
+is. With `p_t` the task's measured pass rate and the corpus as the prior:
+
+    P(pass at k+1 | first k all failed) = Σ p_t (1−p_t)^k ⁄ Σ (1−p_t)^k
+
+| failures so far | Q56 control | U100 control | K champion @ 40 |
+|---|---|---|---|
+| 0 (the unconditional rate) | 88.2% | 88.8% | 66.7% |
+| 1 | **43.6%** | 81.9% | 50.0% |
+| 2 | 31.0% | 79.8% | 38.9% |
+| 3 | 22.4% | 78.0% | 34.8% |
+| 4 | 16.6% | 76.7% | 33.7% |
+
+**On Q56 one observed failure moves the estimate by 44.6 points.** The best a-priori signal item 1
+could find was BCF's `rule_score` at ρ = +0.219, and the best free one was counting the prompt's
+words at +0.187. The failure is free, it is exact, and it is available at the moment the decision has
+to be made.
+
+**And the size of that update is a property of the population, not a constant.** Q56 is bimodal — 40
+tasks at p = 1.0 and one at p = 0 — so a single failure is strong evidence you are on one of the 15
+hard ones. U100's tasks sit at middling probabilities, so the same failure moves the estimate by
+under 7 points. **A fixed "retry twice then escalate" rule is therefore right on one corpus and wrong
+on the other, and the breaker has to be calibrated from the outcome history rather than written
+down.** W3's event log already holds exactly that history.
+
+### F375 — the instrument samples once per *turn* and the router needs it once per *round*; the harness action item the handoff carried is already closed
+
+**The descriptor is not the bug, and the handoff's diagnosis needs correcting.** Commit `29703ef`
+(2026-08-17) added the optional 4th capture group to `corpus/subjects/claudette-af3f804.toml:49`
+**and** `peak_prompt_tokens` to `w8-run` — one commit, both halves. Q56 ran 2026-08-09 → 08-15 and
+U100 on 2026-08-08; all 43 runs on disk name the same subject, `claudette-af3f804`, and the ones
+missing the metric are simply the ones that ran before the metric and the capture group existed. There is nothing to fix: every run
+since 2026-08-17 captures occupancy natively, and so will every future one.
+
+**The real gap is the sampling rate, and it is in the subject.** The gauge is printed once, at turn
+end (`repl.rs:203-214`). A K cell that ran 41 rounds emits **one** occupancy number. A cell killed by
+the clock emits **zero** — which is why all 12 zero-sample cells are timeouts. Rounds *are* observable
+live, because each tool call prints to stderr; occupancy is not observable at all until the turn is
+over.
+
+**So in-flight routing on occupancy is not merely unimplemented — the signal does not exist at the
+rate a breaker would need.** A breaker that must decide at round 12 whether round 13 is worth paying
+for cannot read a number that is published at round 41. This is a requirement on 2.0's own agent
+loop, not on its router: **emit occupancy and round count as an event per iteration**, onto W3's
+durable event log, where W5's console already wants them.
+
+## Options compared
+
+| | what it routes on | available when? | measured worth |
+|---|---|---|---|
+| **A. v1 as written** — one 8K/16K/32K axis from a complexity score | a prediction of difficulty *and* of context, conflated | before dispatch | ρ ≤ 0.21 for difficulty (F361); the context half is a constant on the donor corpora and unreachable in the K regime for the wrong reason (F369) |
+| **B. two a-priori axes** — score difficulty, size the context separately | a prediction, plus `du` on the workspace | before dispatch | the axes are genuinely independent (F371) but the context one has ρ = +0.048 against real occupancy (F370) |
+| **C. no a-priori axis; route the retry** | rounds, cumulative tokens, occupancy and the outcome of attempts already made | during and after each attempt | +0.74…+0.94 against occupancy (F370); one failure = 44.6 points (F374) |
+| **D. escalate to the bigger local model** | any of the above | after a failure | 7.75× wall clock, 5 timeouts in 18, one task each way (F372) |
+
+## Recommendation
+
+**1. There is one tier, and the only purchase a router can make is another attempt.** Everything else
+on the price list costs more than an attempt and buys nothing this project has measured: the swap is
+1.24 Q56 attempts *before* 4.6× the decode, 7.75× measured end to end on K; the head rewrite is
+4.60×; co-residency does not fit; the cloud rung does not exist. **Retry is not the fallback option,
+it is the option.**
+
+**2. The retry budget is 2, and the third attempt is a per-population decision, not a constant.**
+Two attempts capture 6.4 of Q56's 10 available points, 10.5 of U100's 11, and 20.0 of K's 33. A
+third is worth paying for only where the outcome history says the population is not bimodal — which
+the event log can answer and a config file cannot.
+
+**3. The breaker fires on the first failure, and its threshold is learned.** One failure takes Q56
+from 88.2% to 43.6% and U100 from 88.8% to 81.9%. Ship the update rule, not the number.
+
+**4. Do not route on "required context length".** It is not a property of the request. The part that
+is knowable — preamble plus bytes on disk — is measurable exactly, for free, and does not vary within
+a corpus; the part that varies is the loop, and it is the same quantity as effort. Where the fixture
+*does* change by two orders of magnitude (F369), the right response is a **window check**, not a
+tier: does the workspace plus the preamble plus a working margin fit in `num_ctx`? That is arithmetic
+on measured numbers, and it has one honest answer per workspace.
+
+**5. The typed routing input 2.0 carries.** Aligned with W3's event log and W6 item 8's
+`Measured | Unmeasured(Why)`. Nothing in it is a prediction: every field is either a fact about the
+request or a count of work already done.
+
+```rust
+/// Everything the router is allowed to know, and when it learns it.
+pub struct RoutingInput {
+    /// Known before dispatch. Facts, not estimates.
+    pub request: RequestFacts,
+    /// Empty on the first attempt. After that it is the whole of the evidence.
+    pub history: Vec<AttemptRecord>,
+}
+
+pub struct RequestFacts {
+    pub prompt_tokens: u32,              // counted, not estimated
+    pub workspace_bytes: u64,            // what the agent could read
+    pub workspace_files: u32,
+    pub preamble_tokens: u32,            // system prompt + tool schemas, measured at warmup
+    pub window_tokens: u32,              // num_ctx, so the fit check is arithmetic
+    pub toolchain: ToolchainProfile,     // W6 item 5
+    // NO complexity score. F360-F366: v1's puts 149 of 149 tasks in one tier and
+    // predicts nothing. BCF's typed `RoutingResult` survives (router.rs:59-67) with
+    // `complexity: Option<f32>`, and 2.0 emits `None`.
+}
+
+pub struct AttemptRecord {
+    pub rounds: u32,                             // the strongest in-flight signal, F370
+    pub cumulative_prompt_tokens: u64,           // cost, NOT occupancy
+    pub peak_occupancy: Measured<u32>,           // Unmeasured(Why) when the turn never ended
+    pub wall_clock: Duration,
+    pub outcome: HonestOutcome,                  // W6 item 8
+    pub stopped_by: StopReason,                  // budget | model's own judgement | clock | gate
+}
+
+/// The decision is a STOPPING rule. There is no tier to choose.
+pub enum NextAction {
+    Attempt { round_budget: u32 },
+    Stop(StopReason),
+    HandToOperator(Evidence),
+}
+```
+
+**6. Harness / subject action item, restated correctly.** The descriptor is already fixed and every
+run since 2026-08-17 captures `peak_prompt_tokens` natively (F375). What is *not* fixed is that the
+subject publishes occupancy once per turn, so a 41-round attempt yields one sample and a timed-out
+attempt yields none. **2.0's agent loop must emit a per-iteration event carrying round index,
+cumulative prompt tokens and current occupancy.** Until it does, every breaker is a post-mortem.
+
+**7. When quoting F363, quote it as an estimate.** p50 ≈ 5.9K on Q56, ±10–20% against the server's
+tokenizer, and bounded to fixtures of a few hundred bytes. The phrase "a floor four ways" should not
+be repeated: 61 of 945 cells sit below an exact real-token lower bound (F368).
+
+## Rejected alternatives and why
+
+- **Rescaling the 8K/16K/32K axis for the K regime.** K crosses 16K (F369) so a boundary there is
+  reachable at last — but occupancy at ρ = +0.048 against fixture bytes is not predictable before
+  dispatch, so the boundary would be crossed *during* the attempt, when the window is already
+  allocated. W1 F84: KV is allocated in full at load. A window is a **load-time** decision, not a
+  per-task one.
+- **Using cumulative `tokens_in` as the context axis.** It is session-cumulative cost
+  (`w8-run/src/result.rs:1-12`) and reading it as occupancy inverts the answer — item 1's trap 2.
+- **A "context tier" derived from `du` on the workspace.** ρ = +0.048 (Q56 control) and +0.185 (U100
+  control) against actual occupancy. It measures what the agent *could* read, and what it actually
+  reads is set by the loop.
+- **Escalating to `qwen3.8-27b` on failure.** F372. 7.75× the wall clock, 5 timeouts in 18, and it
+  wins one task while losing another.
+- **A fixed "retry N times" constant.** F374: the correct N differs between two corpora measured on
+  the same box with the same model, because the update a failure carries depends on the population's
+  bimodality.
+
+## Effect on fun
+
+The console gets a number it can actually animate. W5's six queries over the event log now have a
+seventh worth showing: **the live posterior** — *"this task has failed once; the next attempt is
+44 points less likely to work than the first was"* — computed from the operator's own history rather
+than asserted. That is a genuinely legible thing to put beside the retry button, and it is the same
+number the breaker uses, so the operator and the machine are looking at one quantity. The tier ladder
+2.0 will not have would have shown a badge; this shows a decision.
+
+## Open questions
+
+- **OQ-W4-6** — the linear within-turn growth model (`peak ≈ 2 × mean − preamble`) is an assumption.
+  A single run with a per-iteration occupancy event (recommendation 6) would replace it with a
+  measurement, and would settle whether the K regime crosses 32K.
+- **OQ-W4-7** — F374's posterior is computed from the *task's* measured pass rate, which a live
+  router does not have. Does the update survive when the prior is over a task *population* the router
+  has seen before rather than over the task itself?
+- **OQ-W4-8** — is the second attempt's +6.4 points sampling variance or is it *recovery*? The
+  repeats here are independent cold starts; a real retry could carry the failed attempt's evidence
+  forward, which is a different and probably better experiment. W3's lineage chain makes it cheap.
+- **OQ-W4-9** — occupancy correlates with rounds at +0.8 to +0.9 and rounds are observable live.
+  Is there a **round threshold** that beats "retry twice"? W11 F296 complicates it (above the binding
+  point the model stops on its own judgement with rounds unspent); OQ-W4-2 owns the threshold
+  question and item 5 inherits both.
+- **OQ-W4-10** — U100's only two cells over 16K are the same task at the iteration cap, both failed.
+  Is "occupancy above 16K" simply a synonym for "this attempt is looping"? On these populations the
+  two are indistinguishable.
+
+## Confidence: high on the instrument calibration and the cost model, high on the Q56/U100 correlations, medium on the K regime, low on any threshold
+
+The calibration is arithmetic over two instruments whose source was read (F368), and the correlation
+tables are over 945 + 235 cells stratified by arm. The cost model's local-rung numbers are medians
+over the same cells, and its price list is entirely re-quoted from measurements that already exist.
+**The K regime is three tasks**, so F369 is a demonstration that the constant breaks, not a
+distribution for the regime beyond it. F374's posterior is exact arithmetic on measured pass rates
+but rests on the repeats being independent draws, which F59 says is only approximately true. No
+threshold on rounds or occupancy is proposed here, because none was measured.

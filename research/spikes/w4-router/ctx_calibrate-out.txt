@@ -1,0 +1,92 @@
+==============================================================================
+CHECK A - parser fidelity: recovered vs the natively captured field
+==============================================================================
+cells scanned in the native population: 54
+cells carrying BOTH a native field and a recovered value: 49
+  exact agreement: 49 / 49
+  native field ABSENT on 5 of 54 native-population cells:
+    w8-1786988934523/finish_the_cancelled_status__control  markers=0 gauge=None status=timeout subject=claudette-af3f804
+    w8-1786988934523/round_at_the_line_not_the_total__control  markers=0 gauge=None status=timeout subject=claudette-af3f804
+    w8-1786988934523/trace_dropped_samples__control  markers=0 gauge=None status=timeout subject=claudette-af3f804
+    w8-1786991653654/trace_dropped_samples__control  markers=0 gauge=None status=timeout subject=claudette-af3f804
+    w8-1786997929000/trace_dropped_samples__control  markers=0 gauge=None status=timeout subject=claudette-af3f804
+  gauge denominators seen across all 1254 scanned cells: {'39k': 49, '60k': 1180}
+
+==============================================================================
+CHECK B - the gauge against the server's own tokenizer
+==============================================================================
+
+native (K + W11, af3f804): 49 cells with both instruments
+  recovered_peak  (gauge+preamble, chars/4): n=49  min 9997  p50 17165  p90 23333  max 30567  mean 17493
+  mean_prompt_tokens (REAL tokens, exact floor on peak): n=49  min 3843  p50 14317  p90 19282  max 25314  mean 14526
+  ratio recovered_peak / mean_real: n=49  min 0.900  p50 1.205  p90 1.410  max 2.601  mean 1.255
+  cells where the RECOVERED PEAK IS BELOW THE REAL MEAN (so it is not a floor on the peak): 1 / 49 = 2.0%
+    w8-1787405639675/round_at_the_line_not_the_total__control: recovered 17165 < real mean 19078 (iters 21, tokens_in 400638) ratio 0.900
+  cells with exactly ONE iteration (mean == peak exactly): 0
+
+q56 (fc1ea22): 945 cells with both instruments
+  recovered_peak  (gauge+preamble, chars/4): n=945  min 5201  p50 5898  p90 7948  max 13066  mean 6549
+  mean_prompt_tokens (REAL tokens, exact floor on peak): n=945  min 4221  p50 5706  p90 6985  max 10870  mean 5882
+  ratio recovered_peak / mean_real: n=945  min 0.944  p50 1.093  p90 1.272  max 1.423  mean 1.114
+  cells where the RECOVERED PEAK IS BELOW THE REAL MEAN (so it is not a floor on the peak): 61 / 945 = 6.5%
+    w8-1786245496371/Q34__deny-first-edit: recovered 5879 < real mean 6229 (iters 7, tokens_in 43602) ratio 0.944
+    w8-1786808290277/Q47__control: recovered 5898 < real mean 6182 (iters 10, tokens_in 61820) ratio 0.954
+    w8-1786570814013/Q21__deny-first-edit: recovered 5900 < real mean 6147 (iters 9, tokens_in 55326) ratio 0.960
+    w8-1786570814013/Q36__redirect-first-edit: recovered 5900 < real mean 6141 (iters 7, tokens_in 42989) ratio 0.961
+    w8-1786552205081/Q28__redirect-first-edit: recovered 5900 < real mean 6113 (iters 9, tokens_in 55013) ratio 0.965
+  cells with exactly ONE iteration (mean == peak exactly): 0
+
+u100 (fc1ea22): 235 cells with both instruments
+  recovered_peak  (gauge+preamble, chars/4): n=235  min 5155  p50 5867  p90 7927  max 18167  mean 6309
+  mean_prompt_tokens (REAL tokens, exact floor on peak): n=235  min 3857  p50 5136  p90 6177  max 12931  mean 5249
+  ratio recovered_peak / mean_real: n=235  min 1.013  p50 1.223  p90 1.364  max 1.481  mean 1.207
+  cells where the RECOVERED PEAK IS BELOW THE REAL MEAN (so it is not a floor on the peak): 0 / 235 = 0.0%
+  cells with exactly ONE iteration (mean == peak exactly): 0
+
+==============================================================================
+CHECK C - where the real peak lands, thresholds re-tested in real tokens
+==============================================================================
+
+native (K + W11): 49 cells
+  recovered_peak (F363's number): n=49  min 9997  p50 17165  p90 23333  max 30567  mean 17493
+      >  8192:   49 / 49  (100.0%)
+      > 16384:   28 / 49  (57.1%)
+      > 32768:    0 / 49  (0.0%)
+  mean_real (exact floor on peak): n=49  min 3843  p50 14317  p90 19282  max 25314  mean 14526
+      >  8192:   46 / 49  (93.9%)
+      > 16384:   12 / 49  (24.5%)
+      > 32768:    0 / 49  (0.0%)
+  linear-model peak estimate 2*mean - preamble: n=49  min 2809  p50 23757  p90 33703  max 45661  mean 24160
+      >  8192:   47 / 49  (95.9%)
+      > 16384:   40 / 49  (81.6%)
+      > 32768:    7 / 49  (14.3%)
+
+q56: 945 cells
+  recovered_peak (F363's number): n=945  min 5201  p50 5898  p90 7948  max 13066  mean 6549
+      >  8192:   74 / 945  (7.8%)
+      > 16384:    0 / 945  (0.0%)
+      > 32768:    0 / 945  (0.0%)
+  mean_real (exact floor on peak): n=945  min 4221  p50 5706  p90 6985  max 10870  mean 5882
+      >  8192:   29 / 945  (3.1%)
+      > 16384:    0 / 945  (0.0%)
+      > 32768:    0 / 945  (0.0%)
+  linear-model peak estimate 2*mean - preamble: n=945  min 3587  p50 6537  p90 9095  max 16864  mean 6896
+      >  8192:  158 / 945  (16.7%)
+      > 16384:    2 / 945  (0.2%)
+      > 32768:    0 / 945  (0.0%)
+
+u100: 235 cells
+  recovered_peak (F363's number): n=235  min 5155  p50 5867  p90 7927  max 18167  mean 6309
+      >  8192:   12 / 235  (5.1%)
+      > 16384:    2 / 235  (0.9%)
+      > 32768:    0 / 235  (0.0%)
+  mean_real (exact floor on peak): n=235  min 3857  p50 5136  p90 6177  max 12931  mean 5249
+      >  8192:    9 / 235  (3.8%)
+      > 16384:    0 / 235  (0.0%)
+      > 32768:    0 / 235  (0.0%)
+  linear-model peak estimate 2*mean - preamble: n=235  min 2860  p50 5416  p90 7498  max 21006  mean 5638
+      >  8192:   19 / 235  (8.1%)
+      > 16384:    2 / 235  (0.9%)
+      > 32768:    0 / 235  (0.0%)
+
+wrote D:\dev\ABCC_20_powerd_by_claudette\research\spikes\w4-router\ctx_calib.jsonl  (1254 rows)

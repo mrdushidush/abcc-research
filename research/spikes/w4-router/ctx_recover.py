@@ -3,18 +3,30 @@
 WHY THIS EXISTS.  `tokens_in` in cells.jsonl is SESSION-CUMULATIVE prompt tokens
 summed over iterations (harness `result.rs:1-12`) -- it is a cost number, not a
 context number.  `peak_prompt_tokens` is the context number, and it is ABSENT
-from every Q56 cell (the subject descriptor of those runs declared no
-context-estimate capture group).  But the datum is still in the transcript: the
+from every Q56 cell -- not through any fault of the descriptor, but because the
+metric and the descriptor's optional 4th capture group were BOTH added in
+`29703ef` (2026-08-17) and Q56 ran 2026-08-09..15 (W4 F375).  But the datum is
+still in the transcript: the
 turn-end marker line carries the subject's own gauge, `ctx ~N/60k`.
 
-WHAT THIS NUMBER IS, and it is a FLOOR, never the peak (harness `main.rs:966-977`):
+CORRECTED 2026-08-25 BY `ctx_calibrate.py` (W4 item 2, F368): the paragraph below
+claims this number is a FLOOR on the peak.  IT IS NOT.  Calibrated against
+`tokens_in / iterations` -- the server's own tokenizer, an exact real-token lower
+bound on the peak -- it sits BELOW that bound on 61 of these 945 cells.  The four
+mechanisms listed are each real; their sum is not, because `bytes/4` runs HIGH on
+code and JSON.  And there is a fifth nobody listed: every cell that produces no
+gauge at all is a TIMEOUT, so the population drops the longest-running cells.
+Treat the output as an estimate good to about +/-10-20%, not as a bound.
+
+WHAT THIS NUMBER IS, and it was believed to be a FLOOR (harness `main.rs:966-977`):
   1. the gauge OMITS the system prompt and tool schemas, so the run's measured
      `preamble_tokens_in` is added back here;
   2. the preamble is itself a lower bound (a mid-session tool-group open grows it);
   3. granularity is 1,024 tokens above 1k, because the gauge is humanized;
   4. it is a chars/4 estimate, and this corpus measures ~3.39 chars/token, so it
      runs low against a real tokenizer.
-All four understate.  If it says a cell crossed a threshold, the cell crossed it.
+Each of the four understates -- but see the correction above: their SUM does not,
+so "if it says a cell crossed a threshold, the cell crossed it" is FALSE.
 
 Q56 tasks are ONE turn, and context grows monotonically within a turn, so the
 turn-end gauge is that cell's peak.  Multi-turn cells would need the max over
