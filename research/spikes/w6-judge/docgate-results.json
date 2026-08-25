@@ -342,5 +342,92 @@
   },
   "wall_s": 160.68,
   "error": null
+ },
+ {
+  "key": "point:faithful_padded",
+  "arm": "pointwise",
+  "doc": "faithful_padded",
+  "defect": null,
+  "needs_code": null,
+  "kind": "none, plus 350 words",
+  "truth": "the document is true of the code",
+  "payload": {
+   "rationale": "I have carefully cross-referenced every business rule, constant definition, state transition, and module behavior described in `docs/status_lifecycle.md` with the provided Python source files (`jobs/status.py`, `jobs/retry.py`, `jobs/summary.py`, `jobs/sla.py`, `jobs/charges.py`).\n\n1. **Status Vocabulary & Terminality**: The document's table matches `status.py` exactly. `TERMINAL` correctly groups `DONE`, `FAILED`, and `CANCELLED`. `ACTIVE` correctly groups `QUEUED` and `RUNNING`.\n2. **Transitions for `cancelled`**: The document states it is only reachable from `queued` or `running`. The `TRANSITIONS` dictionary in `status.py` explicitly lists `CANCELLED` as a target only for `QUEUED` and `RUNNING`, with empty sets for terminal statuses (except `FAILED -> QUEUED`). This matches.\n3. **Semantics 1 (Terminal)**: Enforced by the `TERMINAL` frozenset and `is_terminal()` helper, which all consumers branch on correctly.\n4. **Semantics 2 (SLA Breach)**: The document states the clock stops at cancellation so it doesn't accrue a breach. In `sla.py`, `finished_at()` returns `ended_at` for any terminal status (including cancelled), effectively freezing the measurement time and preventing further SLA accrual after operator intervention.\n5. **Semantics 3 (Chargeable)**: The document states cancelled jobs are not billed. `charges.py` explicitly returns `False` in `is_chargeable()` for both `FAILED` and `CANCELLED` statuses.\n6. **Semantics 4 (Retry)**: The document states cancelled jobs must never be retried. `retry.py`'s `should_retry()` function explicitly checks `if job.status == st.CANCELLED: return False`.\n7. **Semantics 5 (Count Bucket)**: The document mandates a separate bucket to avoid skewing failure/completion rates. `summary.py` defines `",
+   "defects": [],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3204,
+   "completion_tokens": 5746,
+   "total_tokens": 8950,
+   "completion_tokens_details": {
+    "reasoning_tokens": 5278
+   }
+  },
+  "wall_s": 185.93,
+  "error": null
+ },
+ {
+  "key": "point:wrong_constant_padded",
+  "arm": "pointwise",
+  "doc": "wrong_constant_padded",
+  "defect": "wrong_constant",
+  "needs_code": true,
+  "kind": "a number that is wrong, plus 350 words",
+  "truth": "retry.py sets MAX_ATTEMPTS = 3",
+  "payload": {
+   "rationale": "The document makes two claims that do not match the provided code:\n\n1. **False Claim (MAX_ATTEMPTS):** The document states in section 4: `(The retry policy otherwise allows up to **5** attempts before a job is abandoned; see MAX_ATTEMPTS.)` However, `jobs/retry.py` explicitly defines `MAX_ATTEMPTS = 3`. This numerical claim is false.\n\n2. **Missing/Contradicted Rule (RETRYABLE_KINDS):** The document describes the retry candidate logic as: `\"A job that succeeded is finished. Anything else that has not exhausted its attempts is a retry candidate.\"` This implies any non-terminal, non-cancelled job with remaining attempts can be retried. In reality, `jobs/retry.py` enforces an additional constraint via `RETRYABLE_KINDS`, which restricts automatic retries to only specific kinds (`render`, `transcode`, `index`, `report`). The document omits this filtering rule entirely, making its description of the retry policy incomplete and technically inaccurate relative to the code.\n\nAll other claims regarding status terminality, transitions, SLA clock-stopping behavior, chargeability exclusions, and explicit bucket counting are accurately reflected in the code.",
+   "defects": [
+    {
+     "path": "/docs/status_lifecycle.md",
+     "severity": "high",
+     "description": "False claim: Document states MAX_ATTEMPTS is 5, but jobs/retry.py defines it as 3."
+    },
+    {
+     "path": "/docs/status_lifecycle.md",
+     "severity": "medium",
+     "description": "Missing/Contradicted rule: Document claims any job with remaining attempts is a retry candidate. Code enforces an additional RETRYABLE_KINDS filter that restricts automatic retries to specific kinds."
+    }
+   ],
+   "call": "pass"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3232,
+   "completion_tokens": 4219,
+   "total_tokens": 7451,
+   "completion_tokens_details": {
+    "reasoning_tokens": 3799
+   }
+  },
+  "wall_s": 152.63,
+  "error": null
+ },
+ {
+  "key": "pos:wrong_constant|faithful",
+  "arm": "position",
+  "A": "wrong_constant",
+  "B": "faithful",
+  "correct": "B",
+  "choice": "B",
+  "payload": {
+   "reasoning": "Document A incorrectly claims in point 4 that 'The retry policy otherwise allows up to **5** attempts before a job is abandoned'. The provided code explicitly defines `MAX_ATTEMPTS = 3` in `jobs/retry.py`. Document B omits this false claim, making it the more accurate description. All other content between the two documents is identical.",
+   "differences": [
+    "Document A states MAX_ATTEMPTS allows up to 5 attempts; code defines it as 3."
+   ],
+   "choice": "B"
+  },
+  "raw": null,
+  "usage": {
+   "prompt_tokens": 3391,
+   "completion_tokens": 1075,
+   "total_tokens": 4466,
+   "completion_tokens_details": {
+    "reasoning_tokens": 939
+   }
+  },
+  "wall_s": 92.7,
+  "error": null
  }
 ]
