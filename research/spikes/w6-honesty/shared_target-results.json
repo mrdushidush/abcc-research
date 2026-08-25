@@ -1,0 +1,31 @@
+{
+  "arms": {
+    "A first, shared dir": {
+      "exit": 0,
+      "passed": 0,
+      "fresh": false
+    },
+    "B second, SAME shared dir": {
+      "exit": 0,
+      "passed": 0,
+      "fresh": false
+    },
+    "B again, its own dir": {
+      "exit": 0,
+      "passed": 3,
+      "fresh": false
+    },
+    "B again, cargo's default dir": {
+      "exit": 0,
+      "passed": 3,
+      "fresh": false
+    }
+  },
+  "checks": {
+    "A really has no tests": true,
+    "B has three when it does not share": true,
+    "B reports zero when it shares": true,
+    "and it reports success while doing so": true
+  },
+  "reproduced": true
+}

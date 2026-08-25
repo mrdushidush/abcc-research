@@ -1,0 +1,18 @@
+_parse_from_execution_logs   pytest discovered zero tests      SUCCESS     marked completed
+parse_agent_output           pytest discovered zero tests      SUCCESS     marked completed
+_parse_from_execution_logs   pytest ran 3 and all 3 failed     SUCCESS     marked completed
+parse_agent_output           pytest ran 3 and all 3 failed     SUCCESS     marked completed
+_parse_from_execution_logs   pytest ran 3, one passed          SOFT_FAILURE  redirected to handleTaskFailure
+parse_agent_output           pytest ran 3, one passed          SUCCESS     marked completed
+_parse_from_execution_logs   pytest ran 2 and both passed      SUCCESS     marked completed
+parse_agent_output           pytest ran 2 and both passed      SUCCESS     marked completed
+_parse_from_execution_logs   pytest failed to collect          SUCCESS     marked completed
+parse_agent_output           pytest failed to collect          SUCCESS     marked completed
+_parse_from_execution_logs   the test command could not spawn  SUCCESS     marked completed
+parse_agent_output           the test command could not spawn  SUCCESS     marked completed
+_parse_from_execution_logs   no test command was issued        SUCCESS     marked completed
+parse_agent_output           no test command was issued        SUCCESS     marked completed
+_parse_from_execution_logs   the model reports its own result  SUCCESS     marked completed
+parse_agent_output           the model reports its own result  SUCCESS     marked completed
+
+records the safety net redirected: 1 of 16

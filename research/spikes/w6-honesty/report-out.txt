@@ -1,0 +1,21 @@
+test the_successors_gate_gets_the_pytest_no_collect_case_right ... pytest, nothing to collect -> None  ["tests: no tests collected (nothing to verify)"]
+test the_successors_gate_passes_a_crate_with_no_tests ... cargo, no tests at all -> Some(true)  ["tests: 0 passed"]
+test the_successors_gate_separates_a_broken_build_from_a_red_suite_only_by_text ... cargo, does not compile -> Some(false)  ["tests: command exited Some(101) with no parseable test results (build error in the test target or a harness failure):\nerror[E0308]: mismatched types\n --> src\\lib.rs:6:39\n  |\n6 |     #[test] fn t1() { assert_eq!(f(), \"one\"); }\n  |                                       ^^^^^ expected `u32`, found `&str`\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `endings` (lib test) due to 1 previous error"]
+test a_cargo_crate_with_no_tests_is_unmeasured_where_the_donor_says_pass ... cargo__no-tests-at-all       exit=0 -> Unmeasured { rung: "tests", why: NothingToRun { detail: "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s" } }
+unverified — tests: ran and found nothing to run (test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s)
+test a_green_headline_needs_every_rung_measured ... unverified — lint: ruff is not on this machine
+test a_run_that_collected_nothing_is_never_green ... pytest__nothing-to-collect       -> unverified — tests: ran and found nothing to run (============================ no tests ran in 0.23s ============================)
+unittest__nothing-to-collect     -> unverified — tests: ran and found nothing to run (NO TESTS RAN)
+test every_capture_is_classified_and_the_classes_are_not_all_the_same ... pytest__1-passes_2-fail          exit=1  ->  measured/exit=1/counts=Some((3, 1, 2))
+pytest__2-of-2-pass              exit=0  ->  measured/exit=0/counts=Some((2, 2, 0))
+pytest__3-of-3-fail              exit=1  ->  measured/exit=1/counts=Some((3, 0, 3))
+pytest__collection-error         exit=2  ->  unmeasured/FailedBeforeRunning
+pytest__nothing-to-collect       exit=5  ->  unmeasured/NothingToRun
+unittest__2-of-2-fail            exit=1  ->  measured/exit=1/counts=Some((2, 0, 2))
+unittest__2-of-2-pass            exit=0  ->  measured/exit=0/counts=Some((2, 2, 0))
+unittest__nothing-to-collect     exit=5  ->  unmeasured/NothingToRun
+test the_five_cargo_endings_are_four_outcomes_and_the_green_one_is_the_only_pass ... cargo__1-passes_2-fail       exit=101  -> tests failed: error: test failed, to rerun pass `--lib`
+cargo__2-of-2-pass           exit=0    -> checks passed (1 measured)
+cargo__3-of-3-fail           exit=101  -> tests failed: error: test failed, to rerun pass `--lib`
+cargo__does-not-compile      exit=101  -> unverified — tests: failed before running anything (error: could not compile `endings` (lib test) due to 1 previous error)
+cargo__no-tests-at-all       exit=0    -> unverified — tests: ran and found nothing to run (test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s)

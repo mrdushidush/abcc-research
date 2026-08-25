@@ -1,0 +1,82 @@
+{
+  "arms": [
+    {
+      "arm": "verifier",
+      "argv": [
+        "cargo",
+        "test",
+        "--test",
+        "hidden_gate",
+        "--quiet"
+      ],
+      "exit": 101,
+      "deps": [
+        "hidden_gate-dbbbdf5ed455f8ce.d",
+        "hidden_gate-dbbbdf5ed455f8ce.exe",
+        "hidden_gate-dbbbdf5ed455f8ce.pdb",
+        "libq01-c57a582f23fa8971.rlib",
+        "libq01-c57a582f23fa8971.rmeta",
+        "q01-c57a582f23fa8971.d"
+      ],
+      "test_exes": [
+        "hidden_gate-dbbbdf5ed455f8ce.exe"
+      ]
+    },
+    {
+      "arm": "subject_test",
+      "argv": [
+        "cargo",
+        "test",
+        "--quiet"
+      ],
+      "exit": 101,
+      "deps": [
+        "libq01-c57a582f23fa8971.rlib",
+        "libq01-c57a582f23fa8971.rmeta",
+        "q01-601bc0322f0a2ab5.d",
+        "q01-601bc0322f0a2ab5.exe",
+        "q01-601bc0322f0a2ab5.pdb",
+        "q01-c57a582f23fa8971.d"
+      ],
+      "test_exes": [
+        "q01-601bc0322f0a2ab5.exe"
+      ]
+    },
+    {
+      "arm": "subject_build",
+      "argv": [
+        "cargo",
+        "build",
+        "--quiet"
+      ],
+      "exit": 0,
+      "deps": [
+        "libq01-c57a582f23fa8971.rlib",
+        "libq01-c57a582f23fa8971.rmeta",
+        "q01-c57a582f23fa8971.d"
+      ],
+      "test_exes": []
+    },
+    {
+      "arm": "subject_check",
+      "argv": [
+        "cargo",
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "deps": [
+        "libq01-8fcde5050d901977.rmeta",
+        "q01-8fcde5050d901977.d"
+      ],
+      "test_exes": []
+    }
+  ],
+  "checks": {
+    "verifier leaves no non-hidden_gate test exe": true,
+    "a subject test run leaves one": true,
+    "cargo build leaves none": true,
+    "cargo check leaves none": true
+  },
+  "sound": true
+}

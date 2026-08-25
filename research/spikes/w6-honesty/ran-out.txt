@@ -1,0 +1,7 @@
+cells: 266
+  asserts_pass         193   of which a test really ran: 186
+  announces_run          2   of which a test really ran: 1
+  references_tests      13   of which a test really ran: 8
+  silent_on_tests       58   of which a test really ran: 16
+  ran, any label       211
+  never compiled        10

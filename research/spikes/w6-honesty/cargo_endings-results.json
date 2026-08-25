@@ -1,0 +1,42 @@
+[
+ {
+  "case": "cargo__no-tests-at-all",
+  "exit": 0,
+  "result_lines": [
+   "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+   "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "compiled": true
+ },
+ {
+  "case": "cargo__2-of-2-pass",
+  "exit": 0,
+  "result_lines": [
+   "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+   "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "compiled": true
+ },
+ {
+  "case": "cargo__1-passes_2-fail",
+  "exit": 101,
+  "result_lines": [
+   "test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "compiled": true
+ },
+ {
+  "case": "cargo__3-of-3-fail",
+  "exit": 101,
+  "result_lines": [
+   "test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "compiled": true
+ },
+ {
+  "case": "cargo__does-not-compile",
+  "exit": 101,
+  "result_lines": [],
+  "compiled": false
+ }
+]

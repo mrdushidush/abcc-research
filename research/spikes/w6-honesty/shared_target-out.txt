@@ -1,0 +1,8 @@
+  A first, shared dir              exit=0  passed=0
+  B second, SAME shared dir        exit=0  passed=0
+  B again, its own dir             exit=0  passed=3
+  B again, cargo's default dir     exit=0  passed=3
+  OK   A really has no tests
+  OK   B has three when it does not share
+  OK   B reports zero when it shares
+  OK   and it reports success while doing so

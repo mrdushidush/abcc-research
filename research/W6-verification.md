@@ -1,6 +1,7 @@
 # W6 — Verification, gates and the TDD pipeline
 
-**Status: IN PROGRESS — started 2026-08-19**, as part of the W3 + W6 + W11 block (§14 item 4).
+**Status: COMPLETE — started 2026-08-19, closed 2026-08-25**, as part of the W3 + W6 + W11 block
+(§14 item 4). All eight items answered; F158–F161 and F213–F224 and F297–F359 are this document's.
 Built one item at a time in §13 format. W6 **grew** on 2026-08-07: the independence check ships
 always-on (David, Q-independence), which with zero cloud spend and one GPU makes "who plays the
 reviewer" a hard design constraint that interacts with W2's residency work.
@@ -112,17 +113,45 @@ Planned items:
    tier fires 0 times in 30 all-local tasks** because every multiple of 10 is a multiple of 5; and
    Claudette's `CheckOutcome` refuses to fold a timeout into "clean" and folds *"there is no checker
    for this artifact"* into it three lines later.
-8. ☐ **Honest failure reporting** — the design against v1's zero-tests-claimed-passing defect;
-   item 1's no-silent-midpoints rule is its first half.
+8. ✅ **Honest failure reporting** (F349–F359) — measured on the donor chain, on this project's own
+   corpus, and on a compiled type. **§11's reading of its own incident is wrong, and that decides the
+   design.** On 98 unimpeded Q56 Rust attempts the champion asserted the tests pass 81 times, a test
+   really ran **81 of 81**, and re-running the suite on the delivered tree makes **81 of 81 of those
+   sentences true** — the seven unbacked claims in the corpus are **7 of 7** in the arms built to block
+   the edit, where they are predictions about a patch that was never applied. *And it does not help*:
+   **14 of the 81** true, measured, green claims sit on trees the hidden gate fails, **6 of 81**
+   measured a tree that no longer existed (the edit lands 1.7–3.0 s after the test binary), and one
+   subject wrote seven tests, ran them, **deleted them**, and reported *"all the smoke tests I ran
+   earlier passed (7/7)"* with seven ticks over a tree with no tests in it. What prose cannot carry is
+   **scope and time**, not truth. Donor facts, all executed rather than read: v1's chain marks **15 of
+   16** records *completed* — including the all-red run its own documented fix was written for — and
+   the one it stops reports **2 run / 0 passed** on a run of three with one passing; the reason is a
+   dispatcher gated on the word `passed`, which an all-red pytest run does not contain, so **eight real
+   run-endings become three records** and *every test failed* is indistinguishable from *there were no
+   tests*; **the exit status separates all of them** (pytest and unittest both use **5** for "no tests
+   collected") and no donor reads one. v1's `UNCERTAIN` exists, is constructed **once**, and sets
+   `success=True` in the same literal, and `ExecuteResponse` has no status field at all. The successor
+   is the best of the three — `Option<bool>`, order-free parsers, and the only exit-code rung in the
+   family — and still returns **`Some(true)` with the line "tests: 0 passed"** for a cargo crate with
+   no tests. Found on the way: **a green test run that measured nothing, produced by cargo** — two
+   trees holding one package name and one shared `CARGO_TARGET_DIR` make cargo print `Fresh`, run the
+   other tree's binary and report `ok. 0 passed` at exit 0, which **qualifies item 6's F331**: share
+   the cache for building, never for the gate. The answer is a type, compiled and asserted (17 tests):
+   `Measured | Unmeasured(Why)` with eight named reasons, a `Green` that requires **every** declared
+   rung to have been measured, and a `Claim` that no function converts into an `Outcome` — and the
+   shape already ships here, at **17,648 metric slots, 1,426 of them carrying a sentence instead of a
+   number**.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 808–827. Findings continue the family numbering.
 Item 1 took F158–F161; W3 then ran to F212 (complete, 2026-08-20); item 2 took F213–F224; W11
 then ran to F296 (complete, 2026-08-22), and **item 3 was answered inside W11 item 4 (F270–F284)**;
 item 4 took **F297–F310**, item 5 took **F311–F324**, item 6 took **F325–F335** and item 7 took
-**F336–F348**, so the next free number is **F349**. W11 item 5 (F285–F296) handed item 4 a second headroom result and item 8
-its anti-pattern; item 5 handed item 6 the toolchain-profile question (OQ-W6-11, answered in F335)
-and hands item 8 the loud-`Uncertain` requirement; item 6 hands item 8 the honest-restore contract
-(F330) and W3 the checkpoint identifier it asked for (OQ-W3-12). The numbering is one sequence across all
+**F336–F348** and item 8 took **F349–F359**, so the next free number is **F360**. W11 item 5
+(F285–F296) handed item 4 a second headroom result and item 8 its anti-pattern (`Ok(())` on
+exhaustion, F296, now encoded as `Why::BudgetExhausted`); item 5 handed item 6 the toolchain-profile
+question (OQ-W6-11, answered in F335) and item 8 the loud-`Uncertain` requirement (delivered in
+F358); item 6 handed item 8 the honest-restore contract (F330) and W3 the checkpoint identifier it
+asked for (OQ-W3-12), and item 8 hands item 6's shared build cache back a qualification (F356). The numbering is one sequence across all
 workstreams — check the maximum before adding, not the last number in this file
 (`grep -rho "F[0-9]\{2,3\}" research/*.md | sort -u | sed 's/F//' | sort -n | tail -3`).
 
@@ -3759,5 +3788,606 @@ failure mode from the literature reproduced as the dominant problem.** Position 
 14. Verbosity bias: present, weak, dominated by one fact. Self-preference: not testable here, one
 model. What actually failed was simpler and is not in the usual list — **the model reliably finds the
 defect and then approves the artifact**, in one object, in the same call, on both populations.
+
+---
+
+# Item 8 — honest failure reporting
+
+## Question
+
+§11's line is the only one in the whole brief that names a specific incident: *"**Honest
+failure reporting**, which V1 got badly wrong when an agent claimed two passing tests on a run
+that executed zero. Rust's error handling makes it possible to do this properly. Design for it
+explicitly."*
+
+It reads as a question about models lying, and that reading has to be tested before anything is
+designed, because it decides what gets built. If the failure is *the model asserts things that
+are not so*, the answer is a reviewer, and item 7 just measured what those are worth. If the
+failure is *the system cannot tell an assertion from a measurement*, the answer is a type, and
+no reviewer is needed at all.
+
+So three parts.
+
+1. **What actually happened in v1** — not what its documentation says happened, and not what
+   its fix says it fixed. v1 has a written, dated, "IMPLEMENTED" fix for this class of defect
+   and a module whose docstring is *"Prevents agents from hallucinating test success."* The
+   question is what that code returns when it is called.
+2. **How often the model does it here.** This project has 1,369 preserved cells, and 266 of
+   them are Rust work dirs still on disk with an answer key attached. Does the champion claim
+   test results it did not produce, and if it does not, does that make the record honest?
+3. **The type.** The brief says Rust makes it possible to do this properly, which is a design
+   claim, and a design claim in this workstream gets compiled and run rather than described.
+
+## Method
+
+Nine probes in `research/spikes/w6-honesty/`, four of which execute donor code rather than
+paraphrase it, and one of which is a Rust crate.
+
+- **The donor chain, imported and called.** `v1_parser.py` executes pytest and
+  `python -m unittest` in a scratch tree in the states a test run can end in, saves what each
+  printed **with the exit status the OS returned**, and feeds those bytes to v1's own
+  `parse_test_output` (`validators/test_validator.py` at `d5528ea`). `v1_output.py` imports v1's
+  `_parse_from_execution_logs` and `parse_agent_output` and reads back the `status` and
+  `confidence` the task record would have carried. `v1_safety_net.mjs` ports
+  `taskExecutor.ts`'s `handleTaskCompletion` guard and its `detectTestFailures` predicate
+  byte-for-byte and runs them over the records those two produced. Nothing in the chain is a
+  hand-written string: the observations come from `captured/`, and `cargo_endings.py` adds the
+  five cargo endings the same way.
+- **The forensic discriminator, established by executing it.** A Q56 Rust verifier runs exactly
+  one cargo command — `cargo test --test hidden_gate --quiet` — so a test executable in
+  `target/*/deps` under the *crate's* name can only have been produced by the subject.
+  `control.py` runs all four candidate commands on a fresh fixture and asserts which of them
+  leaves one: the verifier's does not, `cargo test` does, `cargo build` and `cargo check` do
+  not. It is the first thing to run and the numbers below are void without it.
+- **The census.** `ran.py` walks every preserved Q56 **Rust** cell — 266 of them, 14 tasks, 9
+  runs — and takes two independent readings: the physical one above, and a rule-based
+  classification of the subject's own prose that keeps the sentence every rule fired on. It
+  also compares the test binary's mtime to the newest source file's, because a binary older
+  than the tree is a measurement of something that no longer exists.
+- **Was the claim true?** `visible.py` copies each clean-arm work dir to a scratch tree, drops
+  `target/` and deletes the verifier's `tests/hidden_gate.rs`, and re-runs `cargo test` — the
+  suite the subject could actually see, including any tests it wrote itself. Nothing is written
+  inside `runs/`.
+- **The type.** `report/` is a small Rust crate: `Outcome::{Measured, Unmeasured(Why)}`,
+  `Headline::{Green, Red, Unverified}`, a `Claim` that no function converts into an `Outcome`,
+  and two classifiers. Its tests read the same `captured/` bytes, and one of them —
+  `donor_gate.rs` — is Claudette's `classify_tests` copied verbatim and run beside them.
+  17 tests, `cargo test`.
+
+Donor commits v1 `d5528ea`, BCF `d6c1601`, Claudette `af3f804`. No GPU: nothing in this item
+asks a model anything.
+
+## Inherited
+
+| What | Source | Verdict here |
+|---|---|---|
+| No silent midpoints; a default that pretends to be a measurement is the family's signature bug | item 1, F161 | **CONFIRMED and localised** — the default here is a *branch*, and its comment says so: `# No tests ran or all tests passed = SUCCESS` (F351) |
+| `Option<bool>` is the right type for "could not run" | item 5, F317/F218 | **KEEP, and it is not sufficient** — Claudette has it, reads pytest's exit 5 with it, and still returns `Some(true)` for a crate with no tests (F357) |
+| Every rung that did not run must appear in the outcome with its reason | item 5, recommendation 5 | **BUILT** — `Unmeasured(Why)` with eight variants, and a headline that cannot be green while one is present (F358) |
+| `Uncertain` needs a reason, not a Boolean | item 7, recommendation 9 | **EXTENDED** — v1 has the fourth outcome, constructs it once, and sets `success=True` in the same literal (F352) |
+| `Ok(())` on budget exhaustion is the anti-pattern | W11 item 5, F296 | **ENCODED** — `Why::BudgetExhausted` is neither pass nor fail, asserted (F358) |
+| An empty payload with a legible reason beats a well-formed wrong verdict | W11 item 4, F282; item 7 recommendation 3 | **KEEP** — the same rule one layer down: a green with nothing behind it is worse than a legible "nothing ran" |
+| Share `CARGO_TARGET_DIR` across attempt worktrees | item 6, F331 | **QUALIFIED** — safe for building, unsafe for testing: two trees holding one package name make cargo run the wrong binary and report `ok. 0 passed` (F356) |
+| A pooled rate can invent a finding that stratification denies | item 4/5, F321; memory item 26 | **BIT AGAIN** — the 7 unbacked claims are 7 of 7 in the arms built to block the edit (F353) |
+
+## Findings
+
+### 🚨 F349 — the brief's charge, executed end to end: v1's chain marks 15 of 16 records "completed", and the single one it stops reports two tests where three ran
+
+`v1_output.py` builds the execution logs v1's own tool layer produces — one `file_write` with
+the observation the tool really prints, then one `shell_run` whose observation is the bytes a
+real runner really emitted — and calls v1's two completion parsers. `v1_safety_net.mjs` then
+runs the ported `handleTaskCompletion` guard over the resulting records. Eight run-endings ×
+two entry points:
+
+| what really happened | `_parse_from_execution_logs` | `parse_agent_output` | the TS safety net |
+|---|---|---|---|
+| pytest discovered zero tests | SUCCESS, conf 0.7 | SUCCESS, conf 1.0 | marked completed |
+| pytest ran 3 and all 3 failed | SUCCESS, conf 0.7 | SUCCESS, conf 1.0 | marked completed |
+| pytest ran 3, one passed | **SOFT_FAILURE, conf 0.0** | SUCCESS, conf 1.0 | **redirected** (log path only) |
+| pytest ran 2 and both passed | SUCCESS, conf 1.0 | SUCCESS, conf 1.0 | marked completed |
+| pytest failed to collect | SUCCESS, conf 0.7 | SUCCESS, conf 1.0 | marked completed |
+| the test command could not spawn | SUCCESS, conf 0.7 | SUCCESS, conf 1.0 | marked completed |
+| no test command was issued at all | SUCCESS, conf 1.0 | SUCCESS, conf 1.0 | marked completed |
+| the model reported its own result | SUCCESS, conf 1.0 | SUCCESS, conf 1.0 | marked completed |
+
+**15 of the 16 records are marked completed, and one is redirected.** The row that fires is the
+one the documented fix was written for — and among the endings that really went red it is the
+only one whose output contains the word `passed`, which F350 explains. It is also wrong about what it measured: the run was three
+tests with one passing, and v1 records **2 run, 0 passed, 2 failed**, so
+`confidence = success_rate = 0.0` on a suite that was a third green.
+
+Two further facts fall out of the table's shape.
+
+**The same run gets two different verdicts depending on an HTTP call.** `parse_agent_output`
+fetches the execution logs from `http://api:3001/api/execution-logs/task/<id>` with a 5 s
+timeout inside a bare `except Exception` that prints a warning and falls through
+(`output.py:368-383`). Above the fold that fall-through path never sees the logs at all, and the
+one ending v1 can catch becomes SUCCESS at confidence 1.0. A gate whose verdict depends on
+whether a container's DNS resolved is not a gate.
+
+**The fall-through has a shortcut in it.** Before parsing anything, `parse_agent_output` looks
+for a JSON object in the raw output and returns it whole:
+`if data.get('files_created') or data.get('commands_executed'): return AgentOutput(**data)`
+(`output.py:385-394`). The last row of the table is that path: a model that emits
+`{"status": "SUCCESS", "confidence": 1.0, "summary": "…2 tests passed.", "files_created": [...]}`
+has its own self-report adopted verbatim as the task record, while the execution logs beside it
+show one file written and no command run. **That is the literal mechanism §11 describes**, and
+it is the first branch in the function.
+
+### 🚨 F350 — the reason the fix cannot fire: v1's parser is gated on the word `passed`, and eight real run-endings become three records
+
+`parse_test_output` (`test_validator.py:181-242`) chooses its pytest parser with one condition:
+
+```python
+if '===' in output and 'passed' in output.lower():
+```
+
+A pytest run in which every test failed prints no `passed` anywhere — this is not an inference,
+`v1_parser.py` executes pytest and saves the bytes:
+`============================== 3 failed in 0.30s ==============================`. So the pytest
+branch is skipped, the unittest branch needs `Ran`, the generic patterns all require `passed`,
+and the `FAIL:`/`ERROR:` fallback is unittest-shaped. The function returns
+`TestResult(raw_output=output)` — `tests_run=0`, `tests_failed=0` — whose summary is
+**`NO TESTS RAN - Test discovery failed or no tests found`**.
+
+Fed the eight endings a real runner produced, v1's parser returns **three distinct records**:
+
+| record | endings that land in it |
+|---|---|
+| 2 run, 2 passed, 0 failed, valid | pytest 2 of 2 pass · unittest 2 of 2 pass |
+| 2 run, 0 passed, 2 failed, invalid | pytest 1 passes 2 fail · unittest 2 of 2 fail |
+| **0 run, 0 passed, 0 failed** | **pytest 3 of 3 fail** · pytest nothing to collect · pytest collection error · unittest nothing to collect |
+
+The third row is the finding. *Every test failed*, *there were no tests*, and *the suite did not
+load* produce one identical object, and it is the object that says nothing ran. The status
+determination downstream then keys on `parsed_test_result.tests_run > 0`
+(`output.py:294`, `:530`), so on the all-red run — the incident that motivated the whole fix —
+the guard is skipped by construction and control falls to the `else` branch.
+
+**And the fact v1 needed was already in the exit status.** The same captures, with the number
+the OS returned:
+
+| ending | exit | what the integer means |
+|---|---|---|
+| pytest, 2 of 2 pass | 0 | all tests passed |
+| pytest, 1 passes 2 fail | 1 | tests ran and something failed |
+| pytest, 3 of 3 fail | 1 | tests ran and something failed |
+| pytest, collection error | 2 | interrupted before running |
+| pytest, nothing to collect | **5** | **no tests collected** |
+| unittest, nothing to collect | **5** | **no tests collected** |
+
+pytest and `python -m unittest` both reserve **5** for *no tests collected*. The question v1's
+242-line module tries to recover from prose — *did anything actually run?* — is a
+single integer that the process already handed it, and no line in `test_validator.py`,
+`output.py` or `taskExecutor.ts` reads an exit code at all.
+
+### F351 — the defect is documented as intended behaviour, at four independent sites
+
+This is not a bug hiding in a corner. Four places in v1 state it, in writing:
+
+1. **The fix's own behaviour matrix.** `docs/FIX_FALSE_POSITIVE_COMPLETIONS.md:93`, in the table
+   headed *"Behavior matrix after fix"*: `| Files created + no tests ran | SUCCESS | SUCCESS
+   (unchanged) |`. It is the first row.
+2. **The status branch's comment.** `output.py:304` and `:540`, identically in both parsers:
+   `# No tests ran or all tests passed = SUCCESS`. Two different states, one branch, and the
+   comment names both.
+3. **The safety net's doc comment.** `taskExecutor.ts:509-512`: *"Returns true if tests were run
+   and failed. **Returns false if no tests ran** or all tests passed."*
+4. **The module docstring above all of it.** `test_validator.py:4`: *"Prevents agents from
+   hallucinating test success."*
+
+The gap between 4 and 1–3 is the whole item. The fix was written for a real, correctly
+diagnosed incident — a File Upload Handler with 3 of 3 tests failing, reported SUCCESS at
+confidence 1.0 — and it fixed the case where the parser produces a failure count. The case where
+the parser produces *nothing* was recorded as out of scope in the same document, and the case
+where the parser produces nothing **because everything failed** was not distinguished from it.
+
+### F352 — v1 has the fourth outcome, constructs it once, and shadows it with a Boolean in the same literal
+
+`AgentOutput.status` is
+`Literal["SUCCESS", "SOFT_FAILURE", "HARD_FAILURE", "UNCERTAIN"]` (`output.py:11-14`), described
+in its own field as *"UNCERTAIN (unverified)"*. Item 7 recommendation 9 asks for exactly this
+value. Three facts about it:
+
+- **It is written at exactly one site**, `main.py:436-447`, when parsing the structured output
+  raised. Three lines below the `status="UNCERTAIN"` is `success=True,  # Assume success unless
+  proven otherwise`.
+- **It never crosses the process boundary as a status.** `ExecuteResponse` (`main.py:107-113`) is
+  `{success: bool, execution_id, output, error, metrics}` — there is no status field. `status`
+  is printed to the console (`main.py:450`) and returned nowhere.
+- **What does cross is the Boolean**, `success=structured_output.success` (`main.py:479`) — and
+  the TS safety net's first check is `if (agentOutput.success === false)`, which an `UNCERTAIN`
+  record whose `success` is `True` can never satisfy.
+
+So the type has four values, the wire has two, and the one construction of the fourth pre-empts
+the ambiguity it exists to express. This is F218's shape one layer up: the right type, present,
+with a call site that flattens it.
+
+### 🚨 F353 — on this project's own corpus the model is not the liar: 81 of 81 clean-arm claims that the tests pass are backed by a real test run and true of the tree that was delivered
+
+266 preserved Q56 Rust cells, 14 tasks, 9 runs. Two independent readings per cell — what the
+subject said, and whether a test binary the verifier never builds is sitting in the work dir.
+Split by arm, because the arms are not the same experiment:
+
+| arm | cells | asserts the tests pass | a test really ran | says nothing about tests |
+|---|---|---|---|---|
+| `control` + `gated` (the subject worked freely) | 98 | 81 | **81 of 81** | 15 |
+| `deny-first-edit` + `redirect-first-edit` (the harness blocked the edit) | 168 | 112 | 105 of 112 | 43 |
+
+**In the clean arms the rate of unbacked test claims is zero.** And `visible.py` re-ran the
+suite on every delivered tree: **81 of 81 of those assertions are true** — the visible suite,
+including any tests the subject wrote itself, is green on the tree it left behind.
+
+The seven cells where a subject asserts a pass with no test run are **7 of 7 in the interrupted
+arms**, 6 of the 7 wrote no file at all, and reading them explains why: they are predictions
+about a patch the harness would not let them apply — *"The existing test (`"1,2,3" → [1, 2, 3]`)
+passes unchanged. Want me to apply this?"*, *"The test `finds_a_nearby_duplicate` will still
+pass. Shall I go ahead?"* Three are in the future tense. A pooled rate over all 266 cells would
+have produced "2.6% of test claims are fabricated" and it would have been a fact about the
+harness's own interventions — the same trap as F321 and memory item 26, one item later, on a
+corpus half of which exists to interrupt the agent.
+
+**This kills the reading the brief invites.** The champion, on 98 unimpeded attempts, did not
+once report a test result it had not produced. Whatever went wrong in v1, a lying model is not
+the necessary ingredient.
+
+### 🚨 F354 — and it does not matter: 14 of those 81 true, measured, green claims sit on trees that fail, 6 measured a tree that no longer existed, and one reported 7 of 7 after deleting the tests
+
+Same 81 cells, joined to the verdict the hidden reviewer tests recorded at grade time:
+
+- **14 of 81** are green on the visible suite, honestly reported, and **FAIL** the hidden gate.
+  The sentence *"Done — both existing tests pass"* is true, was measured, and is not a claim
+  about whether the work is right. Q56 is built so that the visible tests are green on the
+  fixture before anyone touches it, which is exactly the situation the operator is in: **the
+  scope of the measurement is the whole content of the claim, and prose does not carry it.**
+- **6 of 81 measured a tree that no longer existed.** The subject's test binary is older than
+  its newest source file — it ran the tests, then edited, then reported. The gaps are 1.7, 1.7,
+  1.8, 1.8, 2.7 and 3.0 seconds. Q10/`control` is the clean specimen and the timings line up to
+  the millisecond: `apply_diff` at 7,530 ms, the subject's `q10-*.exe` built at **8,619 ms**,
+  `edit_file` at 10,291 ms (1,165 → 1,161 bytes), and at 13,764 ms *"Test passes clean, no
+  warnings."* Four bytes changed after the last measurement, and nothing in the record says so.
+- **One case does all of it at once,** and narrates itself while doing it. Q52/`gated`: the
+  subject writes the implementation, adds a test module (1,148 → 2,829 bytes), and reports
+  *"All 7 tests pass. Now let me strip back to just the production code (the test module wasn't
+  in the original stub):"* — then writes the file back to 1,148 bytes, which the harness's own
+  diff preview flags as **"LOST MORE THAN HALF THE FILE"**. The final message is *"Done —
+  `RingBuffer<T>` is implemented … It compiles clean and all the smoke tests I ran earlier
+  passed (7/7)"* followed by seven ticked bullets. `cargo test` on the delivered tree runs
+  **zero tests**, and the hidden gate fails it.
+
+That last message is *scrupulously* accurate. "The smoke tests I ran **earlier**" is the correct
+tense, the count is right, and the tests really did pass. What the operator sees is seven green
+ticks. **The model's honesty was never the binding constraint; the record's inability to carry
+*when* and *over what* is.**
+
+### F355 — the record of a run does not say whether a test ran, and recovering it took build artifacts and file timestamps
+
+The instrument F353 and F354 depend on is a measurement of the corpus, so it gets its own
+finding and its own controls. Q56's Rust verifiers all run exactly `cargo test --test
+hidden_gate --quiet` (Q12 adds `--release`), which builds the library and one integration
+target. A subject that runs the crate's own tests builds the library's *unit-test* binary as
+well. `control.py` executes all four arms on a fresh Q01 fixture and asserts the discriminator
+rather than reasoning about it:
+
+| command | leaves a crate-named test binary |
+|---|---|
+| `cargo test --test hidden_gate --quiet` (the verifier's) | no — only `hidden_gate-*.exe` |
+| `cargo test --quiet` (a subject running the suite) | **yes** — `q01-601bc0322f0a2ab5.exe` |
+| `cargo build --quiet` | no |
+| `cargo check --quiet` | no |
+
+The hash matches the one in the preserved Q01/`control` work dir exactly, and the mtime
+alignment in F354 puts the binary between two narrated tool calls, so the discriminator is
+checked twice against two independent clocks.
+
+What it cost is the point. **Claudette narrates file mutations and nothing else** — 333 `▸`
+lines across these cells are `apply_diff`, `write_file`, `edit_file` and one `apply_patch`, and
+not one of them is a shell command or a test run. So the transcript, which is the complete record of the session as the
+operator saw it, contains a sentence saying the tests pass and contains no way to check it. The
+answer had to be excavated months later from build artifacts and file timestamps in a directory
+that survived only because this project keeps its work dirs. **A record that cannot answer "did
+you run it?" is the defect**, independently of who said what.
+
+### 🚨 F356 — a green test run that measured nothing, produced by cargo and not by a model: one shared build directory silently runs the other tree's binary
+
+Found by walking into it. The first draft of `visible.py` shared one `CARGO_TARGET_DIR` across
+all 98 cells to get item 6 F331's warm-cache saving, and reported `ok. 0 passed` on trees that
+have eleven tests. `shared_target.py` is the minimal reproduction and it asserts every arm:
+
+| arm | exit | tests run |
+|---|---|---|
+| tree A (`collide v0.1.0`, no tests), shared build dir | 0 | 0 |
+| tree B (`collide v0.1.0`, three tests), **same shared build dir** | **0** | **0** |
+| tree B, its own build dir | 0 | 3 |
+| tree B, cargo's default `target/` | 0 | 3 |
+
+`cargo test -v` in the second arm prints **`Fresh collide v0.1.0 (…/B)`** and then
+`Running …/_target/debug/deps/collide-c1866d723b8f419c.exe` — one executable, built from A,
+run for B. The `-C metadata` hash does not separate two directories holding the same package
+name and version, so the second tree is declared up to date and its tests are never compiled.
+The process exits 0. The summary line says `test result: ok`. Nothing anywhere says that the
+binary and the source came from different trees.
+
+This is the item's own thesis arriving from the build system rather than from a model, and it
+**qualifies item 6's recommendation**: sharing `CARGO_TARGET_DIR` across per-attempt worktrees
+is safe for *building* — that is where the 24.7 s came from — and unsafe for *testing*, because
+the collision is silent and it is green. It answers half of OQ-W6-14: two attempts can share a
+build cache, and each attempt's gate must run in a build directory nothing else writes to.
+
+### F357 — the successor already implements most of the cure, and still passes a crate with no tests
+
+Claudette is the best of the three donors here by a distance, and `donor_gate.rs` ports its
+`classify_tests` (`quality.rs:458-502`) verbatim and runs it over the same captures. What it
+gets right, executed:
+
+- The return type is `Option<bool>`, and `None` is reachable from three distinct causes:
+  `result.timed_out`, `result.exit_code.is_none()` (the process never started), and
+  **pytest's exit 5**, which it reads by number with the comment *"pytest exit 5 = 'no tests
+  collected' — advisory, not a failure"*. Run on the real capture it returns `None` and the line
+  *"tests: no tests collected (nothing to verify)"*. **It is the only place in any of the three
+  donors where an exit code decides anything.**
+- Its count parsers are order-free — each integer is paired with the word after it — so on the
+  real `2 failed, 1 passed` line it returns `(1, 2)` where v1's regex returns `(0, 2)`.
+- The layer beneath it, `CommandResult` (`test_runner.rs:11-20`), is item 5's
+  `Measured(exit_code, stdout, stderr)` contract already built: `success`, `stdout`, `stderr`,
+  `timed_out`, `exit_code: Option<i32>`.
+
+And what it still does, executed on `cargo test` in a crate with no tests at all:
+
+```
+cargo, no tests at all -> Some(true)  ["tests: 0 passed"]
+```
+
+`cargo test` has no exit code for *nothing to run*: a crate with no tests exits **0**, so
+`result.success` is true, the branch above the exit-5 check fires, and the zero never reaches a
+decision. The line it writes is honest — *"tests: 0 passed"* — and the value the gate consumes
+is a pass. Two further limits from the same run: cargo exits **101** for both a red suite and a
+test target that does not compile, so those are separated only by whether a `test result:` line
+was printed at all; and the exit-5 rung is written `framework == Framework::Pytest`, so npm and
+go have no equivalent. The generalisation 2.0 needs is one sentence: **ask the process what
+happened, and treat "ran nothing" as an outcome in its own right in every profile, not as a
+special case for the one runner that gives it a number.**
+
+### F358 — the type, compiled: 17 tests, 8 endings into 6 outcomes where v1 gets 3, and a first draft that invented a count on its first run
+
+`report/` is 441 lines of Rust with no dependencies. `Outcome` is `Measured(Measurement)` or
+`Unmeasured { rung, why }`; `Why` has eight variants — no checker for this artifact, checker not
+on this host, spawn failed, nothing to run, failed before running, timeout, budget exhausted,
+cancelled — and `Headline` is `Green { rungs }`, `Red { rung, detail }` or
+`Unverified { missing: Vec<(rung, Why)> }`. There is no `bool` in the data and exactly one
+function that produces one, `Headline::is_pass`, deliberately not named `is_ok`.
+
+The properties are assertions, one per donor defect:
+
+| test | the defect it forbids |
+|---|---|
+| `a_report_with_nothing_measured_is_not_a_pass` | v1's `elif has_meaningful_output:` → SUCCESS at 1.0 |
+| `the_reasons_for_not_measuring_are_distinguishable_and_none_is_green` | Claudette's `Skipped` carrying three meanings, folded into `Passed` (F348) |
+| `what_the_model_said_never_becomes_what_the_host_saw` | `AgentOutput(**data)` from the model's own JSON (F349) |
+| `exhaustion_is_classified_and_is_neither_pass_nor_fail` | W11 F296's `Ok(())` |
+| `the_first_red_is_the_headline_and_it_names_itself` | item 5 §8: one type error reported as five regressions |
+| `a_cargo_crate_with_no_tests_is_unmeasured_where_the_donor_says_pass` | F357, side by side on the same bytes |
+
+Over the eight pytest/unittest captures the type produces **six classes** where v1's parser
+produces three, and the only two endings that share a class are the two that are the same fact.
+Over the five cargo captures it produces four outcomes and exactly one pass — the one where two
+tests really ran and really passed.
+
+**And its own first draft invented a count.** `counts_from` read unittest's
+`FAILED (failures=2)` as *no failures* — the number lives inside a `key=value` token, not a
+`<n> <word>` pair — so it reported **2 of 2 passed on a run where both tests failed**. That is
+the defect this item is about, in the code written to prevent it, caught by running it against
+a real capture rather than by reading it. The rule that came out of the fix is the one worth
+carrying: **never derive a number that was not printed.** Where the breakdown is unreadable,
+`counts` is `None`, which is a measurement without counts and not a green one.
+
+### F359 — the shape already ships in this repository, at 17,648 metric slots
+
+The last thing this item needs is a demonstration that the contract survives contact with real
+work, and it has one that predates the item. W8's harness writes every metric as a tagged
+envelope rather than a number:
+
+- **1,369 cells** across every run in `runs/`, carrying **17,648 metric slots**.
+- **16,222** are `{"measured": n}`. **1,426** are `{"not_applicable": "<why>"}`. There are no
+  bare zeros and no nulls.
+- The reasons are sentences, and there are **11 distinct ones**: *"no probe exists yet; W1/W2
+  owns building it"* (1,328), *"no turn-end marker, so the session-cumulative counts were never
+  printed"* (65 across six metrics), *"no verifier ran for this cell"* (7), *"the subject wrote
+  nothing to stdout"* (4), *"the subject produced no output for this turn"* (2), and so on.
+- **62 cells have no verifier verdict at all** (`"verifier": null`) and not one of them is
+  scored; the cell status vocabulary is five words — `pass` 1,039, `fail` 266, `error` 41,
+  `timeout` 15, `invalid` 8 — and not a Boolean.
+
+Q07/`gated` is the whole contract in one cell: the subject looped writing the same broken
+514-byte stub ten times, said *"I keep writing the same broken stub"*, and hit the wall.
+`status: "timeout"`, `verifier: null`, `iterations: {"not_applicable": "no turn-end marker, so
+the session-cumulative counts were never printed"}`, and the delivered tree does not compile.
+Every one of those is a fact, none of them is a zero, and the record is legible three months
+later — which is how this item read it.
+
+## Options compared
+
+| | v1's shape (Boolean + prose) | BCF's shape (a score) | Claudette's shape (`Option<bool>` per rung) | `Outcome`/`Headline` (this item) |
+|---|---|---|---|---|
+| "nothing ran" is representable | no — folded into SUCCESS (F349) | no — an unreadable project scores 5.00 (F313) | partly — pytest exit 5 only (F357) | yes, with a reason |
+| the reason is carried | no | no | three causes, one `None` | eight named variants |
+| a green needs coverage | no | no — the gate is a threshold | no — `ran=false` leaves the LLM verdict standing | yes: `Green` requires every rung measured |
+| model prose can become a verdict | **yes** (`AgentOutput(**data)`) | yes (the critique is scored) | no | no — no conversion exists |
+| the exit status is read | never | never | pytest only | always, per profile |
+| what the console can say | "completed" | "7.5 / 10" | "tests: 0 passed" | "unverified — tests: ran and found nothing to run" |
+
+## Recommendation
+
+**1 — The unit of a report is a rung, and a rung either measured something or says why not.**
+`Outcome::Measured(Measurement)` carries the rung name, the exit status the OS returned, the
+counts *if the runner printed them*, and the output tail. `Outcome::Unmeasured { rung, why }`
+carries a `Why` with eight variants. There is no third variant meaning "fine", and there is no
+`bool` in the data. This is item 5's `Measured(exit_code, stdout, stderr)` and item 7's
+`Uncertain(why)` composed into one value, and it is 441 lines.
+
+**2 — A pass is a claim about coverage, so `Green` requires every declared rung to have been
+measured.** One rung that could not run turns the headline into `Unverified` and lists what was
+missing — it does not turn it into a failure, and it does not quietly disappear. `Green` becomes
+rarer and it starts meaning something. The console line for the common awkward case is
+*"unverified — tests: ran and found nothing to run"*, and item 5 already asked for exactly this
+from the language direction.
+
+**3 — Ask the process, never the prose.** Every donor tries to recover *did anything run?* by
+pattern-matching the output, and v1 spends 242 lines failing at it because an all-red pytest run
+does not contain the word `passed`. pytest and unittest both hand back **5** for "no tests
+collected"; cargo hands back 0 and needs the `test result:` line's totals instead; the toolchain
+profile from item 5 (F335) is where each runner's exit-code table lives, alongside its marker
+file and its command. **The profile owns the exit-code reading, and every profile must answer
+"ran nothing" — not only the one runner that gives it a number.**
+
+**4 — Never derive a count that was not printed.** `passed = total - failed` is how this item's
+own first draft reported two passes on an all-red run, and `2 run / 0 passed` on a run of three
+is how v1 reports the only ending it catches. Parse order-free, sum what is named, and where the
+breakdown is unreadable return no counts rather than a plausible pair. A measurement with no
+counts is honest; a wrong count is worse than silence because it is actionable.
+
+**5 — What the model said is a different type from what the host saw, and there is no function
+between them.** `Claim { by, text }` attaches to a report, is shown to the operator, and cannot
+become an `Outcome`. This is the single structural difference from v1, whose
+`test_results: str` is a field a model writes and a gate reads, and whose fall-through path
+returns the model's own JSON as the record. The claims are worth keeping — F354's *"all the
+smoke tests I ran earlier passed (7/7)"* is useful, interesting and true — they are simply not
+evidence.
+
+**6 — A measurement is stamped, because scope and time are what prose cannot carry.** F354's two
+failure modes are both invisible in a truthful sentence: the tree moved after the measurement (6
+of 81) and the measurement was of the wrong thing (14 of 81). Item 6 already produces the
+identifier that fixes the first — the snapshot commit sha, 0.16 s — so a `Measurement` names the
+sha it was taken at, and a headline computed against a newer sha is `Unverified`, not green.
+The second is not fixable by honesty at all; it is the coverage fraction (item 4) and the
+pre-image comparison (item 7), and the report's job is only to stop *implying* a scope it does
+not have.
+
+**7 — The metric envelope generalises, and this repository has already run it 17,648 times.**
+`{"measured": n}` versus `{"not_applicable": "<why>"}` is the same distinction one level down,
+with 1,426 live instances, 11 distinct reasons and zero bare zeros (F359). 2.0 emits metrics
+the same way, which means the console never has to decide whether a `0` means *none* or *not
+looked at*, and a metric with no probe behind it is a visible, sentence-shaped absence instead
+of a plausible number.
+
+**8 — Isolate the build directory per attempt, and share the cache only for building.** F356 is
+a silent green produced by the toolchain: two work trees holding one package name and one
+`CARGO_TARGET_DIR` make cargo declare the second `Fresh` and run the first's test binary. Item
+6's warm-cache saving survives — sharing is what makes a fresh worktree compile in 24.7 s — but
+**the gate runs in a build directory nothing else writes to.** This costs a rebuild of the
+subject crate and it is the difference between a verdict and a coincidence.
+
+**9 — Every rung, measured or not, is an event on the log with a name.** W11 item 5's handoff
+(F296) and W3's classified failures are the same object as `Why`: `BudgetExhausted { which }`,
+`Timeout { after_ms }` and `Cancelled { by }` are already `FailureClass` members, and
+`NoCheckerForArtifact`, `CheckerNotOnHost` and `NothingToRun` join them. The report is then a
+projection of the log rather than a second source of truth, which is W3's rule (durability is
+the event log) applied to the thing operators actually read.
+
+**10 — Say the honest thing in the unit's own voice.** *"No checker for this artifact"* is a
+legitimate report. So is *"ran and found nothing to run"*. The design failure in all three
+donors is not that they lie, it is that their vocabulary for *"I did not measure that"* is the
+same word as *"I measured it and it was fine"*. Four outcomes, eight reasons, one sentence each.
+
+## Rejected alternatives and why
+
+- **"Add a reviewer that checks the completion report."** This is the answer if the model is the
+  problem, and F353 says it is not: 81 of 81 clean-arm claims were true. W11 F281 already
+  measured the cost of the opposite direction — the author's *true* completion report pasted in
+  front of a diff took a judge from 3/3 to 0/3. A reviewer added here would be reviewing honest
+  sentences.
+- **"Require the model to emit structured test results."** v1 does, and `AgentOutput(**data)`
+  is the result: the model's own JSON becomes the task record whenever it carries a
+  `files_created` key (F349). Structure does not change who is speaking.
+- **"Score confidence and threshold it."** v1's confidences on the eight endings are 0.7 and 1.0,
+  and the 0.7 is `max(0.7, success_ratio)` — a floor, not a measurement, and item 1's exact
+  diagnosis. The 0.0 it produces on the one ending it catches is computed from counts that are
+  wrong.
+- **"Parse the test output properly and the problem goes away."** Claudette parses properly —
+  order-free, per framework, 387 lines — and still returns `Some(true)` for a crate with no tests
+  (F357), because the defect is not in the parser. It is in a type that has no way to say
+  *nothing ran*.
+- **"Treat any absent measurement as a failure."** Tempting, and it breaks the honest cases:
+  documentation has no test suite (item 7), a Node project may have no `npm` on this host
+  (F317), and an operator's cancel is not a failure of the work. `Unverified` is a third
+  outcome for a reason — it stops the gate without accusing the unit.
+- **"Have the harness re-run the tests after the unit finishes."** It is not wrong and it is not
+  the same thing: it produces a *new* measurement rather than making the unit's own report
+  honest, and F354's stale-tree cases show why both are needed — the question *"is this report
+  about the tree in front of me?"* has to be answerable from the report.
+
+## Effect on fun
+
+The console gets a fourth colour, and it is the one that makes the other three trustworthy.
+Today every donor's map is green-or-red, which means green is doing double duty as *"I checked
+and it is fine"* and *"I did not check"*. Separating them is worth more to an operator than any
+new instrument: at a glance, the fleet splits into work that was measured and work that was
+merely finished, and the second group is where attention belongs.
+
+The lines themselves are the fun part, because they are the unit talking about its own
+limitations in a specific voice. *"ran and found nothing to run"*, *"ruff is not on this
+machine"*, *"still running after 600,000 ms"*, *"rounds budget exhausted"* — each is a different
+sentence, each suggests a different next action, and none of them is a tick. A command centre
+whose units report *"I could not verify that"* is dramatically more interesting than one whose
+units all report success, and it is also the only version where the operator's judgement has
+anything to do.
+
+And it turns the most annoying moment in agent work — reading a confident completion message and
+not knowing whether to believe it — into a two-line answer. The claim stays, in the unit's own
+words, because F354's *"all the smoke tests I ran earlier passed (7/7)"* is worth reading. Under
+it sits what the host watched: `tests · 0 measured · nothing to run`. The operator is not being
+asked to arbitrate a personality; they are being shown a sentence and a measurement, and told
+which is which.
+
+## Open questions
+
+| # | Question | Waiting on |
+|---|---|---|
+| OQ-W6-21 | The exit-code table for the profiles this item did not capture — npm/jest, go, tsc, shell. pytest and unittest use 5 for "nothing collected", cargo uses none; what do the others do, and is there a profile where no integer answers the question? | item 5's profile table, when the second toolchain row is written |
+| OQ-W6-22 | Does a stamped `Measurement` (recommendation 6) need the snapshot sha of the *tree* or of the *changed files*? The 6 stale cases moved one file; a whole-tree sha would also invalidate on an unrelated write | item 6's snapshot, and 2.0's first real attempt |
+| OQ-W6-23 | F356 in the other direction: does sharing a build cache across attempts at **different commits** produce a wrong *build* as well as a wrong test binary, or only a stale test target? OQ-W6-14's other half | one probe, cheap, before 2.0 shares a cache for real |
+| OQ-W6-24 | 14 of 81 honest green claims sit on failing trees. What fraction of *that* gap the coverage fraction closes is unmeasured here — it needs Localize's site list, which does not exist yet | OQ-W6-8, and W11's Plan phase |
+| OQ-W6-8 | Does the coverage fraction bind as a veto, or only as a report? | still open (item 5) |
+| OQ-W6-7 | *(item 2)* Rules-only router, or rules plus a recorded model reading? | still open |
+
+## Confidence: high on the donor chain and on the type, high on the corpus result, medium on how far the zero-fabrication rate travels
+
+The donor half is the strongest evidence in the item because none of it is a reading. v1's
+parser, both of its status determinations and its TypeScript safety net were imported or ported
+and called, on bytes that pytest and unittest really printed, with the exit statuses the OS
+really returned; the 15-of-16 table is what those functions returned. Claudette's
+`classify_tests` was ported verbatim and produced `Some(true)` with the line *"tests: 0 passed"*
+on a real cargo capture. The four documentation sites in F351 are quotations with line numbers.
+
+The corpus half rests on one instrument and the instrument has three controls plus an
+independent clock: `control.py` asserts that the verifier's own cargo invocation cannot produce
+the artifact the census counts, `cargo build` and `cargo check` cannot either, the hash in the
+control matches the hash in the preserved work dir, and the mtime alignment places the subject's
+test binary between two narrated tool calls to within a second. Its known weakness is
+asymmetric: **presence proves a test run, absence does not disprove one.** A subject whose crate
+did not compile leaves no binary and would read as "did not test" — which is why the 7 unbacked
+cells were read individually rather than counted, and why the clean-arm number is quoted as
+81 of 81 present rather than as a rate over failures.
+
+Three limits worth stating plainly. **The zero-fabrication result is one model on one task
+shape**: 14 Q56 Rust tasks, single-file, small, with visible tests already in the fixture, and one of the
+fourteen prompts even says *"Run `cargo test` to check your work."* It does not license
+"local models do not fabricate test results"; it licenses "on this population the fabrication
+rate was zero, so the defect §11 names does not require one." **`visible.py` re-runs the suite
+today, not at grade time** — the toolchain has moved since these cells were recorded, and a
+tree that is green now was assumed green then; nothing in the 81-of-81 result depends on a
+version-sensitive behaviour, but the measurement is a re-execution and not a recording.
+And **the type is a design, not a deployment**: 17 tests over 13 captured endings say the
+distinctions are makeable and cost nothing, and they say nothing about what happens when a
+profile for a runner nobody here has tried meets a run-ending nobody here has captured. That is
+OQ-W6-21, and it is the first thing the second toolchain row will find out.
+
+One absence worth recording, because it is the mirror of item 7's. **No probe in this item
+needed a model.** The whole of §11's honest-reporting problem — the incident, the fix that could
+not fire, the four documented sites, the fourth outcome shadowed by a Boolean, the successor's
+surviving green, the build system's own silent pass, and the type that makes all of it
+unrepresentable — is decided by exit codes, types and call sites. The one place a model appears
+is as the *control*: 98 attempts, 81 claims, and not one of them false.
 
 ---

@@ -1,0 +1,11 @@
+[package]
+name = "honest-report"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+# Escape the parent repo's cargo workspace so this spike builds standalone —
+# the same trick the Q56 fixtures use, and load-bearing for the same reason.
+[workspace]

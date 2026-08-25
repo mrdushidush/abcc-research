@@ -1,0 +1,114 @@
+[
+ {
+  "case": "pytest discovered zero tests",
+  "fn": "_parse_from_execution_logs",
+  "status": "SUCCESS",
+  "test_results": "Tests ran but no test results found in output",
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest discovered zero tests",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest ran 3 and all 3 failed",
+  "fn": "_parse_from_execution_logs",
+  "status": "SUCCESS",
+  "test_results": "Tests ran but no test results found in output",
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest ran 3 and all 3 failed",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest ran 3, one passed",
+  "fn": "_parse_from_execution_logs",
+  "status": "SOFT_FAILURE",
+  "test_results": "FAILURE - 2 failed out of 2 tests",
+  "verdict": "redirected to handleTaskFailure"
+ },
+ {
+  "case": "pytest ran 3, one passed",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest ran 2 and both passed",
+  "fn": "_parse_from_execution_logs",
+  "status": "SUCCESS",
+  "test_results": "SUCCESS - All 2 tests passed",
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest ran 2 and both passed",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest failed to collect",
+  "fn": "_parse_from_execution_logs",
+  "status": "SUCCESS",
+  "test_results": "Tests ran but no test results found in output",
+  "verdict": "marked completed"
+ },
+ {
+  "case": "pytest failed to collect",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "the test command could not spawn",
+  "fn": "_parse_from_execution_logs",
+  "status": "SUCCESS",
+  "test_results": "Tests ran but no test results found in output",
+  "verdict": "marked completed"
+ },
+ {
+  "case": "the test command could not spawn",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "no test command was issued",
+  "fn": "_parse_from_execution_logs",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "no test command was issued",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "the model reports its own result",
+  "fn": "_parse_from_execution_logs",
+  "status": "SUCCESS",
+  "test_results": null,
+  "verdict": "marked completed"
+ },
+ {
+  "case": "the model reports its own result",
+  "fn": "parse_agent_output",
+  "status": "SUCCESS",
+  "test_results": "2 passed in 0.04s",
+  "verdict": "marked completed"
+ }
+]

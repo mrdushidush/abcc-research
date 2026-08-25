@@ -1,0 +1,19 @@
+_parse_from_execution_logs   pytest discovered zero tests     SUCCESS        conf=0.7  <-- reports SUCCESS
+parse_agent_output           pytest discovered zero tests     SUCCESS        conf=1.0  <-- reports SUCCESS
+_parse_from_execution_logs   pytest ran 3 and all 3 failed    SUCCESS        conf=0.7  <-- reports SUCCESS
+parse_agent_output           pytest ran 3 and all 3 failed    SUCCESS        conf=1.0  <-- reports SUCCESS
+_parse_from_execution_logs   pytest ran 3, one passed         SOFT_FAILURE   conf=0.0
+parse_agent_output           pytest ran 3, one passed         SUCCESS        conf=1.0  <-- reports SUCCESS
+_parse_from_execution_logs   pytest ran 2 and both passed     SUCCESS        conf=1.0  <-- reports SUCCESS
+parse_agent_output           pytest ran 2 and both passed     SUCCESS        conf=1.0  <-- reports SUCCESS
+_parse_from_execution_logs   pytest failed to collect         SUCCESS        conf=0.7  <-- reports SUCCESS
+parse_agent_output           pytest failed to collect         SUCCESS        conf=1.0  <-- reports SUCCESS
+_parse_from_execution_logs   the test command could not spawn SUCCESS        conf=0.7  <-- reports SUCCESS
+parse_agent_output           the test command could not spawn SUCCESS        conf=1.0  <-- reports SUCCESS
+_parse_from_execution_logs   no test command was issued       SUCCESS        conf=1.0  <-- reports SUCCESS
+parse_agent_output           no test command was issued       SUCCESS        conf=1.0  <-- reports SUCCESS
+_parse_from_execution_logs   the model reports its own result SUCCESS        conf=1.0  <-- reports SUCCESS
+parse_agent_output           the model reports its own result SUCCESS        conf=1.0  <-- reports SUCCESS
+
+zero-test rows whose test_results contains 'NO TESTS RAN': 0 of 2
+zero-test rows that recorded the miss in what_failed: 1 of 2

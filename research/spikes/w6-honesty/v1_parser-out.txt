@@ -1,0 +1,10 @@
+pytest: 2 of 2 pass           run=2   pass=2   fail=0    fix_fires=False  SUCCESS - All 2 tests passed
+pytest: 1 passes, 2 fail      run=2   pass=0   fail=2    fix_fires=True   FAILURE - 2 failed out of 2 tests
+pytest: 3 of 3 fail           run=0   pass=0   fail=0    fix_fires=False  NO TESTS RAN - Test discovery failed or no tests found
+pytest: nothing to collect    run=0   pass=0   fail=0    fix_fires=False  NO TESTS RAN - Test discovery failed or no tests found
+pytest: collection error      run=0   pass=0   fail=0    fix_fires=False  NO TESTS RAN - Test discovery failed or no tests found
+unittest: 2 of 2 pass         run=2   pass=2   fail=0    fix_fires=False  SUCCESS - All 2 tests passed
+unittest: 2 of 2 fail         run=2   pass=0   fail=2    fix_fires=True   FAILURE - 2 failed out of 2 tests
+unittest: nothing to collect  run=0   pass=0   fail=0    fix_fires=False  NO TESTS RAN - Test discovery failed or no tests found
+
+runs that really went red: 4; on which v1 can report a failure: 2
