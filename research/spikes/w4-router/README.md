@@ -13,8 +13,9 @@ Spike for **W4 item 1** (`research/W4-routing.md`, findings **F360–F367**). Ru
    the wrong sign. The only task that never passes carries the corpus's lowest score; the
    highest-scoring task passes 5/5. **F361**
 3. **What predicts failure is measured effort**, and none of it is available before dispatch: peak
-   occupancy +0.405, cumulative tokens +0.326, iterations +0.320 — against prompt word count +0.187
-   and the complexity score +0.101. **Raw word count beats the scorer.** **F362**
+   occupancy +0.405, cumulative tokens +0.326, iterations +0.320 — against BCF's `rule_score` +0.219,
+   prompt word count +0.187 and v1's complexity score +0.101. **Every a-priori signal sits below
+   every in-flight one, and counting the prompt's words beats v1's scorer 1.9×.** **F362**
 4. **Context is very nearly a constant**: over 945 cells the recovered peak-occupancy *floor* is
    5,201–13,066 (p50 5,898). **0 of 945 exceed 16K**; 74 exceed the deprecated 8K. The median
    preamble is 4,874 — **83% of the median peak**. Cumulative cost, by contrast, spans 29× and

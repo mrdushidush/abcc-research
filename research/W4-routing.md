@@ -254,13 +254,16 @@ Same 280 control cells, per task, against the control failure rate:
 | **peak prompt occupancy** (recovered floor) | **+0.405** | no |
 | cumulative prompt tokens | +0.326 | no |
 | iterations | +0.320 | no |
+| BCF's `rule_score` | +0.219 | **yes** |
 | prompt word count | +0.187 | **yes** |
 | **v1 complexity score** | **+0.101** | **yes** |
 
-The two signals a router can see before dispatch are the two weakest, and the weaker of *those* is
-the one v1 spends a model call computing: **raw prompt length beats the complexity score by 1.9×**.
-The three strongest are all observations of the attempt in flight, and they are ordered the way
-effort is: how big the context got, how many tokens it cost, how many turns it took.
+Every signal a router can see before dispatch sits below every signal it can only see afterwards, and
+the gap is roughly 2×. Among the three a-priori ones, **v1's scorer is last** — beaten 1.9× by
+counting the words in the prompt, which costs nothing and needed no keyword list, and 2.2× by the
+successor's variant of itself. The three strongest are all observations of the attempt in flight, and
+they are ordered the way effort is: how big the context got, how many tokens it cost, how many turns
+it took.
 
 This is the item's design consequence and it is larger than the calibration question §11 asked.
 **Routing is not a prediction problem.** The prediction is available and it is worth ρ ≈ 0.1; the
@@ -398,8 +401,19 @@ The single rule in the entire inherited family that ever routes a task upward se
 agent almost never fails.
 
 BCF's scorer is nonetheless the better of the two at the thing both are for: ρ(BCF score, Q56 control
-failure) = **+0.219** against v1's **+0.101**. Both are still beaten by prompt word count (+0.187) —
-BCF only narrowly, and BCF's own `word_count > 100 → +2` rule is most of why.
+failure) = **+0.219** against v1's **+0.101**, and it is the best a-priori signal measured in this
+item — narrowly ahead of counting the prompt's words (+0.187), which is most likely *why*: BCF adds
+a **length rule with thresholds this corpus actually crosses**. Both donors have one; the thresholds
+differ and the corpus decides. Prompt lengths here are min 28 words, median 77, max 228:
+
+| rule | fires on |
+|---|---|
+| BCF `word_count > 50 → +1`, `> 100 → +2` (`router.rs:286-292`) | **127 / 149** |
+| v1 `wordCount > 100 → +0.5`, `> 200 → +1` (`taskRouter.ts:221-223`) | **36 / 149** |
+
+BCF's length term is live on 85% of the corpus and v1's on 24%, which is the mechanical reason the
+successor's variant is the better of the two — it is measuring the prompt's size, which F362 says is
+the strongest a-priori signal there is. It is still less than half the weakest in-flight one.
 
 Two further donor facts, since they are what a port would inherit: BCF's `extreme` list contains the
 bare word **`'project'`** (+3 on a single hit), and `detect_language_hint` adds +0.5 for Rust, Go or
@@ -483,10 +497,12 @@ local model, one GPU, zero cloud spend and no co-residency (W11 F275). "Which ti
 What is genuinely open is **how much budget this attempt gets** and **when to stop**, and F362 says
 both are answerable from counters the harness already keeps.
 
-**3. Whatever estimate item 3 lands on must beat `prompt.split_whitespace().count()`.** That is the
-baseline this item establishes: ρ = +0.187 against control failure, free, no model call, no keyword
-list, and it beats both donors' scorers. An estimator that does not clear it is not worth its
-prompt-cache cost, let alone a swap.
+**3. Whatever estimate item 3 lands on must beat ρ = +0.219, and it should be measured against
+`prompt.split_whitespace().count()` at +0.187.** Those are the two baselines this item establishes:
+the best a-priori number either donor produces, and the free one-liner that gets 85% of the way there
+with no keyword list and no model call. An estimator that does not clear the first is not worth
+porting; one that does not clear the second by a wide margin is not worth its prompt-cache cost, let
+alone a swap. Both are still worth less than half of any in-flight counter.
 
 **4. Record the in-flight counters as first-class routing inputs from the start.** Peak occupancy,
 cumulative tokens and round count are the three strongest predictors measured here, they cost
