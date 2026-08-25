@@ -1,0 +1,21 @@
+=== the 2x2: same prompt, same schema, same weights, same sampler ===
+  hop    enable_think     wall_s   out_tok think_ch   finish  content
+  -- q56/Q03
+  proxy  absent            17.24      1004     3634     stop  {   "complexity": 2,   "reasoning": "This task is a well-scoped bug fi
+  proxy  false             16.76      1052     3945     stop  {   "complexity": 2,   "reasoning": "This task falls squarely into the
+  bare   absent            14.59      1115     4024     stop  {   "complexity": 2,   "reasoning": "This task falls squarely in the '
+  bare   false              2.13       124        0     stop  {   "complexity": 2,   "reasoning": "This task involves fixing a speci
+  -- q56/Q46
+  proxy  absent            20.13      1237     4466     stop  {   "complexity": 2,   "reasoning": "This task falls squarely in the '
+  proxy  false             18.76      1181     4316     stop  {   "complexity": 2,   "reasoning": "This task falls squarely in the '
+  bare   absent            18.37      1391     5142     stop  {   "complexity": 2,   "reasoning": "This task falls squarely in the 1
+  bare   false              1.94       106        0     stop  {   "complexity": 2,   "reasoning": "This task involves fixing a simpl
+  -- q56/Q02
+  proxy  absent            18.69      1090     4007     stop  {   "complexity": 2,   "reasoning": "This task falls squarely in the '
+  proxy  false             22.23      1376     5297     stop  {   "complexity": 2,   "reasoning": "The task falls squarely into the 
+  bare   absent            15.61      1180     4260     stop  {   "complexity": 2,   "reasoning": "This task falls squarely into the
+  bare   false              1.56        85        0     stop  {   "complexity": 3,   "reasoning": "The task requires implementing a 
+
+Read the table this way: the two `absent` rows price the HOP, and the
+proxy `false` row against the bare `false` row says whether the kwarg
+survives the hop at all.

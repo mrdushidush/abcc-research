@@ -1,0 +1,187 @@
+=== 0. what ran ===
+  estimator calls: 414 over 69 tasks x 6 arms x reps [0]
+  calls with no usable value: 11
+     q56/Q02 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q04 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q09 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q23 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q31 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q36 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q42 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q45 pass_pct rep0  finish=length parse=no_json out=6000
+     q56/Q51 v1_verbatim rep0  finish=length parse=no_json out=6000
+     q56/Q53 v1_verbatim rep0  finish=length parse=no_json out=6000
+     u100/fix_sql_inject pass_pct rep0  finish=length parse=no_json out=6000
+
+=== A. what an estimate COSTS, against Q56's 19.1 s median attempt (F372) ===
+  arm                   n    p50 s   p90 s   max s  p50 out  p50 thk    fail
+  v1_verbatim          69    17.19   23.18   86.70     1157     4574       2
+  v1_schema            69    20.50   26.49   30.86     1314     4914       0
+  v1_schema_rf         69    19.41   25.19   30.58     1254     4780       0
+  pass_pct             69    28.38   92.83   97.46     1775     6936       9
+  v1_nothink           69     2.00    2.44    3.38      106        0       0
+  pass_pct_nothink     69     0.94    1.02    1.13       23        0       0
+
+  truncation rate if max_tokens had been lower (completion_tokens >= budget):
+  v1_verbatim        69@300  46@1000  3@2000  2@3000  2@6000
+  v1_schema          69@300  57@1000  0@2000  0@3000  0@6000
+  v1_schema_rf       69@300  57@1000  0@2000  0@3000  0@6000
+  pass_pct           69@300  62@1000  24@2000  13@3000  9@6000
+  v1_nothink         0@300  0@1000  0@2000  0@3000  0@6000
+  pass_pct_nothink   0@300  0@1000  0@2000  0@3000  0@6000
+
+=== B. the estimate's own distribution -- can it separate anything? ===
+  v1_verbatim       n=67  distinct=4  2:47  3:8  4:9  5:3
+  v1_schema         n=69  distinct=5  2:46  3:11  4:8  5:2  6:2
+  v1_schema_rf      n=69  distinct=5  2:50  3:6  4:7  5:4  6:2
+  pass_pct          n=60  distinct=5  70:2  85:5  90:16  95:35  98:2
+  v1_nothink        n=69  distinct=5  2:33  3:23  4:11  6:1  7:1
+  pass_pct_nothink  n=69  distinct=5  20:1  75:1  85:10  95:54  100:3
+
+=== C. q56: 56 tasks, 16 of them fail at least once in the control arm ===
+  predictor (higher = harder)       rho       AUC   n
+  v1 rule score                  +0.101     0.584   56
+  BCF rule_score                 +0.219     0.647   56
+  prompt words                   +0.187     0.637   56
+  prompt bytes                   +0.269     0.691   56
+  fixture bytes                  +0.069     0.536   56
+  fixture files                  -0.084     0.467   56
+  kind (7-fold CV encoding)      -0.239     0.375   56
+  lang (7-fold CV encoding)      +0.005     0.485   56
+  MODEL v1_verbatim              +0.225     0.634   54
+  MODEL v1_schema                +0.272     0.673   56
+  MODEL v1_schema_rf             +0.288     0.672   56
+  MODEL pass_pct (negated)       +0.172     0.616   48
+  MODEL v1_nothink               +0.243     0.648   56
+  MODEL pass_pct_nothink (negated)   +0.079     0.552   56
+  permutation test on kind : between-group SS 0.2078, p = 0.908 against label shuffles that keep the group sizes
+  permutation test on lang : between-group SS 0.2744, p = 0.266 against label shuffles that keep the group sizes
+
+=== C. u100: 10 tasks, 7 of them fail at least once in the control arm ===
+  predictor (higher = harder)       rho       AUC   n
+  v1 rule score                  -0.441     0.333   10
+  BCF rule_score                 +0.390     0.643   10
+  prompt words                   +0.271     0.619   10
+  prompt bytes                   +0.218     0.571   10
+  fixture bytes                  -0.026     0.476   10
+  fixture files                     n/a     0.500   10
+  MODEL v1_verbatim                 n/a     0.500   10
+  MODEL v1_schema                   n/a     0.500   10
+  MODEL v1_schema_rf                n/a     0.500   10
+  MODEL pass_pct (negated)       +0.309     0.778   9
+  MODEL v1_nothink               +0.063     0.571   10
+  MODEL pass_pct_nothink (negated)   +0.557     0.762   10
+  permutation test on kind : only one group in this suite
+  permutation test on lang : only one group in this suite
+
+=== C. k: 3 tasks, too few for a rank statistic -- values only ===
+  finish_the_cancelled_status      fail=0.67  {'v1_verbatim': 5, 'v1_schema': 5, 'v1_schema_rf': 6, 'pass_pct': 70, 'v1_nothink': 7, 'pass_pct_nothink': 85}
+  round_at_the_line_not_the_total  fail=0.17  {'v1_verbatim': 4, 'v1_schema': 3, 'v1_schema_rf': 5, 'pass_pct': 90, 'v1_nothink': 4, 'pass_pct_nothink': 95}
+  trace_dropped_samples            fail=0.17  {'v1_verbatim': 5, 'v1_schema': 6, 'v1_schema_rf': 5, 'pass_pct': 70, 'v1_nothink': 4, 'pass_pct_nothink': 85}
+
+=== D. is the estimate a property of the task, or of how it was asked? ===
+  v1_schema        vs v1_schema_rf      n=69  identical 57 (83%)  mean shift -0.01  range -1..+2   [emission order: score first vs reasoning first]
+  v1_schema        vs v1_nothink        n=69  identical 43 (62%)  mean shift +0.19  range -2..+2   [the reasoning trace: on vs off, same schema]
+  v1_verbatim      vs v1_schema         n=67  identical 51 (76%)  mean shift +0.04  range -2..+1   [free text vs constrained, same rubric]
+  pass_pct         vs pass_pct_nothink  n=60  identical 32 (53%)  mean shift -0.18  range -75..+15   [the reasoning trace on the pass estimate]
+
+=== F. calibration: the estimate against the base rate it is estimating ===
+  -- q56: measured control pass rate 88.2% over 280 cells
+     pass_pct          mean estimate  92.9%  (population error +4.7 pp)
+        estimate  80- 89  n= 3  actual pass 93.3%
+        estimate  90- 99  n=45  actual pass 86.2%
+     pass_pct_nothink  mean estimate  92.4%  (population error +4.2 pp)
+        estimate  20- 29  n= 1  actual pass 100.0%
+        estimate  70- 79  n= 1  actual pass 80.0%
+        estimate  80- 89  n= 6  actual pass 93.3%
+        estimate  90- 99  n=46  actual pass 87.0%
+        estimate 100-109  n= 2  actual pass 100.0%
+  -- u100: measured control pass rate 88.8% over 80 cells
+     pass_pct          mean estimate  93.1%  (population error +4.4 pp)
+        estimate  80- 89  n= 2  actual pass 87.5%
+        estimate  90- 99  n= 7  actual pass 89.3%
+     pass_pct_nothink  mean estimate  93.5%  (population error +4.8 pp)
+        estimate  80- 89  n= 2  actual pass 81.2%
+        estimate  90- 99  n= 7  actual pass 89.3%
+        estimate 100-109  n= 1  actual pass 100.0%
+  -- k: measured control pass rate 66.7% over 18 cells
+     pass_pct          mean estimate  76.7%  (population error +10.0 pp)
+        estimate  70- 79  n= 2  actual pass 58.3%
+        estimate  90- 99  n= 1  actual pass 83.3%
+     pass_pct_nothink  mean estimate  88.3%  (population error +21.7 pp)
+        estimate  80- 89  n= 2  actual pass 58.3%
+        estimate  90- 99  n= 1  actual pass 83.3%
+
+=== G. the ceiling: what a PERFECT a-priori oracle would buy over reacting ===
+  -- q56 (56 tasks, 16 ever fail, first-attempt failure rate 11.8%)
+     REACTIVE  'attempt once, retry once if it failed':
+        attempts per task = 1 + 0.118 = 1.118, and the retry lands on the failures with certainty
+     PREDICTIVE 'a PERFECT oracle names the 16 tasks that ever fail and pre-allocates 2':
+        attempts per task = 1 + 16/56 = 1.286, plus one estimator call on all 56
+        -> the oracle spends MORE attempts (1.286 vs 1.118) and buys no outcome the reactive policy misses,
+           because a task that fails is identified by failing.  The estimator's ceiling is negative before its own cost is counted.
+  -- u100 (10 tasks, 7 ever fail, first-attempt failure rate 11.3%)
+     REACTIVE  'attempt once, retry once if it failed':
+        attempts per task = 1 + 0.113 = 1.113, and the retry lands on the failures with certainty
+     PREDICTIVE 'a PERFECT oracle names the 7 tasks that ever fail and pre-allocates 2':
+        attempts per task = 1 + 7/10 = 1.700, plus one estimator call on all 10
+        -> the oracle spends MORE attempts (1.700 vs 1.113) and buys no outcome the reactive policy misses,
+           because a task that fails is identified by failing.  The estimator's ceiling is negative before its own cost is counted.
+  -- k (3 tasks, 3 ever fail, first-attempt failure rate 33.3%)
+     REACTIVE  'attempt once, retry once if it failed':
+        attempts per task = 1 + 0.333 = 1.333, and the retry lands on the failures with certainty
+     PREDICTIVE 'a PERFECT oracle names the 3 tasks that ever fail and pre-allocates 2':
+        attempts per task = 1 + 3/3 = 2.000, plus one estimator call on all 3
+        -> the oracle spends MORE attempts (2.000 vs 1.333) and buys no outcome the reactive policy misses,
+           because a task that fails is identified by failing.  The estimator's ceiling is negative before its own cost is counted.
+
+=== H. one pass over the corpus: the estimator's bill vs the retries' bill ===
+  -- q56: 56 tasks, first-attempt failure 11.8%, median attempt 19.1 s
+     REACTIVE retry bill for the whole corpus: 7 tasks x 19.1 s = 126 s
+     v1_verbatim       bill    1098 s  =  8.71x the retries it would be allocating
+     v1_schema         bill    1192 s  =  9.45x the retries it would be allocating
+     v1_schema_rf      bill    1124 s  =  8.92x the retries it would be allocating
+     pass_pct          bill    2226 s  = 17.66x the retries it would be allocating
+     v1_nothink        bill     116 s  =  0.92x the retries it would be allocating
+     pass_pct_nothink  bill      53 s  =  0.42x the retries it would be allocating
+  -- u100: 10 tasks, first-attempt failure 11.3%, median attempt 13.9 s
+     REACTIVE retry bill for the whole corpus: 1 tasks x 13.9 s = 16 s
+     v1_verbatim       bill     143 s  =  9.15x the retries it would be allocating
+     v1_schema         bill     160 s  = 10.22x the retries it would be allocating
+     v1_schema_rf      bill     148 s  =  9.49x the retries it would be allocating
+     pass_pct          bill     317 s  = 20.27x the retries it would be allocating
+     v1_nothink        bill      18 s  =  1.13x the retries it would be allocating
+     pass_pct_nothink  bill       9 s  =  0.57x the retries it would be allocating
+  -- k: 3 tasks, first-attempt failure 33.3%, median attempt 110.8 s
+     REACTIVE retry bill for the whole corpus: 1 tasks x 110.8 s = 111 s
+     v1_verbatim       bill      63 s  =  0.56x the retries it would be allocating
+     v1_schema         bill      78 s  =  0.71x the retries it would be allocating
+     v1_schema_rf      bill      82 s  =  0.74x the retries it would be allocating
+     pass_pct          bill      67 s  =  0.61x the retries it would be allocating
+     v1_nothink        bill       8 s  =  0.08x the retries it would be allocating
+     pass_pct_nothink  bill       3 s  =  0.02x the retries it would be allocating
+
+=== I. bootstrap: is any predictor distinguishable from any other at n=56? ===
+  10,000 resamples of TASKS with replacement, fixed seed.  A paired
+  difference whose 95% interval spans 0 is not a difference.
+  predictor                         AUC  95% interval
+  BCF rule_score                  0.647  [0.483, 0.800]
+  prompt words                    0.637  [0.465, 0.798]
+  prompt bytes                    0.691  [0.521, 0.844]
+  MODEL v1_verbatim               0.634  [0.478, 0.795]
+  MODEL v1_schema                 0.673  [0.519, 0.825]
+  MODEL v1_schema_rf              0.672  [0.525, 0.818]
+  MODEL pass_pct                  0.616  [0.466, 0.766]
+  MODEL v1_nothink                0.648  [0.477, 0.809]
+  MODEL pass_pct_nothink          0.552  [0.446, 0.668]
+
+  paired differences against the best FREE feature (prompt bytes):
+  BCF rule_score               -0.044  [-0.235, +0.143]  SPANS 0
+  prompt words                 -0.053  [-0.116, +0.001]  SPANS 0
+  MODEL v1_verbatim            -0.055  [-0.218, +0.095]  SPANS 0
+  MODEL v1_schema              -0.016  [-0.190, +0.152]  SPANS 0
+  MODEL v1_schema_rf           -0.018  [-0.183, +0.140]  SPANS 0
+  MODEL pass_pct               -0.077  [-0.279, +0.140]  SPANS 0
+  MODEL v1_nothink             -0.041  [-0.263, +0.167]  SPANS 0
+  MODEL pass_pct_nothink       -0.142  [-0.323, +0.063]  SPANS 0
+

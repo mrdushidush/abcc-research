@@ -1,8 +1,8 @@
 # W4 — Routing, escalation and the complexity model
 
-**Status: OPEN — started 2026-08-25, items 1 and 2 of 6 closed.** §14 orders W4 after the
+**Status: OPEN — started 2026-08-25, items 1, 2 and 3 of 6 closed.** §14 orders W4 after the
 W3 + W6 + W11 block, and that block closed on 2026-08-25 (`d3a17a5`). Findings continue the family
-numbering from **F360**; the workstream now runs to **F375**. Built one item at a time in §13
+numbering from **F360**; the workstream now runs to **F385**. Built one item at a time in §13
 format.
 
 Planned items:
@@ -18,10 +18,13 @@ Planned items:
    request at all (ρ = +0.048 against the workspace's bytes, +0.836 against the rounds the agent
    actually ran), the constant F363 found was a fact about donor fixtures, and the only rung the
    budget can buy is another attempt — priced, with its yield curve and its stopping rule.
-3. ⬜ **The estimator: rules, a recorded model reading, or neither** — **OQ-W6-7**, twice deferred.
-   §11's *"Whether the Haiku semantic assessment pass is still worth paying for, or whether the local
-   base agent can now score complexity itself for free."* Item 1 changes this question's shape: see
-   F366.
+3. ✅ **The estimator: rules, a recorded model reading, or neither** (F376–F385) — **OQ-W6-7**,
+   twice deferred. §11's *"Whether the Haiku semantic assessment pass is still worth paying for, or
+   whether the local base agent can now score complexity itself for free."* Answered by running the
+   champion as the estimator, 414 calls over the 69 tasks that have an answer key. It is not free
+   (20.5 s, against a 19.1 s median attempt), it is not better than counting the prompt's bytes, and
+   at n = 56 nothing in the comparison is distinguishable from anything else. **OQ-W6-7 closes: no
+   estimator, because F385 shows even a perfect one loses to reacting.**
 4. ⬜ **Confidence signals on worker output** — §11's *"logprobs, self-critique, test results, static
    analysis. Which correlate with real quality?"* W6 items 4, 5 and 7 have already answered three of
    the four on 728 real attempts; logprobs are untouched, and item 1's F362 says the strongest
@@ -1062,3 +1065,508 @@ over the same cells, and its price list is entirely re-quoted from measurements 
 distribution for the regime beyond it. F374's posterior is exact arithmetic on measured pass rates
 but rests on the repeats being independent draws, which F59 says is only approximately true. No
 threshold on rounds or occupancy is proposed here, because none was measured.
+
+---
+
+# Item 3 — the estimator: rules, a recorded model reading, or neither
+
+## Question
+
+§11's bullet:
+
+> *Whether the Haiku semantic assessment pass is still worth paying for, or whether the local base
+> agent can now score complexity itself for free.*
+
+The sentence contains three assumptions and items 1 and 2 have already voided two of them.
+
+**"Whether the Haiku pass is still worth paying for"** presumes a rules-vs-model tradeoff to
+adjudicate. F366 measured that tradeoff and there is none: v1's rule half never exceeds 6 on a real
+task, the `rules <= 8` gate at `taskRouter.ts:297` therefore never blocks, and the model half is
+called on **149 of 149** tasks and taken outright on 53.8% of the (task × answer) grid. There is no
+rules-only arm to compare against — only *a recorded model reading* or *no estimate at all*. And
+Haiku itself is not on the table: zero cloud spend is a standing decision, so the only question left
+standing is the second half of the sentence.
+
+**"can now score complexity itself for free"** presumes the local call is free. It is not, and the
+size of the bill is the first thing this item measures. Q56's median attempt is **19.1 s** (F372).
+An estimator that runs before dispatch is competing against simply dispatching.
+
+**And the bar moved.** F374 found that one *observed* failure moves P(next passes) by **44.6 points**
+on Q56 — a signal that is free, exact, and arrives one attempt later. So this item cannot just ask
+"does the model score better than the rules". It has to ask the question item 2 left on the table:
+**is there any use for a pre-dispatch estimate at all, once the first attempt is this cheap?**
+
+Three arms, honestly stated: (a) ask the champion directly and measure ρ (OQ-W4-3), (b) a free
+a-priori feature, (c) nothing. Plus OQ-W4-5, which nobody has scored: **task kind** is already
+labelled in the corpus and the two hardest kinds are the two the keyword lists have no vocabulary
+for.
+
+## Method
+
+**Population.** 69 tasks that have both a prompt — the thing an estimator sees before dispatch — and
+a measured outcome: 56 Q56, 10 U100, 3 K, over **378 control-arm cells**. Control only: 672 of the
+952 Q56 cells are non-control and 560 come from arms built to stop the agent editing, so a pooled
+rate over them is a claim about the arm (memory items 26/28/31). K is stratified to the champion at
+`max_iterations = 40`; the six `k-27b-*` families are a different model and `w11-b12`/`w11-b20` are
+different loop budgets (item 2's trap 9).
+
+**Two metrics, because one of them is a weak instrument here.**
+
+- **ρ** — Spearman against the control-arm failure rate at task level, the identical construction
+  item 1 used, so its published baselines are directly comparable rather than re-derived. The
+  reproduction is the check: this spike's join returns v1 rule score **+0.101**, BCF `rule_score`
+  **+0.219** and prompt word count **+0.187**, matching F362 exactly.
+- **AUC** — Mann-Whitney: P(a task that ever failed ranks harder than a task that never did), ties at
+  half. 0.5 is a coin. This is here because **40 of 56 Q56 tasks pass 5/5**, so most of the outcome
+  column is a single value and a rank correlation over it is dominated by ties. AUC asks the question
+  routing actually asks: can this signal put the 16 tasks that ever fail above the 40 that never do?
+
+Every predictor is oriented **higher = harder** before either statistic, so a useful signal is
+positive in both columns; the arms that predict success are negated and marked.
+
+**Arms.** Six model arms, all at temperature 0.0 — the value claudette sends in production
+(`api.rs:783`) and the value all 378 cells ran under — `max_tokens` 6000, champion at `-c 65536
+--parallel 1`.
+
+| arm | what it is |
+|---|---|
+| `v1_verbatim` | v1's `complexityAssessor.ts:47-67` prompt byte-for-byte, no `response_format`, JSON regex-extracted from free text the way `complexityAssessor.ts:95` does it — v1's own call, pointed at the local model |
+| `v1_schema` | the same rubric under a JSON schema, `complexity` before `reasoning` (v1's own field order) |
+| `v1_schema_rf` | the same schema, `reasoning` emitted first — W11 item 3 found a schema's emission order decides the answer a constrained model gives; this is that test on a routing input |
+| `pass_pct` | the question a router actually has — will one attempt pass the hidden tests — as a whole percent under an integer schema |
+| `v1_nothink` | `v1_schema` with the reasoning trace off |
+| `pass_pct_nothink` | `pass_pct` with the reasoning trace off |
+
+Free baselines, scored on the same 69 rows at no GPU cost: v1's rule score, BCF's `rule_score`,
+prompt words, prompt bytes, fixture bytes, fixture files, and cross-validated encodings of `kind`
+and `lang`.
+
+## Inherited
+
+- **F366** — the model half is called on 149 of 149; there is no rules-only arm.
+- **F362** — the bar: BCF `rule_score` +0.219, against a free word count at +0.187.
+- **F372** — Q56's median attempt is 19.1 s. That is the estimator's competition.
+- **F374** — one observed failure is worth 44.6 points on Q56.
+- **W2 F82** — `json_schema` is enforced end to end, the reasoning trace is *not* constrained and is
+  spent first, and an under-budgeted call returns `content: ""` with HTTP 200.
+- **W11 item 3** — a schema's emission order decides the answer.
+- **Zero cloud spend** is standing, so Haiku is not an option and "the local base agent" is the only
+  candidate.
+
+## Findings
+
+### 🚨 F376 — the estimator is not free and it is not cheap: through the path claudette uses it costs as much as the attempt it would route, and 9–18× the entire retry budget it exists to allocate
+
+§11 asks whether the local base agent can score complexity *"for free"*. Measured on 414 calls over
+69 tasks, at the sampler and window the 378 outcome cells ran under:
+
+| arm | p50 | p90 | max | p50 out tok | p50 trace chars | no usable value |
+|---|---|---|---|---|---|---|
+| `v1_verbatim` | **17.19 s** | 23.18 s | 86.70 s | 1,157 | 4,574 | 2 / 69 |
+| `v1_schema` | **20.50 s** | 26.49 s | 30.86 s | 1,314 | 4,914 | 0 / 69 |
+| `v1_schema_rf` | **19.41 s** | 25.19 s | 30.58 s | 1,254 | 4,780 | 0 / 69 |
+| `pass_pct` | **28.38 s** | 92.83 s | 97.46 s | 1,775 | 6,936 | **9 / 69** |
+| `v1_nothink` | **2.00 s** | 2.44 s | 3.38 s | 106 | 0 | 0 / 69 |
+| `pass_pct_nothink` | **0.94 s** | 1.02 s | 1.13 s | 23 | 0 | 0 / 69 |
+
+**Q56's median attempt is 19.1 s (F372).** Three of the four arms that run on the production path
+cost more than that. The estimator is not a cheap pre-filter on an expensive operation; it is the
+same size as the operation.
+
+The sharper framing is the bill for one pass over the corpus, against the thing the estimate would
+be *for*. Item 2's standing recommendation is retry-on-failure with a budget of 2, so the only
+spending an estimator could redirect is the retries:
+
+| | Q56 (56 tasks, 11.8% first-attempt failure) | K (3 tasks, 33.3%) |
+|---|---|---|
+| the retries themselves | 7 × 19.1 s = **126 s** | 1 × 110.8 s = **111 s** |
+| `v1_schema` bill | 1,192 s = **9.45×** | 78 s = 0.71× |
+| `pass_pct` bill | 2,226 s = **17.66×** | 67 s = 0.61× |
+| `v1_nothink` bill | 116 s = 0.92× | 8 s = 0.08× |
+| `pass_pct_nothink` bill | 53 s = **0.42×** | 3 s = 0.02× |
+
+⚠ **The ratio is a property of attempt length, and K says so.** Where an attempt costs 110.8 s a
+25-second estimator is a quarter of it, not 150% of it, and the bills fall below 1× on every arm. So
+"the estimator costs more than the task" is a Q56/U100 statement, not a universal one. What is
+universal is the next four findings: at *any* price it is not buying a signal.
+
+### 🚨 F377 — `chat_template_kwargs` is silently dropped by LM Studio's proxy, and that single lost field is the difference between a 20-second estimator and a 1-second one
+
+The whole of the cost table's top half is the unconstrained reasoning trace (W2 F82: it is not
+constrained and it is spent first). Qwen3's chat template — the one this server is actually running,
+`--chat-template-file …/chat-template.jinja` — references `enable_thinking`, so the trace is
+switchable. **It is switchable on one hop and not the other.**
+
+Identical prompt, identical schema, identical weights, identical sampler, one `llama-server`
+process, one loaded model — a 2×2 over {hop} × {kwarg present}, three tasks:
+
+| hop | `enable_thinking` | wall clock | output tokens | trace chars |
+|---|---|---|---|---|
+| proxy `:1234` | absent | 17.24 / 20.13 / 18.69 s | 1,004 / 1,237 / 1,090 | 3,634 / 4,466 / 4,007 |
+| proxy `:1234` | **false** | 16.76 / 18.76 / 22.23 s | 1,052 / 1,181 / 1,376 | **3,945 / 4,316 / 5,297** |
+| bare `:64703` | absent | 14.59 / 18.37 / 15.61 s | 1,115 / 1,391 / 1,180 | 4,024 / 5,142 / 4,260 |
+| bare `:64703` | **false** | **2.13 / 1.94 / 1.56 s** | 124 / 106 / 85 | **0 / 0 / 0** |
+
+Read the rows in pairs. The two `absent` rows price the **hop**: a couple of seconds, inside the
+noise of the trace's own length — the proxy is not slow. The two `false` rows price the **field**:
+on the bare server it zeroes the trace and returns the same complexity reading in **1.5–2.1 s**; on
+the proxy it changes nothing at all, and the request still returns **HTTP 200** with no warning, no
+error and no indication the field was ignored.
+
+Qwen's in-band `/no_think` token does not work either: through the proxy it produced a **12,388-char**
+trace and a `finish_reason: length` with empty content. So there is exactly one way to turn the trace
+off on this box, and the incumbent serving hop cannot reach it.
+
+This is a W2 finding arriving through W4's door. W2's F82 recommended adopting constrained decoding
+as first-class and scored *"HTTP to LM Studio (incumbent)"* as **Keep**, with bare `llama-server` as
+the fallback/power option on the strength of GBNF and slot save/restore. **Add this to that row**:
+the proxy also drops template kwargs, and it drops them the dangerous way — the request succeeds. Any
+2.0 code path that needs a no-think call must talk to `llama-server` directly, and any code that
+*thinks* it is making one through the proxy is paying 10× and does not know it.
+
+### 🚨 F378 — an integer schema silently truncated 0.95 to 0, on every task, and returned it as valid JSON
+
+The first version of the pass-estimate arm asked the model to *"estimate the probability"* and
+constrained the answer to `{"type": "integer", "minimum": 0, "maximum": 100}`. It returned
+`{"p_pass": 0}` on **every task in the pilot** — while its own reasoning trace ended
+*"**Estimate:** 90%"* and *"I will provide an estimate of roughly 95%."*
+
+Changing the schema's type to `number` and nothing else returned `{"p_pass": 0.95}`. The model was
+answering on a 0–1 scale, the grammar admitted only an integer, and the emitted token stream stopped
+at the integer prefix. **The failure is total, silent, and shaped like data**: HTTP 200, well-formed
+JSON, a field of the right name and type, in range, wrong.
+
+W2's F82 already named one silent failure mode of constrained decoding on a reasoning model — an
+empty string from a 200. This is the second and it is worse, because an empty string cannot be
+mistaken for an answer and `0` can. The fix that worked is to make the units redundant: name them in
+the prompt *and* in the field name (`p_pass_percent`), so that prompt and grammar cannot disagree
+without one of them looking wrong.
+
+**For 2.0:** a numeric field under a schema needs a unit in its name and a plausibility check on the
+value, and "the model returned the bottom of the range on every input" must be an alarm rather than a
+column of zeroes in a database. This is the shape of v1's own Feb 2026 field collapse that BCF's
+typed `RoutingResult` was written to fix, arriving by a different route.
+
+### 🚨 F379 — the champion asked directly does not beat counting the prompt's bytes, and at n = 56 no predictor here is distinguishable from any other. OQ-W4-3 closes: **no**
+
+Q56, 56 tasks, 16 of which fail at least once in the control arm. Every predictor oriented so that
+higher means harder; ρ against the control failure rate, AUC = P(a task that ever failed outranks one
+that never did).
+
+| predictor | ρ | AUC | 95% interval | cost |
+|---|---|---|---|---|
+| v1 rule score | +0.101 | 0.584 | — | free |
+| BCF `rule_score` | +0.219 | 0.647 | [0.483, 0.800] | free |
+| prompt words | +0.187 | 0.637 | [0.465, 0.798] | free |
+| **prompt bytes** | **+0.269** | **0.691** | [0.521, 0.844] | **free** |
+| fixture bytes | +0.069 | 0.536 | — | free |
+| MODEL `v1_verbatim` | +0.225 | 0.634 | [0.478, 0.795] | 17.19 s |
+| MODEL `v1_schema` | +0.272 | 0.673 | [0.519, 0.825] | 20.50 s |
+| MODEL `v1_schema_rf` | +0.288 | 0.672 | [0.525, 0.818] | 19.41 s |
+| MODEL `v1_nothink` | +0.243 | 0.648 | [0.477, 0.809] | 2.00 s |
+| MODEL `pass_pct` | +0.172 | 0.616 | [0.466, 0.766] | 28.38 s |
+| MODEL `pass_pct_nothink` | +0.079 | 0.552 | [0.446, 0.668] | 0.94 s |
+
+The first three rows reproduce F362 exactly, which is the check that this spike's join is the same
+join item 1 used.
+
+**The point estimate says: the best model arm (+0.288) edges the best free feature (+0.269) on ρ and
+loses to it on AUC (0.672 against 0.691), for 19.41 seconds a task.** The bootstrap says something
+stronger and it applies to item 1's numbers as well as this item's — 10,000 task resamples, paired:
+
+| against `prompt bytes` (free) | median ΔAUC | 95% interval | |
+|---|---|---|---|
+| BCF `rule_score` | −0.044 | [−0.235, +0.143] | spans 0 |
+| MODEL `v1_schema` | −0.016 | [−0.190, +0.152] | spans 0 |
+| MODEL `v1_schema_rf` | −0.018 | [−0.183, +0.140] | spans 0 |
+| MODEL `pass_pct` | −0.077 | [−0.279, +0.140] | spans 0 |
+| MODEL `pass_pct_nothink` | −0.142 | [−0.323, +0.063] | spans 0 |
+
+**Every paired difference spans zero.** And six of the nine predictors' own AUC intervals include
+0.5, the coin. Only `prompt bytes`, `v1_schema` and `v1_schema_rf` exclude it, and each of them
+barely.
+
+⚠ **This qualifies F362 in place.** Item 1 set the bar at ρ = +0.219 and read the ordering
+"BCF beats word count beats v1's score" as a result. The ordering is not resolvable at this sample
+size — it is one draw from intervals 0.3 AUC wide. The correct reading of both items is not *"the
+model estimator loses to a byte count"* but **"nothing in this table is measurably better than
+anything else in it, and most of it is not measurably better than a coin."** That is a stronger
+answer to OQ-W4-3 than a win would have been: there is no estimator to buy, and if there were one you
+could not have detected it on 56 tasks.
+
+### 🚨 F380 — asked to score complexity, the champion reproduces v1's own defect: on U100 its answer is the constant 2
+
+F360's headline was that v1's compiled scorer puts **149 of 149** real tasks in the bottom tier. The
+model does the same thing with different machinery.
+
+- **U100, all 10 tasks: `v1_verbatim` = 2 and `v1_schema` = 2.** Not a narrow range — a single value.
+  ρ is undefined because the column has no variance, and AUC is 0.500 by construction.
+- **Q56, 69 tasks: 46 of 69 at complexity 2** under `v1_schema`, 50 of 69 under `v1_schema_rf`; five
+  distinct values in a 1–10 scale, none above 6.
+- The two hardest classes measured by outcome sit at the bottom of the model's scale: Q03, which
+  passes **0 of 5**, scores **2**; Q46 at 0.20 scores 2; Q05 and Q25 at 0.40 score 2.
+
+So the answer to *"can the local base agent score complexity itself"* is that it can emit a number and
+the number is nearly a constant. v1's rules produced a floor because its keyword lists have no
+vocabulary for real tasks (F360, F364, F365). The champion produces a floor because **the rubric it
+is given describes engineering scope** — *"multiple files, external APIs, error handling"* — and every
+task in both corpora is a single-function edit inside an existing tree. The rubric is measuring the
+wrong quantity, faithfully. Porting it and rescaling it changes which constant comes out.
+
+### 🚨 F381 — asking the question routing actually needs is *worse* than asking the wrong one, and it fails outright on 13% of calls
+
+Item 2's whole point is that the router does not want a complexity score, it wants P(this attempt
+passes). `pass_pct` asks exactly that, and it is the worst-performing arm on the board:
+ρ **+0.172** / AUC **0.616** against `v1_schema`'s +0.272 / 0.673 — and it is the most expensive
+(28.38 s p50, 92.83 s p90, 97.46 s max).
+
+It also **does not answer at all on 9 of 69 tasks (13%)**: `finish_reason: length` at
+`max_tokens: 6000`, `content: ""`, HTTP 200 — the model spent the entire 6,000-token budget on the
+reasoning trace and never emitted the two-token payload. 9 of the 11 no-value calls in the whole run
+are this arm. `v1_verbatim` lost 2 the same way; the two `nothink` arms lost none, and would have lost
+none at `max_tokens: 300`.
+
+**Why the harder question scores worse is the useful part.** Predicting *"will this pass"* requires
+knowing what the hidden tests check. Predicting *"how complex is this"* requires only reading the
+prompt. The model does the second competently and the first not at all — and being asked the second
+gets a *slightly* better-ordered answer because prompt length leaks through it. `pass_pct`'s ρ is
+lower than `prompt bytes`'s (+0.172 vs +0.269) because deliberating about the outcome discards the one
+signal in the input.
+
+### 🚨 F382 — the estimator names the exact risk that decides the outcome and then does not price it, and it is most overconfident where the tasks are hardest
+
+**50 of 69** `pass_pct` reasoning traces mention the hidden tests explicitly, and they identify the
+mechanism correctly:
+
+> *"If the hidden tests just check standard ASCII behavior, the agent will likely pass easily… If the
+> hidden tests require transliteration…"* — Q01
+>
+> *"**Hidden Tests**: These are the wildcard. They might test edge cases not obvious from the
+> ticket."* — `k/finish_the_cancelled_status`
+
+Then it answers 90 or 95. Calibration, against the base rate it is estimating:
+
+| suite | measured control pass rate | `pass_pct` mean | error | `pass_pct_nothink` mean | error |
+|---|---|---|---|---|---|
+| Q56 | 88.2% | 92.9% | +4.7 pp | 92.4% | +4.2 pp |
+| U100 | 88.8% | 93.1% | +4.4 pp | 93.5% | +4.8 pp |
+| **K** | **66.7%** | **76.7%** | **+10.0 pp** | **88.3%** | **+21.7 pp** |
+
+**Well calibrated on the population, blind on the task, and the error grows with difficulty.** On Q56
+the 45 tasks it scored 90–99 really did pass 86.2% of the time and the 3 it scored 80–89 passed 93.3%
+— the buckets are inverted. On K, where the real rate is 66.7%, the cheap arm says 88.3%.
+
+**And the reason is in the corpus's own design, which is a fair model of production.** All 56 Q56
+`task.toml` files carry the same caveat: *"The fixture ships only happy-path visible tests on purpose:
+a PASS is possible only if the subject handled an edge the prompt implies but does not state."* Q03 —
+the one task that never passes — is a bill-splitting remainder bug whose hidden gate includes
+`split_bill(7, 0)` returning an empty vector without panicking. **Nothing in the prompt mentions zero
+people.** K's tasks are the same shape from the other end: the ticket names one consumer and the work
+is finding the other four.
+
+So the estimator is not failing at estimation. **The information that decides the outcome is not in
+the request**, which is the same thing item 2 found from the other side when occupancy turned out to
+be a property of the loop rather than of the workspace (F370). A pre-dispatch estimate is reading a
+document that does not contain the answer.
+
+### F383 — the reasoning trace costs 10× and buys nothing measurable, and the schema's field order moves 17% of the readings
+
+Same rubric, same schema, same sampler; the only difference is whether the trace runs.
+
+| | `v1_schema` (trace) | `v1_nothink` (no trace) |
+|---|---|---|
+| p50 wall clock | 20.50 s | **2.00 s** |
+| p50 output tokens | 1,314 | 106 |
+| ρ | +0.272 | +0.243 |
+| AUC | 0.673 | 0.648 |
+| identical reading | — | **43 of 69 (62%)** |
+
+**10.25× the wall clock for ΔAUC = +0.025**, which F379's bootstrap has already shown is not
+distinguishable from zero. The trace changes 38% of the individual readings and does not improve their
+ordering. On the pass question it is worse: `pass_pct` vs `pass_pct_nothink` agree on only 53%, with a
+range of **−75 to +15 points**, and the *cheap* arm is the one that ranks worse.
+
+**Emission order** (W11 item 3's finding, tested here on a routing input): `v1_schema` emits
+`complexity` then `reasoning`, `v1_schema_rf` reverses it. **57 of 69 identical (83%)**, shifts in
+−1..+2, mean shift −0.01, ρ +0.272 → +0.288. The effect W11 found is present and it is small on this
+task — a schema field order moves about one reading in six, which matters for reproducibility and
+does not rescue the instrument.
+
+Free text against a constraint, same rubric (`v1_verbatim` vs `v1_schema`): **51 of 67 identical
+(76%)**, and the unconstrained arm is the one that lost two calls to `length`.
+
+### F384 — task kind and language carry no signal. OQ-W4-5 closes: **no**
+
+The corpus labels `kind` (`bugfix`, `api-misuse`, `implement-spec`, …) and `lang`, and item 1's
+control-arm table looked ordered: `bugfix` 80.0%, `api-misuse` 83.3% at one end, `refactor`,
+`concurrency` and `perf` at 100% at the other. That table is fitted and evaluated on the same rows.
+
+Held out, it evaporates:
+
+- **`kind`, 7-fold cross-validated encoding: ρ = −0.239, AUC = 0.375** — worse than a coin.
+- **Permutation test**: between-group sum of squares 0.2078, **p = 0.908** against 20,000 label
+  shuffles that keep the group sizes. Random groupings of the same shape separate the failure rate
+  *better* than the real labels do 91% of the time.
+- **`lang`, same treatment: ρ = +0.005, AUC = 0.485, permutation p = 0.266.**
+
+⚠ **The first version of this measurement was wrong and the error is worth recording**, because it is
+memory item 33's shape. Leave-one-out group encoding — predict task *i* from `(S_g − x_i) / (n_g − 1)`
+— is a strictly *decreasing* function of the value it is predicting, so within a group it is perfectly
+inversely ranked with the answer by construction. On U100, where all 10 tasks share one `kind`, it
+returned **ρ = −1.000** on data with no signal in it whatsoever. Folds fix it: the held-out task's
+value never enters, and same-group tasks share one prediction, so no inverse ranking can be
+manufactured. **An encoding that can only produce one sign is not a measurement.**
+
+### 🚨 F385 — the ceiling: a *perfect* a-priori oracle spends more attempts than reacting does, and buys no outcome the reactive policy misses
+
+The strongest argument against the estimator does not depend on how good it is. Two policies, one
+corpus pass, using item 2's recommended budget of 2:
+
+| | Q56 | U100 | K |
+|---|---|---|---|
+| tasks | 56 | 10 | 3 |
+| tasks that ever fail | 16 | 7 | 3 |
+| first-attempt failure rate | 11.8% | 11.3% | 33.3% |
+| **REACTIVE** — attempt once, retry once if it failed | **1.118 attempts/task** | **1.113** | **1.333** |
+| **PREDICTIVE** — a perfect oracle names the failures and pre-allocates 2 | 1.286 | 1.700 | 2.000 |
+
+**The oracle is more expensive on every suite, and it is perfect.** The reason is structural: the
+reactive policy's second attempt is allocated by *observing* a failure, so it fires on exactly the
+cells that failed and never on the others — while the oracle must commit the second attempt to every
+task that *might* fail, including the 5-of-6 occasions a "sometimes fails" task passes first time.
+Prediction identifies a task that fails; failing identifies it too, later, for free, and with
+certainty.
+
+An a-priori estimate can therefore only pay for itself where the decision genuinely cannot wait for
+the first attempt. The candidates are: **choosing a model** — there is one tier (F372); **choosing a
+context window** — it is a load-time decision and 0 of 945 Q56 cells exceed 16K (F363, F369);
+**refusing the task outright** — which on this evidence would refuse Q03 and 15 others, 14 of which
+pass; and **admission control under queueing**, which 2.0 does not have and which W11 F275 says it
+cannot have on this card anyway.
+
+**There is nothing left for the number to decide.** That, and not the correlation, is why 2.0 ships
+no complexity score.
+
+## Options compared
+
+| option | ρ / AUC on Q56 | cost per task | verdict |
+|---|---|---|---|
+| **Port v1's dual assessment** (rules floor + model reading) | rules alone +0.101 / 0.584; the model half is what decides (F366) | 17–20 s | **No.** The rules contribute a floor of median 2.5 and nothing else; the model half returns a near-constant (F380) |
+| **A recorded model reading, production path** (`v1_schema`) | +0.272 / 0.673 | **20.50 s ≈ one attempt** | **No.** Indistinguishable from a free byte count (F379); 9.45× the retry budget it would allocate (F376) |
+| **A recorded model reading, cheap path** (`v1_nothink`, bare server) | +0.243 / 0.648 | **2.00 s** | **No, but it is the only version worth re-testing.** Cheap enough that its uselessness is the only objection |
+| **Ask for P(pass) instead** (`pass_pct`) | +0.172 / 0.616 | 28.38 s, **13% no answer** | **No.** The worst arm and the most expensive (F381) |
+| **A free a-priori feature** (prompt bytes) | +0.269 / 0.691 | **0 s** | **The best of a bad set** — and its interval still nearly touches the coin |
+| **Task kind / language** | −0.239 / 0.375, permutation p = 0.908 | 0 s | **No.** OQ-W4-5 closes no (F384) |
+| **No estimate at all** | — | 0 s | **Yes.** F385: even a perfect oracle loses to reacting |
+
+## Recommendation
+
+1. **2.0 ships no pre-dispatch estimator of any kind — not rules, not a model reading, not a free
+   proxy.** Item 1's recommendation was `complexity: Option<…>` emitting `None`; item 3 extends it to
+   the *whole* pre-dispatch estimate. `RequestFacts` carries what is known and true about the request
+   — id, prompt, workspace, toolchain — and no number that predicts anything, because there isn't one.
+   OQ-W6-7 closes: **the Haiku pass is not worth paying for, the local model cannot do it for free,
+   and the thing it would produce has nothing left to decide (F385).**
+
+2. **If a score is wanted for a human to look at, it is a report and it is the 2-second one.**
+   `v1_nothink` on the bare server, 2.00 s, 106 output tokens, no reasoning trace, recorded as an
+   observation on W3's event log and never read by a gate. That is W6 item 7's ruling — a model
+   verdict is a report and never a gate — applied one layer up, and the honest label on it is
+   *"the model's reading of the request, which does not predict the outcome"*.
+
+3. **Talk to `llama-server` directly wherever a call must be cheap.** F377: `chat_template_kwargs`
+   is silently dropped by LM Studio's proxy, and it is worth 10× on every short structured call 2.0
+   makes. This does not overturn W2's *Keep* on the incumbent — it adds a second row to the fallback
+   column and a rule: **any short structured call goes direct; the agent loop can stay on the proxy.**
+
+4. **Every numeric field under a schema carries its unit in its name, and every constrained numeric
+   answer is range-checked against what the prompt asked for.** F378: an integer constraint turned
+   0.95 into 0 on every task and returned HTTP 200. Adopting constrained decoding as first-class (W2
+   F82) means adopting this check with it.
+
+5. **Budget the trace, or turn it off — never let it share a budget with the payload.** F381: 13% of
+   `pass_pct` calls returned nothing at `max_tokens: 6000`. On this model the trace is 800–3,000
+   tokens for a two-token answer. Either `enable_thinking: false` (bare server) or a budget with the
+   trace's p99 in it, and **empty content on a 200 is an error, not a declined answer**.
+
+6. **The a-priori/in-flight split now has a third category, and it is the one that matters: the
+   *outcome*.** Item 1: a-priori signals ≤ +0.219. Item 2: in-flight effort +0.32…+0.41, available
+   only during the attempt. Item 3: the first *observed* failure, worth 44.6 points (F374), available
+   only after it. The router's information arrives in that order and gets useful in that order. Build
+   for the third.
+
+## Rejected alternatives and why
+
+- **Rescale the rubric for a stronger base agent** — §11's own suggestion, and item 1 already found
+  no scale to rescale. F380 says the model's version is a constant too, for a different reason: the
+  rubric describes engineering *scope* and every task in both corpora is a single-function edit.
+  Rescaling relocates a boundary on an axis with no signal; rewriting the rubric would be inventing a
+  new instrument and then having to validate it against 56 tasks that cannot resolve a 0.3-wide AUC
+  interval (F379).
+- **Give the estimator the workspace** — a fair objection: all six arms read only the prompt. But
+  item 2 measured the workspace directly: ρ(fixture bytes, pass) = −0.069 and ρ(fixture bytes,
+  occupancy) = +0.041 (F370, F371). The bytes are already known to carry nothing, and showing them to
+  a model cannot add information that is not in them. Left as OQ-W4-13 rather than claimed.
+- **Few-shot the estimator with the corpus's own outcomes** — this would work, and it would be
+  measuring the corpus. A router in production has no labelled neighbours for a novel task; W3's
+  event log accumulates them per *repository*, which is a Phase 3 question and not a Phase 1 one.
+- **Fine-tune a small router** — item 6's question, and F385 pre-empts it: the ceiling on a-priori
+  prediction is negative regardless of how the prediction is produced.
+- **Use the estimate to pick a context window** — a window is a load-time decision (W1 F84: KV is
+  allocated in full at load) and 0 of 945 Q56 cells exceed 16K (F363/F369). Where the fixture changes
+  by 100× the right response is a window *fit check* against bytes on disk, which is arithmetic and
+  not an estimate.
+
+## Effect on fun
+
+W5's position is that the agency is in the terminal and the fun is in watching real work happen.
+Item 3 removes a screen element rather than adding one: **there is no complexity badge, no predicted
+difficulty, no confidence percentage next to a task**, because every one of those would be a number
+the console displays confidently and is wrong about — 95% next to a task that passes 0 of 5.
+
+Two things it gives back. The **reasoning trace is the expensive part and it is also the watchable
+part**: 4,500 characters of the model thinking out loud costs 18 of the 20 seconds and is exactly
+what an operator enjoys seeing, so the trade is not "fast vs slow" but "a number nobody should trust
+vs a narration somebody might read". And F385's shape is itself the honest console story — **a task
+that is going to fail announces itself by failing, ~19 seconds in**, which is a live event W3's log
+already carries and W5's console can already show. The escalation the console displays should be the
+one that happened, not the one a score predicted.
+
+## Open questions
+
+- **OQ-W4-11** — `v1_nothink` costs 2.00 s and ranks no worse than the 20-second version. Is there a
+  *different question* worth 2 seconds before dispatch that is not an estimate at all — a
+  well-formedness check, an ambiguity flag, a "this request names a file that does not exist"?
+  Item 3 measured estimators; it did not measure pre-flight validation, which has a different failure
+  mode and might be free.
+- **OQ-W4-12** — F379's intervals are 0.3 AUC wide because Q56 has 16 positives. How many tasks would
+  it take to resolve a real +0.05 AUC difference, and is any corpus this project can build large
+  enough? If the answer is "several hundred", then *no future session should re-open this question
+  either* and that should be written down.
+- **OQ-W4-13** — every arm read only the prompt. Item 2 says the workspace's bytes carry nothing
+  (ρ = +0.048/−0.069), but nobody has shown a model the *file tree* and asked. Cheap on the no-think
+  path (2 s); expected to change nothing.
+- **OQ-W4-14** — F382 says the estimator is overconfident in proportion to difficulty (+4.7 pp on
+  Q56, +21.7 pp on K). Does that hold on a corpus where the base rate is near 50%, or is it an
+  artefact of estimating a rate that is already 88%?
+- **OQ-W4-15** — F377 found one silently-dropped field. What else does the proxy drop? `grammar`,
+  `logit_bias`, slot save/restore and `logprobs` are all reachable on the bare server and all
+  untested through the hop — and item 4 needs `logprobs`.
+
+## Confidence: high on the cost, high on the mechanism, high on the ceiling argument, and deliberately low on every ordering
+
+- **High** on the price (F376, F383) and on F377/F378. These are direct measurements with a control
+  each: the 2×2 separates the hop from the trace, and the schema truncation reproduces on demand by
+  changing one JSON field.
+- **High** on F380 — a constant is not a marginal result. All 10 U100 tasks returning the same
+  integer in two independent arms is not a sampling question.
+- **High** on F385, which is arithmetic over the measured failure rates and does not depend on any
+  estimator's quality.
+- **Deliberately low on every ordering in F379.** The bootstrap is in the finding because the point
+  estimates should not be quoted without it: every paired difference spans zero and six of nine
+  intervals include the coin. **Do not cite "prompt bytes beats the model" as a result** — the result
+  is that nothing here is separable.
+- **Medium on how far F382 travels.** Q56 and U100 both sit at an ~88% base rate and K is three
+  tasks. The overconfidence is real on this evidence; its slope against difficulty rests on K.
+- **Low, and flagged, on U100 and K as populations**: 10 tasks with one `kind`, and 3 tasks
+  respectively. Both are corroboration, never the basis of a number.
