@@ -1858,3 +1858,221 @@ label are the ones where the subject behaved normally, and the tasks that time o
 hard ones most likely to fail — are **excluded by the very configuration required to measure them**.
 That is a selection effect pointing the wrong way, and it is stated here rather than in a footnote:
 a logprob signal is being scored on an easier population than the one it would be deployed on.
+
+---
+
+# Item 5 — the escalation ladder, retry budgets and circuit breakers
+
+## Question
+
+§11: *"Escalation ladder, retry budgets, circuit breakers."*
+
+**Items 1–4 already spent the interesting half of this question.** There is one model tier (F372),
+the retry budget is 2 (F373), the breaker fires on the first failure with a threshold learned from
+the population (F374), and no a-priori estimate is worth computing (F385). So item 5 is not *"how
+many rungs"* — that is answered. It is the narrower and more practical pair: **what does the
+mechanism look like once the ladder has one rung, and which of v1's escalation implementations, if
+any, should 2.0 carry?**
+
+## Method
+
+Desk item, no GPU. F367 established that the escalation the brief points at — `taskRouter.ts:478`
+`getFixDecision`, documented in that file's own header at `:35-38` — has **zero production
+callers**, and that the escalation which actually runs lives in four separate services. This item
+reads those four: `asyncValidationService.ts` (512 lines), `autoRetryService.ts` (380),
+`codeReviewService.ts` (645), `humanEscalation.ts` (153).
+
+Two rules held throughout, both from prior sessions' mistakes: **grep the readers, not the writers**
+(memory item 19), and **every absence claim below is backed by a completed repo-wide grep over
+`packages/**/*.ts` excluding `node_modules`**, not by a search that looked like it finished
+(memory item 36).
+
+## Inherited
+
+- **F367** — the documented ladder has no callers; four services carry the real one.
+- **F372** one tier · **F373** budget 2 (88.2 → 94.6 → 96.8) · **F374** the first failure is worth 44
+  points on Q56 and 7 on U100, so the threshold is a property of the population, not a constant ·
+  **F385** a perfect a-priori oracle spends 1.286 attempts against reacting's 1.118.
+- **W3**: the seven Task states, the durable event log, and *every non-terminal state must be
+  recoverable* — which came from a v1 task hung in `assigned` being invisible to both the assigner
+  and the watchdog. **F393 below is that same defect, in a second place.**
+- **W6/W11**: a model verdict is a report and never a gate; the verifier costs a median 547 ms
+  (item 4's correction of the inherited 0.16 s, which is W6 item 6's git checkpoint, F330).
+
+## Findings
+
+### 🚨 F391 — v1 does not have an escalation ladder. It has four, they disagree with each other, and the one its own documentation describes is dead code
+
+| where | ladder as implemented | budget | terminal state |
+|---|---|---|---|
+| `taskRouter.ts:35-38` header + `:478` `getFixDecision` | `ollama → haiku → human` | by `failureCount` | — |
+| **0 production callers, 4 test callers (F367)** | | | |
+| `autoRetryService.ts` | validate → **local (1)** → **remote (1, gated)** → **haiku (1)** | per-phase env vars **and** a shared cap of 3 | `validated: false` |
+| `asyncValidationService.ts:222,266` | **local (1) → haiku (1)** — no remote phase | same two env vars, **no total cap at all** | `stillFailing` |
+| `codeReviewService.ts:388` → `getEscalationTier(:461)` | one stateless step: `ollama → haiku`, **everything else → human** | none — it switches on the *model name*, never on a failure count | `status: 'failed'` |
+| `humanEscalation.ts:37` | `needs_human` → **back to an agent** after a timeout | 60 s poll, `humanTimeoutMinutes` (default 30) | `escalatedToAgentId` |
+
+Four services, three different ladders, and a fourth path that runs the ladder **backwards** —
+`humanEscalation` exists to take work *away* from a human who did not answer and give it back to an
+agent. `asyncValidationService` and `autoRetryService` read **the same two environment variables**
+(`AUTO_RETRY_MAX_OLLAMA_RETRIES`, `AUTO_RETRY_MAX_HAIKU_RETRIES`) to configure ladders of different
+shapes, so one operator knob moves two different mechanisms by different amounts.
+
+🚨 **This is the strongest possible argument for item 2's `NextAction` enum.** The reason v1 has
+four ladders is that no type ever said what escalation *is*; each service grew its own from string
+literals and integer counters, and nothing could detect that they had diverged.
+
+### 🚨 F392 — the retry budget and the escalation ladder share one counter, and raising a per-phase budget by **one** silently deletes the top tier — then labels the outcome with the phase that never ran
+
+`autoRetryService.ts:47-51`:
+
+```ts
+const MAX_OLLAMA_RETRIES = parseInt(process.env.AUTO_RETRY_MAX_OLLAMA_RETRIES || '1', 10);
+const MAX_REMOTE_RETRIES = parseInt(process.env.AUTO_RETRY_MAX_REMOTE_RETRIES || '1', 10);
+const MAX_HAIKU_RETRIES  = parseInt(process.env.AUTO_RETRY_MAX_HAIKU_RETRIES  || '1', 10);
+// Hard limit: prevent infinite retry loops (Mar 2, 2026 fix)
+const MAX_TOTAL_RETRIES = 3;
+```
+
+🚨 **The three per-phase budgets are operator-tunable; the cap that overrides them is a hard-coded
+literal with no environment override.** Verified repo-wide: `MAX_TOTAL_RETRIES` occurs in exactly
+one file, nine times, all inside `autoRetryService.ts`.
+
+One `totalRetries` counter increments once per attempt across all three phases (`:104` init, `:113`,
+`:168`, `:230`). At the defaults, `1 + 1 + 1 = 3` — **the ladder fits the cap exactly, with zero
+slack.** So:
+
+| operator sets | phases that actually run | haiku escalation |
+|---|---|---|
+| nothing (defaults), remote off | 1 → 3 | **runs** |
+| nothing (defaults), remote on | 1 → 2 → 3 | **runs**, on the last unit of budget |
+| `AUTO_RETRY_MAX_OLLAMA_RETRIES=2`, remote on | 1 → 2 | **silently gone** |
+| `AUTO_RETRY_MAX_OLLAMA_RETRIES=3` | 1 only | **silently gone** |
+
+The most natural operator action available — *"let the local model try harder before we pay for a
+remote one"* — **removes the escalation tier**, and the only trace is a `log.warn` (`:215`).
+
+🚨 **And the outcome is mislabelled.** The early return at `:216-221` is:
+
+```ts
+return { validated: false, phase: 'phase3', finalError: `Max retries exceeded…`, attempts: totalRetries };
+```
+
+**`phase: 'phase3'` when phase 3 never ran.** Any later analysis of *"how often does Haiku
+escalation fail?"* counts budget exhaustion as a Haiku failure. This is memory item 32 exactly — a
+counter's name is not its semantics — and it is the reason W8's honest-outcome type exists.
+
+⚠ **`asyncValidationService` has the opposite bug: no total cap at all.** It reads the same two env
+vars and runs `MAX_OLLAMA_RETRIES + MAX_HAIKU_RETRIES` attempts with nothing bounding the sum. The
+"Mar 2, 2026 fix for infinite loops" was applied to one of the two retry services.
+
+### 🚨 F393 — the two paths to a human write different terminal states, and the background checker watches only one of them
+
+`codeReviewService.handleReviewFailure` (`:388`), when `getEscalationTier` returns `'human'`, writes
+**`status: 'failed'`** with `needsHumanReview: true` buried in the result JSON, then emits a
+`task_needs_human_review` WebSocket event (`:409`).
+
+`humanEscalation.checkTimeouts` (`:37`) polls every 60 s for **`status: 'needs_human'`**.
+
+**They never meet.** Repo-wide, `'needs_human'` is written by exactly one service —
+`taskQueue.ts:111` — and read by `humanEscalation.ts:41,144`, `complexityCalculator.ts:24` and three
+route filters. The review path writes `'failed'` and is therefore invisible to the checker, to
+`/queue`'s active list (`queue.ts:31`) and to `/metrics`' in-flight count (`metrics.ts:25`).
+
+🚨 **The escalation is announced on a transport and recorded nowhere durable.** A human who has the
+browser open sees the toast; a human who does not gets a task in `failed` that no watchdog will ever
+look at again. This is W3's founding defect — *a lifecycle that exists only as string literals* —
+in a second service, and it is the concrete reason W3 made every non-terminal state recoverable and
+put escalation on the durable event log rather than on the socket.
+
+### F394 — there is no circuit breaker in v1, in any sense the term normally carries
+
+Repo-wide grep for `circuitbreaker|circuit_breaker|circuit breaker|half.?open|cooldown|failureRate|
+failure_rate` over `packages/**/*.ts` returns **three hits, all in `routes/budget.ts:70-75`**, and
+they are a five-minute rate limit on the *budget-reset endpoint* — an unrelated mechanism.
+
+So every limiter in v1 is a **per-task counter**. Nothing observes a failure *rate*, nothing has a
+cooldown, nothing has a half-open probe, and nothing stops dispatching after a run of failures. The
+brief asks for circuit breakers because a local-only, single-GPU system can burn an entire evening
+on a task that will never pass — which is exactly the regime F390 measured, where one runaway turn
+costs ~640 s.
+
+🚨 **F374 says the breaker's threshold is not a constant** — the first failure costs 44 points on
+Q56 and 7 on U100 — **so it must be learned from the population, and v1 has nowhere to put it.**
+There is no place in the schema that holds a rate over recent attempts. 2.0's durable event log is
+that place, and this is the first requirement that genuinely needs it rather than merely benefiting
+from it.
+
+## Options compared
+
+| option | evidence | cost | verdict |
+|---|---|---|---|
+| **A. Port `autoRetryService`'s four-phase ladder, minus the remote and Haiku phases** | it is the most complete of the four | ~380 lines, and it carries F392's shared counter | **rejected** — with two of four phases deleted, what remains is a loop with a cap, and the cap is the bug |
+| **B. Port the documented `getFixDecision` ladder, now that 2.0 will actually call it** | it is the design v1 intended | ~60 lines | **rejected** — it encodes `ollama → haiku → human`, and F372 says there is no haiku and no second tier to escalate *to* |
+| **C. One counter, one typed outcome, no phases: `NextAction { Attempt \| Stop \| HandToOperator }` with budget 2 and a population breaker on the event log** | F372, F373, F374, F385, F391, F392, F394 | ~120 lines, and it deletes three of v1's four ladders | **recommended** |
+| **D. Keep a tier for the 27B behind a flag, unused by default** | it preserves optionality | one flag, plus F347's dead-tier risk | **rejected** — F372 measured 7.75× with 5 timeouts in 18, and W6 F284 found the 27B is a better reader and an unusable component. A tier nothing enters is F347 again |
+
+## Recommendation
+
+1. **One counter, and it is the budget — there is no separate ladder to keep in sync with it.**
+   `Attempt` twice (F373), then `HandToOperator`. The bug in F392 is only possible because two
+   mechanisms shared one integer; with one rung there is no second mechanism.
+2. **The per-attempt budget and the total budget must not be independently settable.** If 2.0 ever
+   exposes a knob, it exposes **one**, and the type makes the other derivable. 🚨 *An operator knob
+   that can silently remove a tier is worse than no knob.*
+3. **`HandToOperator` is a durable state on the event log, never a socket event.** F393 is the
+   argument. The WebSocket emit is a notification *about* a state, not the state.
+4. **The breaker reads the event log, not a field on the task.** A rate over recent attempts, with
+   the threshold learned per population (F374) and shipped as a *report* the operator can act on —
+   it recommends stopping, it does not silently stop. Consistent with W6/W11's ruling that a model
+   verdict is a report and never a gate; here the verdict is statistical rather than a model's, and
+   the same rule applies for the same reason.
+5. **Every outcome carries the phase that actually produced it.** W8's honest-outcome type already
+   exists for this; F392 is the donor defect it was designed against.
+6. **Do not port `humanEscalation`'s reverse path.** Taking work back from an operator who has not
+   answered is a multi-agent-fleet behaviour (W10), and in a single-operator tool it is a mechanism
+   for losing a decision the operator was still making.
+
+## Rejected alternatives and why
+
+- **Exponential backoff between attempts.** Nothing here is rate-limited or contended — there is one
+  local server with `--parallel 1`. Backoff would add latency to buy nothing, and W1's F77/F80
+  measured the only real contention (KV allocated in full at load, saturation at N=2).
+- **A retry that changes the prompt's head to add failure context.** v1 does this
+  (`buildRetryDescription`, `autoRetryService.ts:354`), and it is defensible there. In 2.0 it costs
+  a full cold prefill at **4.60×** (W1), against a 79.7% TTFT saving from the prefix cache that one
+  changed token at the front annihilates. **Append the failure context, never prepend it.**
+- **A `needs_human` status distinct from `failed`.** W3's seven states already settle this; adding a
+  fourth terminal state is how v1 got two that disagreed.
+
+## Effect on fun
+
+Positive, and specifically: **the operator is the only tier above the worker, so escalation is a
+hand-off to the human rather than a hand-off to a bill.** That is the shape W5 argued for — the
+agency is in the terminal — and it is what makes a breaker acceptable rather than paternalistic: it
+surfaces *"this has failed twice and the population says a third attempt is worth 7 points"* and
+leaves the decision where it belongs. The alternative, a system that silently escalates to a
+stronger model, is the one that produced v1's four ladders and its invisible `failed` tasks.
+
+## Open questions
+
+- **OQ-W4-16.** F374's threshold is learned per population — but 2.0's population is one developer's
+  repository, not a corpus. What is the minimum history before the breaker's threshold is better
+  than the constant 2, and what does it do before then? *(Answerable from W8 cells; do not spike.)*
+- **OQ-W4-17.** Should `HandToOperator` distinguish *"budget exhausted"* from *"the breaker tripped
+  early"*? They are different messages to a human, and F392 is the evidence that collapsing two
+  causes into one label is expensive.
+
+## Confidence: high on the mechanism, high on all four defects, medium on the breaker's shape
+
+- **High on F391–F394.** All four are direct code reads with line numbers, and all three absence
+  claims (`MAX_TOTAL_RETRIES` in one file, no circuit breaker, `'needs_human'` written by one
+  service) were verified by completed repo-wide greps rather than inferred.
+- **High on the recommendation's first three points**, which follow from F372/F373 plus the two
+  defects, and would survive any revision of the numbers.
+- **Medium on point 4, the population breaker.** F374 establishes that the threshold varies by
+  population (44 points against 7); it does not establish how to estimate it online, and OQ-W4-16 is
+  the honest form of what is missing.
+- ⚠ **Low, and stated, on how far v1's defects generalise.** These are four services in one donor.
+  They are evidence about *what goes wrong when a lifecycle is untyped*, which is a claim W3 already
+  made on independent evidence — not evidence that any particular ladder shape is correct.
