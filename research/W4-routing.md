@@ -1605,3 +1605,256 @@ one that happened, not the one a score predicted.
   tasks. The overconfidence is real on this evidence; its slope against difficulty rests on K.
 - **Low, and flagged, on U100 and K as populations**: 10 tasks with one `kind`, and 3 tasks
   respectively. Both are corroboration, never the basis of a number.
+
+---
+
+# Item 4 — confidence signals on worker output
+
+## Question
+
+§11: *"Confidence scoring on worker output: logprobs, self-critique, test results, static analysis.
+Which correlate with real quality? The existing logs may allow retrospective correlation, which is
+much cheaper than generating new data."*
+
+**Three of the four are already answered on 728 real attempts, and re-running them would be waste:**
+
+| signal | measured answer | where |
+|---|---|---|
+| static analysis | a type or syntax check caught **1 of 160** failures, and on the 280 cells where the agent was left alone nothing fired on any of the 29 real failures (**F321**) | W6 item 5 |
+| test results | generated tests **ratify a wrong change 6 times in 9** when written from it (**F305**); of **35** model-generated acceptance criteria, **none** is both red before the change and green after (**F266**) | W6 item 4 · W11 item 3 |
+| self-critique | a model verdict catches **3 of 23** wrong trees with 1 false fail in 34 (**F338**); change nothing but the *output schema* and it catches a different three (**F339**); on documents it is **0 of 8** (**F341**) | W6 item 7 |
+
+So item 4 is **logprobs**, and §11's hope that the existing logs allow a retrospective correlation is
+wrong here in a way none of the earlier items were: the 378 control cells have an answer key but no
+logprobs were ever captured, and there is no way to recover them after the fact. **This is the
+second and last GPU item in W4.**
+
+⚠ **The bar is not a correlation.** Item 3's **F385** says any signal arriving *before* the outcome
+competes with the outcome, which is free and exact. A logprob is *in-flight* — it arrives while the
+attempt is still running — so it is on the right side of that line, unlike item 3's estimator. But
+it still has to beat the counters already sitting in `cells.jsonl` for nothing (item 1's **F362**:
+occupancy +0.405, tokens +0.326, iterations +0.320), and it has to beat **running the verifier**.
+
+⚠ That last price is worth stating exactly, because the handoff carried it wrong. "0.16 s" is W6
+**item 6**'s git `write-tree`/`commit-tree` checkpoint (**F330**), not the cost of verifying. The
+real figure is in the recorded cells: over **166 Q56 control cells, `verify_ms` has a median of
+547 ms**, p90 767 ms, max 1,015 ms — **2.9% of the 18.6 s median attempt**. So the thing any
+confidence signal is competing with costs three percent of the work it would be judging, and it
+returns the answer rather than an estimate of it.
+
+## Method
+
+`research/spikes/w4-logprobs/`, five diagnostics, an attribution probe, a control run and a
+campaign.
+
+The diagnostics came first and they are most of the finding: **getting a logprob out of this
+deployment at all takes four separate changes**, and three of the four failures are silent. Each is
+a 2×2 or better, one variable at a time — {hop} × {asked}, {temperature} × {speculative}, {stream}
+× {tools} × {logprobs} — because item 3's F377 established that this serving stack loses request
+fields without saying so.
+
+The campaign is **five repeats of Q56 control** behind a recording proxy that rewrites the
+subject's own request and records every completion call, keyed to the cell by the workdir path that
+appears in the subject's prompt. Held exactly as the three recorded Q56 control runs — subject
+`claudette-af3f804`, `--num-ctx 61440 --num-predict 8192 --max-iterations 40 --verify-timeout-s 300
+--delivery verbatim`. **Three held constants deliberately move**, each one forced by a finding
+below: the endpoint, streaming, and MTP. The check on whether those three moved the subject is the
+run's own outcome distribution against the recorded controls, which are **49 / 50 / 48 pass of 56
+with 2 / 0 / 0 timeouts** — a pass count, not a clean sheet, and the timeout column is the one that
+turned out to matter.
+
+Because the first campaign showed the subject behaving differently, an **attribution probe** runs
+before the population: the five tasks that misbehaved, driven through the recorder twice, once with
+MTP left on and once with it off, streaming off in both. That isolates which of the two forced
+changes is responsible, and it is the only 2-arm comparison in this item that holds the endpoint,
+the subject, the server process and the task set constant.
+
+⚠ **The bootstrap resamples tasks, not cells.** Five repeats of 56 tasks are five looks at 56
+clusters; resampling the 280 cells would report an interval several times too narrow. This is
+memory items 26/28/31's pooling error in a new costume.
+
+## Inherited
+
+- **F385 (item 3)** — the ceiling argument. An in-flight signal is not refuted by it, but it inherits
+  its bar: beat the outcome, which is free.
+- **F377 (item 3)** — LM Studio's proxy silently drops `chat_template_kwargs`. **OQ-W4-15** asked
+  what else it drops, and named `logprobs` as the one item 4 needs.
+- **F383 (item 3)** — identical calls at temperature 0.0 drift. Item 4 finds a candidate mechanism.
+- **F362 (item 1)** — the free in-flight counters and their ordering, which item 3's F379 then
+  qualified: at this n, none of them is distinguishable from any other.
+- **W2 F82** — the reasoning trace is unconstrained and is spent first. The logprob array covers it.
+
+## Findings
+
+### 🚨 F386 — LM Studio's proxy drops `logprobs` too: HTTP 200, no `logprobs` key, no warning. OQ-W4-15 gets its first answer and it is the one that costs the most
+
+Same weights, same load, same request. Against the bare `llama-server` on `:64703`, `logprobs: true,
+top_logprobs: 5` returns an array with **one entry per completion token** — 24 of 24 on a free-text
+call, 33 of 33 under a `json_schema`. The identical request to LM Studio's proxy on `:1234` returns
+**no `logprobs` key at all**, with `finish_reason: stop` and a 200.
+
+⚠ **The first measurement of this was confounded and the confound was F377 itself.** All four proxy
+cells in the first grid stopped at `length` with `content: ""`, because the proxy had dropped
+`chat_template_kwargs` and the reasoning trace ate the whole 200-token budget — so "no logprobs"
+could not be separated from "the response never reached its content". Re-run with `max_tokens: 3000`
+the proxy call finishes normally (344 completion tokens, 80 content chars, `stop`) and the
+`logprobs` key is **still absent**. That is the measurement; the first grid is kept in the spike
+because the confound is the trap.
+
+**This is the second OpenAI field the proxy accepts and discards.** The practical consequence is
+larger than item 3's: F377 cost a short structured call 10× its wall clock, which is a price. This
+one is not a price, it is an **absence** — a system reading confidence off the deployed endpoint
+would silently get nothing and could not tell that from a model that is never uncertain.
+
+### 🚨 F387 — under MTP the array is complete, well-formed, in range and fabricated: it reports the *draft head's* acceptances, not the worker's distribution
+
+With the champion's default serving mode — `--spec-type draft-mtp`, **on by default for this model**
+— the returned logprobs do not describe the emitted text:
+
+| shape | entries | what they say |
+|---|---|---|
+| non-streaming, 24-token reply | 24 of 24 | **23 of 24** carry `logprob 0.0` (probability 1.0) and an **empty** alternatives list |
+| non-streaming, 44-token reply | 44 of 44 | **42 of 44** the same |
+| non-streaming, 1,800 tokens over 3 calls | 1,800 of 1,800 | only **119** carry alternatives at all |
+| **streaming**, 400-token reply | **39 of 400** | the drafted tokens are **omitted** rather than faked |
+
+Only the positions MTP could not draft carry a real distribution. So the naive reading — ask for
+logprobs on this deployment, get an array back, average it — measures **draft acceptance**, and it
+measures it as near-certainty on ~95% of tokens.
+
+**It reproduces at scale inside a real agent run, which is the form that matters.** Five Q56 tasks
+driven through the recorder with MTP left on: **29 calls, 13,676 completion tokens, alternatives on
+8.4% of them and an exact `logprob 0.0` on 91.6%** — and the array length equals `completion_tokens`
+on **29 of 29 calls**. The same five tasks with `speculative.n_max: 0`: **100.0%** of tokens carry
+alternatives. 🚨 **So the obvious integrity check — "is there one entry per token?" — passes on
+every single fabricated call.** The check that catches it is *alternatives on every token*, and
+nothing in the response says which of the two you are holding.
+
+**The cause is separable and was separated.** A 2×2 over {temperature 0.0, 0.7} × {spec default,
+spec off} moves only with spec: at temperature 0.7 the default arm is still **42 of 44** certain, so
+this is *not* the familiar "greedy sampling collapses the reported distribution" effect. The flat
+per-request key **`"speculative.n_max": 0`** restores alternatives on **24 of 24** tokens (mean
+logprob −0.0284, min −0.5387 on the identical output).
+
+🚨 **And the nested form `{"speculative": {"n_max": 0}}` is silently ignored** — identical 23-of-24
+degenerate result, no error. That is the *third* request field in two items that this stack accepts
+and discards.
+
+**The instrument checks out once MTP is off.** At temperature 0.0 the sampler is greedy, so the
+emitted token must be the argmax of whatever distribution is being reported: **1,800 of 1,800**
+agree. Under MTP the same check passes vacuously — 119 of 119, on the only 119 entries that carry
+alternatives.
+
+### 🚨 F388 — the bare server refuses the subject's own request shape: `logprobs is not supported with tools + stream`, HTTP 400
+
+`api.rs:773-784` sends `tools` **and** `stream: true` on every agent turn. Ask for `logprobs` on top
+of that and `llama-server` answers **HTTP 400 — "logprobs is not supported with tools + stream"**,
+with MTP on or off, identically. **On the path the worker actually uses, the signal is not degraded;
+it does not exist.**
+
+Unlike F386 and F387 this one is loud, and it is the only one of the four that is.
+
+The escape route is to drop streaming: non-streaming + `tools` + `logprobs` + `speculative.n_max: 0`
+returns **94 of 94** entries with alternatives on every token *and* a correct `tool_calls` reply.
+Taking it is safe for a reason that is in the subject's own code — `api.rs:614-632` already falls
+back to the non-streaming parser when the reply's Content-Type is not SSE, and `reasoning_content` is
+read on both paths (`:889` and `:1125`), so a trace-only turn is an empty turn either way. But it is
+still a **behaviour change on every call**, and the campaign carries it as one of three.
+
+⚠ A fourth difference surfaced when the harness refused to start: **the bare server names the model
+by GGUF path, not by the LM Studio id**, so w8-run's model-confirmation step aborts. That check
+exists because "LM Studio serves a request naming a model it does not have using whichever model is
+loaded" (`main.rs` step 3), so the recorder preserves it rather than defeating it — the served path
+must carry the champion's fingerprint before the requested id is echoed back.
+
+### F389 — the price of a real logprob is 1.18× decode on every worker call, and it is the cost of *computing* the distribution, not of losing the draft head
+
+Same prompt, same 600-token budget, prefill cached (W2 F81), median of 3:
+
+| mode | tok/s | vs deployed |
+|---|---|---|
+| MTP on, no logprobs — **the deployed path** | 102.90 | 1.00× |
+| MTP on, logprobs asked | 101.97 | **1.01×** — free, because F387 says it is fabricated |
+| MTP off, no logprobs | 106.01 | 0.97× |
+| **MTP off, logprobs asked** | **86.95** | **1.18×** |
+
+So the honest price of the only signal item 4 has left is **1.18× decode, plus no streaming, on
+every call**, and it is charged against exactly the budget F373 says should be spent on a second
+attempt.
+
+⚠ Note the third row, because it settles something W1 left open. **MTP is not buying speed at all
+here**: 102.90 tok/s with it, 106.01 without. W1's **F78** reached the same ruling — *"MTP is
+genuinely engaged by the flag, and buys nothing measurable here"* — and then **corrected itself
+(W3 F165)**: MTP is LM Studio's *default* for this model, the no-flag arm's command line was never
+captured, and so *"whether this table compared MTP-vs-MTP is unknowable — the exact null is what
+that comparison would produce."* `"speculative.n_max": 0` supplies exactly the arm that was missing:
+it turns speculation off **per request**, in the same server process, with no reload and no config
+divergence, so this is the first comparison on this box that genuinely varies MTP. It comes out
+marginally *against* MTP, which confirms F78's practical ruling — do not add the flag — on evidence
+that actually moves the variable. ⚠ One code-generation prompt, n=3: a corroboration of F78, not a
+throughput study.
+
+The practical consequence for item 4 is that the **1.18× sits in the probability computation, not in
+a lost draft head** — turning MTP off costs nothing, and asking for the numbers costs 1.22× against
+that.
+
+**And MTP is nondeterministic at temperature 0.0 while MTP-off is not**: three byte-identical calls
+gave **2 distinct outputs** with MTP on and **1** with it off. Small n, but it is a candidate
+mechanism for item 3's **F383** — identical calls at temperature 0.0 that drift — and it is
+independent of the reasoning trace, which F383 blamed.
+
+### 🚨 F390 — the endpoint you must move to in order to read a logprob is an endpoint on which the subject behaves differently: two of five hard tasks go from *pass* to *timeout*, reproducibly
+
+F386 and F388 together force the completion call onto the bare `llama-server`. This finding is what
+that costs, and it is not a throughput number.
+
+The first campaign came back **37 pass / 6 fail / 13 timeout** against recorded controls of
+**49 / 50 / 48 pass with 2 / 0 / 0 timeouts**. Eight of the thirteen were an instrument defect and
+are dealt with in the spike's trap 8 — a proxy that outlives its client holds the single
+`--parallel 1` slot and starves the following cells, which is why Q35 and Q50–Q56 each recorded one
+2-second call and then nothing for 600 s. **Five were the subject**: Q03, Q07, Q14, Q43 and Q49 each
+emitted three maximum-length pure-reasoning turns — 8,192 then 16,384 then 30,720 tokens, zero
+content — and ran past the cell deadline.
+
+**Attribution, one variable at a time. It is not the two changes anyone would suspect.**
+
+| arm | endpoint | stream | MTP | Q03 | Q07 | Q14 | Q43 | Q49 |
+|---|---|---|---|---|---|---|---|---|
+| recorded controls (×3) | `:1234` | on | on | fail ×3 | pass, pass, fail | pass ×3 | **pass ×3** | **timeout, pass, pass** |
+| control, re-run today | `:1234` | on | on | fail | pass | pass | **pass** | **pass** |
+| probe, MTP kept | bare | off | **on** | fail | pass | pass | **timeout** | **timeout** |
+| probe, MTP off | bare | off | **off** | fail | pass | pass | **timeout** | **timeout** |
+
+- **It is not MTP.** The two probe arms are byte-identical in configuration except the one request
+  key, ran in the same session against the same server process, and produced **the same outcome on
+  all five tasks**. That is also a second null for F389: turning MTP off costs nothing in throughput
+  *and* nothing in outcomes — it only costs the 1.22× for computing the probabilities.
+- **It is not streaming.** Two independent reasons, both from code rather than inference.
+  `api.rs:883`: the non-streaming parser emits the same `StreamMeta { finish_reason,
+  reasoning_chars }` the SSE path emits, so claudette's empty-turn retry is looking at identical
+  inputs on both paths. And `driver.rs:456`: the harness deadline is **the whole cell's**, not an
+  idle watchdog, so a silent generation is not penalised for being silent.
+- **It is the endpoint.** The same five tasks on `:1234` today come back with **no timeouts at all**,
+  including Q43 and Q49, which the bare server timed out in both arms.
+
+**The mechanism, measured.** An identical non-streaming tool-carrying temperature-0 request to each
+hop, three times each: the medians barely differ — **5,976 tokens / 21,944 reasoning chars on bare
+against 5,293 / 20,000 on the proxy** — but the *tail* does. The proxy's three replies were
+5,341 / 5,293 / 4,411 tokens, all `stop`. The bare server's were 5,143 / **8,192** / 5,976, and the
+8,192 one is `finish_reason: length` carrying **41 characters of content**. A turn that overruns the
+budget and returns 41 characters is exactly what claudette scores as an empty turn, and
+`EMPTY_TURN_MAX_RETRIES = 2` with a ceiling clamped to `num_ctx / 2` then spends 8,192 + 16,384 +
+30,720 tokens — about 640 s at 87 tok/s — on one turn. ⚠ **n = 3 per hop**: this identifies a
+mechanism consistent with the cell-level result, it does not measure a rate.
+
+⚠ **Note what this says about temperature 0.0 generally: neither hop is deterministic.** Three
+byte-identical requests returned three different lengths on *both*. F383 found the same thing and
+blamed the reasoning trace; F389 found MTP is one contributor. The bare hop's variance is simply
+wider, and its tail reaches the ceiling.
+
+**What it means for item 4.** The population behind every correlation below was generated on the
+bare endpoint, because there is nowhere else to generate it. So the cells that survive to carry a
+label are the ones where the subject behaved normally, and the tasks that time out — the expensive,
+hard ones most likely to fail — are **excluded by the very configuration required to measure them**.
+That is a selection effect pointing the wrong way, and it is stated here rather than in a footnote:
+a logprob signal is being scored on an easier population than the one it would be deployed on.

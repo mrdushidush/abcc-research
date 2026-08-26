@@ -1,0 +1,4 @@
+{"spec": "default", "logprobs": false, "p50_secs": 5.83, "p50_tok_per_s": 102.9, "entries": 0, "top1_is_emitted": "0/0", "distinct_outputs": 2}
+{"spec": "default", "logprobs": true, "p50_secs": 5.88, "p50_tok_per_s": 101.97, "entries": 1800, "top1_is_emitted": "119/119", "distinct_outputs": 2}
+{"spec": "off", "logprobs": false, "p50_secs": 5.66, "p50_tok_per_s": 106.01, "entries": 0, "top1_is_emitted": "0/0", "distinct_outputs": 1}
+{"spec": "off", "logprobs": true, "p50_secs": 6.9, "p50_tok_per_s": 86.95, "entries": 1800, "top1_is_emitted": "1800/1800", "distinct_outputs": 1}

@@ -6,3 +6,7 @@ scratch/
 runs/
 __pycache__/
 *.pyc
+research/spikes/w4-logprobs/lp-rep*.jsonl
+research/spikes/w4-logprobs/cascade-rep*.jsonl
+research/spikes/w4-logprobs/probe*-rep*.jsonl
+research/spikes/w4-logprobs/smoke*-rep*.jsonl
