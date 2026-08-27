@@ -2,7 +2,9 @@
 
 **Status: IN PROGRESS — started 2026-08-27.** Sessions 3–5 of the 14-session landing budget, and
 the one **undo-cost exception** in that budget: sandboxing shapes the execution model, so it is the
-last workstream that is expensive to get wrong. **Line budget: ≤ 900.** §13's ten sections per
+last workstream that is expensive to get wrong. **Line budget: ≤ 900, amended by David on
+2026-08-27 to ≤ 945** — 5% over, spent on the threat model table, with every other remaining doc
+holding its original number. §13's ten sections per
 item, findings only where a decision turns on them, and no spike unless a decision is genuinely
 blocked without one. Findings **F404–F418** so far; next free number is **F419**.
 
