@@ -1,12 +1,12 @@
 # W7 — Security and sandboxing
 
-**Status: IN PROGRESS — started 2026-08-27.** Sessions 3–5 of the 14-session landing budget, and
-the one **undo-cost exception** in that budget: sandboxing shapes the execution model, so it is the
-last workstream that is expensive to get wrong. **Line budget: ≤ 900, amended by David on
-2026-08-27 to ≤ 945** — 5% over, spent on the threat model table, with every other remaining doc
-holding its original number. §13's ten sections per
-item, findings only where a decision turns on them, and no spike unless a decision is genuinely
-blocked without one. Findings **F404–F418** so far; next free number is **F419**.
+**Status: COMPLETE — 2026-08-27.** Sessions 3–5 of the 14-session landing budget, and the one
+**undo-cost exception** in it: sandboxing shapes the execution model, so it is the last workstream
+that is expensive to get wrong. **Line budget: ≤ 900, amended by David on 2026-08-27 to ≤ 945** —
+5% over, spent on the threat model table, with every other remaining doc holding its original
+number. §13's ten sections per item, findings only where a decision turns on them, and no spike
+unless a decision is genuinely blocked without one. **Findings F404–F422**; next free number is
+**F423**. Items 4 and 5 are folded into one section to land inside the budget.
 
 Planned items:
 
@@ -21,9 +21,9 @@ Planned items:
 3. ✅ **Secrets in prompts, traces and the tool child's environment** (F416–F418) — the console
    renders traces, so a leaked secret is persisted *and* displayed. BCF's env allowlist (F407) is
    the starting point; item 1 establishes that neither other donor strips anything.
-4. ⬜ **Supply chain** — dependencies and model weights pulled at first run, `cargo audit` in CI.
-5. ⬜ **Blast radius and the README** — what happens when a user points 2.0 at a repository they
-   care about, and the **threat model table** the brief names as the deliverable.
+4. ✅ **Supply chain** (F419, F420) — the dependency gate is finished work; the weights are ungated.
+5. ✅ **Blast radius and the README** (F421, F422) — the README makes the claim item 1 falsified,
+   and the destructive-git guard exists twice, with neither copy covering the other.
 
 **What item 1 changes for anyone reading only one thing.** The question was *path check per tool, or
 a process the tool child runs inside*. Both halves moved. The path check is not the weak part of a
@@ -857,3 +857,89 @@ The sink table and the `run_bash` absence are complete greps over one tree and a
 the two backstop bugs and the AWS asymmetry were each confirmed by hand against the Rust rules.
 The "6 of 13" is a demonstration over shapes chosen because this project uses them — it shows the
 mechanism, and it is not a false-negative rate.
+
+---
+
+# Items 4 and 5 — supply chain, blast radius, and the threat model
+
+Folded under the landing budget: both reach the ruling items 1–3 already reached. **Question:**
+§11's fourth and fifth bullets — *"dependencies and model weights pulled at first run, `cargo audit`
+in CI"*, and what a user is exposed to when they point 2.0 at a repository they care about.
+**Method:** both CI workflows, `deny.toml`, `Cargo.lock`, every `ollama pull` site, the README's
+claims, and the guard that bounds damage to the user's own repo, read at `af3f804`. **No probe.**
+
+### F419 — the dependency half is already solved, and it is the one inherited control in this audit that needs copying rather than inverting
+
+`cargo audit` (RustSec) **and** `cargo deny check` run as named jobs in **both** `ci.yml` (:59, :79)
+and `release.yml` (:126, :142), and **publishing is gated on them** — `needs: [verify,
+tag-version-match, audit, deny]` on `publish` (:161) and `build-binaries` (:211). `deny.toml` gates
+advisories, licenses, duplicate versions and sources, treats **a yanked crate as hard a failure as a
+CVE** (:15), and states an update procedure: *"prefer fixing the tree over loosening policy"*.
+**306 `[[package]]` entries from 19 direct dependencies.** Every other control here needed inverting.
+
+### 🚨 F420 — the weights are pulled with no verification of any kind, and the weights are the most privileged input in the system
+
+`Command::new("ollama").args(["pull", …])` at `firstrun.rs:164` and `setup.rs:148`. A grep for
+`sha256|digest|checksum|blake3|hash.*verify` across `firstrun.rs`, `setup.rs` and `model_config.rs`
+returns **zero matches**: trust is the registry plus TLS, and nothing is recorded at first pull for a
+later pull to be compared against. **The asymmetry is the finding** — a crate is 306 deep and gated
+four ways before it ships; the model is one ungated download, and per items 1–3 it is the model that
+reads the repo, picks the tool calls and reaches `bash`. Not a risk *to* the agent — it **is** the agent.
+
+### 🚨 F421 — the README makes the claim item 1 falsified, and correcting it is a W7 deliverable
+
+`README.md:104`: *"Per-tool permissions. Read-only and workspace-write tools auto-allow; `bash`,
+`edit_file`, and `git push` prompt `[y/N]` every time."* Every clause is true as written and the
+conclusion a reader draws is false. **F405 demonstrated `write_file`(new path) + `run_tests`
+executing arbitrary code with no prompt at any point**, and **F403 measured the model routing around
+a `write_file` refusal via `bash` in 30 of 80 attempts**: the sentence describes the tools that are
+gated, and blast radius is set by the ones that are not. The honest register is in the same file —
+`:150` says what a Q56 number does not cover, and `:100`'s `--research` is ruling 3 already shipped.
+
+### 🚨 F422 — the destructive-git guard is implemented twice, neither copy covers the other, and the careful copy fails open
+
+`reject_destructive` (`git.rs:274-294`, every `git_*` dispatch) is a flat banned-flag scan over argv
+— `--force`, `-f`, `--hard`, `--mixed`, `-D`, `--no-verify` — declared *"better to over-block"*.
+`scan_destructive_git` (`shell.rs:300-346`, on `bash`) is far better engineering: it splits
+`&& || | & ;` chains, skips `VAR=val` prefixes, walks git's global options, resolves `-C <dir>` and
+identifies the real subcommand. It recognises **three** operations — `reset --hard`, `checkout -f`,
+`switch -f` — so **`git push --force` and `git branch -D` are blocked through the git tool and
+unrecognised through `bash`**, while `git clean -fd` and `git stash drop` are caught by neither. Two
+properties traced through the Rust: it keys on `cmd_word != "git"`, so **`sh -c "git reset --hard"`
+returns `None`**; and `git_tracked_dirty` returns empty when `git` fails, so **it fails open**.
+
+## Ruling for both items
+
+**Supply chain.** Copy the dependency gate **verbatim**, `needs:` gate and update procedure included
+— the procedure is what stops the policy rotting into a pile of `ignore` entries. Then record the
+manifest digest at first pull and compare it on every start, surfacing a mismatch as a **run-visible
+event** (item 1's ruling 4); an allowlist by name is redundant once a digest exists, and **OQ-W7-10**
+notes ollama has no signing story. **Blast radius.** Rewrite `README.md:104` in `:150`'s register —
+but correcting the sentence is not the fix: **`max_tier` per role** is, so the role rather than the
+tool name carries the ceiling, and unattended modes ship read-only and offline as `--research` does.
+The two git guards merge into one table read by both paths — **a backstop, never the control** —
+with both holes closed. Prompting harder is rejected. **Confidence: high on all four.**
+
+## The threat model
+
+§11 names this table as W7's deliverable and §16 checks the workstream against it. Every row is a finding above.
+
+| asset | how it is reached | what stops it today | 2.0's control | findings |
+|---|---|---|---|---|
+| **The user's working tree** | a destructive git op, or an edit the model chose | two argv guards covering different sets; the better one fails open | one merged guard as a backstop; the worktree (W6 item 6) as the boundary | F422 |
+| **The rest of the filesystem** | `write_file`(new path) + `run_tests`; or `bash` | nothing — the path check is well built and not on this path | `max_tier`: a role without the execution class cannot reach it | F404–F406 |
+| **The OS beneath all of it** | any of the above, on Windows | nothing without Win32 token code; WSL2 hands PE files back to the host | state it, do not claim it; the workspace is the expensive crossing | F408–F411 |
+| **Credentials on disk** | a hostile file asks; one `bash cat` answers | a good denylist hung off `validate_read_path`, which `bash` never calls | redact at the tool-result boundary; deny the shell class | F416, F417 |
+| **The tool child's environment** | inherited wholesale at spawn | BCF's `env_clear()` + allowlist — one donor of three | adopt BCF's, as data in one const with a CI test | F407, F418 |
+| **The model's context** | hostile text in any file a worker reads | an envelope aimed only at the network; nothing marks a file | the sentence naming file contents (0/50) — not a control either | F412–F415 |
+| **The task itself** | injection displaces it and persists into the rewritten file | nothing — the Verifier reads the diff and is warned of none of it | a displaced task is a verification failure, not a style issue | F415 |
+| **Egress / exfiltration** | injected instruction → `web_fetch` | an SSRF guard, which is not an exfiltration control | `--offline` for unattended roles; the only leg that closes | F414, F418 |
+| **Console and session on disk** | any secret in any tool result | both disk sinks redacted; console and model context are not | redaction as a property of the result type, applied once | F418 |
+| **The binary's dependencies** | a malicious or yanked crate among 306 | `cargo audit` + `cargo deny`, CI *and* release, publish gated | **copy it verbatim** | F419 |
+| **The model weights** | a substituted model at first pull | nothing — no digest, nothing to compare against | record the manifest digest at first pull, check it every start | F420 |
+
+**The one sentence the table is for.** Ten of these eleven rows close on the same control, and it is
+not a check: **a role that does not need a class does not get it.** An argument check binds one tool
+and a shell walks past it — four times in this document, by four mechanisms and three authors; a
+prompt binds only as far as the model complies (78%); and on this platform there is no OS boundary
+underneath any of it. What is left is denying the class, and `--research` is the shipped proof.
