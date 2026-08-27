@@ -1,0 +1,1 @@
+Create tasks/c7_fibonacci.py with function fibonacci(n) that returns a list of first n Fibonacci numbers

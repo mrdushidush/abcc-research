@@ -1,0 +1,1 @@
+Create tasks/c5_palindrome.py with function is_palindrome(s) that checks if string is same forwards and backwards (case insensitive, ignore spaces)

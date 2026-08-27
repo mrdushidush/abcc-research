@@ -1,0 +1,1 @@
+Create tasks/c9_lru.py with an LRUCache class. Constructor takes capacity (int). Methods: get(key) returns value or -1 if not found, put(key, value) inserts/updates and evicts least recently used if over capacity. Use a dict and a list to track order.

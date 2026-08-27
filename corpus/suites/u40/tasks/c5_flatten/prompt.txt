@@ -1,0 +1,1 @@
+Create tasks/c5_flatten.py with function flatten(nested) that flattens a list one level deep. Example: flatten([[1,2],[3,[4]]]) returns [1,2,3,[4]]

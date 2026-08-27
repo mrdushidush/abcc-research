@@ -1,0 +1,1 @@
+Create tasks/c9_text_stats.py with a TextStats class. Constructor takes a string of text. Methods: word_count() returns number of words, char_count() returns number of non-space characters, most_common_word() returns the most frequently occurring word (lowercase). Split on spaces.

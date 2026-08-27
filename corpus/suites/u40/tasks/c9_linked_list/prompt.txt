@@ -1,0 +1,1 @@
+Create tasks/c9_linked_list.py with two classes. Node class with value and next attributes. SortedList class with: insert(value) that inserts in sorted ascending order, to_list() that returns a Python list of all values, length() that returns the count of nodes.

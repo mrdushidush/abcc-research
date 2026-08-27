@@ -1,0 +1,1 @@
+Create tasks/c3_min_of_three.py with function min_of_three(a, b, c) that returns the smallest of three numbers without using min()

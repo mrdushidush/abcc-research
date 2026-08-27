@@ -1,0 +1,1 @@
+Create tasks/c9_stack.py with a Stack class that has: push(item), pop() returning item or None if empty, peek() returning top item or None, size() returning count, and is_empty() returning bool

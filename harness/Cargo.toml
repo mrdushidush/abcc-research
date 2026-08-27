@@ -5,6 +5,7 @@ members = [
     "crates/w8-corpus",
     "crates/w8-run",
     "crates/w8-import-q56",
+    "crates/w8-import-u40",
     "crates/hw-probe",
 ]
 

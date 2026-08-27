@@ -1,0 +1,1 @@
+Create tasks/c7_transpose.py with function transpose(matrix) that transposes a 2D list (swap rows and columns). Example: transpose([[1,2],[3,4],[5,6]]) returns [[1,3,5],[2,4,6]]

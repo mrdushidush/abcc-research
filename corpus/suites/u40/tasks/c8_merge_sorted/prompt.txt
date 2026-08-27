@@ -1,0 +1,1 @@
+Create tasks/c8_merge_sorted.py with function merge_sorted(list1, list2) that merges two sorted lists into one sorted list using the two-pointer technique (do NOT just concatenate and sort)

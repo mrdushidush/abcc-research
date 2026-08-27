@@ -161,6 +161,10 @@ name = "w8-import-q56"
 version = "0.1.0"
 
 [[package]]
+name = "w8-import-u40"
+version = "0.1.0"
+
+[[package]]
 name = "w8-run"
 version = "0.1.0"
 dependencies = [

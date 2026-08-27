@@ -1,0 +1,1 @@
+Create tasks/c2_is_even.py with: def is_even(n): return n % 2 == 0

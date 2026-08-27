@@ -1,0 +1,1 @@
+Create tasks/c1_square.py with: def square(n): return n * n

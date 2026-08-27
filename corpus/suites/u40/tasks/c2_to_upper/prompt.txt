@@ -1,0 +1,1 @@
+Create tasks/c2_to_upper.py with: def to_upper(s): return s.upper()

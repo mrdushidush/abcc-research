@@ -1,0 +1,1 @@
+Create tasks/c4_clamp.py with function clamp(value, min_val, max_val) that restricts value to the range [min_val, max_val]

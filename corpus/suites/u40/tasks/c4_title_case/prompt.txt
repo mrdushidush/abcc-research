@@ -1,0 +1,1 @@
+Create tasks/c4_title_case.py with function title_case(s) that capitalizes the first letter of each word in a string

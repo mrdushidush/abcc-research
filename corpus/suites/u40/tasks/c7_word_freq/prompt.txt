@@ -1,0 +1,1 @@
+Create tasks/c7_word_freq.py with function word_frequency(text) that returns a dict of word counts (lowercase, split on spaces)

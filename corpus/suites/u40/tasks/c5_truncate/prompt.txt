@@ -1,0 +1,1 @@
+Create tasks/c5_truncate.py with function truncate(s, max_len) that truncates string s to max_len characters, adding '...' if truncated. If s is shorter than max_len, return s unchanged.

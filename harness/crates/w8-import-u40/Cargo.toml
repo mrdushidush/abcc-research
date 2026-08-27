@@ -1,0 +1,13 @@
+[package]
+name = "w8-import-u40"
+version = "0.1.0"
+description = "Imports ABCC's 40-task Ollama stress battery into a corpus/SPEC.md v1 corpus"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# Zero third-party dependencies, like `w8-import` and `w8-import-q56`. The donor is read through
+# `git show`, which is a process rather than a crate; the two recorded baselines are JSON with a
+# fixed shape and are scanned rather than deserialized; and nothing here parses TOML — it only
+# writes it, comments included, because the comments carry the findings (SPEC §2).
+[dependencies]

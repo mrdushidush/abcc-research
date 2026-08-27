@@ -1,0 +1,1 @@
+Create tasks/c6_unique_sorted.py with function unique_sorted(lst) that returns a new list with duplicates removed AND sorted in ascending order

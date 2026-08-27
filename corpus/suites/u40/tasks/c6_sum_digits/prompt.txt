@@ -1,0 +1,1 @@
+Create tasks/c6_sum_digits.py with function sum_of_digits(n) that returns sum of all digits in an integer (handle negative numbers)

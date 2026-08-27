@@ -1,0 +1,1 @@
+Create tasks/c8_power_set.py with function power_set(s) that returns all subsets of a list. Example: power_set([1,2]) returns [[], [1], [2], [1,2]]

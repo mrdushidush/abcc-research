@@ -1,0 +1,1 @@
+Create tasks/c9_rpn.py with function rpn_calc(expression) that evaluates a Reverse Polish Notation expression. Input is a string of space-separated tokens. Support +, -, *, / operators. Return the result as a float. Example: rpn_calc('3 4 +') returns 7.0

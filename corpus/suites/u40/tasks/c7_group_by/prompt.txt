@@ -1,0 +1,1 @@
+Create tasks/c7_group_by.py with function group_by(items, key_func) that groups items into a dict where keys are results of key_func and values are lists of matching items

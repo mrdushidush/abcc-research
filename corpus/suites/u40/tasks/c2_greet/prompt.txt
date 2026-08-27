@@ -1,0 +1,1 @@
+Create tasks/c2_greet.py with: def greet(name): return f'Hello, {name}!'

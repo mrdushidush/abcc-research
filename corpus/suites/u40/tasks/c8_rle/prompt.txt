@@ -1,0 +1,1 @@
+Create tasks/c8_rle.py with function rle_encode(s) that performs run-length encoding. Example: rle_encode('aaabbc') returns 'a3b2c1'
