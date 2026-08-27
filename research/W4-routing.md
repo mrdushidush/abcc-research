@@ -1859,6 +1859,165 @@ hard ones most likely to fail — are **excluded by the very configuration requi
 That is a selection effect pointing the wrong way, and it is stated here rather than in a footnote:
 a logprob signal is being scored on an easier population than the one it would be deployed on.
 
+### 🚨 F395 — the cell-level question: the best logprob does not beat a token count, and the token count arrives free
+
+**Population.** Two clean repeats of Q56 control through the recorder, on the bare endpoint:
+**101 labelled cells over 52 tasks, 6 failures (5.9%)**, r1 48/50 and r2 47/51, against the three
+recorded control runs' 49 / 50 / 48 of 56. Eleven cells are dropped as timeouts and F390 is why.
+Behind them, **740 completion calls with alternatives on every token in 740 of 740** — F387's
+integrity check, passed by construction rather than assumed, and the reason these numbers describe
+the worker's distribution and not a draft head's.
+
+64 signals scored, AUC for *"will this cell fail"*, 95% CI by bootstrap **over tasks** (10,000
+resamples), because five repeats of 56 tasks are 56 clusters and not 280 independent cells:
+
+| rank | signal | family | AUC | 95% CI |
+|---|---|---|---|---|
+| 1 | `edit_n_tokens` | **free** | **0.725** | [0.558, 0.897] |
+| 2 | `edit_mean_margin` | logprob | 0.696 | [0.369, 0.934] |
+| 3 | `last_n_tokens` | **free** | 0.684 | [0.566, 0.852] |
+| 4 | `first_p10_lp` | logprob | 0.681 | [0.523, 0.879] |
+
+**Six of 64 intervals exclude the coin**, and three of the six are free counters. The comparison
+that decides the item: best logprob − best free = **−0.043, 95% CI [−0.516, +0.339]**. The interval
+is twenty times as wide as the difference, and it spans zero.
+
+🚨 **A `*_n_tokens` feature is a token count, not a confidence.** `usage.completion_tokens` carries
+it on the deployed path with no serving change, no endpoint move and no 1.18×, so `analyze.py`
+classifies the whole `*_n_tokens` family as *free*. Crediting logprobs for the top signal would be
+crediting them for arithmetic that needs no logprobs — which is why the logprob column's champion
+is `edit_mean_margin` and not the thing that actually came first.
+
+⚠ **The within-task test cannot run at this failure rate.** Only **4 of 52** tasks produced both a
+pass and a fail across the two repeats, and a two-sided sign test cannot reach p = 0.05 below n = 6.
+The paired design — *"on a task that sometimes fails, is the failing attempt the less confident
+one?"* — is the one that would have controlled for task difficulty, and it is unavailable. That is
+a fact about the corpus, not about the signal.
+
+**And more of this corpus does not fix it.** OQ-W4-12 was closed in arithmetic before the campaign
+ran (`power.py`, Hanley-McNeil, and deliberately the *optimistic* independent-cells bound):
+separating two signals 0.05 apart at a true AUC of 0.70 needs **497–1,269 cells, i.e. 9–23 full Q56
+repeats**. Two repeats cost about six hours. The answer costs twenty-seven to seventy. **This is a
+null nothing available here can break, and that is the finding.**
+
+### 🚨 F396 — the question worth asking is per-call, both signals beat the coin there, and the free one still wins
+
+The cell-level question is the badly-powered one and it is also the less useful one: by the time a
+cell has failed, the verifier has already said so for 547 ms. The in-flight question is different —
+**read the first 200 tokens of a turn and predict whether this turn ends at the ceiling having
+produced nothing** — and after F390 it is worth real money, because a runaway turn now costs about
+640 s.
+
+**252 calls of at least 200 tokens, 23 runaways (9.1%):**
+
+| signal | family | AUC | 95% CI |
+|---|---|---|---|
+| `free_trace_still_open` | **free** | **0.871** | [0.846, 0.898] |
+| `head_mean_margin` | logprob | 0.812 | [0.662, 0.902] |
+| `head_p10_margin` | logprob | 0.726 | [0.475, 0.883] |
+
+Two of seven intervals exclude the coin and they are the top two. Paired difference **−0.059, 95%
+CI [−0.209, +0.027]** — narrower than the cell-level interval, still spanning zero, still pointing
+the wrong way for logprobs.
+
+⚠ **The free signal is related to the outcome by construction, and that is the point rather than a
+defect.** *"Has `</think>` closed by token 200"* predicts *"the trace ran to the ceiling"* partly
+because the cheapest predictor of a long trace is that it is already long. `analyze.py` prints that
+caveat itself. But the deployment question is not "which signal is more elegant", it is "which
+signal do I have": one needs the streamed text the subject is already reading, the other needs a
+different endpoint, a lost `tools`+`stream` shape, MTP disabled and 1.18× on every call.
+
+⚠ **Repeat 3 is excluded from this population**, not merely unfinished. David unloaded the model
+mid-repeat; the recorder went on writing plausible rows against a dead server, and `campaign.sh`
+never re-checks liveness after the repeat starts. Its log is kept on disk as
+`CONTAMINATED-lp-rep3.jsonl.quarantined` so a glob cannot pick it up. Reading it in moves the
+per-call population from 252 calls to 257 and the numbers by ~0.001 — small, and exactly the size
+of error that survives review.
+
+## Options compared
+
+| option | evidence | cost | verdict |
+|---|---|---|---|
+| **A. Read a logprob-derived confidence on the worker path and act on it** | F395 0.696 against a free 0.725; F396 0.812 against a free 0.871; both differences span zero | four serving changes, three of them silent (F386, F387, F388), 1.18× decode on every call and no streaming (F389), on an endpoint where the subject demonstrably behaves differently (F390) | **rejected** |
+| **B. Ship the free in-flight counters, and no logprobs** | the same two tables, from the other side | zero — `usage` and the streamed text are already on the deployed path | **recommended** |
+| **C. Read nothing in flight; run the verifier** | F385's ceiling plus the measured 547 ms median `verify_ms` | 2.9% of the median attempt, and it returns the answer instead of estimating it | **recommended, and it is the default for the cell-level question** |
+| **D. Keep the logprob rig as a spike instrument, off by default** | F387: the array can be complete, well-formed and 91.6% fabricated | one README and a quarantined script | **recommended as a diagnostic only** |
+
+## Recommendation
+
+1. **2.0 does not read logprobs on the worker path.** Not *"not yet"* — the four changes are the
+   price, the measured gain is negative in both questions, and OQ-W4-12 says no corpus this project
+   can generate would resolve the difference.
+2. **The one in-flight signal worth wiring is free and it answers the per-call question**: at token
+   200, has the reasoning trace closed? If it has not, this turn is far likelier to end at the
+   ceiling with nothing. 🚨 **It is a *stop*, not a score** — it feeds W3's
+   `Uncertain(OutputBudgetOverrun)` and item 5's `NextAction`, and it never becomes a number
+   displayed next to an answer.
+3. **Where a human wants a confidence number, give them the verifier's result.** 547 ms, p90 767 ms,
+   and it is checkable — which is what W6/W11 already ruled about model verdicts: a report, never a
+   gate.
+4. **If anything ever reads a logprob again, the integrity check is ALTERNATIVES ON EVERY TOKEN**
+   (F387), and the flat `"speculative.n_max": 0` — the nested form is silently ignored. Array length
+   equal to `completion_tokens` passed on 29 of 29 fabricated calls and is not a check.
+5. **Serving discipline, general**: the agent loop stays on the proxy (W2's *Keep* is not
+   overturned), and **no OpenAI field may be called "unsupported" until it has been tested one hop
+   closer to the metal**. Two fields are now known to be dropped at HTTP 200 — `chat_template_kwargs`
+   (F377) and `logprobs` (F386).
+
+## Rejected alternatives and why
+
+- **Self-consistency / n-sample voting as the confidence signal.** It costs n× an 18.6 s attempt to
+  approximate an answer the verifier gives exactly for 547 ms. The same arithmetic that kills the
+  estimator in F376 kills this, and harder.
+- **Turning MTP off globally so the array stops being fabricated.** F389 measured the cost of doing
+  so as negligible (106.01 tok/s without against 102.90 with), so this is cheap — but it makes the
+  logprobs *real*, not *useful*. F395 scored real ones. Changing a serving default to improve a
+  signal that loses to a token count is a change with no consumer.
+- **Waiting for a bigger corpus.** `power.py` closed this in advance, deliberately before the
+  campaign, and the number is 9–23 Q56 repeats. Writing it down is what stops the next session
+  reopening it.
+- **Scoring the signal on the proxy endpoint instead.** There are no logprobs there at all (F386).
+  The population *has* to come from the endpoint that changes the subject, which is why F390 sits in
+  this item rather than in W2.
+
+## Effect on fun
+
+**Neutral to positive, by subtraction.** A confidence percentage the operator cannot check is the
+kind of number that makes a terminal feel authoritative and be wrong — the same objection W6 raised
+to a model verdict as a gate, and W4 item 3 to a pre-dispatch score. What replaces it is better on
+both counts: the verifier's actual result, and a stop that says *"this turn is running away, here is
+the round it happened in"*. Both are things the operator can act on. The one genuinely fun by-product
+is F387: *"the model was 100% certain on 91.6% of its tokens"* is a great-looking dashboard and it
+would have been a lie, which is a good story to tell about why 2.0 does not have that dashboard.
+
+## Open questions
+
+- **OQ-W4-18.** Does the free per-call stop signal hold on the **proxy** endpoint, where the subject
+  behaves differently (F390)? It needs only the streamed text, so any future `:1234` campaign
+  answers it with no new instrumentation. *(Do not spike; ride along.)*
+- **OQ-W4-19.** Does MTP's draft-head acceptance explain any of F383's 17% reading drift at
+  temperature 0.0? F389 established MTP is *a* source of nondeterminism; the size of its share is
+  unmeasured.
+- **OQ-W4-15 stays part-open.** `logprobs` is answered. `grammar`, `logit_bias` and slot
+  save/restore are still untested through the proxy hop, and each is a field a 2.0 feature might
+  assume works.
+
+## Confidence: high on the serving mechanics, high on the direction, medium on the magnitudes, low on transfer
+
+- **High on F386–F389.** Each is a 2×2 or better with one variable moving, on one `llama-server`
+  process, and F387's fabrication claim has an instrument check that passes and fails in the right
+  places (greedy argmax 1,800/1,800 with MTP off, vacuously 119/119 with it on).
+- **High on F390**, because it was settled by elimination and a control run rather than by the most
+  interesting variable — two earlier hypotheses (MTP, streaming) were wrong, and the first came off
+  a still-running arm.
+- **Medium on F395 and F396's magnitudes.** The direction is stable across both questions and both
+  populations, and the free signal wins both. But the cell-level interval is ±0.4 wide, the
+  within-task test could not run, and 5.9% failures over 101 cells is a thin base.
+- ⚠ **Low, and stated, on transfer.** Everything here is one model at one quant on one card. A model
+  whose logprobs are better calibrated could invert F395 — and the reason that does not change the
+  recommendation is F385's ceiling and the 547 ms verifier, neither of which is about calibration.
+
+
 ---
 
 # Item 5 — the escalation ladder, retry budgets and circuit breakers
@@ -2076,3 +2235,182 @@ stronger model, is the one that produced v1's four ladders and its invisible `fa
 - ⚠ **Low, and stated, on how far v1's defects generalise.** These are four services in one donor.
   They are evidence about *what goes wrong when a lifecycle is untyped*, which is a claim W3 already
   made on independent evidence — not evidence that any particular ladder shape is correct.
+
+---
+
+# Item 6 — a fine-tuned router or worker
+
+## Question
+
+§11: *"Given V1's collected training data, assess whether a fine-tuned router or worker is worth it.
+Expect no for now, and say why."*
+
+The brief expects **no** and asks for the reason. Three items of W4 have since changed what the
+reason is: it is not *"the gain is too small for the cost"*, which is what "expect no for now"
+anticipates. **Two of the three preconditions for the question are absent, and the third is closed
+by arithmetic.**
+
+## Method
+
+Desk, entirely, and no spike — a decision that is blocked by a missing precondition cannot be
+unblocked by measuring it. Three questions, each answerable from evidence already on the table:
+is there a router to fine-tune (item 2), is there data (the pre-study, re-read against v1's code),
+and is there a machine (W11 and the load telemetry).
+
+## Inherited
+
+- **F372 / F373 (item 2)** — there is one tier, and the only rung the system can buy is another
+  attempt.
+- **F385 (item 3)** — a *perfect* a-priori oracle spends 1.286 attempts/task against reacting's
+  1.118. The ceiling on prediction is below the floor on reacting.
+- **W3** — the training data is a **by-product of escalation**, not a collection project.
+- **W11's handoff** — the variant stratification is a labelled dataset that arrives free.
+- **W2 F79 / W11 F284** — a tier that changes weights costs 23.77–26.3 s per swap.
+- **W11 F275** — co-residency is arithmetically impossible: 1,210 MiB free against a 4.41 GB
+  smallest model.
+- **[[abcc-2-decisions]]** — zero cloud spend is standing, so a rented training run is not an option
+  either.
+
+## Findings
+
+### 🚨 F397 — there is no router to fine-tune, because item 2 measured that the codomain has one element
+
+A router is a function from a request to a destination. Fine-tuning one presupposes at least two
+destinations to choose between, and item 2 measured that there is exactly one: **F372** priced the
+only candidate second tier at **7.75× the wall clock with 5 timeouts in 18**, and W11 F284 found the
+same model is a better reader and an unusable component. **F360** found 149 of 149 real tasks
+already land in v1's bottom tier, and **F361** that the score predicts nothing (|ρ| ≤ 0.21). A
+learned function whose codomain has one element is a constant, and the cheapest constant is the one
+2.0 already ships: `complexity: None`.
+
+The only decision left in the neighbourhood is *"attempt again or stop"*, and **F374** says its
+highest-information feature is **observed rather than predicted** — the first failure is worth 44
+points, and no a-priori score in this project is worth five. Training a model to guess it earlier is
+training it to approximate something the system gets for free 19 s later, which is F385's argument
+with a training bill attached.
+
+### 🚨 F398 — "V1's collected training data" has no label column, and the code says so in three comments
+
+The pre-study already showed the volume is not there: nine days rather than months, `tasks.complexity`
+182 of 218 rows with **137 of them at the default 5.0**, `execution_logs.input_tokens` /
+`output_tokens` / `model_used` **0% populated**, and `training_datasets` at **154 rows** with
+`claude_output` on **5** of them, `claude_tokens` / `local_tokens` **0 of 154**, `quality_score`
+**0 of 154**.
+
+Reading the writer explains the shape, and corrects two inherited framings at once
+(`packages/api/src/services/taskExecutor.ts`):
+
+1. 🚨 **The target column is never written.** `captureTrainingData` calls
+   `trainingDataService.captureExecution({ …, expectedOutput: undefined, // Could be added to task
+   schema in future, …, tokens: undefined, // Could be tracked in future, … })` (`:575-650`). Two of
+   the three fields a fine-tune needs are literal `undefined`s with a *"in future"* comment beside
+   them, and the third — `quality_score` — is never set by this path at all. **So it is not a
+   labelled dataset that is small. It is a trace archive with no labels**, and no amount of it
+   becomes supervision.
+2. 🚨 **"Fired once, at max iterations" is true of the failure path only.** That is the inherited
+   description (W3, W11), and it describes `:238`, which is guarded by
+   `task.currentIteration >= task.maxIterations`. The **success** path at `:189` is unguarded and
+   fires on **every** completed task. So the archive is skewed toward successes and toward
+   exhausted failures, with the interesting middle — a task that failed once and then succeeded —
+   recorded only as its success.
+3. **`usedClaude` is a property of the agent's configuration, not of the run.** It is derived as
+   `agentType.name === 'cto' || config.alwaysUseClaude || config.useClaude` (`:619-622`), so the 5
+   populated `claude_output` rows are the rows whose *agent* was a Claude agent — not rows where a
+   local attempt was rescued by a better model. **The distillation pair — same task, local attempt,
+   teacher's better answer — is not a rare row in this table. It is a row shape the schema never
+   writes.**
+
+### F399 — the machine cannot hold the training run, and the gap is two orders of magnitude, not a tuning problem
+
+Inference already runs on the margin: tonight's load reports **used 1.73 GB, free 15.37 GB against
+a 15.07 GB estimate — 0.30 GB of headroom** on a 16,311 MiB card, with both LM Studio anti-spill
+guardrails off (see [[lm-studio-vram-spill]]). W11 F275 measured the same wall from the other side:
+1,210 MiB free with the champion resident, against 4.41 GB for the smallest model on the host.
+
+⚠ **Stated as arithmetic, not measured here**, because a measurement that cannot be attempted is not
+worth the electricity: fine-tuning needs unquantized weights plus optimizer state, and 35B
+parameters at bf16 is **~70 GB of weights alone** before gradients, moments or activations — against
+0.3–0.9 GB of margin at IQ3_S inference. This is not a hyperparameter question. And zero cloud spend
+means the machine cannot be rented, so there is no configuration of this project in which the
+training run happens.
+
+**A fourth cost, and the one that would bite even if the other three vanished: a fine-tune breaks
+every baseline.** W8 exists to compare 2.0 against a fixed subject on a fixed model; eight
+workstreams' numbers are quoted against `qwen3.6-35b-a3b-mtp@iq3_s`. Changing the weights makes all
+of them incomparable on the same day the new weights land.
+
+## Options compared
+
+| option | precondition it needs | status | verdict |
+|---|---|---|---|
+| **A. Fine-tune a router** | ≥ 2 destinations | **absent** — F372, F360 | **rejected** |
+| **B. Fine-tune / distil the worker** | a labelled corpus and a machine | **both absent** — F398, F399 | **rejected** |
+| **C. Train a small failure-predictor instead of a router** | a signal that beats reacting | **absent** — F385's ceiling, F395's null | **rejected** |
+| **D. Capture the by-product now, train never (in Phase 1–2), and write down the condition to reopen** | nothing new; W3's event log already records it | available at zero cost | **recommended** |
+
+## Recommendation
+
+1. **No fine-tune, and say the real reason.** Not *"the gain is too small"* — there is no second
+   destination to route to (F397), no label column to learn from (F398), and no machine to train on
+   (F399). Any one of the three closes it; all three are true.
+2. **Capture the by-product anyway, because it is free and W3 already builds the mechanism.** The
+   durable event log records attempt, outcome and cause; an escalation is by construction the label
+   *"this needed more than the router gave it"*. Add **nothing** for training's sake — the moment a
+   capture exists *for* training, it is a collection project, which is the thing W3 ruled against.
+3. 🚨 **Write the target column.** v1's single most expensive omission here is a one-line
+   `undefined`. If 2.0 ever records an attempt beside a better answer for the same task, that pair is
+   the asset; the traces around it are not.
+4. **The condition to reopen, stated so a future session does not re-litigate it**: a second
+   destination exists *and* ≥ N escalation pairs carry both an attempt and a better answer for the
+   same task *and* the training run has somewhere to run. OQ-W4-20 asks what N is.
+5. **Spend the effort on the measured cheap wins instead.** Schema-constrained decoding works and
+   Claudette uses it nowhere (W1); the prefix cache saves 79.7% of TTFT and one changed token at the
+   front annihilates it, so append and never prepend (W2 F81); `speculative.n_max` is settable per
+   request (F389). Each of those is a same-week change with a measured effect, against a fine-tune
+   with three absent preconditions.
+
+## Rejected alternatives and why
+
+- **A LoRA on the base model at inference quant.** IQ3_S weights are not a training target, and the
+  card has 0.3–0.9 GB of margin at inference (F399). The adapter is not the expensive part.
+- **Distilling from a cloud teacher into the local worker.** Zero cloud spend, standing. This is the
+  same wall that removed "C10 Sonnet" from the ladder in item 5.
+- **Training on the Q56 / U100 corpora instead of v1's database.** They are the *instrument*.
+  A worker trained on the benchmark it is scored against stops being a baseline and becomes a
+  memorised answer key — and the refsols are on disk, which is exactly why the loader never hands
+  out their path.
+- **Deferring the question to Phase 2 without an answer.** The brief asks for a *reason*, and all
+  three parts of the reason are known now. Deferring would carry an open question whose answer
+  cannot change until a precondition does.
+
+## Effect on fun
+
+**Positive, and it is the same shape as item 5's.** A fine-tuned worker is a component that gets
+better invisibly, in a direction the operator cannot inspect, on evidence they never see. Everything
+W5 ruled about the command centre points the other way: the agency is in the terminal, and the
+system earns trust by showing its work. The honest version of *"the system learns"* in 2.0 is the
+event log the operator can query — six queries over it were W5's whole fun layer — not a weights
+file whose improvements are asserted.
+
+## Open questions
+
+- **OQ-W4-20.** What is N — the number of *(task, attempt, better answer)* triples before a distil is
+  worth pricing? Related to OQ-W4-16's minimum history for a learned breaker threshold, and
+  answerable from W8 cells rather than from a spike.
+- **OQ-W4-21.** Does 2.0's event log need an explicit `better_answer_for` edge, or is
+  *"the next attempt on the same task that passed"* recoverable from the log W3 already specifies?
+  This is the one design decision item 6 actually leaves open, and it costs a field, not a project.
+
+## Confidence: high, and it is the highest-confidence item in W4
+
+- **High on F397.** It rests on item 2's measurements, which are the most replicated in this document
+  (149 of 149; 7.75× with 5 timeouts in 18; F284's independent second look at the same model).
+- **High on F398.** Every claim is a line of v1's own source, read this session, and it corrects two
+  inherited descriptions rather than repeating them — which is exactly the failure mode the standing
+  instruction names.
+- **High on F399's conclusion, explicitly medium on its arithmetic.** The VRAM figures are measured;
+  the 70 GB is a parameter-count multiplication, not a benchmark. The conclusion survives being
+  wrong by a factor of three.
+- **The one thing this item does not establish**: that a fine-tune would not *help*. It establishes
+  that it cannot be attempted here, on this data, into this architecture. If 2.0 ever runs on
+  hardware that could hold a training run, the question reopens on F397's precondition alone.

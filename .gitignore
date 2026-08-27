@@ -7,6 +7,9 @@ runs/
 __pycache__/
 *.pyc
 research/spikes/w4-logprobs/lp-rep*.jsonl
+# repeat 3 lost its server mid-run; kept on disk under a name the analyzer's glob cannot
+# reach, and out of git for the same reason the clean repeats are (8 MB each).
+research/spikes/w4-logprobs/CONTAMINATED-*.quarantined
 research/spikes/w4-logprobs/cascade-rep*.jsonl
 research/spikes/w4-logprobs/probe*-rep*.jsonl
 research/spikes/w4-logprobs/smoke*-rep*.jsonl
