@@ -4,6 +4,18 @@
 `harness/crates/hw-probe` and three throwaway HTTP drivers. Retrieval date for external claims:
 2026-08-16.
 
+▶ **Sources for the three external claims in this file (§16, added by sweep A 2026-08-28).** The
+llama.cpp server's own capability list —
+<https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md>, which documents
+`grammar`, `POST /infill`, `GET|POST /props` and `POST /slots/{id}?action=save|restore|erase`
+(re-verified 2026-08-28). The FFI crate — <https://crates.io/crates/llama-cpp-2>, published from
+<https://github.com/utilityai/llama-cpp-rs> (W9's one unqualified *use it*). The OpenAI dialect —
+<https://developers.openai.com/api/docs/guides/structured-outputs>, which describes `json_object`
+as *"ensures valid JSON is produced, but does not guarantee schema adherence"* against
+`json_schema`'s *"only Structured Outputs ensure schema adherence"* (re-verified 2026-08-28).
+**Everything else in this file is a local measurement or a donor `file:line`, not an outside
+claim** — including every LM Studio behaviour, which is observed here, never quoted from docs.
+
 §11.0 already closed W2's headline question — the boundary is HTTP, two dialects, no FFI — so this
 workstream is *"a confirmation run plus the parts that are open"* (§14 item 2). The confirmation
 holds. **What the open parts turned out to be worth is the finding**: prefix caching is a 79.7%

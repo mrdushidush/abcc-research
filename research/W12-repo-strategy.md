@@ -193,7 +193,9 @@ v1.** `agent-battle-command-center` is occupied by v1. The tempting move — ren
 `agent-battle-command-center-v1` and give 2.0 the freed slug — is the one GitHub explicitly warns
 against: *"If you create a new repository under your account in the future, do not reuse the
 original name of the renamed repository. If you do, redirects to the renamed repository will no
-longer work"* (GitHub Docs, "Renaming a repository", retrieved 2026-08-27). 🚨 **Every existing
+longer work"* (GitHub Docs, "Renaming a repository",
+<https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository>,
+retrieved 2026-08-27, re-verified 2026-08-28). 🚨 **Every existing
 link, star reference, README badge, Docker Hub description and search result for v1 would silently
 land on a brand-new empty repository.** Same page: renaming otherwise redirects issues, wikis,
 stars, followers and all git operations, so **renaming v1 alone is safe — it is the reuse that is
@@ -236,7 +238,8 @@ counting" are not the same state.** dependabot has authored 29 commits and holds
 PRs; the last push to the repo, 2026-08-24, was one of them. A frozen-but-live repo keeps
 generating PRs nobody will merge, which is a worse signal to a visitor than either a maintained
 repo or an archived one. Archiving resolves it mechanically: GitHub Docs, "Archiving repositories"
-(retrieved 2026-08-27) — *"its issues, pull requests, code, labels, milestones, projects, wiki,
+(<https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories>,
+retrieved 2026-08-27, re-verified 2026-08-28) — *"its issues, pull requests, code, labels, milestones, projects, wiki,
 releases, commits, tags, branches, reactions, code scanning alerts, comments and permissions"*
 become read-only, and *"to make changes in an archived repository, you must unarchive the
 repository first."* ⚠ That page does not state dependabot's behaviour explicitly; what is certain

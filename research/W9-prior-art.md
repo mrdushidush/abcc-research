@@ -50,6 +50,12 @@ to `raw.githubusercontent.com` and read locally: **2,892 lines of Switchyard's r
 (`escalation.rs`, `util/escalation.rs`, `util/llm_judge.rs`, `stage.rs`, `advisor_gate.rs`) plus
 its judge prompt and JSON schema. Retrieval date for every claim below: **2026-08-27**.
 
+▶ **Citation rule (§16), added by acceptance sweep A 2026-08-28.** Every project here is named
+as `org/repo` at least once, and **that string is the citation**: the page is
+`https://github.com/<org>/<repo>`, and every ⭐, licence, `pushed_at` and `archived` value quoted
+below came from `https://api.github.com/repos/<org>/<repo>`. Retrieved **2026-08-27**; F462–F463
+**2026-08-28**. Sources that are not `org/repo` are linked in place.
+
 Category saturation was measured, not estimated: `bradAGI/awesome-cli-coding-agents` (1,094 stars,
 pushed 2026-08-26) was downloaded whole — 768 lines, 101,448 bytes — and entries counted per
 section with `awk` on its `- **[` entry marker. All vocabulary claims below are local `grep` over
@@ -175,7 +181,9 @@ direct warning to any 2.0 stage pipeline that plans to brief the Coder from a Pl
 
 The repo publishes **no** benchmark results — `benchmark/README.md` is an operational guide only,
 despite the source citing *"benchmarked defaults"* and *"measured"* outcomes. The numbers live in
-NVIDIA's developer blog (2026-08-11, retrieved 2026-08-27):
+NVIDIA's developer blog
+(<https://developer.nvidia.com/blog/route-ai-agent-workloads-across-models-with-nvidia-nemo-switchyard/>,
+2026-08-11, retrieved 2026-08-27; the escalation-router row re-verified 2026-08-28):
 
 | strategy | benchmark | result |
 |---|---|---|
@@ -325,8 +333,9 @@ spread work across machines, and the licence filter takes the closer one:
 | `exo-explore/exo` | 47,105 | Apache-2.0 | 2026-08-25 | *"Run frontier AI locally"* — the home-cluster incumbent by two orders of magnitude |
 
 🚨 **The remote-rig capability already ships inside the server 2.0 already uses.** llama.cpp's
-`tools/rpc/README.md` (2026-08-28) documents `ggml-rpc-server` and `--rpc host:port,host:port`, over
-TCP or RDMA. Its own first paragraph: *"the RPC backend [is] currently in a proof-of-concept
+`tools/rpc/README.md` (<https://github.com/ggml-org/llama.cpp/blob/master/tools/rpc/README.md>,
+retrieved 2026-08-28) documents `ggml-rpc-server` and `--rpc host:port,host:port`, over TCP or
+RDMA. Its own first paragraph: *"the RPC backend [is] currently in a proof-of-concept
 development stage. As such, the functionality is fragile and insecure. **Never run the RPC server on
 an open network or in a sensitive environment!**"* No auth, no TLS, no `--api-key` in its usage —
 `-p 50052` exposes every accelerator on the host. **The private overlay is not a convenience in
@@ -374,7 +383,7 @@ scanned. **Only one project in this entire scan was read as code.**
 | W | subject | verdict | forced by | seen |
 |---|---|---|---|---|
 | **W1** | model tiering | **build** | nothing — settled by measurement on this box, not by prior art | `none` |
-| **W2** | serving, Rust↔llama.cpp | **use it** | `utilityai/llama-cpp-rs` — 639 ⭐, Apache-2.0, pushed 2026-08-28 | `meta` |
+| **W2** | serving, Rust↔llama.cpp | **use it** | `utilityai/llama-cpp-rs` — 639 ⭐, **MIT OR Apache-2.0** (F479), pushed 2026-08-28 | `meta` |
 | **W3** | orchestration core | **build, read first** | `chidori` 1,363 ⭐ Apache-2.0; `google/ax` 1,972 ⭐ Apache-2.0 | `meta` |
 | **W4** | routing and escalation | **read it** | Switchyard's 9,574-byte judge prompt — the prompt, not the crate | `code` |
 | **W5** | command center, fun | **build** | 68 session managers already exist; **zero of 340 are games** | `docs` |
@@ -434,8 +443,8 @@ cloud-only with no game in it — so each half of C is crowded alone and the int
 2. **Protect the fun layer from the schedule.** It is the differentiator, it is the cheapest thing
    to cut when Phase 2 runs late, and F458 prices the appetite: three accessories at 10, 28 and 87
    stars, one of which (`EchoCoding`) is v1's voice-pack idea shipped by somebody else.
-3. **W2: adopt `utilityai/llama-cpp-rs`** (639 ⭐, Apache-2.0, pushed 2026-08-28) as the boundary,
-   subject to W2's own read of its API. It is the one unqualified `use it` this scan produced.
+3. **W2: adopt `utilityai/llama-cpp-rs`** (639 ⭐, MIT OR Apache-2.0, pushed 2026-08-28) as the
+   boundary, subject to W2's own read of its API. The one unqualified `use it` this scan produced.
 4. **W4 and W6: port Switchyard's *prompt*, not its crate.** The failure taxonomy (loops, false
    progress, drift, desperation) plus the expected-friction list is a 9.5 KB text file that answers
    a question W4 could not answer *ex ante*, and the latching-streak semantics (confirm twice, fail

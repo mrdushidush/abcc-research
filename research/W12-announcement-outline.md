@@ -48,7 +48,8 @@ afterthought."* It is. The story is **not** "Rust is faster." Eight beats:
    deliberately not cared about. Say that in David's own words — it is disarming, it is true, and
    it makes the rest credible. *Source: lineage.*
 2. **The serious one.** Claudette: precision, correctness, usability — and **the fun removed
-   completely.** Shipped, on crates.io, 471 commits.
+   completely.** Shipped, on crates.io
+   (<https://crates.io/crates/claudette>, v0.17.0 at 2026-08-28), 471 commits.
 3. **The observation that starts the project.** The two halves never existed in one tool. One was
    watchable and wrong; the other was right and silent.
 4. **The honest benchmark section — the beat that earns the post.** v1's README advertised

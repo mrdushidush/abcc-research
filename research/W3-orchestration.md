@@ -865,7 +865,8 @@ Three passes, 2026-08-19:
    two durability knobs, against a control that reproduces the family's current mechanism, plus a
    boot-as-replay run. Two repeats; the table below reports run 1, and run 2 landed within 2% on
    every row.
-3. **Live ecosystem verification** against the crates.io API (retrieved 2026-08-19), because §11
+3. **Live ecosystem verification** against the crates.io API (<https://crates.io/api/v1/crates/>,
+   retrieved 2026-08-19), because §11
    says *check last commit dates* and a durability dependency is the last place to take a README's
    word for liveness.
 
@@ -1000,7 +1001,7 @@ micro-optimisation argument, it is the reason the mechanism cannot be scaled up:
 the console's replay source (W5 F123), so it is *designed* to grow.
 
 **Full ACID is affordable, so the usual tradeoff does not bind here.** SQLite's docs are explicit
-(sqlite.org/pragma.html, retrieved 2026-08-19): `NORMAL` in WAL mode is *"durable across application
+(<https://www.sqlite.org/pragma.html>, retrieved 2026-08-19): `NORMAL` in WAL mode is *"durable across application
 crashes"* but *"might roll back following a power loss or system crash"*, while `FULL` *"is atomic,
 consistent, isolated, and durable (ACID) in WAL mode"*. The received wisdom is to take `NORMAL` and
 accept the power-loss window.
@@ -1037,7 +1038,8 @@ measured rather than assumed.
 
 ### F171 — the ecosystem's durable-execution engines all want a server, and its event-sourcing crates are Postgres-shaped
 
-crates.io API, retrieved **2026-08-19**. "Newest" is the most recently published version of any
+crates.io API, retrieved **2026-08-19** — each row is `https://crates.io/crates/<name>`, its data
+`https://crates.io/api/v1/crates/<name>`. "Newest" is the most recently published version of any
 kind, so a stable line stalled behind a release candidate shows up as such.
 
 | Crate | Latest stable | Newest published | 90-day downloads | Verdict for this design |
@@ -1062,7 +1064,7 @@ Three patterns, and each disqualifies a whole category:
 
 1. **Durable execution as a product means a server.** Restate's own SDK README describes services
    that register with the runtime and are tested against *"a Docker-deployed restate server"*
-   (github.com/restatedev/sdk-rust, retrieved 2026-08-19); Temporal needs a cluster; DBOS needs
+   (<https://github.com/restatedev/sdk-rust>, retrieved 2026-08-19); Temporal needs a cluster; DBOS needs
    Postgres. W5 F95/F125 already established that a container is the thing 2.0 exists to escape.
    This category is out on the install story alone, before any technical comparison.
 2. **Event sourcing in Rust is written for Postgres.** The maintained frameworks ship
@@ -2740,7 +2742,8 @@ Here is the argument that survives, and it is not the one that was expected.
 
 W5 chose Option D: the isometric web console is the **primary view**, served by the **same single
 binary**, over **SSE plus `POST /control`**. That is an HTTP *server*, and this is where the Rust
-ecosystem genuinely constrains the choice. crates.io + GitHub, both 2026-08-20:
+ecosystem genuinely constrains the choice. crates.io + GitHub, both retrieved 2026-08-20 — each
+crate at `https://crates.io/crates/<name>`, each repo at `https://github.com/<org>/<repo>`:
 
 | Server crate | Latest stable | Last commit | 90-day downloads | Model |
 |---|---|---|---|---|
@@ -2772,7 +2775,8 @@ runtime on its own thread(s), reached only through the log.
 
 ### F204 — the survey table, for the layers item 3 did not cover
 
-crates.io API, **2026-08-20**; commit dates from the GitHub API the same day. "Newest" is the most
+crates.io API (`https://crates.io/api/v1/crates/<name>`), **2026-08-20**; commit dates from the
+GitHub API (`https://api.github.com/repos/<org>/<repo>`) the same day. "Newest" is the most
 recent publication of any kind, so a stable line stalled behind a release candidate shows as such.
 
 | Layer | Crate | Latest stable | 90-day dl | Verdict |

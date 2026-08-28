@@ -65,7 +65,11 @@ with YaRN). Vendor-reported: SWE-bench Verified **73.4**, SWE-bench Pro **49.5**
 What has landed since is mostly **irrelevant to this box because it does not fit**. The
 June–August open-weights wave is large-MoE: GLM-5.2 (753B, MIT), Kimi K3 (2.8T), DeepSeek V4 Flash
 (~284B/13B active, MIT, SWE-bench Verified 79.0). None is a 16 GB candidate; they are C10-class
-models you would call, not host.
+models you would call, not host. (Model cards
+[`zai-org/GLM-5.2`](https://huggingface.co/zai-org/GLM-5.2),
+[`moonshotai/Kimi-K3`](https://huggingface.co/moonshotai/Kimi-K3),
+[`deepseek-ai/DeepSeek-V4-Flash`](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash);
+the three parameter counts re-verified 2026-08-28.)
 
 Three that *do* fit the class:
 
@@ -457,8 +461,14 @@ axis — none of it is a 2.0 measurement.**
 | Adversarial gate | gemma-4-26b-a4b-qat | Not alongside the champion; 15,530–15,622 MiB *alone* | Apache 2.0 | Least-correlated local reviewer, and the Q56 crown. **Costs a full model swap per gate** |
 | Adversarial gate | gpt-oss-20b | Not alongside; 12,395–12,527 MiB alone | Apache 2.0 | Cheapest swap-in reviewer; different lineage from both Qwen and Gemma |
 | C10 (manual) | Claude Opus 5 | n/a — API | commercial | $5 / $25 per MTok, 1M context. Default frontier call |
-| C10 (manual) | Claude Sonnet 5 | n/a — API | commercial | $3 / $15 ($2 / $10 intro through 2026-08-31), 1M context. The volume option if C10 ever stops being rare |
+| C10 (manual) | Claude Sonnet 5 | n/a — API | commercial | **$2 / $10** per MTok, 1M context. ⚠ Quoted here as $3/$15-with-a-$2/$10-intro at 2026-08-16; **$2/$10 is the standing rate at 2026-08-28**. The volume option if C10 ever stops being rare |
 | C10 (manual) | Claude Haiku 4.5 | n/a — API | commercial | $1 / $5, 200K context. Only if a cheap remote tier earns its place |
+
+⚠ **The three C10 rows are price claims and prices rot fastest.** Source
+<https://platform.claude.com/docs/en/about-claude/pricing> and
+<https://platform.claude.com/docs/en/about-claude/models/overview>, retrieved 2026-08-16 and
+**re-checked 2026-08-28** (sweep A): Opus 5 and Haiku 4.5 unchanged, **Sonnet 5 moved** — 12 days
+was enough. Re-check before quoting any of them.
 
 **"If you only have 8 GB":** the ladder is real and it is short. `gemma-4-12b-qat` at 7,968–8,095
 MiB measured is the largest thing that fits, and it fits *exactly* — with no gate, no second model,

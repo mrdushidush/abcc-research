@@ -6,6 +6,12 @@ Built one item at a time in §13 format. W6 **grew** on 2026-08-07: the independ
 always-on (David, Q-independence), which with zero cloud spend and one GPU makes "who plays the
 reviewer" a hard design constraint that interacts with W2's residency work.
 
+▶ **§16 citation status (acceptance sweep A, 2026-08-28): W6 makes no external claims.** Every
+number here is a donor `file:line` or a probe run on this box, and the citation is the artifact
+path under `research/spikes/w6-*/`. The tool versions quoted below are what is installed *here* on
+the stated date, not a vendor claim — `pytest`, `ruff`, `mypy`, `clippy` and `node` are **invoked,
+never cited**. Nothing in this file has its truth on someone else's server, so no URL applies.
+
 Planned items:
 
 1. ✅ **The instrument, fixed on paper** (F158–F161) — §14's entry condition: *"W6 must fix BCF's
@@ -1473,8 +1479,8 @@ paraphrase it.
   "correct", under two styles of subject code: every consumer ending in a catch-all arm, or none.
   42 trees, five instruments each, ground truth by construction.
 
-Toolchain as measured: python 3.14.5 / mypy 2.3.1 / ruff 0.16.4 / pytest 9.1.1, node 24.15.0 with
-typescript 5.9.3, cargo 1.95.0. `go` and `php` are **not installed on this host**, which is data
+Toolchain as measured on this host **2026-08-23** (raw: `research/spikes/w6-language/`): python
+3.14.5 / mypy 2.3.1 / ruff 0.16.4 / pytest 9.1.1, node 24.15.0 with typescript 5.9.3, cargo 1.95.0. `go` and `php` are **not installed on this host**, which is data
 rather than a gap.
 
 ## Inherited
@@ -2292,7 +2298,8 @@ that decide the question are the sizes of the directories git ignores.
 | `freshwt.py` | the case `buildcache.py` could not see — a worktree created *after* the cache is warm, a copied tree with no `.git` at all, and two cold builds at once | `freshwt-results.json` |
 | `toolchain.py` | what a fresh worktree does not contain: the ignored entries and their size, the profile resolved in both trees, and one executed command per repo | `toolchain-results.json` |
 
-Host as measured: git 2.54.0.windows.1, cargo 1.95.0, node 24.15.0, 12 logical cores (i5-10500),
+Host as measured **2026-08-24** (raw: `research/spikes/w6-isolation/`): git 2.54.0.windows.1,
+cargo 1.95.0, node 24.15.0, 12 logical cores (i5-10500),
 31.9 GB RAM, and every repository on the same SATA SSD (Samsung 870 EVO) as the scratch space.
 `pnpm` — the package manager v1's own lockfile names — is **not installed on this host**, which is
 data rather than a gap, and no model was resident during the RAM measurements, which is the
