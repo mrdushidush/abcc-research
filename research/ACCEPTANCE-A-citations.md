@@ -144,15 +144,28 @@ licence gates a decision, read the repo's LICENSE files, not `license.spdx_id`.*
 - **It found no second price claim** anywhere in the corpus. `W1-batch2-results.md:131`'s *"the
   price is unchanged"* is wall-clock (4.9×), not dollars.
 
-## Effect on the line budgets
+## Effect on the line budgets — ruled, 2026-08-28
 
 Six of the seven changed files have no line budget. **W9 does: ≤ 500, and it now stands at 509
-(+9, 1.8% over).** The overrun is nine lines of citation apparatus — a five-line construction rule
-plus three link insertions plus one rewrap — added *after* the doc closed at 500 exactly, and none
-of it is depth. W7's budget was amended once for the same reason (a §16 acceptance item), at +5%.
-▶ **Flagged for David, not decided here.** The alternative was a companion `W9-sources.md`, which
-keeps the number and costs a reader one hop for every one of 24 repositories.
+(+9, +1.8%)** — a five-line URL-construction rule, three link insertions and one rewrap, all added
+*after* the doc closed at 500 exactly, and none of it depth.
 
-**Remaining for Phase 1: acceptance sweep B, then `SUMMARY.md`.** Both are pre-scouted in
-[[abcc-2-w10-state]] — sweep B is a JOIN over `runs/hw-probe/`'s 12 labelled configurations, not a
-probe build, and nothing is to be re-run before asking David.
+✅ **David ruled the same day, and generally: *exceeding a budget by up to 10% is a non-issue.***
+That supersedes W7's one-off +5% amendment and the *"every other doc holds to its original
+number"* clause attached to it. **W9 at 509 is settled and needs no note; W7 at 945 is settled.**
+The companion-file workaround this sweep considered — a `W9-sources.md` that keeps the number and
+costs a reader one hop per repository — is **rejected by that ruling: do not split a document, or
+strip its apparatus, to protect a line count.** The budget still exists to catch *depth* overruns
+of the W6-at-4,393 kind, where the excess is argument. Ten percent of apparatus is not that.
+
+**Remaining for Phase 1: acceptance sweep B, then `SUMMARY.md`.** Sweep B was re-derived on disk
+the same day and is a **JOIN, not a build**: `runs/hw-probe/` holds **16** labelled configurations
+— not the 12 the pre-scout counted — every one carrying `peak_committed_b`, the system-wide
+figure §16 asks for, over **8.99 → 28.03 GiB**, with `resident-65k-idle` reproducing at
+25.00 / 25.03. The other side is exact and empty: **1,619 cells across 56 `cells.jsonl` carry
+`peak_rss_mb` and `sort -u` returns one value, `not_applicable`**, and no benchmark run directory
+holds a hw-probe artifact at all. ⚠ **The 16 rows are three schema generations — `baseline-idle`
+has no `focus_ws_*`, and `s19-27b-40k-idle` / `s19-champ-40k-idle` / `s19-load27b-65k` carry
+`focus_on_card_b` instead of `focus_spilled_b`, so a join on that field drops exactly the
+27B-versus-champion rows.** Key the table on `peak_committed_b`. **Nothing is to be re-run, and no
+probe built, before asking David.**
