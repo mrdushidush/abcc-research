@@ -14,8 +14,10 @@ David 2026-08-28**, which is the gate; his five decisions are recorded below. Ne
 engine per attempt, records everything as one SQLite event log, and gates on a conjunction of
 deterministic refusals in which a model verdict is a report and never a vote.** The console is a
 Ratatui TUI with a sixel C&C battlefield. It inherits BCF's *vocabulary* and Claudette's *shape*,
-copies the engine rather than sharing a crate (David, 2026-08-07), and reimplements from scratch
-what outside contributors added to v1, shipping MIT OR Apache-2.0 (W12).
+~~copies the engine rather than sharing a crate (David, 2026-08-07)~~ — 🚨 **SUPERSEDED 2026-08-28:
+David ruled REWRITE, do not port; the donors become a specification and a test corpus, never a
+source tree. See `PLAN.md` §1** — and reimplements from scratch what outside contributors added to
+v1, shipping MIT OR Apache-2.0 (W12).
 
 ## The architecture
 
@@ -93,7 +95,8 @@ as the verification workhorse** — 1 of 160 across 728 real attempts. · **A po
 against a threshold** — 0 of 8. · **Switchyard the crate** — self-declared pre-alpha; take its judge
 prompt instead. · **Per-argument permission checks as the security control** — the shipped
 untrusted-content wrapper was *measured* not to work, 39 of 50. · **Sharing a crate with Claudette**
-— copy the engine, both stay live (David, 2026-08-07).
+— both stay live (David, 2026-08-07) · **and porting the donor code at all** — David 2026-08-28:
+rewrite, because a port inherits the donors' *design* defects as shape (`PLAN.md` §1).
 
 ## The three highest risks
 
@@ -126,12 +129,18 @@ game/RTS/sprite vocabulary across 340 projects) argues *for* the plan, not again
 
 - **Two slots plus a worktree plus a real build cannot hold inside 31.92 GiB on the target
   workload** → the N=2 fleet is wrong; the unit count drops to one, or the box changes.
-- **The conjunction gate false-fails more than a few percent of correct trees over a real week** →
-  it blocks more work than it catches, and `Accept` returns to human-always.
+- ~~**The conjunction gate false-fails more than a few percent of correct trees over a real week**~~
+  → 🚨 **REPLACED 2026-08-28: David ruled only deterministic rungs may refuse, so false-fails are
+  ~0 by construction and a false fail is a rung bug, not a rate. The exposure moved — *the wrong
+  trees reaching David as reports are frequent enough that unattended `Accept` is not worth
+  having.* `PLAN.md` § Gate.**
 - **Review minutes per merged change rise from M0 to M1** → the co-dev thesis is wrong regardless of
   how many agent-authored commits land. W13: **M0 is already taken by v1**, 15 of 471 commits.
-- **`Provider` cannot be made `&self` + stream without forking the engine past a maintainable
-  delta** → "copy the engine" fails, and 2.0 is a rewrite rather than a port.
+- ~~**`Provider` cannot be made `&self` + stream without forking the engine past a maintainable
+  delta**~~ → 🚨 **RETIRED 2026-08-28 by the rewrite ruling — there is no fork, so it cannot fire.
+  REPLACED by a schedule falsifier: *the rewrite does not re-earn the engine's working behaviour
+  inside the Skeleton and Gate milestones*, in which case the turn loop goes back on the table as a
+  port. `PLAN.md` §1.**
 - **The sixel battlefield does not survive a real workday** — tmux, SSH, or the operator turning it
   off → the only measured differentiator is gone and TUI-primary reopens.
 
