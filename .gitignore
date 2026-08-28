@@ -3,7 +3,23 @@ node_modules/
 *.log
 .env
 scratch/
-runs/
+
+# `runs/` was a bare UNANCHORED rule, so it hid any directory named runs at any depth —
+# harness/runs/ (153 files) included. Keep exactly that, then carve the exceptions out of the
+# ROOT tree only. Anchoring matters: a pattern with a middle separator matches only at the root.
+**/runs/
+!/runs/
+
+# The root runs/ tree is 3.8 GB across 55,577 files and stays out of git. Two exceptions,
+# David 2026-08-28, closing §16's "raw results committed" clause for ~0.05% of the tree:
+#   /runs/hw-probe/        the headline rows that ARE the measured peak-RAM answer (1.9 MB)
+#   /runs/**/runmeta.json  the 62 manifests sweep B joins on, so the join is reproducible (103 KiB)
+# The directory negation is required: git cannot re-include a file under an excluded directory.
+/runs/**
+!/runs/**/
+!/runs/hw-probe/**
+!/runs/**/runmeta.json
+
 __pycache__/
 *.pyc
 research/spikes/w4-logprobs/lp-rep*.jsonl

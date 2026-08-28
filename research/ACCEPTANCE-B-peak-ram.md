@@ -95,11 +95,14 @@ take only **five** distinct values, plus seven early runs that captured no serve
 | `qwen3.6-35b-a3b-mtp@iq3_s` IQ3_S @ 40,960 | 6 | 18 | 6 | `champ-40k-idle` | **24.63 GiB** |
 | `qwen3.8-27b` Q3_K_XL @ 40,960 | 6 | 18 | 6 | `27b-40k-idle` | **25.98 GiB** |
 | `unsloth/qwen3.8-27b` Q3_K_XL @ 40,960 | 3 | 9 | 3 | `27b-40k-idle` (same file) | **25.98 GiB** |
-| `byteshape/qwen3.8-27b` IQ4_XS @ 40,960 | 3 | 9 | 3 | **none** | ⚠ **no row** |
+| `byteshape/qwen3.8-27b` IQ4_XS @ 40,960 | 3 | 9 | 3 | `s13-byteshape-27b-40k-idle` ✅ 08-28 | **26.71 GiB** raw / **16.16 GiB** over its own baseline — ⚠ **read F488 before comparing** |
 | *(server uncaptured)* | 7 | 95 | 2 | n/a | n/a |
 
-▶ **So §16's "every configuration" is a five-row table, not a fifty-six-row one** — and five of
-six configurations have a measured peak, by reference to the probe of the identical serving state.
+▶ **So §16's "every configuration" is a five-row table, not a fifty-six-row one** — and as of
+**2026-08-28 all six configurations have a measured peak**: five by reference to the probe of the
+identical serving state, and the sixth (byteshape) measured directly on David's ruling. **§16's RAM
+clause is now closed at 6 of 6.** ⚠ The sixth row is *not* directly comparable to the other five —
+see **F488**, which is the reason it carries two numbers.
 
 ### 🚨 The join key is `loaded_context_length`, and the obvious key is wrong
 
@@ -198,15 +201,50 @@ holds model, quantization and window constant and *assumes* the cache dtype was 
 the key at all (`q56-degraded` 29, `prefix-invalid` 12). Nothing was ever measured here, and the
 placeholder says so honestly in every one.
 
+## ✅ ADDENDUM 2026-08-28 (session 13) — F488, and the two gaps David then closed
+
+### F488 — 🚨 the byteshape peak is 26.71 GiB and quoting that raw would invert the finding
+
+Measured on David's ruling after he signed off SUMMARY.md: `byteshape/qwen3.8-27b` IQ4_XS loaded
+at `-c 40960 --parallel 1`, idle, **26.71 GiB peak commit / 14,536 MiB peak VRAM**
+(`runs/hw-probe/s13-byteshape-27b-40k-idle.json`, 12.0 s, pid-attributed 13,857 MiB on-card).
+
+**Raw, that is the largest 27B number in the table — and the ranking it implies is false.** A fresh
+baseline taken minutes earlier in the same session reads **10.55 GiB against session 19's 9.17 GiB**:
+the box is **+1.37 GiB busier today**, and `peak_committed_b` is system-wide commit charge, so it
+carries every other process on the machine. Against each row's *own* baseline:
+
+| configuration | file size | peak VRAM | peak commit | **over its own baseline** |
+|---|---|---|---|---|
+| champion IQ3_S @ 40,960 | — | 14,318 MiB | 24.63 GiB | **15.45 GiB** |
+| **byteshape** IQ4_XS @ 40,960 | 12.56 GB | **14,536 MiB** | 26.71 GiB | **16.16 GiB** |
+| unsloth Q3_K_XL @ 40,960 | 13.44 GB | 15,269 MiB | 25.98 GiB | **16.80 GiB** |
+
+**Corrected, byteshape is *lighter* than unsloth, not heavier** — and two independent witnesses
+agree: its peak VRAM is **733 MiB lower** (VRAM is unaffected by host commit charge, so it needs no
+correction at all), and its file is **0.88 GB smaller**. The raw column says the opposite of all
+three. ▶ **A `peak_committed_b` is only comparable against a baseline from its own session** —
+[[verify-claims-against-code-not-docs]]'s F74 lesson, which is *ask what a number's control was*,
+arriving a second time on the same instrument. **Never quote a row from this table across sessions
+without its baseline.**
+
+This does not move the ceiling: **28.03 GiB (`concurrency-sweep`, champion) remains the peak of
+record**, and SUMMARY.md's risk 2 stands unchanged.
+
+### The two gaps this sweep deliberately left open, both closed by David 2026-08-28
+
+- ✅ **`.gitignore` is changed.** F480's fix is applied: `runs/hw-probe/` (32 files, 1.9 MB) **and**
+  `runs/**/runmeta.json` (62 files, 103 KiB) are now tracked — **94 files, ~2.0 MB, 0.05% of the
+  3.8 GB tree**. David chose the manifests too, so **the join in this document is reproducible from
+  the repo alone**, not just its headline table. ⚠ The negation needed directory scaffolding
+  (`runs/**` + `!runs/**/`): git cannot re-include a file beneath an excluded directory.
+- ✅ **The byteshape 27B is measured** — F488 above. §16's RAM clause is closed at **6 of 6**.
+
 ## What this sweep did not do
 
 - **It built no probe and re-ran nothing.** The standing rule from session 10 held. Every number
-  above was already on disk before the session opened.
-- **It did not measure the byteshape 27B.** That would be a re-run, and the model is not the one
-  [[abcc-2-model-roster]] recommends. It is one `hwprobe` invocation whenever David wants it —
-  the gap is stated, not closed by construction.
-- **It did not commit `runs/hw-probe/`.** F480 names a 1.9 MB fix and a precedent for it, but
-  changing `.gitignore` is David's call, not a sweep's.
+  above was already on disk before the session opened. *(Session 13 then ran exactly one probe,
+  after asking — see F488.)*
 - **It did not touch the harness.** `peak_rss_mb` stays `NotApplicable`; W1/W2 still owns it.
 
 ## Effect on the line budgets
@@ -215,6 +253,8 @@ placeholder says so honestly in every one.
 general: *exceeding a budget by up to 10% is a non-issue*, and no document is to be split or
 stripped to protect a count — see [[abcc-2-phase-1-landing-plan]].
 
-**Remaining for Phase 1: `SUMMARY.md` alone** — under two pages, the three highest risks, and what
-would falsify them. All thirteen workstream docs and both acceptance sweeps are now closed. Sweep
-A's record is `research/ACCEPTANCE-A-citations.md` (F475–F479).
+✅ **PHASE 1 IS COMPLETE.** `research/SUMMARY.md` was written and **approved by David 2026-08-28**,
+which is §16's gate (`RESEARCH_BRIEF.md:1192`). All thirteen workstream docs, both acceptance
+sweeps and the summary are closed, and with F488 and the `.gitignore` change above, **all eight
+§16 criteria are met** — item 3 included, in both its clauses. Sweep A's record is
+`research/ACCEPTANCE-A-citations.md` (F475–F479). **Next free finding: F489.**
