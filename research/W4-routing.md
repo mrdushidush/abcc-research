@@ -1,9 +1,14 @@
 # W4 — Routing, escalation and the complexity model
 
-**Status: OPEN — started 2026-08-25, items 1, 2 and 3 of 6 closed.** §14 orders W4 after the
+**Status: COMPLETE — started 2026-08-25, all six items closed, F360–F399.** §14 orders W4 after the
 W3 + W6 + W11 block, and that block closed on 2026-08-25 (`d3a17a5`). Findings continue the family
-numbering from **F360**; the workstream now runs to **F385**. Built one item at a time in §13
+numbering from **F360**; the workstream runs to **F399**. Built one item at a time in §13
 format.
+
+⚠ *Corrected 2026-08-28, while writing `research/decisions/`: this header read* **"OPEN — started
+2026-08-25, items 1, 2 and 3 of 6 closed"** *with three ⬜ marks below it and a range ending at
+F385, over a body that already carried all six item sections, a confidence section and findings to
+F399. The status line was never updated when items 4–6 were written. Only the header changed.*
 
 Planned items:
 
@@ -25,15 +30,15 @@ Planned items:
    (20.5 s, against a 19.1 s median attempt), it is not better than counting the prompt's bytes, and
    at n = 56 nothing in the comparison is distinguishable from anything else. **OQ-W6-7 closes: no
    estimator, because F385 shows even a perfect one loses to reacting.**
-4. ⬜ **Confidence signals on worker output** — §11's *"logprobs, self-critique, test results, static
+4. ✅ **Confidence signals on worker output** — §11's *"logprobs, self-critique, test results, static
    analysis. Which correlate with real quality?"* W6 items 4, 5 and 7 have already answered three of
    the four on 728 real attempts; logprobs are untouched, and item 1's F362 says the strongest
    available signal is neither.
-5. ⬜ **The escalation ladder, retry budgets and circuit breakers** — §11's *"circuit breakers for the
+5. ✅ **The escalation ladder, retry budgets and circuit breakers** — §11's *"circuit breakers for the
    failure mode where escalation loops burn more than doing it right the first time."* Inherits W11
    item 5 (count rounds, one budget with per-stage breakers, exhaustion classified and never
    `Ok(())`) and item 1's F367, which found that the ladder the brief points W4 at has no callers.
-6. ⬜ **A fine-tuned router or worker** — §11 says *"Expect no for now, and say why."* The why has to
+6. ✅ **A fine-tuned router or worker** — §11 says *"Expect no for now, and say why."* The why has to
    be priced, not asserted.
 
 Scope reference: `RESEARCH_BRIEF.md` §11 lines 731–771. 🚨 The workstream's opening instruction —

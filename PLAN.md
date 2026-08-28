@@ -52,7 +52,7 @@ have*) were specified as new in Phase 1. The ruling therefore bites in exactly t
 | Claudette's turn engine + tool layer (93 modules, one crate) | copied | **rewritten to the contracts in W3/W6/W10** |
 | The 3,011 inherited Ratatui lines | ported | **rewritten**; they stay as reference for what worked |
 | v1's 44 MB of art + audio, the 96 voice lines, ~1,903 lines of identity | copied | **still copied — these are assets and they are David's** |
-| `harness/crates/` — hw-probe, w8-run, the four importers | ours already | **UNCHANGED — it is the instrument, not the product** (§9.4) |
+| `harness/crates/` — hw-probe, w8-run, w8-corpus and the three importers | ours already | **UNCHANGED — it is the instrument, not the product** (§9.4) |
 
 ▶ **The rule in one line: the donors become a SPECIFICATION and a TEST CORPUS, never a source
 tree.** Every `file:line` citation in `research/` is now a citation of *reference behaviour and its
@@ -286,28 +286,39 @@ from Claudette to 2.0 is itself a logged event, not an impression.
 
 `research/decisions/`, one per architectural decision, **written during Phase 2 and dated when
 written** — not backfilled with dates after the decisions they describe. Fourteen, each tracing to a
-closed workstream:
+closed workstream. ✅ **ALL FOURTEEN ARE WRITTEN, 2026-08-28** — filenames below, index and house
+template at `research/decisions/README.md`:
 
 | # | Decision | Source |
 |---|---|---|
-| 1 | Rewrite rather than port; donors are specification and test corpus | §1 above, W12 |
-| 2 | Two levels, four phases each; Router/Tester/CTO are not phases | W11 |
-| 3 | The unit is a runtime slot, N=2, set by VRAM | W11, W2 |
-| 4 | Nine-variant lifecycle, one write path, attempts immutable | W3 |
-| 5 | SQLite event log, WAL + FULL, status a projection, boot = replay | W3 |
-| 6 | Threads own the work; one runtime at the console edge | W3 |
-| 7 | Worktree isolation at a temp-index snapshot sha | W6 |
-| 8 | The gate is a conjunction of refusals | W6 |
-| 9 | `Measured \| Unmeasured(Why)`; **only deterministic rungs refuse — the Judge never blocks** | W6, David 08-28 |
-| 10 | No pre-dispatch estimate; one tier; retry budget 2 | W4 |
-| 11 | Model roster; enumerate and freeze the tool-head set | W1, W2 |
-| 12 | Ratatui + sixel primary; SSE + SQLite; one `seq` | W5 |
-| 13 | Two modes; rig as device; `Provider` `&self` + stream | W10 |
-| 14 | Deny the class via `max_tier`; blast radius, not a sandbox | W7 |
+| 1 | [Rewrite rather than port; donors are specification and test corpus](research/decisions/ADR-0001-rewrite-not-port.md) | §1 above, W12, W3 |
+| 2 | [Two levels, four phases each; Router/Tester/CTO are not phases](research/decisions/ADR-0002-two-levels-four-phases.md) | W11, W6 |
+| 3 | [The unit is a runtime slot, N=2, set by VRAM](research/decisions/ADR-0003-slot-is-the-unit.md) | W11, W2, W1 |
+| 4 | [Nine-variant lifecycle, one write path, attempts immutable](research/decisions/ADR-0004-task-lifecycle.md) | W3, W5 |
+| 5 | [SQLite event log, WAL + FULL, status a projection, boot = replay](research/decisions/ADR-0005-sqlite-event-log.md) | W3, W5 |
+| 6 | [Threads own the work; one runtime at the console edge](research/decisions/ADR-0006-threads-own-the-work.md) | W3, W2 |
+| 7 | [Worktree isolation at a temp-index snapshot sha](research/decisions/ADR-0007-worktree-isolation.md) | W6, W11 |
+| 8 | [The gate is a conjunction of refusals](research/decisions/ADR-0008-gate-is-a-conjunction-of-refusals.md) | W6, W11 |
+| 9 | [`Measured \| Unmeasured(Why)`; **only deterministic rungs refuse — the Judge never blocks**](research/decisions/ADR-0009-measured-or-unmeasured.md) | W6, David 08-28 |
+| 10 | [No pre-dispatch estimate; one tier; retry budget 2](research/decisions/ADR-0010-no-estimate-one-tier-retry-2.md) | W4, W1, W2 |
+| 11 | [Model roster; enumerate and freeze the tool-head set](research/decisions/ADR-0011-model-roster-and-frozen-heads.md) | W1, W2, W11 |
+| 12 | [Ratatui + sixel primary; SSE + SQLite; one `seq`](research/decisions/ADR-0012-ratatui-sixel-console.md) | W5 |
+| 13 | [Two modes; rig as device; `Provider` `&self` + stream](research/decisions/ADR-0013-two-modes-rig-as-device.md) | W10, W9 |
+| 14 | [Deny the class via `max_tier`; blast radius, not a sandbox](research/decisions/ADR-0014-deny-the-class-blast-radius.md) | W7, W8 |
 
 `research/benchmarks/` — §12 also lists this. It is **satisfied in substance already**:
 `research/spikes/` holds the reproducible drivers and `runs/hw-probe/` plus the 62 manifests are now
 committed. **Recommend recording that rather than creating a third location for the same artifacts.**
+
+▶ **What writing them changed, recorded here because it is a plan-level fact.** Nothing in the
+architecture moved — every ADR states a ruling this document already carried — but three things
+surfaced. **(a)** Two of W3's and W2's rulings were written assuming a port and are now kept as
+*specification*: the dependency list (ADR-0006) and `post_with_model_reload_retry`'s six matched
+surface forms (ADR-0011). The all-tokio rejection also loses its fourth argument — *it ends the
+option of tracking Claudette upstream* — and survives on the three measurements. **(b)**
+`research/W4-routing.md`'s status header was **stale** — *OPEN, items 1, 2 and 3 of 6 closed* over a
+body carrying all six items to F399 — and is corrected in place with a dated note. **(c)** **F59 is
+cited in three research documents and defined in none**, the same shape W6 found for F22–F29.
 
 ---
 
