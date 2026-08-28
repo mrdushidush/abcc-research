@@ -22,7 +22,7 @@ always.**
 | **Donor code** | **`file:line`** at a stated commit |
 
 The corollary did most of the work: **a tool that is *invoked* is not *cited*.** W6 names `pytest`
-66 times, `ruff` 24 and `mypy` 19, and it runs all three on this host — those are measurements of
+69 times, `ruff` 25 and `mypy` 20, and it runs all three on this host — those are measurements of
 what is installed here, and a vendor URL would be the wrong citation, not a missing one. The same
 distinction is why W3's crate table needs `crates.io` (it quotes download counts and release
 dates that live there) while W6's toolchain line needs only a date and a path.
