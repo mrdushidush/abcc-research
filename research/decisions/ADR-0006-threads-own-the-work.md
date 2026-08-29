@@ -1,6 +1,8 @@
 # ADR-0006 — Threads own the work; one tokio runtime at the console edge; the log is the only crossing
 
-- **Status:** ✅ Accepted
+- **Status:** ✅ Accepted · ⚠ **§ *Timeouts, with the numbers on them* is superseded by
+  [ADR-0015](ADR-0015-what-the-first-real-runs-corrected.md)** — F198's per-read budget is gone from
+  `reqwest`, so the idle gap is this project's own. Everything else here stands.
 - **Date:** 2026-08-28
 - **Deciders:** Claude Code (W3 probe, `research/spikes/w3-runtime/`), ratified with `SUMMARY.md`
 - **Sources:** W3 F154, F172, F197, F198, F199, F200, F201, F202, F203, F204, F205 · W2 F83 ·

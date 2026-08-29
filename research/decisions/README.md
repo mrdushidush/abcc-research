@@ -5,10 +5,12 @@
 records consumed by `PLAN.md`, never backfilled with dates after the fact (`research/SUMMARY.md`
 § Decisions item 2).
 
-✅ **All fourteen are written, 2026-08-28.** The index is `PLAN.md` §7 and is mirrored below. Each
-traces to a closed Phase 1 workstream, and **the evidence lives in the workstream doc, not here** —
-an ADR cites `Wn` and a finding id, states the ruling, and says what would overturn it. Findings
-F1–F488 are closed; next free is **F489**.
+✅ **All fourteen were written 2026-08-28, and ADR-0015 was added 2026-08-29** — the first written
+from a running system rather than from a workstream, correcting three things the first two real
+runs found. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
+workstream, and **the evidence lives in the workstream doc, not here** — an ADR cites `Wn` and a
+finding id, states the ruling, and says what would overturn it. Findings F1–F502 are closed; next
+free is **F503**.
 
 ## The template
 
@@ -50,10 +52,13 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | 12 | [ADR-0012](ADR-0012-ratatui-sixel-console.md) | Ratatui + sixel primary; SSE + SQLite; one `seq` | W5 |
 | 13 | [ADR-0013](ADR-0013-two-modes-rig-as-device.md) | Two modes; rig as device; `Provider` `&self` + stream | W10, W9 |
 | 14 | [ADR-0014](ADR-0014-deny-the-class-blast-radius.md) | Deny the class via `max_tier`; blast radius, not a sandbox | W7, W8 |
+| 15 | [ADR-0015](ADR-0015-what-the-first-real-runs-corrected.md) | The idle gap is ours; a full window is not a fault; silence is not an artifact | F493, F496–F502 |
 
-**Every ADR is `Accepted` as of 2026-08-28.** Four carry a David ruling rather than a research
-conclusion: **ADR-0001** (rewrite, not port), **ADR-0004** (the lifecycle names, OQ-W3-6),
-**ADR-0009** (only deterministic rungs may refuse) and **ADR-0012** (TUI primary, 2026-08-19).
+**Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 as of 2026-08-29. Five carry a
+David ruling rather than a research conclusion: **ADR-0001** (rewrite, not port), **ADR-0004** (the
+lifecycle names, OQ-W3-6), **ADR-0009** (only deterministic rungs may refuse), **ADR-0012** (TUI
+primary, 2026-08-19) and **ADR-0015** (three rulings, 2026-08-29). ⚠ ADR-0015 is the only one that
+**supersedes another in part** — ADR-0006 § *Timeouts* — leaving the rest of ADR-0006 standing.
 
 ## What the ADRs changed while being written
 
