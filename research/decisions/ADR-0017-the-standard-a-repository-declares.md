@@ -1,11 +1,10 @@
 # ADR-0017 — The rung a repository declares for itself, and the veto's one rule
 
-- **Status:** ⏳ **Proposed — one question is David's** (§ *What is David's*, below). Everything
-  else here is built and measured; the open question is what *correct tree* means for the Gate's
-  own exit criterion.
+- **Status:** ✅ **Accepted** — the *correct tree* clause is **David's ruling of 2026-08-30**
+  (§ *David's ruling*, below); the rest was built and measured before it was put to him
 - **Date:** 2026-08-30
-- **Deciders:** written by Claude Code from a running gate; the refusal clause it rests on is
-  David's ruling of 2026-08-28 (ADR-0009 §4)
+- **Deciders:** David (**the bar is mergeability**, 2026-08-30), written by Claude Code from a
+  running gate; the refusal clause it rests on is David's ruling of 2026-08-28 (ADR-0009 §4)
 - **Sources:** **F512** (six working implementations, clippy refuses six), **F516** (a tree changed
   by a cut run does not compile), **F517** (a green run's last line says zero passed), **F518**
   (the gate's first full population, 25 of 25) · F356 (the shared build cache) · F357, F350
@@ -195,23 +194,33 @@ refused — the situation F512 predicted, executed.
   still unbuilt.** `Measured::changed` keeps the change list for exactly that, so the Judge does
   not pay for a second `git diff`.
 
-## What is David's
+## David's ruling — the bar is mergeability, 2026-08-30
 
-🚨 **One question, and the Gate's own exit criterion turns on it.** `PLAN.md` §3 says the
-milestone closes on *"zero false fails on the correct-tree population, any one of them fixed as a
-rung defect before the milestone closes"*, and ADR-0009 §4 says *a false fail is a bug in a rung*.
+🚨 **A correct tree is one that could land in the repository it is about.** `PLAN.md` §3 closes
+the Gate on *"zero false fails on the correct-tree population, any one of them fixed as a rung
+defect before the milestone closes"*, and ADR-0009 §4 says *a false fail is a bug in a rung* — so
+the question put to David was whether F512's runs 10 and 23, which compile, print `abcc 0.1.0` and
+pass **281** and **288** tests, are correct trees when this repository's own CI refuses them for a
+function one line over its limit.
 
-So: are F512's runs 10 and 23 — which compile, print `abcc 0.1.0`, pass **281** and **288** tests,
-and are refused for a function one line over this repository's own limit — **correct trees**?
+**They are not.** Three things follow, and the third is the one that keeps this honest:
 
-- **If the bar is correctness**, they are, and the standard rung false-fails 2 of 2. The rung is a
-  defect and comes out, or its limit does.
-- **If the bar is mergeability**, they are not: the repository's CI would refuse them, and a gate
-  that accepts them hands the operator work that cannot land. Then the standard rung has **zero**
-  false fails and the population contains no correct trees at all.
+1. **The standard rung has zero false fails on this population**, and it stays in the ladder at the
+   limit the repository already declares. No code changes: the ruling decides what the criterion
+   counts, not what the gate does.
+2. **A gate that accepts un-mergeable work spends the reviewer's minutes on what CI was going to
+   say anyway** — and W13's success measure for Self-Host is *human review minutes per merged
+   change*, so that is the cost the whole project is graded on.
+3. ⚠ **The criterion is therefore NOT met by this population — it is satisfied vacuously.** Under
+   this bar the 25 attempts contain **no correct trees at all**, so *zero false fails* says nothing
+   yet. The clause still needs the **Q56 and K corpora**, whose answer keys exist and whose trees
+   were built to be correct. 🚨 **Do not read F518's 25-of-25 as the exit criterion met.**
 
-The rung is built either way and one entry in a `const` decides it. **Nothing else in this ADR
-depends on the answer** — it decides what the exit criterion is measuring, not what the gate does.
+⚠ **The rung's own falsifier is now the thing to watch**, because it is what would reverse this:
+*an operator who routinely `abcc accept`s past a `Refused { rung: "standard" }` is telling you the
+limit is wrong, not that they are careless.* One query over the log answers it, and the log already
+carries both halves — `RungRecorded` and the `Aborted { CompletedByOperator }` that `abcc accept`
+writes.
 
 ## What would falsify this
 

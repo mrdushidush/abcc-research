@@ -54,16 +54,16 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | 14 | [ADR-0014](ADR-0014-deny-the-class-blast-radius.md) | Deny the class via `max_tier`; blast radius, not a sandbox | W7, W8 |
 | 15 | [ADR-0015](ADR-0015-what-the-first-real-runs-corrected.md) | The idle gap is ours; a full window is not a fault; silence is not an artifact | F493, F496–F502 |
 | 16 | [ADR-0016](ADR-0016-a-phase-repairs-a-missing-answer.md) | A phase asks again when the model says nothing; a cut turn's tool calls never run | F503–F508 |
-| 17 | [ADR-0017](ADR-0017-the-standard-a-repository-declares.md) | ⏳ The rung a repository declares for itself; the veto's one rule; `Refused` | F512, F516–F518 |
+| 17 | [ADR-0017](ADR-0017-the-standard-a-repository-declares.md) | The rung a repository declares for itself; the veto's one rule; `Refused` | F512, F516–F518 |
 
-**Sixteen of the seventeen ADRs are `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and
-ADR-0016 as of 2026-08-29. ⏳ **ADR-0017 is `Proposed`**, written 2026-08-30 from a running gate:
-everything in it is built and measured, and its § *What is David's* holds one question — whether
-*correct tree* means correct or means mergeable, which decides what the Gate's own exit criterion
-counts. Five carry a
+**Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and ADR-0016 as of 2026-08-29,
+ADR-0017 as of 2026-08-30. ⚠ ADR-0017 is the first written **from a running system rather than
+before one**: the gate was built and put to all 25 real attempts on the log, and only then was its
+one open question put to David. **Six** carry a
 David ruling rather than a research conclusion: **ADR-0001** (rewrite, not port), **ADR-0004** (the
 lifecycle names, OQ-W3-6), **ADR-0009** (only deterministic rungs may refuse), **ADR-0012** (TUI
-primary, 2026-08-19) and **ADR-0015** (three rulings, 2026-08-29). ⚠ ADR-0015 is the only one that
+primary, 2026-08-19), **ADR-0015** (three rulings, 2026-08-29) and **ADR-0017** (a correct tree is
+one that could land, 2026-08-30). ⚠ ADR-0015 is the only one that
 **supersedes another in part** — ADR-0006 § *Timeouts* — leaving the rest of ADR-0006 standing.
 
 ## What the ADRs changed while being written

@@ -189,14 +189,18 @@ and refused 25 of 25** — 16 structural at 0.0 s, 7 veto (*the tree does not bu
 fired.** `Accomplished` is reachable for the first time, said by `Headline::Green` and by nothing
 else.
 
+✅ **DAVID RULED 2026-08-30: a correct tree is one that could LAND** (ADR-0017 § *David's ruling*).
+So the standard rung has **zero false fails** and stays at the limit this repository already
+declares — a gate that accepts un-mergeable work spends the reviewer's minutes on what CI was
+going to say anyway, and W13 grades this project on exactly those minutes.
+⚠ **Which means the exit clause above is satisfied VACUOUSLY by F518 and is not yet met**: under
+this bar the 25 attempts contain **no correct trees at all**, so *zero false fails* says nothing
+yet. 🚨 **Do not read 25-of-25 as the criterion met.**
+
 ▶ **What is left:** the Judge as one model call seeing the measurements, pairwise against the
-pre-image · schema-constrained decoding, which arrives with it · the Q56 and K corpora run · the
-report-volume number. 🚨 **And one question that is David's** — ADR-0017 § *What is David's*:
-whether *correct tree* in the criterion above means **correct** or means **mergeable**. F512's runs
-10 and 23 compile, pass 281 and 288 tests, and are refused for a function one line over this
-repository's own limit. Under the first reading the standard rung false-fails 2 of 2 and is a rung
-defect; under the second it has zero false fails and this population contains no correct trees at
-all. One entry in a `const` decides it.
+pre-image · schema-constrained decoding, which arrives with it · **the Q56 and K corpora run**,
+which is what the correct-tree clause actually needs · the report-volume number the new falsifier
+wants.
 
 ### ▶ FLEET — two slots on one box
 
