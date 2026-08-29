@@ -9,8 +9,8 @@ records consumed by `PLAN.md`, never backfilled with dates after the fact (`rese
 from a running system rather than from a workstream, correcting three things the first two real
 runs found, and **ADR-0016** the same day from ten of them. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
 workstream, and **the evidence lives in the workstream doc, not here** — an ADR cites `Wn` and a
-finding id, states the ruling, and says what would overturn it. Findings F1–F508 are closed; next
-free is **F509**.
+finding id, states the ruling, and says what would overturn it. Findings F1–F509 are closed; next
+free is **F510**.
 
 ## The template
 

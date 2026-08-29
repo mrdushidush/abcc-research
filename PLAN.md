@@ -134,6 +134,14 @@ answered, first and cheaply — **and the Console-rewrite risk from §4**.
 mid-attempt and restarting reconstructs identical status from the log alone, **and the reader shows
 that run without reading anything but the log.**
 
+✅ **CLOSED 2026-08-29.** Every clause is met by something that was run rather than argued: ten real
+attempts on this repository's own code, two named durability tests for the kill-and-restart half,
+and `abcc watch` driven by David in a real terminal — which is what found F501. 🎉 **Run 10 went
+further than the criterion asks**: it implemented `--version` completely, fixed the exhaustive-match
+test its own change broke, and compiles and passes all 64 `abcc` tests — while failing
+`clippy -D warnings` by one line, which is the Gate demonstrated before the Gate exists. The code is
+`D:/dev/abcc`; see ADR-0015 and ADR-0016 for what the runs corrected.
+
 ### ▶ GATE — the part that is actually the product
 
 **Goal:** make right-vs-wrong separable. SUMMARY.md's risk 3 says this is where the product lives

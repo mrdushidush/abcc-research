@@ -6,7 +6,9 @@ has signed off"* (`RESEARCH_BRIEF.md:1192`). The brief specifies it three ways (
 alternatives* · §16:1228 *three risks + what would falsify* · §12:1038 *decisions and open
 questions*); this is the union. Every line is a ruling from a closed workstream, stated not
 re-argued — **the evidence is in the named file, deliberately not repeated here.** ✅ **Approved by
-David 2026-08-28**, which is the gate; his five decisions are recorded below. Next free: **F489**.
+David 2026-08-28**, which is the gate; his five decisions are recorded below. Next free at the time of writing: **F489**. ⚠ **The series continued into Phase 3 — F1–F509 are
+now closed and the live pointer is `research/decisions/README.md`.** This paragraph is a Phase 1
+record and is left as written.
 
 ## The recommendation
 
