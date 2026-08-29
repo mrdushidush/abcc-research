@@ -4,7 +4,10 @@
 milestone names as its exit: *"run against the Q56 and K corpora, whose answer keys already exist.
 **Zero false fails on the correct-tree population**, any one of them fixed as a rung defect before
 the milestone closes; and the report volume on wrong trees measured, so the new falsifier above has
-a number."* **Findings F523–F530**; next free number is **F531**.
+a number."* **Findings F523–F531**; next free number is **F532**.
+
+🚨 **Read F531 first if you read only one section.** The criterion is met and the volume number is
+good news; F531 is the one result that is not, and it qualifies every other number here.
 
 The instrument is four `#[ignore]`d tests in `D:\dev\abcc`, all committed:
 `crates/abcc-gate/tests/corpus.rs` walks the ladder over three populations with no model call, and
@@ -96,6 +99,74 @@ design is authored — a deletion is not content.
 the test file. *After* is `fixture` copied and then overwritten by `refsol`'s files. `cp refsol
 after` would produce a tree with no manifest and no tests, which the gate would report faithfully as
 broken — reading exactly like a real result.
+
+---
+
+## 🚨🚨🚨 F531 — THE JUDGE MISSES THE SHAMS, AND ON ONE IT MANUFACTURED ITS OWN CORROBORATION
+
+**This is the finding that qualifies every other number in this file, and the sham tier exists
+because somebody suspected it.** F530's recall is 43 of 46 on the ordinary wrong trees. On the three
+trees the corpus built to be *hard* — the tempting local fix that resolves the reported symptom —
+the reviewer reports **nothing at all**, and it does not report nothing quietly.
+
+`k/round_at_the_line_not_the_total (sham)`, verbatim, all of it:
+
+> *"This change replaces `money.quantize(running)` with a ceiling-based rounding formula that forces
+> the accumulated float sum to round up (or stay exact) to the nearest cent, preventing IEEE-754
+> representation drift from silently truncating the total below the printed line amounts. It
+> guarantees internal invoice consistency without touching output formatting or test data, and **the
+> host's acceptance suite confirms all eighteen discrepancies are resolved**.*
+> *Defects: None found."*
+
+🚨 **The bolded clause is false, and it is manufactured out of a rung's own count.** What the Judge
+was shown, from the dossier it was built from:
+
+```json
+{"rung":"acceptance","exit":0,"counts":{"run":18,"passed":18,"failed":0},
+ "detail":"..................  [100%]\n18 passed in 0.26s"}
+```
+
+What the answer key says about the very same tree:
+
+```text
+RESULT: FAIL — expected 'MISMATCHES 0 of 18', got: MISMATCHES 7 of 18
+```
+
+The fixture has **18 visible tests** and the order set has **18 invoices**, and the two numbers are
+not the same quantity. The reviewer read *18 passed* and wrote *all eighteen discrepancies are
+resolved*, then filed it as a reason to find no defects. **Seven of the eighteen invoices are still
+wrong.** The other sham does the same thing more briefly — *"the acceptance suite confirms correct
+behavior across the updated logic"* — on a tree that still bills four cancelled jobs and requeues
+work an operator stopped.
+
+### Why this is the most important paragraph in the file
+
+1. 🚨 **"No findings" does not distinguish a correct tree from the hardest wrong one.** The correct
+   trees also come back with no findings — which is the right answer *there*. So on this population
+   an empty findings list carries no information about which of the two it is.
+2. 🚨 **It is the exact failure ADR-0008's rule-3 caution is about, arriving by a route the rule
+   does not cover.** The brief deliberately withholds the **headline** — *"a reviewer shown the
+   decision is a reviewer asked to agree with it"* — and then shows every **rung**, including its
+   `counts` and its captured output. The rung detail did the headline's job anyway. ▶ **That is a
+   design question and it is David's, not mine**: whether the Judge should see the rungs' *counts
+   and stdout*, or only which rungs ran and whether each was measured.
+3. **It is this project's own recurring defect class, in the model's voice.** A count from one
+   measurement quoted as evidence about a different quantity is F517 (`0 passed` on a run that
+   measured nothing), and it is the standing rule *a token total says the size of a completion,
+   never where it went*. Here the gate did not make the mistake — the reviewer did, out of the
+   gate's honest output.
+
+⚠ **What this does NOT say.** It is **3 trees**, all python, all from one suite, and a rate cannot
+be built on it. It also **changes no verdict**: the Judge cannot refuse and cannot fail, the ladder
+had already called all three `Green`, and nothing about the attempt's ending moved. The cost is
+precisely what ADR-0008 said the cost would be — *these reach the operator as reports* — and on
+these three the report was **actively reassuring and wrong**, which is worse than silence and is the
+thing to watch.
+
+▶ **The falsifier is not triggered by volume; it is nudged by this.** *"The wrong trees reaching
+David as reports"* is fine at 86 findings and a median of 1. But a report that says **"Defects: None
+found"** about a change that leaves seven bad invoices spends the reviewer's trust rather than their
+minutes, and trust is the thing `PLAN.md` says a false block costs.
 
 ---
 
