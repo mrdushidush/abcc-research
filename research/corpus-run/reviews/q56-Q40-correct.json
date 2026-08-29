@@ -1,0 +1,19 @@
+{
+  "brief_chars": 3438,
+  "completion_tokens": 2353,
+  "ending": "answered",
+  "events": 7,
+  "id": "q56/Q40 (correct)",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1441,
+  "raw": "{\n  \"assessment\": \"The diff replaces the empty stub methods with a full `Map<string, Listener[]>`-backed implementation of `EventEmitter`. It correctly registers listeners in order, invokes them during emission using a spread copy to guard against mid-loop removal, filters out specific listeners on demand, and wires `once` through an internal wrapper that self-unregisters after firing. All provided checks (structural, acceptance, veto) pass with no regressions.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2242,
+  "review": {
+    "assessment": "The diff replaces the empty stub methods with a full `Map<string, Listener[]>`-backed implementation of `EventEmitter`. It correctly registers listeners in order, invokes them during emission using a spread copy to guard against mid-loop removal, filters out specific listeners on demand, and wires `once` through an internal wrapper that self-unregisters after firing. All provided checks (structural, acceptance, veto) pass with no regressions.",
+    "findings": []
+  },
+  "seconds": 31.10704803466797,
+  "trace": "Closed",
+  "turns": 1
+}

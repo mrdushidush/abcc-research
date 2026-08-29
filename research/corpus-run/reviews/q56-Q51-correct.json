@@ -1,0 +1,19 @@
+{
+  "brief_chars": 3149,
+  "completion_tokens": 2989,
+  "ending": "answered",
+  "events": 8,
+  "id": "q56/Q51 (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1381,
+  "raw": "{\n  \"assessment\": \"The change replaces the placeholder NotImplementedError with a complete `parse_duration` implementation. It normalizes whitespace, extracts digit-unit pairs via regex, verifies that the entire input is consumed by those pairs, and raises ValueError for empty or malformed strings as required.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2914,
+  "review": {
+    "assessment": "The change replaces the placeholder NotImplementedError with a complete `parse_duration` implementation. It normalizes whitespace, extracts digit-unit pairs via regex, verifies that the entire input is consumed by those pairs, and raises ValueError for empty or malformed strings as required.",
+    "findings": []
+  },
+  "seconds": 42.0293083190918,
+  "trace": "Closed",
+  "turns": 1
+}

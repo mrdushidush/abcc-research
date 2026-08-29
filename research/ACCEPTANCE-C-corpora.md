@@ -1,13 +1,16 @@
 # Acceptance run C — the Q56 and K corpora, and the Gate's exit criterion
 
-**Status: the deterministic half is COMPLETE — 2026-08-29.** This is the run `PLAN.md` §3's GATE
+**Status: COMPLETE — 2026-08-29.** Both halves: the deterministic ladder over 121 trees and the
+Judge over all 121 of them. This is the run `PLAN.md` §3's GATE
 milestone names as its exit: *"run against the Q56 and K corpora, whose answer keys already exist.
 **Zero false fails on the correct-tree population**, any one of them fixed as a rung defect before
 the milestone closes; and the report volume on wrong trees measured, so the new falsifier above has
-a number."* **Findings F523–F531**; next free number is **F532**.
+a number."* **Findings F523–F532**; next free number is **F533**.
 
-🚨 **Read F531 first if you read only one section.** The criterion is met and the volume number is
-good news; F531 is the one result that is not, and it qualifies every other number here.
+🚨 **Read F531 first if you read only one section.** The criterion is met, the volume is low and the
+precision is excellent; F531 is the one result that is not good news, and it qualifies every other
+number here. **F532 is the one that is immediately actionable** — it discharges a condition
+ADR-0010 §7 wrote down as waiting for exactly this population.
 
 The instrument is four `#[ignore]`d tests in `D:\dev\abcc`, all committed:
 `crates/abcc-gate/tests/corpus.rs` walks the ladder over three populations with no model call, and
@@ -101,6 +104,77 @@ design is authored — a deletion is not content.
 the test file. *After* is `fixture` copied and then overwritten by `refsol`'s files. `cp refsol
 after` would produce a tree with no manifest and no tests, which the gate would report faithfully as
 broken — reading exactly like a real result.
+
+---
+
+## 🎉 THE JUDGE OVER ALL THREE POPULATIONS — 121 calls, 85.7 minutes
+
+| population / ladder | trees | answered | findings | silent | restatement? | median |
+|---|---|---|---|---|---|---|
+| **correct** (all) | 59 | **58** | **1** | **57** | 0 | 36 s |
+| ‣ correct / `Green` | 48 | 47 | 1 | 46 | 0 | 37 s |
+| ‣ correct / `Unverified` | 11 | 11 | **0** | 11 | 0 | 28 s |
+| **wrong** (all) | 59 | 59 | 86 | 1 | 7 | 38 s |
+| ‣ wrong / `Green` | 35 | 35 | 56 | 0 | **0** | 41 s |
+| ‣ wrong / `Red` | 13 | 13 | 14 | 0 | 6 | 22 s |
+| ‣ wrong / `Unverified` | 11 | 11 | 16 | 1 | 1 | 36 s |
+| **sham** (all) | 3 | 3 | **0** | **3** | 0 | 61 s |
+| **TOTAL** | **121** | **120** | **87** | 61 | 7 | — |
+
+160,641 prompt tokens, 354,708 completion, **333,296 reasoning — 94.0%**.
+
+### 🎉🎉 Precision: ONE candidate false positive in 59 correct trees, and it was refuted by running it
+
+**57 of the 58 correct trees the reviewer answered about came back silent.** The single finding was
+`q56/Q10 (correct)`:
+
+> *at:* `src/lib.rs:12-30` · *defect:* trailing dot allows an invalid address to pass ·
+> *run:* `is_valid_ipv4("1.2.3.4.")` · *expected:* `false` · *actual:* **`true`**
+
+It is wrong, and **checking that took one command**, because ADR-0008 rule 2 requires a finding to
+carry something runnable:
+
+```text
+assert_eq!(is_valid_ipv4("1.2.3.4."), false);   →   test result: ok. 1 passed
+```
+
+🚨 **And the reviewer's own assessment names the reason it was wrong:** *"relies on Rust's
+`str::split`, which discards trailing empty strings by default."* **Rust's `split` does no such
+thing** — that is Python's `str.split()`, applied to Rust code. ▶ **So the confirmed false-positive
+count on 59 correct trees is 0, and the one candidate cost ten seconds to dismiss.** ADR-0008's
+*10 of 23 against 1 of 34* was borrowed from Phase 1; this is the project's own, and rule 2 is the
+reason the number is cheap to establish rather than a matter of opinion.
+
+⚠ **The other side of the same coin is F531.** The reviewer is silent on 57 of 58 correct trees
+*and* on 3 of 3 shams. **Silence is its normal output for "this looks fine", so silence carries no
+information about which of the two a tree is.** Precision is excellent; the failure is recall on the
+one tier built to be hard.
+
+### 🚨🚨 F532 — `OpenAt200` fired once in 121 calls, on the one call that failed
+
+ADR-0010 §7 asks *at token 200, has the reasoning trace closed?*, says the answer should be a stop
+rather than a score, and then says why it is not acted on yet: *"at Skeleton it is recorded and not
+acted on. Stopping a generation on this signal is a behavioural change that needs a population to
+justify it, **and the population is what recording it produces**."*
+
+> **The population is 121 calls. `TraceSignal::OpenAt200` fired on exactly one of them, and that one
+> is the only call of the 121 that did not answer.** `Closed` on all 120 that did.
+
+`q56/Q35 (correct)` — reviewing a **correct** tree, so a change with nothing wrong in it — ran
+**209 seconds**, spent the **entire 16,384-token budget**, **100% of it on reasoning**, and returned
+an **empty payload**: `Unmeasured { TruncatedAtCap }`. It is also by a wide margin the most
+expensive call in the run; the next largest completion is 8,890 tokens.
+
+▶ **This is the evidence ADR-0010 said it was waiting for, and it is a clean 1-for-1.** At this
+sample the signal has **0 false positives in 120 good calls** and caught **1 of 1** failures. Acting
+on it would have saved 209 s and 16,384 tokens and cost nothing, because the call it would have
+stopped produced nothing.
+
+⚠ **One event is one event.** A perfect correspondence over a single failure bounds the
+false-positive rate at under 1-in-120 at this sample size; it does not establish a rate for the
+failure side. 🚨 **The decision is David's** — it is a behavioural change to a generation, which is
+exactly the class ADR-0010 §7 reserved. What has changed is that the *justification* clause is now
+discharged: there is a population, and it says what the ADR guessed it would.
 
 ---
 

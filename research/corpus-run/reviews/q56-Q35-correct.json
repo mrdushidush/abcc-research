@@ -1,0 +1,16 @@
+{
+  "brief_chars": 3293,
+  "completion_tokens": 16384,
+  "ending": "unmeasured: stopped at the 16384-token cap with an empty payload",
+  "events": 23,
+  "id": "q56/Q35 (correct)",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1407,
+  "raw": null,
+  "reasoning_tokens": 16384,
+  "review": null,
+  "seconds": 209.26348876953125,
+  "trace": "OpenAt200",
+  "turns": 1
+}

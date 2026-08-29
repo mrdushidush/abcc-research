@@ -241,6 +241,40 @@ sharpest thing it buys is on the **11 trees no rung could measure at all** (8 sh
 rust ship no test function): there the gate can only ever say `Unverified`, and **the Judge found
 the real defect 10 times in 11.**
 
+🎉🎉 **And the precision half — 59 correct trees, run because a false-finding rate is not measurable
+on wrong ones.** **57 of the 58 it answered about came back silent, and the single finding is
+wrong.** Checking that took one command, because ADR-0008 rule 2 makes a finding carry something
+runnable: it claimed `is_valid_ipv4("1.2.3.4.")` returns `true`, and it returns `false`. Its own
+assessment names the error — *"Rust's `str::split` discards trailing empty strings by default"*,
+which is **Python's** `str.split()`. ▶ **Confirmed false positives on 59 correct trees: 0.**
+ADR-0008's *1 of 34* was borrowed from Phase 1; this is the project's own, and rule 2 is why it cost
+ten seconds to establish rather than an argument.
+
+🚨🚨 **F531 — AND THE ONE RESULT THAT IS NOT GOOD NEWS. The Judge is 0 for 3 on the shams, and it
+did not fail quietly.** All three came back *"Defects: None found"* while **citing the rungs as
+proof**. On `round_at_the_line` it wrote *"the host's acceptance suite confirms all eighteen
+discrepancies are resolved"* — the dossier showed it `18 run / 18 passed`, the answer key says
+`MISMATCHES 7 of 18`, and **the fixture has 18 tests while the order set has 18 invoices**, which are
+not the same quantity. It reused a count from one measurement as a claim about another. ⚠ It changes
+no verdict — the Judge cannot refuse or fail — but a report that reassures about a change leaving
+seven bad invoices spends **trust** rather than minutes.
+▶ **A design question this run cannot settle and David can:** the brief withholds the *headline* so
+the reviewer is not asked to agree with a decision, then shows every rung's `counts` and captured
+stdout. **On these three the stdout did the headline's job anyway.** Whether the Judge should see
+counts and output at all, or only which rungs ran and whether each was measured, is a ruling.
+⚠ Note also that **silence is its normal output for "this looks fine"** — 57 of 58 correct trees —
+so an empty findings list distinguishes nothing on its own.
+
+🚨🚨 **F532 — `OpenAt200` fired ONCE in 121 calls, on the one call that failed.** ADR-0010 §7 records
+the trace signal and does not act on it, saying so explicitly: *"a behavioural change that needs a
+population to justify it, and the population is what recording it produces."* **The population is
+now 121 calls.** `Closed` on all 120 that answered; `OpenAt200` on `q56/Q35 (correct)`, which ran
+**209 s, spent the whole 16,384-token budget, 100% on reasoning, and returned an empty payload** —
+the most expensive call in the run by 2×, reviewing a tree with nothing wrong in it. ▶ **0 false
+positives in 120 good calls, 1 of 1 on the failure.** ⚠ One event is one event, so this bounds the
+false-positive side and not the other — but the *justification clause ADR-0010 wrote down is
+discharged*, and acting on the signal is now David's call rather than a blocked one.
+
 🚨 **F521's anti-restatement sentence works exactly where it can and cannot where it can't**:
 **0 restatement candidates out of 56 findings on green trees**, **6 of 14 on refused ones** — because
 when the acceptance rung has already refused a stub, the only defect in the tree is the one the rung
