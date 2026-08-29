@@ -306,6 +306,7 @@ template at `research/decisions/README.md`:
 | 13 | [Two modes; rig as device; `Provider` `&self` + stream](research/decisions/ADR-0013-two-modes-rig-as-device.md) | W10, W9 |
 | 14 | [Deny the class via `max_tier`; blast radius, not a sandbox](research/decisions/ADR-0014-deny-the-class-blast-radius.md) | W7, W8 |
 | 15 | [The idle gap is ours; a full window is not a fault; silence is not an artifact](research/decisions/ADR-0015-what-the-first-real-runs-corrected.md) | F493, F496–F502 |
+| 16 | [A phase asks again when the model says nothing; a cut turn's tool calls never run](research/decisions/ADR-0016-a-phase-repairs-a-missing-answer.md) | F503–F508 |
 
 `research/benchmarks/` — §12 also lists this. It is **satisfied in substance already**:
 `research/spikes/` holds the reproducible drivers and `runs/hw-probe/` plus the 62 manifests are now

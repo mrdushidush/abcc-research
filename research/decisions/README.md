@@ -7,10 +7,10 @@ records consumed by `PLAN.md`, never backfilled with dates after the fact (`rese
 
 ✅ **All fourteen were written 2026-08-28, and ADR-0015 was added 2026-08-29** — the first written
 from a running system rather than from a workstream, correcting three things the first two real
-runs found. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
+runs found, and **ADR-0016** the same day from ten of them. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
 workstream, and **the evidence lives in the workstream doc, not here** — an ADR cites `Wn` and a
-finding id, states the ruling, and says what would overturn it. Findings F1–F502 are closed; next
-free is **F503**.
+finding id, states the ruling, and says what would overturn it. Findings F1–F508 are closed; next
+free is **F509**.
 
 ## The template
 
@@ -53,8 +53,9 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | 13 | [ADR-0013](ADR-0013-two-modes-rig-as-device.md) | Two modes; rig as device; `Provider` `&self` + stream | W10, W9 |
 | 14 | [ADR-0014](ADR-0014-deny-the-class-blast-radius.md) | Deny the class via `max_tier`; blast radius, not a sandbox | W7, W8 |
 | 15 | [ADR-0015](ADR-0015-what-the-first-real-runs-corrected.md) | The idle gap is ours; a full window is not a fault; silence is not an artifact | F493, F496–F502 |
+| 16 | [ADR-0016](ADR-0016-a-phase-repairs-a-missing-answer.md) | A phase asks again when the model says nothing; a cut turn's tool calls never run | F503–F508 |
 
-**Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 as of 2026-08-29. Five carry a
+**Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and ADR-0016 as of 2026-08-29. Five carry a
 David ruling rather than a research conclusion: **ADR-0001** (rewrite, not port), **ADR-0004** (the
 lifecycle names, OQ-W3-6), **ADR-0009** (only deterministic rungs may refuse), **ADR-0012** (TUI
 primary, 2026-08-19) and **ADR-0015** (three rulings, 2026-08-29). ⚠ ADR-0015 is the only one that
