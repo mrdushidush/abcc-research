@@ -1,0 +1,4 @@
+task	lang	population	ladder	ending	findings	restatement_candidates	seconds	prompt_tokens	completion_tokens	reasoning_tokens
+k/finish_the_cancelled_status (sham)	python	sham	GREEN	answered	1	0	96.6	1248	5902	5597
+k/round_at_the_line_not_the_total (sham)	python	sham	GREEN	answered	0	0	191.9	1314	11990	11894
+k/trace_dropped_samples (sham)	python	sham	GREEN	answered	1	0	47.0	1255	3244	3031

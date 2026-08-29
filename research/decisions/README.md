@@ -56,19 +56,24 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | 16 | [ADR-0016](ADR-0016-a-phase-repairs-a-missing-answer.md) | A phase asks again when the model says nothing; a cut turn's tool calls never run | F503–F508 |
 | 17 | [ADR-0017](ADR-0017-the-standard-a-repository-declares.md) | The rung a repository declares for itself; the veto's one rule; `Refused` | F512, F516–F518 |
 | 18 | [ADR-0018](ADR-0018-the-judge-reports-and-cannot-refuse.md) | The Judge reports: it cannot refuse an attempt **and cannot fail one** | ADR-0008, F275–F284, F521–F522 |
+| 19 | [ADR-0019](ADR-0019-the-judge-keeps-the-rung-output.md) | The Judge keeps the rungs' counts and output — withholding them was probed and lost | F531, F534–F536 |
 
 **Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and ADR-0016 as of 2026-08-29,
-ADR-0017 as of 2026-08-30, ADR-0018 as of 2026-08-31. ⚠ ADR-0017 is the first written **from a
+ADR-0017 as of 2026-08-30, ADR-0018 as of 2026-08-31, ADR-0019 as of 2026-08-29. ⚠ ADR-0017 is the first written **from a
 running system rather than before one**: the gate was built and put to all 25 real attempts on the
 log, and only then was its one open question put to David. ADR-0018 is written the same way, from
 two live reviews — and it is the one that **corrected a prompt this project had already
 shipped**: `Head::Commandos`' charter promised the reviewer Recon's brief, and the only measurement
 about prose beside a diff is 0 of 3, so the charter was changed to match the evidence rather than
-the evidence assumed to match the charter. **Six** carry a
+the evidence assumed to match the charter. 🚨 **ADR-0019 is the first decided by a PROBE rather than by an argument or a
+ruling**: F531 left an open question about the brief, David's answer was *measure it before you
+change it*, and the measurement — 15 calls over 3 shams under both views — says the change loses.
+The rejected alternative is kept in the tree as the instrument that rejected it. **Seven** carry a
 David ruling rather than a research conclusion: **ADR-0001** (rewrite, not port), **ADR-0004** (the
 lifecycle names, OQ-W3-6), **ADR-0009** (only deterministic rungs may refuse), **ADR-0012** (TUI
 primary, 2026-08-19), **ADR-0015** (three rulings, 2026-08-29) and **ADR-0017** (a correct tree is
-one that could land, 2026-08-30). ⚠ ADR-0015 is the only one that
+one that could land, 2026-08-30) and **ADR-0019** (probe the shams before changing the brief,
+2026-08-29). ⚠ ADR-0015 is the only one that
 **supersedes another in part** — ADR-0006 § *Timeouts* — leaving the rest of ADR-0006 standing.
 
 ## What the ADRs changed while being written

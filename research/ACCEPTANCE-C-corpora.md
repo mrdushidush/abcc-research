@@ -5,10 +5,10 @@ Judge over all 121 of them. This is the run `PLAN.md` §3's GATE
 milestone names as its exit: *"run against the Q56 and K corpora, whose answer keys already exist.
 **Zero false fails on the correct-tree population**, any one of them fixed as a rung defect before
 the milestone closes; and the report volume on wrong trees measured, so the new falsifier above has
-a number."* **Findings F523–F532**; next free number is **F533**.
+a number."* **Findings F523–F536**; next free number is **F537**.
 
-🚨 **Read F531 first if you read only one section.** The criterion is met, the volume is low and the
-precision is excellent; F531 is the one result that is not good news, and it qualifies every other
+🚨 **Read F531 first, then F536, which answers it, then F534, which re-prices it.** The criterion is met, the volume is low
+and the precision is excellent; F531 is the one result that is not good news, and it qualifies every other
 number here. **F532 is the one that is immediately actionable** — it discharges a condition
 ADR-0010 §7 wrote down as waiting for exactly this population.
 
@@ -181,7 +181,8 @@ discharged: there is a population, and it says what the ADR guessed it would.
 ## 🚨🚨🚨 F531 — THE JUDGE MISSES THE SHAMS, AND ON ONE IT MANUFACTURED ITS OWN CORROBORATION
 
 **This is the finding that qualifies every other number in this file, and the sham tier exists
-because somebody suspected it.** F530's recall is 43 of 46 on the ordinary wrong trees. On the three
+because somebody suspected it.** F530's recall is 43 of 46 on the ordinary wrong trees
+(**44 of 46** once F535 is applied). On the three
 trees the corpus built to be *hard* — the tempting local fix that resolves the reported symptom —
 the reviewer reports **nothing at all on 3 of 3**, and it does not report nothing quietly.
 
@@ -234,9 +235,9 @@ crash and left the bug**, and the reviewer described that as *no regressions*.
 2. 🚨 **It is the exact failure ADR-0008's rule-3 caution is about, arriving by a route the rule
    does not cover.** The brief deliberately withholds the **headline** — *"a reviewer shown the
    decision is a reviewer asked to agree with it"* — and then shows every **rung**, including its
-   `counts` and its captured output. The rung detail did the headline's job anyway. ▶ **That is a
-   design question and it is David's, not mine**: whether the Judge should see the rungs' *counts
-   and stdout*, or only which rungs ran and whether each was measured.
+   `counts` and its captured output. The rung detail did the headline's job anyway. ▶ **That was left as a design
+   question for David, and he ruled *probe it first*. It is now answered by measurement rather than
+   by argument — see F536: the answer is no, the rung output stays.**
 3. **It is this project's own recurring defect class, in the model's voice.** A count from one
    measurement quoted as evidence about a different quantity is F517 (`0 passed` on a run that
    measured nothing), and it is the standing rule *a token total says the size of a completion,
@@ -255,6 +256,111 @@ thing to watch.
 David as reports"* is fine at 86 findings and a median of 1. But a report that says **"Defects: None
 found"** about a change that leaves seven bad invoices spends the reviewer's trust rather than their
 minutes, and trust is the thing `PLAN.md` says a false block costs.
+
+---
+
+## 🚨🚨🚨 F536 — F531's PROBE, RUN: withholding the rung output does not survive its own measurement
+
+**David ruled on 2026-08-29: probe the three shams before changing the brief.** Done — **15 calls**,
+3 shams × 2 views × 2 fresh samples, plus the original run's 3. `RungView::Named` renders each rung
+as `- acceptance — measured` and nothing else: **no exit status, no `counts`, no captured output.**
+Only the rung block moves; the task, the diff and every sentence of instruction are byte-identical,
+asserted by `the_view_moves_the_rungs_and_nothing_else_in_the_brief`.
+
+⚠ **The control was run first and it held.** Nothing here is sampled at temperature zero — the
+engine sends no `temperature`, no `top_p`, no `seed` — so the shams were re-asked twice under the
+*shipped* view before the switch was touched. **9 of 9 `Full` calls: 0 findings.** F531's 0-for-3 is
+the model's behaviour, not a sample.
+
+| view | calls | findings | **cites the rungs as proof** | **says it cannot verify** | median s | median completion |
+|---|---|---|---|---|---|---|
+| `Full` | 9 | **0** | **7 of 9** | 1 of 9 | 60.5 | 4,036 |
+| `Named` | 6 | **5** | **1 of 6** | 2 of 6 | 96.6 | 5,502 |
+
+Read only that table and the change looks right. **It is not, and three things say so.**
+
+### 1. 🚨 Four of the five findings are wrong, and one of them is wrong *because* of the change
+
+`round_at_the_line (named-b)` produced **three findings, none of them the defect**:
+
+1. *"`import math` inside the function body causes repeated module loading."* **False** — Python
+   caches in `sys.modules`. A style note asserted as an overhead defect.
+2. *"Float accumulation drift ... off by multiple pennies for long invoices."* Speculative, and not
+   the defect: the sham is wrong because it rounds the **sum** instead of the **lines**.
+3. 🚨 *"`money.EPSILON` ... is not guaranteed to exist ... `NameError: name 'EPSILON' is not
+   defined`."* **False, and it is the probe's own doing.** The tree runs and its suite passes;
+   under `Full` the reviewer could see that and did. **Withholding the measurement did not make it
+   humble — it made it invent a runtime crash on a tree that runs.**
+
+`finish_the_cancelled_status (named-a)` is the fourth: it flags `st.is_terminal` as possibly
+excluding `CANCELLED`. It does not exclude it — and per F534 **that hunk is byte-identical to the
+answer key's.** The one part of the change that is provably right is the part it reported.
+
+✅ **One of five is correct**: `trace_dropped_samples (named-a)` — *"leaves upstream data loss
+unaddressed ... the fix **suppresses symptoms rather than resolving why sample volumes are lower**
+than expected."* That is the sham's real defect, named, on the tree F534 shows the defect is not in
+the diff for. **It is the only correct sham finding in all 15 calls, under either view.**
+
+### 2. 🚨🚨 The failure mode came back through the new wording: it read `measured` as *passed*
+
+`trace_dropped_samples (named-b)`, under `Named`, with no counts and no output anywhere in its
+brief:
+
+> *"**The host measurements already confirm structural, acceptance, and veto checks pass.**"*
+
+**Nothing in that brief says any rung passed.** It listed the three rung names it was given and
+supplied the verdict itself. 🚨 **That is the exact hazard `RungView::Named`'s own doc claims to
+avoid** — *"under `Named` the word `measured` no longer claims *fine*"* — and it is the hazard
+`abcc_core::outcome` exists to remove, arriving from the model's side of the prompt rather than the
+gate's. Withholding the evidence removed the citation, not the conclusion.
+
+### 3. It costs about 1.6× the wall clock, and up to 3×
+
+Median 96.6 s against 60.5 s, and `round_at_the_line (named-a)` took **191.9 s and 11,990 completion
+tokens** — 3× the wall clock and 3× the completion of the same tree under `Full`, to return **zero
+findings**. F522 already says the completion is 93–96% reasoning trace, so this is the trace getting
+longer with less to work from.
+
+### ▶ THE RULING THIS SUPPORTS, and it is not the one the question offered
+
+🚨 **`RungView::Full` stays. `Named` is kept in the tree as the instrument that measured it, reached
+only by `ABCC_JUDGE_RUNGS=named` from `tests/corpus_review.rs`, and no production caller passes a
+view.** It buys **1 correct finding and 4 wrong ones** on 6 calls, re-introduces the false-confidence
+conclusion in different words, and costs 1.6–3× the wall clock. **Report volume with nothing in it
+is ADR-0008's own falsifier**, and 4 fabricated defects on trees whose code runs is that falsifier
+being fed, not starved. See ADR-0019.
+
+⚠ **This does not retract F531.** Under `Full` the reviewer cited the rungs as proof in **7 of 9**
+calls and manufactured `18 passed → all eighteen discrepancies are resolved`. That is real. What the
+probe establishes is that **hiding the rungs is not the fix for it** — the conclusion survives the
+evidence being removed.
+
+### 🎉 What the probe found by accident, and it is the better lead
+
+**The best answer in all 15 calls came from `Full`.** `finish_the_cancelled_status (full-b)`, with
+the counts and the stdout in front of it:
+
+> *"the task explicitly requires treating cancelled jobs correctly **everywhere** it makes a
+> decision based on status, not just in the complained-about report. Since this diff only modifies
+> one file and **I do not have visibility into the other five consumers** of `job.status` ... I
+> cannot verify full spec compliance or provide reproduction commands for unmodified areas."*
+
+That is the correct reading of the sham — F534's *correct-but-incomplete* — reached with the rung
+output visible and **not** used as a warrant. So the discriminating variable is not what the
+reviewer was shown. It is **whether it checked the change against the scope the ticket stated**, and
+two of the three shams state their scope in the ticket in so many words (*"everywhere ... not only
+in the report"*; *"must account for every usable sample ... not merely avoid crashing"*).
+
+🚨 **And the counter scored that call `0 findings, silent` — F535 again**, on the single best output
+of the probe. The prose flag added in this session fires on a defect written into the assessment; it
+does **not** fire on a correct refusal to endorse, which is a third thing the `findings[]`/`silent`
+pair cannot express.
+
+▶ **The candidate that follows is a brief change, not a rung change** — one sentence asking whether
+the change covers the scope the task states, and whether anything it depends on is outside the diff.
+**It is not written and not decided**, because it has a population of one call and this file's own
+rule is that a name standing in for a specification is worse than an open question. Its falsifier is
+cheap and it is the same one used here: three shams, two samples, one switch.
 
 ---
 
@@ -305,6 +411,11 @@ returns `String::new()` for all inputs"* — with the concrete values expected. 
 the refusal correctly on all 13.
 
 ### 🚨🚨 Recall: 43 of 46, read by hand against the answer key
+
+⚠ **Corrected to 44 of 46 by F535** — `Q05` wrote its finding into the `assessment` prose
+with `findings: []` beside it, so the counter read it as silence. The number below is the one
+the hand-reading produced before that was found; F535 carries the scan that bounds it at one
+tree.
 
 Recall is **not** scored automatically and this is not an automated number: `verify.sh` grades a
 tree and a reviewer's prose is not a tree, so every review was read against the `# Hidden reviewer
@@ -654,6 +765,123 @@ sentence.
 ▶ So the population is not 99 and cannot be made 99 by including a suite that ships one. `u40` is
 gradeable — by `verify.sh`, which writes its tests in — and not by a rung, which is the same limit
 F526 states for shell.
+
+## 🚨 F533 — EVERY wrong tree's diff has NO PRE-IMAGE, so 43 of 46 is a *pointwise* number
+
+Measured over all 121 dossiers, counting diff lines that start with `-` and are not the `---` header:
+
+| population | trees | median chars | median `+` lines | median `-` lines | **trees with any `-` line** |
+|---|---|---|---|---|---|
+| correct | 59 | 625 | 7 | 3 | **58 of 59** |
+| wrong | 59 | 389 | 9 | **0** | **0 of 59** |
+| sham | 3 | 577 | 5 | 1 | **3 of 3** |
+
+🚨 **Not one of the 59 wrong trees showed the reviewer a pre-image.** That is not a defect — it
+follows from the pair `fixture minus the solution -> fixture`, which is ruled and whose alternative
+was rejected for good reasons — but it is a **confound the run's own numbers were read without.**
+
+**ADR-0008 rule 1 is the rule the whole phase is built on:** *show it the other artifact, never a
+threshold* — pointwise **0 of 8**, pairwise against the pre-image **14 of 14**. On the wrong half
+there was no other artifact to show. So:
+
+* ▶ **The recall figure was earned with rule 1's mechanism unavailable.** A reviewer reading a new
+  file and naming its defect is doing the thing ADR-0008 measured at 0 of 8 — with the caveat that
+  ADR-0008's 0 of 8 was pointwise **scoring** and this is pointwise **defect-finding**, which are
+  not the same task. Still: the number is good, and it is not evidence for rule 1.
+* 🚨 **The three shams are the only wrong-tier trees measured pairwise at all.** So *0 of 3 on shams
+  against 43 of 46 on wrong trees* varies two things at once — the tier **and** the shape of the
+  input. F531's question has to be read knowing that.
+
+▶ **Q20 is the counterexample to this file's own caveat**, which says the pair "costs nothing on the
+56 single-file Q56 tasks". Q20 asks for `keep_present` to be made Pythonic; the defect is that
+`if v:` drops `0` and `""` as well as `None`. On the **correct** tree, where the diff shows
+`-if v:` beside `+if v is not None:`, the reviewer named the defect class precisely and unprompted:
+*"corrects the filtering logic from truthiness to strict None identity checking ... including falsy
+ones like 0 or False."* On the **wrong** tree, with the same function arriving as a new file, it
+reported a **style** note and proposed `[v for v in values if v]` — **reproducing the bug in its own
+suggested fix.** Same model, same defect, same session; the pre-image is the only difference.
+
+---
+
+## 🚨🚨 F534 — two of the three shams' defects ARE NOT IN THE DOSSIER, and one hunk is byte-identical to the answer key
+
+F531 reads *0 for 3 and it endorsed them*. Read against `refsol/` rather than against the review,
+the three are not one failure — they are **one reading miss and two questions the dossier cannot
+answer**:
+
+| sham | the answer key touches | the sham touches | is the defect in what the reviewer saw? |
+|---|---|---|---|
+| `round_at_the_line_not_the_total` | `pricing.py` | `pricing.py`, **same function** | ✅ **yes** |
+| `finish_the_cancelled_status` | `charges.py`, `retry.py`, `sla.py`, `summary.py` | `sla.py` — **1 of 4** | ❌ no — 3 files absent |
+| `trace_dropped_samples` | `ingest.py` | `stats.py` | ❌ no — **different file** |
+
+🚨 **`finish_the_cancelled_status` is the sharpest of the three, and it inverts the story.** Its
+`sla.py` hunk is **byte-for-byte the answer key's own `sla.py` hunk**. The change the reviewer was
+shown is not wrong; it is *correct and incomplete*, and the missing three files are nowhere in the
+dossier. Its report — *"this directly fixes the operations complaint about cancelled jobs"* — is
+**true about the change it was given**. The defect is an **omission**, and a diff cannot exhibit an
+omission: the evidence for it is the absence of code that was never written.
+
+🚨 **`trace_dropped_samples` is the same shape, further away.** The real fix is a case-fold four
+modules upstream — `flag = normalize.canonical_flag(rec.get(...))` in `ingest.py`, because rev B
+firmware emits `OK`/`WARN` upper-case and comparing them raw silently drops half the fleet. The
+reviewer was shown `stats.py`. **The file containing the defect is not in the diff, the dossier, or
+the prompt.**
+
+✅ **`round_at_the_line_not_the_total` is the real one, and it is enough on its own.** Everything
+needed is in front of the reviewer: the ticket says the printed line amounts *must add up to* the
+total, and the sham's own replacement docstring says the total is *"never below the sum of the
+printed lines"*. **Never-below is not equal-to** — the contradiction is between two sentences in the
+same dossier. It missed that, and then wrote *"the host's acceptance suite confirms all eighteen
+discrepancies are resolved"*, which is the manufactured corroboration F531 is named for.
+
+▶ **What this does to F531.** It does not retract it — the manufactured count is real and it is the
+worst thing in the run. It **re-prices it**: the reviewer's honest score on the shams is **1 miss
+out of 1 answerable question**, not 0 out of 3, and on the other two the best available answer was
+*I cannot tell from this*. 🚨 **That is what makes the probe worth running rather than arguing:** on
+exactly the trees where the diff cannot answer, the rungs' `counts` and captured stdout are the only
+thing in the dossier that looks like evidence — and they are the thing that is misleading.
+
+---
+
+## 🚨 F535 — the finding counter reads `findings.len()`, and one review put its finding in the prose
+
+`q56-Q05` is recorded in F530 as a recall miss — *"nothing"*. It is not. The payload parsed, and the
+`assessment` string says:
+
+> *"populates it with the exact same panicking implementation described in the task prompt rather
+> than the requested fix ... **Defects: 1. Missing Result conversion and error handling** — call:
+> `parse_kv("malformed_line")`; expected: returns `Err(String)` describing the missing delimiter;
+> actual: panics at runtime."*
+
+**The defect, carrying the runnable triple ADR-0008 rule 2 asks for, written into the prose field
+with `findings: []` beside it.** Every `silent` column in this file counts empty arrays, not silence.
+
+▶ **The blast radius is measured, not assumed.** All 61 silent reviews were scanned for a prose
+defect — the `call`/`expected`/`actual` triple, or a `Defects:` list that is not *none*:
+
+| population | silent (`findings == []`) | prose carries a defect |
+|---|---|---|
+| correct | 57 | **0** |
+| wrong | 1 | **1** — `q56-Q05` |
+| sham | 3 | **0** |
+
+* ✅ **Precision is untouched.** 0 of 57 silent correct trees hid a finding, so *0 confirmed false
+  positives* stands as a checked statement rather than an assumed one.
+* ✅ **F531 is untouched.** 0 of 3 — the shams' assessments say *"Defects: None found"* in those
+  words. They are silent in the sense that finding claims.
+* 🚨 **Recall corrects to 44 of 46, and both remaining misses are explained by F533 and F534:**
+  `Q20` (no pre-image — it named the same defect on the correct tree) and `k/trace_dropped_samples`
+  (the defective file is not in the dossier).
+
+⚠ **The instrument is what to fix, not the model.** The schema cannot stop a model writing prose
+into a string field, and the brief already asks for the triple in the findings array. What is cheap
+is that `corpus_review.rs` **flags a silent review whose assessment carries the triple**, the same
+way it already flags restatement candidates — a pointer to reading, printed verbatim, never a
+number. It is this project's own standing rule arriving from the other side: *a keyword count is not
+a capability count*, and here a **zero from an unvalidated counter was read as a silence.**
+
+---
 
 ## What the run does not say
 

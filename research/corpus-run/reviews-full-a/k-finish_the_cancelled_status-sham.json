@@ -1,0 +1,20 @@
+{
+  "brief_chars": 3042,
+  "completion_tokens": 4065,
+  "ending": "answered",
+  "events": 10,
+  "id": "k/finish_the_cancelled_status (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1310,
+  "raw": "{\n  \"assessment\": \"This change replaces a hard-coded check for DONE and FAILED statuses with `st.is_terminal()`, ensuring that self-cancelled jobs stop their time accrual at `ended_at` instead of continuously running against the current clock. It directly addresses the SLA report inflation for cancelled jobs by aligning `finished_at()` with the lifecycle specification cited in the code comment. The acceptance suite passes cleanly, validating the fix without regressions.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3954,
+  "review": {
+    "assessment": "This change replaces a hard-coded check for DONE and FAILED statuses with `st.is_terminal()`, ensuring that self-cancelled jobs stop their time accrual at `ended_at` instead of continuously running against the current clock. It directly addresses the SLA report inflation for cancelled jobs by aligning `finished_at()` with the lifecycle specification cited in the code comment. The acceptance suite passes cleanly, validating the fix without regressions.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "seconds": 63.975074768066406,
+  "trace": "Closed",
+  "turns": 1
+}

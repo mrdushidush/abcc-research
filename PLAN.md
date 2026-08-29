@@ -180,6 +180,10 @@ construction rather than by measurement.
 the correct-tree population**, any one of them fixed as a rung defect before the milestone closes;
 and the report volume on wrong trees measured, so the new falsifier above has a number.
 
+✅✅ **CLOSED 2026-08-29.** Both halves built, both exit clauses met, and the one open question
+the run produced was **settled by measurement rather than by argument** — see ADR-0019 and F536
+below. 🎉 **The milestone that `SUMMARY.md` calls the product is done.**
+
 ✅ **BOTH HALVES BUILT AND BOTH EXIT CLAUSES MET.** The deterministic half landed 2026-08-30
 (`a3ca3fa`, ADR-0017), the Judge 2026-08-31 (`ec53917`, ADR-0018), and the corpora were run
 2026-08-29 (`57b3ae9`) — see the two blocks below. ▶ **The milestone is closable on David's word.**
@@ -258,12 +262,23 @@ discrepancies are resolved"* — the dossier showed it `18 run / 18 passed`, the
 not the same quantity. It reused a count from one measurement as a claim about another. ⚠ It changes
 no verdict — the Judge cannot refuse or fail — but a report that reassures about a change leaving
 seven bad invoices spends **trust** rather than minutes.
-▶ **A design question this run cannot settle and David can:** the brief withholds the *headline* so
-the reviewer is not asked to agree with a decision, then shows every rung's `counts` and captured
-stdout. **On these three the stdout did the headline's job anyway.** Whether the Judge should see
-counts and output at all, or only which rungs ran and whether each was measured, is a ruling.
+▶ **That question went to David and he ruled *probe it before you change it*. It is now answered
+by measurement — ADR-0019, F536.** `RungView::Named` renders each rung as `- acceptance — measured`
+and nothing else; **15 calls, 3 shams × 2 views × 2 fresh samples.** The control held first: **9 of
+9 `Full` calls, 0 findings**, so F531 is behaviour and not a sample. 🚨 **Withholding the output
+loses.** It buys **5 findings of which 4 are wrong** — including *"`money.EPSILON` ... `NameError`"*
+on a tree that runs, a claim it never made when it could see the suite pass — and the reassurance
+comes back in new words: on one call, with no counts anywhere in its brief, it wrote *"the host
+measurements already confirm structural, acceptance and veto checks pass."* **It read `measured` as
+`passed` and supplied the verdict itself.** It also costs 1.6× the median wall clock and up to 3×.
+▶ **So `Full` stays, F531 stays open as a known cost, and the better lead is a different one:** the
+best answer of all 15 calls came from `Full` — *"I do not have visibility into the other five
+consumers ... I cannot verify full spec compliance"* — so the discriminating variable is **whether
+the reviewer checks the change against the scope the ticket states**, not what it was shown.
 ⚠ Note also that **silence is its normal output for "this looks fine"** — 57 of 58 correct trees —
-so an empty findings list distinguishes nothing on its own.
+so an empty findings list distinguishes nothing on its own. 🚨 **And F535 says the counter itself is
+wrong twice over**: `q56-Q05` and that best answer both wrote their content into the `assessment`
+prose with `findings: []` beside it, and were scored silent. Recall is **44 of 46**, not 43.
 
 🚨🚨 **F532 — `OpenAt200` fired ONCE in 121 calls, on the one call that failed.** ADR-0010 §7 records
 the trace signal and does not act on it, saying so explicitly: *"a behavioural change that needs a
@@ -274,6 +289,10 @@ the most expensive call in the run by 2×, reviewing a tree with nothing wrong i
 positives in 120 good calls, 1 of 1 on the failure.** ⚠ One event is one event, so this bounds the
 false-positive side and not the other — but the *justification clause ADR-0010 wrote down is
 discharged*, and acting on the signal is now David's call rather than a blocked one.
+✅ **DAVID RULED 2026-08-29: record only.** The clause is discharged and the positive class is still
+**n = 1**, which is this project's own *one event is one event*. `OpenAt200` stays a logged signal
+and stops nothing. Revisit when the failure population grows; F502 already notes it is the same
+condition ADR-0016's repair path detects better.
 
 🚨 **F521's anti-restatement sentence works exactly where it can and cannot where it can't**:
 **0 restatement candidates out of 56 findings on green trees**, **6 of 14 on refused ones** — because
