@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q23",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nnew file mode 100644\nindex 0000000..a06944a\n--- /dev/null\n+++ b/solution.py\n@@ -0,0 +1,11 @@\n+def parse_ranges(s):\n+    \"\"\"Parse a string like \"1-3,5,8-10\" into a list of integers.\"\"\"\n+    result = []\n+    for part in s.split(\",\"):\n+        if \"-\" in part:\n+            a, b = part.split(\"-\")\n+            for n in range(int(a), int(b)):\n+                result.append(n)\n+        else:\n+            result.append(int(part))\n+    return result\n",
+  "prompt": "The `parse_ranges` function in solution.py parses a compact range string like \"1-3,5,8-10\" into a list of integers. It's got bugs: ranges like \"1-3\" should be inclusive of both ends (so 1, 2 and 3), the result should be sorted in ascending order with duplicates removed even when ranges overlap, and it should tolerate spaces around numbers and dashes. For \"1-3,5,8-10\" the answer is [1, 2, 3, 5, 8, 9, 10]. Fix it. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "0acb4cac03243a57d9cc3bb66d339d534d026f79"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.21s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "0acb4cac03243a57d9cc3bb66d339d534d026f79"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "0acb4cac03243a57d9cc3bb66d339d534d026f79"
+      }
+    ]
+  },
+  "title": "The `parse_ranges` function in solution.py parses a compact range string like"
+}

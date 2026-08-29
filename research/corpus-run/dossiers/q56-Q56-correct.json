@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q56 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex 8ac5b2f..166fd18 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -6,9 +6,22 @@ use std::cmp::Ordering;\n ///\n /// Components are compared numerically, and a shorter version is treated as if\n /// padded with zeros (so \"1.2\" equals \"1.2.0\").\n-pub fn compare_versions(_a: &str, _b: &str) -> Ordering {\n-    // TODO: implement\n-    Ordering::Equal\n+pub fn compare_versions(a: &str, b: &str) -> Ordering {\n+    let mut ai = a.split('.');\n+    let mut bi = b.split('.');\n+    loop {\n+        match (ai.next(), bi.next()) {\n+            (None, None) => return Ordering::Equal,\n+            (x, y) => {\n+                let xv: u64 = x.unwrap_or(\"0\").parse().unwrap_or(0);\n+                let yv: u64 = y.unwrap_or(\"0\").parse().unwrap_or(0);\n+                match xv.cmp(&yv) {\n+                    Ordering::Equal => continue,\n+                    other => return other,\n+                }\n+            }\n+        }\n+    }\n }\n \n #[cfg(test)]\n",
+  "prompt": "Implement `compare_versions(a, b)` in src/lib.rs. It compares two dotted version strings and returns a std::cmp::Ordering. Components are compared NUMERICALLY, not as text — so \"1.10.0\" is greater than \"1.2.0\" (10 > 2), even though \"10\" sorts before \"2\" lexically. Versions with different numbers of components compare as if the shorter one is padded with trailing zeros, so \"1.2\" equals \"1.2.0\". There's a test showing the basic shape. Handle versions of any length.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "4ee956f0e2ed555c3dfc088f9db8642c80ae0e37"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::newer_patch_is_greater ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q56 v0.1.0 (D:\\ac\\q56-Q56\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.39s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q56-793e22f3993ee7e5.exe)\nDoc-tests q56",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "4ee956f0e2ed555c3dfc088f9db8642c80ae0e37"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "4ee956f0e2ed555c3dfc088f9db8642c80ae0e37"
+      }
+    ]
+  },
+  "title": "Implement `compare_versions(a, b)` in src/lib.rs"
+}

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q15 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex 2713172..a087d38 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -4,8 +4,10 @@ def retry(func, attempts):\n     Return its result the first time it succeeds. If every attempt raises,\n     re-raise the exception from the last attempt.\n     \"\"\"\n+    last_exc = None\n     for _ in range(attempts):\n         try:\n             return func()\n-        except Exception:\n-            pass\n+        except Exception as exc:\n+            last_exc = exc\n+    raise last_exc\n",
+  "prompt": "The `retry` helper in solution.py calls a function up to `attempts` times and should return the first successful result. But if every attempt fails, it silently returns None instead of surfacing the error — callers can't tell the difference between \"succeeded with None\" and \"gave up\". Fix it so that when all attempts fail it re-raises the exception from the final attempt. It should still return immediately on the first success and not call the function more times than necessary. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "5e8b5efcb4227609029819ff313e0fb95cd27e18"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.25s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "5e8b5efcb4227609029819ff313e0fb95cd27e18"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "5e8b5efcb4227609029819ff313e0fb95cd27e18"
+      }
+    ]
+  },
+  "title": "The `retry` helper in solution.py calls a function up to `attempts` times and"
+}

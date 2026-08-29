@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "k/round_at_the_line_not_the_total",
+  "lang": "python",
+  "patch": "diff --git a/billing/pricing.py b/billing/pricing.py\nnew file mode 100644\nindex 0000000..296c074\n--- /dev/null\n+++ b/billing/pricing.py\n@@ -0,0 +1,94 @@\n+\"\"\"Line-item pricing: quantity, unit price, discount, tax.\n+\n+One line's arithmetic, in order:\n+\n+    subtotal = qty * unit_price\n+    discount = subtotal * discount_rate\n+    net      = subtotal - discount\n+    tax      = net * tax_rate\n+    total    = net + tax\n+\n+Each of those is a float. `money.quantize` is what turns a computed float into\n+a chargeable amount; see docs/money.md for where that has to happen and why.\n+\"\"\"\n+\n+from . import money\n+\n+\n+class Line:\n+    \"\"\"One priced line on an invoice.\"\"\"\n+\n+    def __init__(self, sku, description, qty, unit_price, discount_rate, tax_rate):\n+        self.sku = sku\n+        self.description = description\n+        self.qty = qty\n+        self.unit_price = unit_price\n+        self.discount_rate = discount_rate\n+        self.tax_rate = tax_rate\n+\n+    @property\n+    def subtotal(self):\n+        return self.qty * self.unit_price\n+\n+    @property\n+    def discount(self):\n+        return self.subtotal * self.discount_rate\n+\n+    @property\n+    def net(self):\n+        return self.subtotal - self.discount\n+\n+    @property\n+    def tax(self):\n+        return self.net * self.tax_rate\n+\n+    @property\n+    def total(self):\n+        \"\"\"The amount this line contributes to the invoice.\n+\n+        Returned as computed. The caller decides what to do about precision.\n+        \"\"\"\n+        return self.net + self.tax\n+\n+    def __repr__(self):\n+        return \"Line(%s x%d @ %.4f -> %.6f)\" % (\n+            self.sku,\n+            self.qty,\n+            self.unit_price,\n+            self.total,\n+        )\n+\n+\n+def price_line(item, catalog_entry, tax_rate):\n+    \"\"\"Build a priced Line from an order item and its catalogue entry.\"\"\"\n+    return Line(\n+        sku=catalog_entry.sku,\n+        description=catalog_entry.description,\n+        qty=item[\"qty\"],\n+        unit_price=catalog_entry.unit_price,\n+        discount_rate=item.get(\"discount_rate\", 0.0),\n+        tax_rate=tax_rate,\n+    )\n+\n+\n+def price_all(items, catalog, tax_rate):\n+    \"\"\"Price every item in an order. Unknown SKUs raise rather than being skipped.\"\"\"\n+    lines = []\n+    for item in items:\n+        entry = catalog.get(item[\"sku\"])\n+        if entry is None:\n+            raise KeyError(\"unknown sku %r\" % (item[\"sku\"],))\n+        lines.append(price_line(item, entry, tax_rate))\n+    return lines\n+\n+\n+def total_of(lines):\n+    \"\"\"Sum priced lines into an invoice total.\n+\n+    Sums the lines' computed totals and reduces the result to a chargeable\n+    amount once, at the end.\n+    \"\"\"\n+    running = 0.0\n+    for line in lines:\n+        running += line.total\n+    return money.quantize(running)\n",
+  "prompt": "A customer has queried invoice INV-1005 and they are right.\n\nThe receipt prints its per-line amounts, and if you add them up you get\n£4888.00. The TOTAL line on the same receipt says £4887.99. One penny, but it is\nthe third time this quarter and finance want it dealt with properly rather than\ncredited again.\n\nYou can reproduce it with:\n\n    python3 run.py data/orders.json\n\nFix the billing code so this cannot happen. When you are done,\n`python3 run.py data/orders.json` must complete successfully and every invoice\nit prints must be internally consistent — the per-line amounts it shows must add\nup to the total it shows.\n\nDo not change `data/orders.json`, and do not change the output format: the\nreceipt's line shapes are parsed downstream and are part of the contract.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: billing/pricing.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "256ffe77ed58472b1960a22c22cc33b470f12e9e"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 18,
+          "run": 18
+        },
+        "detail": "..................                                                       [100%]\n18 passed in 0.26s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "256ffe77ed58472b1960a22c22cc33b470f12e9e"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "256ffe77ed58472b1960a22c22cc33b470f12e9e"
+      }
+    ]
+  },
+  "title": "one invoice is off by a penny, and eight of eighteen are wrong"
+}

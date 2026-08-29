@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q14",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nnew file mode 100644\nindex 0000000..cd955ec\n--- /dev/null\n+++ b/solution.py\n@@ -0,0 +1,11 @@\n+def deep_merge(a, b):\n+    \"\"\"Merge dict b into dict a and return the merged result.\n+\n+    Values from b take precedence over a. Nested dictionaries should be\n+    merged recursively rather than replaced wholesale, and neither input\n+    should be modified.\n+    \"\"\"\n+    result = a\n+    for key, value in b.items():\n+        result[key] = value\n+    return result\n",
+  "prompt": "The `deep_merge` function in solution.py is supposed to merge two config dictionaries, with the second one's values winning, and nested dictionaries merged recursively. Right now it has problems: nested dicts get clobbered instead of merged, and it modifies the dictionaries passed in. Fix it so nested dicts merge recursively and neither input dict is mutated. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "477e199086d5d357cdd510ad87eb4e54f79da225"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.20s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "477e199086d5d357cdd510ad87eb4e54f79da225"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "477e199086d5d357cdd510ad87eb4e54f79da225"
+      }
+    ]
+  },
+  "title": "The `deep_merge` function in solution.py is supposed to merge two config"
+}

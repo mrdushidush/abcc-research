@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q45",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nnew file mode 100644\nindex 0000000..91cd472\n--- /dev/null\n+++ b/solution.sh\n@@ -0,0 +1,3 @@\n+#!/usr/bin/env bash\n+# Strip comment and blank lines from stdin.\n+grep -v '^#'\n",
+  "prompt": "The script solution.sh is supposed to strip comment lines and blank lines out of stdin, printing the rest unchanged. A comment line is one whose first non-whitespace character is '#' (so it may be indented), and a blank line is one that is empty or only whitespace. Right now it only removes comments that start with '#' at the very first column, and it leaves blank and indented-comment lines in. Fix it. Note that a '#' appearing later in a line (like an inline comment after code) must NOT cause the line to be dropped. Run it like: bash solution.sh < input.txt",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "a8bb82495858d7d3cd85a36baa014d492af4b7a9"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "a8bb82495858d7d3cd85a36baa014d492af4b7a9"
+      }
+    ]
+  },
+  "title": "The script solution.sh is supposed to strip comment lines and blank lines out"
+}

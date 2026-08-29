@@ -1,0 +1,37 @@
+{
+  "headline": {
+    "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::accepts_a_normal_address\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q10 v0.1.0 (D:\\ac\\q56-Q10\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.27s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q10-286c14488df0cfa8.exe)",
+    "headline": "red",
+    "rung": "acceptance"
+  },
+  "id": "q56/Q10",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nnew file mode 100644\nindex 0000000..085b2a8\n--- /dev/null\n+++ b/src/lib.rs\n@@ -0,0 +1,18 @@\n+//! IPv4 address validation.\n+\n+/// Return true iff `s` is a valid dotted-quad IPv4 address,\n+/// e.g. `is_valid_ipv4(\"192.168.0.1\")` is true.\n+pub fn is_valid_ipv4(_s: &str) -> bool {\n+    // TODO: implement\n+    false\n+}\n+\n+#[cfg(test)]\n+mod tests {\n+    use super::*;\n+\n+    #[test]\n+    fn accepts_a_normal_address() {\n+        assert!(is_valid_ipv4(\"192.168.0.1\"));\n+    }\n+}\n",
+  "prompt": "Implement `is_valid_ipv4` in src/lib.rs. It takes a string and returns true only if it's a valid IPv4 address in dotted-quad form, like \"192.168.0.1\". There's a test for a normal address. Reject anything that isn't a genuine, canonical IPv4 address.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "b818e1456634b4bd2e5c2674976b855ac46f2e6c"
+      },
+      {
+        "counts": {
+          "failed": 1,
+          "passed": 0,
+          "run": 1
+        },
+        "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::accepts_a_normal_address\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q10 v0.1.0 (D:\\ac\\q56-Q10\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.27s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q10-286c14488df0cfa8.exe)",
+        "exit": 101,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "b818e1456634b4bd2e5c2674976b855ac46f2e6c"
+      }
+    ]
+  },
+  "title": "Implement `is_valid_ipv4` in src/lib.rs"
+}

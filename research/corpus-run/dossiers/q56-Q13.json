@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q13",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nnew file mode 100644\nindex 0000000..a9feb1f\n--- /dev/null\n+++ b/solution.py\n@@ -0,0 +1,6 @@\n+def parse_csv_line(line):\n+    \"\"\"Parse a single CSV line into a list of field strings.\n+\n+    e.g. parse_csv_line('a,b,c') -> ['a', 'b', 'c']\n+    \"\"\"\n+    return line.split(\",\")\n",
+  "prompt": "The `parse_csv_line` function in solution.py splits a CSV line into fields, but it only handles the simplest case. Make it parse a single line of real CSV properly: a field wrapped in double quotes may contain commas, and inside a quoted field a doubled \"\" means a literal double-quote character. For example a,\"b,c\",d has three fields: a, then b,c, then d. The existing test should still pass.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "f18910be869481cf1b9cf176a979e9ec4a8832ee"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.21s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "f18910be869481cf1b9cf176a979e9ec4a8832ee"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "f18910be869481cf1b9cf176a979e9ec4a8832ee"
+      }
+    ]
+  },
+  "title": "The `parse_csv_line` function in solution.py splits a CSV line into fields, but"
+}

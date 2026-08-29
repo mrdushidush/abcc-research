@@ -1,0 +1,37 @@
+{
+  "headline": {
+    "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::decodes_small\ntests::encodes_small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q09 v0.1.0 (D:\\ac\\q56-Q09\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.29s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q09-0c77f0a6781f6842.exe)",
+    "headline": "red",
+    "rung": "acceptance"
+  },
+  "id": "q56/Q09",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nnew file mode 100644\nindex 0000000..a9da4c8\n--- /dev/null\n+++ b/src/lib.rs\n@@ -0,0 +1,31 @@\n+//! Run-length encoding of lowercase-letter strings.\n+//!\n+//! Each maximal run of a character `c` repeated `n` times is written as the\n+//! character followed by the decimal count, e.g. \"aaabb\" <-> \"a3b2\".\n+\n+/// Encode a string of lowercase letters using run-length encoding.\n+pub fn rle_encode(_s: &str) -> String {\n+    // TODO: implement\n+    String::new()\n+}\n+\n+/// Decode a run-length-encoded string back to its original form.\n+pub fn rle_decode(_s: &str) -> String {\n+    // TODO: implement\n+    String::new()\n+}\n+\n+#[cfg(test)]\n+mod tests {\n+    use super::*;\n+\n+    #[test]\n+    fn encodes_small() {\n+        assert_eq!(rle_encode(\"aaabb\"), \"a3b2\");\n+    }\n+\n+    #[test]\n+    fn decodes_small() {\n+        assert_eq!(rle_decode(\"a3b2\"), \"aaabb\");\n+    }\n+}\n",
+  "prompt": "Implement the two run-length-coding functions in src/lib.rs: `rle_encode` and `rle_decode`. A run of a character repeated n times is written as that character followed by the count — for example \"aaabb\" encodes to \"a3b2\". Decoding reverses it. The input to encode is lowercase letters. The two functions should round-trip any such input, and decode should correctly reverse whatever encode produces. There are tests showing the basic shape.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d2b38a41d3ec2d7325ca2522d2d1f0d454e98461"
+      },
+      {
+        "counts": {
+          "failed": 2,
+          "passed": 0,
+          "run": 2
+        },
+        "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::decodes_small\ntests::encodes_small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q09 v0.1.0 (D:\\ac\\q56-Q09\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.29s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q09-0c77f0a6781f6842.exe)",
+        "exit": 101,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d2b38a41d3ec2d7325ca2522d2d1f0d454e98461"
+      }
+    ]
+  },
+  "title": "Implement the two run-length-coding functions in src/lib.rs: `rle_encode` and"
+}

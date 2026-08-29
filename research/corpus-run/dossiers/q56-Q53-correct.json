@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q53 (correct)",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nindex 6df2be5..c915e6e 100644\n--- a/solution.mjs\n+++ b/solution.mjs\n@@ -1,4 +1,51 @@\n export function parseCsv(text) {\n-  // TODO: implement a proper multi-line CSV parser\n-  return [];\n+  const rows = [];\n+  let row = [];\n+  let field = \"\";\n+  let inQuotes = false;\n+  let i = 0;\n+  const n = text.length;\n+\n+  while (i < n) {\n+    const c = text[i];\n+    if (inQuotes) {\n+      if (c === '\"') {\n+        if (text[i + 1] === '\"') {\n+          field += '\"';\n+          i += 2;\n+          continue;\n+        }\n+        inQuotes = false;\n+        i += 1;\n+        continue;\n+      }\n+      field += c;\n+      i += 1;\n+      continue;\n+    }\n+    if (c === '\"') {\n+      inQuotes = true;\n+      i += 1;\n+    } else if (c === \",\") {\n+      row.push(field);\n+      field = \"\";\n+      i += 1;\n+    } else if (c === \"\\n\" || c === \"\\r\") {\n+      row.push(field);\n+      field = \"\";\n+      rows.push(row);\n+      row = [];\n+      i += c === \"\\r\" && text[i + 1] === \"\\n\" ? 2 : 1;\n+    } else {\n+      field += c;\n+      i += 1;\n+    }\n+  }\n+\n+  // Flush a final unterminated row (but not a phantom row after a trailing newline).\n+  if (field !== \"\" || row.length > 0) {\n+    row.push(field);\n+    rows.push(row);\n+  }\n+  return rows;\n }\n",
+  "prompt": "Implement `parseCsv(text)` in solution.mjs — a parser for multi-line CSV text that returns an array of rows, each row an array of field strings. It needs to handle real CSV properly: fields may be wrapped in double quotes, a quoted field can contain commas AND newlines, and a doubled \"\" inside a quoted field is a literal double-quote. Lines may be separated by \"\\n\" or \"\\r\\n\". A single trailing newline at the end of the input should not produce an extra empty row. For example parseCsv('a,\"b,c\",d') is [[\"a\",\"b,c\",\"d\"]]. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "81d0b84793170fd3fe98723cf1fa906ff6eae8d7"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "81d0b84793170fd3fe98723cf1fa906ff6eae8d7"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "81d0b84793170fd3fe98723cf1fa906ff6eae8d7"
+      }
+    ]
+  },
+  "title": "Implement `parseCsv(text)` in solution.mjs — a parser for multi-line CSV text"
+}

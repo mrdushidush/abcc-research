@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q40 (correct)",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nindex a2dd6e6..5b735cc 100644\n--- a/solution.ts\n+++ b/solution.ts\n@@ -1,8 +1,36 @@\n type Listener = (...args: unknown[]) => void;\n \n export class EventEmitter {\n-  on(_event: string, _listener: Listener): void {}\n-  off(_event: string, _listener: Listener): void {}\n-  emit(_event: string, ..._args: unknown[]): void {}\n-  once(_event: string, _listener: Listener): void {}\n+  private listeners: Map<string, Listener[]> = new Map();\n+\n+  on(event: string, listener: Listener): void {\n+    const arr = this.listeners.get(event) ?? [];\n+    arr.push(listener);\n+    this.listeners.set(event, arr);\n+  }\n+\n+  off(event: string, listener: Listener): void {\n+    const arr = this.listeners.get(event);\n+    if (!arr) return;\n+    this.listeners.set(\n+      event,\n+      arr.filter((l) => l !== listener),\n+    );\n+  }\n+\n+  emit(event: string, ...args: unknown[]): void {\n+    const arr = this.listeners.get(event);\n+    if (!arr) return;\n+    for (const listener of [...arr]) {\n+      listener(...args);\n+    }\n+  }\n+\n+  once(event: string, listener: Listener): void {\n+    const wrapper: Listener = (...args) => {\n+      this.off(event, wrapper);\n+      listener(...args);\n+    };\n+    this.on(event, wrapper);\n+  }\n }\n",
+  "prompt": "Implement the `EventEmitter` class in solution.ts. It should support: `on(event, listener)` to register a listener; `emit(event, ...args)` to call every listener registered for that event, in the order they were added, passing the args along; `off(event, listener)` to remove a specific listener; and `once(event, listener)` to register a listener that fires at most once and then removes itself. Emitting an event with no listeners should simply do nothing. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "0d2b20fc8687d63ff251c9e93cd01d7742c8e72d"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "0d2b20fc8687d63ff251c9e93cd01d7742c8e72d"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "0d2b20fc8687d63ff251c9e93cd01d7742c8e72d"
+      }
+    ]
+  },
+  "title": "Implement the `EventEmitter` class in solution.ts"
+}

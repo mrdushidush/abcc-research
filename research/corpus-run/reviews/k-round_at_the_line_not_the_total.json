@@ -1,0 +1,27 @@
+{
+  "brief_chars": 5361,
+  "completion_tokens": 5847,
+  "ending": "answered",
+  "events": 13,
+  "id": "k/round_at_the_line_not_the_total",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1968,
+  "raw": "{\n  \"assessment\": \"This change introduces `billing/pricing.py` to encapsulate line-item arithmetic and invoice total computation, moving pricing logic out of the main runner. While it cleanly separates concerns, the summation strategy in `total_of` leaves per-line amounts as unrounded floats until a single final quantization step. Because the receipt prints each line rounded to two decimal places, this delayed rounding allows floating-point drift between what is displayed per-line and what is computed for the invoice total.\",\n  \"findings\": [\n    {\n      \"actual\": \"The sum of printed per-line amounts differs by ±£0.01 from the invoice TOTAL line (e.g., £4888.00 vs £4887.99).\",\n      \"at\": \"Each line is quantized individually before accumulation in `total_of`, and intermediate float calculations are explicitly documented as floats, so rounding drift across multiple lines will inevitably cause the final quantized total to diverge from the sum of printed per-line amounts.\",\n      \"call\": \"python3 run.py data/orders.json\",\n      \"defect\": \"`billing/pricing.py`: `total_of` accumulates raw float `line.total` values and applies `money.quantize` only once at the end. Because the receipt prints each line rounded to two decimal places, summing those printed values will frequently differ by ±£0.01 from the final quantized total due to rounding drift across multiple lines.\",\n      \"expected\": \"The invoice TOTAL line exactly matches the arithmetic sum of its printed per-line amounts.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 5496,
+  "review": {
+    "assessment": "This change introduces `billing/pricing.py` to encapsulate line-item arithmetic and invoice total computation, moving pricing logic out of the main runner. While it cleanly separates concerns, the summation strategy in `total_of` leaves per-line amounts as unrounded floats until a single final quantization step. Because the receipt prints each line rounded to two decimal places, this delayed rounding allows floating-point drift between what is displayed per-line and what is computed for the invoice total.",
+    "findings": [
+      {
+        "actual": "The sum of printed per-line amounts differs by ±£0.01 from the invoice TOTAL line (e.g., £4888.00 vs £4887.99).",
+        "at": "Each line is quantized individually before accumulation in `total_of`, and intermediate float calculations are explicitly documented as floats, so rounding drift across multiple lines will inevitably cause the final quantized total to diverge from the sum of printed per-line amounts.",
+        "call": "python3 run.py data/orders.json",
+        "defect": "`billing/pricing.py`: `total_of` accumulates raw float `line.total` values and applies `money.quantize` only once at the end. Because the receipt prints each line rounded to two decimal places, summing those printed values will frequently differ by ±£0.01 from the final quantized total due to rounding drift across multiple lines.",
+        "expected": "The invoice TOTAL line exactly matches the arithmetic sum of its printed per-line amounts."
+      }
+    ]
+  },
+  "seconds": 92.84353637695312,
+  "trace": "Closed",
+  "turns": 1
+}

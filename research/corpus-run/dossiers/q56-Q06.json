@@ -1,0 +1,37 @@
+{
+  "headline": {
+    "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::compound\ntests::small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q06 v0.1.0 (D:\\ac\\q56-Q06\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q06-b1712c12f2e307cc.exe)",
+    "headline": "red",
+    "rung": "acceptance"
+  },
+  "id": "q56/Q06",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nnew file mode 100644\nindex 0000000..c742498\n--- /dev/null\n+++ b/src/lib.rs\n@@ -0,0 +1,24 @@\n+//! Roman numeral formatting.\n+\n+/// Convert an integer in the range 1..=3999 to its Roman numeral form.\n+///\n+/// e.g. `int_to_roman(4)` is \"IV\", `int_to_roman(58)` is \"LVIII\".\n+pub fn int_to_roman(_n: u32) -> String {\n+    // TODO: implement\n+    String::new()\n+}\n+\n+#[cfg(test)]\n+mod tests {\n+    use super::*;\n+\n+    #[test]\n+    fn small() {\n+        assert_eq!(int_to_roman(4), \"IV\");\n+    }\n+\n+    #[test]\n+    fn compound() {\n+        assert_eq!(int_to_roman(58), \"LVIII\");\n+    }\n+}\n",
+  "prompt": "Implement `int_to_roman` in src/lib.rs. It converts an integer between 1 and 3999 into its Roman numeral string — for example 4 is \"IV\" and 58 is \"LVIII\". The two tests in the file show the shape. It needs to produce correct numerals across the whole range.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "369bc95faf0521aa0f794e42aa81f8b16efc5bc0"
+      },
+      {
+        "counts": {
+          "failed": 2,
+          "passed": 0,
+          "run": 2
+        },
+        "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::compound\ntests::small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q06 v0.1.0 (D:\\ac\\q56-Q06\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q06-b1712c12f2e307cc.exe)",
+        "exit": 101,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "369bc95faf0521aa0f794e42aa81f8b16efc5bc0"
+      }
+    ]
+  },
+  "title": "Implement `int_to_roman` in src/lib.rs"
+}

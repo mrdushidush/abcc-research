@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "k/finish_the_cancelled_status (correct)",
+  "lang": "python",
+  "patch": "diff --git a/jobs/charges.py b/jobs/charges.py\nindex 65bfeaa..a0bd7e1 100644\n--- a/jobs/charges.py\n+++ b/jobs/charges.py\n@@ -28,7 +28,9 @@ def is_chargeable(job):\n \n     A failed job is not charged — the customer got nothing.\n     \"\"\"\n-    if job.status == st.FAILED:\n+    # Cancelled work is not billed either: the customer told us to stop, and\n+    # the partial compute is absorbed (docs/status_lifecycle.md).\n+    if job.status in (st.FAILED, st.CANCELLED):\n         return False\n     return job.cpu_seconds > 0\n \ndiff --git a/jobs/retry.py b/jobs/retry.py\nindex b2ab739..ebf72d0 100644\n--- a/jobs/retry.py\n+++ b/jobs/retry.py\n@@ -20,6 +20,10 @@ def should_retry(job):\n     \"\"\"\n     if job.status == st.DONE:\n         return False\n+    # A cancellation is an operator instruction. Requeueing it overrides them\n+    # (docs/status_lifecycle.md item 4, the one with a support ticket attached).\n+    if job.status == st.CANCELLED:\n+        return False\n     if job.attempts >= MAX_ATTEMPTS:\n         return False\n     if job.kind not in RETRYABLE_KINDS:\ndiff --git a/jobs/sla.py b/jobs/sla.py\nindex 06f4e01..d27ead1 100644\n--- a/jobs/sla.py\n+++ b/jobs/sla.py\n@@ -23,7 +23,9 @@ def finished_at(job, now):\n     is measured against the current time, because an unfinished job keeps\n     accruing.\n     \"\"\"\n-    if job.status in (st.DONE, st.FAILED):\n+    # Every TERMINAL status is measured at its end time, cancellation included:\n+    # the clock stops when the operator stops the job (docs/status_lifecycle.md).\n+    if st.is_terminal(job.status):\n         return job.ended_at if job.ended_at is not None else now\n     return now\n \ndiff --git a/jobs/summary.py b/jobs/summary.py\nindex 8783bc2..41a9982 100644\n--- a/jobs/summary.py\n+++ b/jobs/summary.py\n@@ -7,7 +7,7 @@ looks at.\n \n from . import status as st\n \n-BUCKETS = (\"queued\", \"running\", \"done\", \"failed\", \"other\")\n+BUCKETS = (\"queued\", \"running\", \"done\", \"failed\", \"cancelled\", \"other\")\n \n \n def counts(jobs):\n@@ -22,6 +22,8 @@ def counts(jobs):\n             out[\"done\"] += 1\n         elif job.status == st.FAILED:\n             out[\"failed\"] += 1\n+        elif job.status == st.CANCELLED:\n+            out[\"cancelled\"] += 1\n         else:\n             out[\"other\"] += 1\n     return out\n",
+  "prompt": "Support ticket from operations:\n\n  \"Since 4.2 the SLA report is full of jobs we cancelled ourselves. J-017 was\n  cancelled two minutes after it started and the report says it's over its SLA\n  by twenty-four hours. We can't use this report to find real problems any more.\"\n\nThey are right. Reproduce it with:\n\n    python3 run.py data/jobs.json\n\n`cancelled` was added as a status in 4.2. Finish the job properly: make the\nservice treat a cancelled job correctly everywhere it makes a decision based on\nstatus, not only in the report operations complained about.\n\n`docs/status_lifecycle.md` is the specification for what each status means.\n\nDo not change `data/jobs.json`.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "4 file(s) changed: jobs/charges.py, jobs/retry.py, jobs/sla.py, jobs/summary.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "4712c1061b9f3e6d9bfcbb70b3990315a85a52e1"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 24,
+          "run": 24
+        },
+        "detail": "........................                                                 [100%]\n24 passed in 0.30s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "4712c1061b9f3e6d9bfcbb70b3990315a85a52e1"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "4712c1061b9f3e6d9bfcbb70b3990315a85a52e1"
+      }
+    ]
+  },
+  "title": "a status was added to the vocabulary and to one consumer of six"
+}

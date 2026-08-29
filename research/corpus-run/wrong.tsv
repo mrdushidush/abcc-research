@@ -1,0 +1,60 @@
+task	lang	verdict	detail	seconds
+q56/Q01	rust	RED	refused-by:acceptance	0.42
+q56/Q02	rust	RED	refused-by:acceptance	0.42
+q56/Q03	rust	GREEN		0.50
+q56/Q04	rust	GREEN		0.57
+q56/Q05	rust	UNVERIFIED	acceptance:nothing-to-run	0.86
+q56/Q06	rust	RED	refused-by:acceptance	0.42
+q56/Q07	rust	GREEN		0.82
+q56/Q08	rust	GREEN		0.63
+q56/Q09	rust	RED	refused-by:acceptance	0.43
+q56/Q10	rust	RED	refused-by:acceptance	0.41
+q56/Q11	rust	UNVERIFIED	acceptance:nothing-to-run	0.41
+q56/Q12	rust	GREEN		0.47
+q56/Q13	python	GREEN		0.67
+q56/Q14	python	GREEN		0.67
+q56/Q15	python	GREEN		0.68
+q56/Q16	python	GREEN		0.69
+q56/Q17	python	GREEN		0.66
+q56/Q18	python	GREEN		0.67
+q56/Q19	python	GREEN		0.67
+q56/Q20	python	GREEN		0.68
+q56/Q21	python	GREEN		0.67
+q56/Q22	python	GREEN		0.67
+q56/Q23	python	GREEN		0.67
+q56/Q24	python	RED	refused-by:acceptance	0.72
+q56/Q25	python	GREEN		0.67
+q56/Q26	node	GREEN		0.07
+q56/Q27	node	GREEN		0.07
+q56/Q28	node	GREEN		0.07
+q56/Q29	node	GREEN		0.07
+q56/Q30	node	GREEN		0.07
+q56/Q31	node	RED	refused-by:acceptance	0.07
+q56/Q32	node	GREEN		0.08
+q56/Q33	node	GREEN		0.07
+q56/Q34	node	GREEN		0.07
+q56/Q35	typescript	GREEN		0.11
+q56/Q36	typescript	GREEN		0.11
+q56/Q37	typescript	GREEN		0.12
+q56/Q38	typescript	GREEN		0.10
+q56/Q39	typescript	GREEN		0.10
+q56/Q40	typescript	RED	refused-by:acceptance	0.10
+q56/Q41	typescript	GREEN		0.10
+q56/Q42	typescript	GREEN		0.10
+q56/Q43	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q44	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q45	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q46	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q47	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q48	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q49	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q50	shell	UNVERIFIED	acceptance:nothing-to-run	0.02
+q56/Q51	python	RED	refused-by:acceptance	0.74
+q56/Q52	rust	UNVERIFIED	acceptance:nothing-to-run	0.43
+q56/Q53	node	RED	refused-by:acceptance	0.07
+q56/Q54	python	RED	refused-by:acceptance	0.75
+q56/Q55	typescript	RED	refused-by:acceptance	0.11
+q56/Q56	rust	RED	refused-by:acceptance	0.42
+k/finish_the_cancelled_status	python	GREEN		0.73
+k/round_at_the_line_not_the_total	python	GREEN		0.71
+k/trace_dropped_samples	python	GREEN		0.72

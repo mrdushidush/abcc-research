@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q10 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex 085b2a8..c8cf579 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -2,9 +2,26 @@\n \n /// Return true iff `s` is a valid dotted-quad IPv4 address,\n /// e.g. `is_valid_ipv4(\"192.168.0.1\")` is true.\n-pub fn is_valid_ipv4(_s: &str) -> bool {\n-    // TODO: implement\n-    false\n+pub fn is_valid_ipv4(s: &str) -> bool {\n+    let octets: Vec<&str> = s.split('.').collect();\n+    if octets.len() != 4 {\n+        return false;\n+    }\n+    for octet in octets {\n+        // must be 1..=3 ASCII digits\n+        if octet.is_empty() || octet.len() > 3 || !octet.bytes().all(|b| b.is_ascii_digit()) {\n+            return false;\n+        }\n+        // no leading zeros (\"0\" alone is fine; \"01\" is not)\n+        if octet.len() > 1 && octet.starts_with('0') {\n+            return false;\n+        }\n+        match octet.parse::<u32>() {\n+            Ok(n) if n <= 255 => {}\n+            _ => return false,\n+        }\n+    }\n+    true\n }\n \n #[cfg(test)]\n",
+  "prompt": "Implement `is_valid_ipv4` in src/lib.rs. It takes a string and returns true only if it's a valid IPv4 address in dotted-quad form, like \"192.168.0.1\". There's a test for a normal address. Reject anything that isn't a genuine, canonical IPv4 address.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "c354d82a9d5cf134bea0270bbc01c3198dce4a56"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::accepts_a_normal_address ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q10 v0.1.0 (D:\\ac\\q56-Q10\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.51s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q10-286c14488df0cfa8.exe)\nDoc-tests q10",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "c354d82a9d5cf134bea0270bbc01c3198dce4a56"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "c354d82a9d5cf134bea0270bbc01c3198dce4a56"
+      }
+    ]
+  },
+  "title": "Implement `is_valid_ipv4` in src/lib.rs"
+}

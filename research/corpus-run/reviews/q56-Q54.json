@@ -1,0 +1,27 @@
+{
+  "brief_chars": 2975,
+  "completion_tokens": 1511,
+  "ending": "answered",
+  "events": 6,
+  "id": "q56/Q54",
+  "ladder": "RED",
+  "lang": "python",
+  "prompt_tokens": 1248,
+  "raw": "{\n  \"assessment\": \"This change creates solution.py with only a stub definition for topological_sort, which immediately raises NotImplementedError on any invocation. It does not implement any graph traversal, dependency resolution, or cycle detection logic. Consequently, every test that calls the function fails instantly rather than validating behavior.\",\n  \"findings\": [\n    {\n      \"actual\": \"NotImplementedError\",\n      \"at\": \"solution.py:8\",\n      \"call\": \"python -c \\\"from solution import topological_sort; print(topological_sort({'b': ['a'], 'a': []}))\\\"\",\n      \"defect\": \"Function body is unimplemented and raises NotImplementedError immediately.\",\n      \"expected\": \"[\\\"a\\\", \\\"b\\\"]\"\n    }\n  ]\n}",
+  "reasoning_tokens": 1343,
+  "review": {
+    "assessment": "This change creates solution.py with only a stub definition for topological_sort, which immediately raises NotImplementedError on any invocation. It does not implement any graph traversal, dependency resolution, or cycle detection logic. Consequently, every test that calls the function fails instantly rather than validating behavior.",
+    "findings": [
+      {
+        "actual": "NotImplementedError",
+        "at": "solution.py:8",
+        "call": "python -c \"from solution import topological_sort; print(topological_sort({'b': ['a'], 'a': []}))\"",
+        "defect": "Function body is unimplemented and raises NotImplementedError immediately.",
+        "expected": "[\"a\", \"b\"]"
+      }
+    ]
+  },
+  "seconds": 21.5786190032959,
+  "trace": "Closed",
+  "turns": 1
+}

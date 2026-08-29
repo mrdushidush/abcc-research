@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q54 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex c3201bc..eb44ba1 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,8 +1,34 @@\n+import heapq\n+from collections import defaultdict\n+\n+\n def topological_sort(deps):\n     \"\"\"Order nodes so each comes after everything it depends on.\n \n-    `deps` maps a node to the list of nodes it depends on (which must come\n-    before it). Returns a list of all nodes in dependency order, or None if the\n-    dependencies contain a cycle.\n+    Ties are broken alphabetically for determinism. Returns None on a cycle.\n     \"\"\"\n-    raise NotImplementedError\n+    nodes = set(deps)\n+    for requires in deps.values():\n+        nodes.update(requires)\n+\n+    indegree = {n: 0 for n in nodes}\n+    dependents = defaultdict(list)\n+    for node, requires in deps.items():\n+        for dep in requires:\n+            dependents[dep].append(node)\n+            indegree[node] += 1\n+\n+    heap = [n for n in nodes if indegree[n] == 0]\n+    heapq.heapify(heap)\n+    result = []\n+    while heap:\n+        node = heapq.heappop(heap)\n+        result.append(node)\n+        for dependent in dependents[node]:\n+            indegree[dependent] -= 1\n+            if indegree[dependent] == 0:\n+                heapq.heappush(heap, dependent)\n+\n+    if len(result) != len(nodes):\n+        return None  # a cycle left some nodes unresolved\n+    return result\n",
+  "prompt": "Implement `topological_sort(deps)` in solution.py. `deps` is a dict mapping each node to a list of the nodes it depends on (its dependencies must appear before it in the output). Return a list of ALL nodes in a valid dependency order. When several nodes are equally free to come next, pick them in alphabetical order so the result is deterministic. If the dependencies contain a cycle, return None. Note that a node can appear only as someone else's dependency (never as a key) and still must be included in the output. The test shows the basic chain shape.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "3806326eddef96ce4e0855e6a9b090ed35f94220"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.27s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "3806326eddef96ce4e0855e6a9b090ed35f94220"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "3806326eddef96ce4e0855e6a9b090ed35f94220"
+      }
+    ]
+  },
+  "title": "Implement `topological_sort(deps)` in solution.py"
+}

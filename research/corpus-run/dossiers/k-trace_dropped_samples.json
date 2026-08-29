@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "k/trace_dropped_samples",
+  "lang": "python",
+  "patch": "diff --git a/pipeline/ingest.py b/pipeline/ingest.py\nnew file mode 100644\nindex 0000000..be24468\n--- /dev/null\n+++ b/pipeline/ingest.py\n@@ -0,0 +1,77 @@\n+\"\"\"Ingest: turn raw device records into accepted samples, with drop accounting.\n+\n+Every rejection is counted against a reason code from `constants.DROP_REASONS`\n+so the report can say what was thrown away and why. A silent drop here is the\n+worst failure mode this pipeline has: the numbers downstream stay plausible.\n+\"\"\"\n+\n+from . import constants, normalize, validate\n+\n+\n+class Accepted:\n+    \"\"\"Accepted samples plus the drop counters that explain the ones missing.\"\"\"\n+\n+    def __init__(self):\n+        self.samples = []\n+        self.drops = {reason: 0 for reason in constants.DROP_REASONS}\n+        self.degraded = 0\n+\n+    def keep(self, rec):\n+        self.samples.append(rec)\n+        if rec[constants.FLAG_KEY] in constants.DEGRADED_FLAGS:\n+            self.degraded += 1\n+\n+    def drop(self, reason):\n+        self.drops[reason] = self.drops.get(reason, 0) + 1\n+\n+    def total_dropped(self):\n+        return sum(self.drops.values())\n+\n+    def __len__(self):\n+        return len(self.samples)\n+\n+\n+def accept(raw_records, settings):\n+    \"\"\"Filter `raw_records` down to the samples the roll-up will use.\n+\n+    Order of checks is deliberate: cheapest and most decisive first, so a\n+    malformed record never reaches a bounds check that would raise on it.\n+    \"\"\"\n+    out = Accepted()\n+\n+    for raw in raw_records:\n+        rec = normalize.canonical_record(raw)\n+\n+        if constants.TIMESTAMP_KEY not in rec or constants.VALUE_KEY not in rec:\n+            out.drop(constants.DROP_MALFORMED)\n+            continue\n+\n+        try:\n+            rec[constants.TIMESTAMP_KEY] = int(rec[constants.TIMESTAMP_KEY])\n+            rec[constants.VALUE_KEY] = float(rec[constants.VALUE_KEY])\n+        except (TypeError, ValueError):\n+            out.drop(constants.DROP_MALFORMED)\n+            continue\n+\n+        channel = normalize.canonical_channel(rec.get(constants.CHANNEL_KEY))\n+        rec[constants.CHANNEL_KEY] = channel\n+        if channel not in constants.KNOWN_CHANNELS:\n+            out.drop(constants.DROP_UNKNOWN_CHANNEL)\n+            continue\n+\n+        # Quality gate. VALID_FLAGS is written in rev A's lower-case spelling.\n+        flag = rec.get(constants.FLAG_KEY)\n+        if flag not in constants.VALID_FLAGS:\n+            out.drop(constants.DROP_BAD_FLAG)\n+            continue\n+        rec[constants.FLAG_KEY] = flag\n+\n+        rec[constants.DEVICE_KEY] = str(rec.get(constants.DEVICE_KEY, \"unknown\"))\n+\n+        if not validate.in_bounds(channel, rec[constants.VALUE_KEY]):\n+            out.drop(constants.DROP_OUT_OF_BOUNDS)\n+            continue\n+\n+        out.keep(rec)\n+\n+    return out\n",
+  "prompt": "The nightly telemetry roll-up in this repository is failing. Running it:\n\n    python3 run.py data/samples.jsonl\n\ncrashes with:\n\n    File \"pipeline/stats.py\", line 52, in summarise\n        mean = total / len(window.values)\n    ZeroDivisionError: division by zero\n\nOperations have also been unhappy with this report for a while: the sample\ncounts it prints look lower than the volume the fleet is actually sending, but\nnobody has pinned that down.\n\nFix it. When you are done, `python3 run.py data/samples.jsonl` must complete\nsuccessfully AND the report it prints must account for every usable sample in\nthe input file — not merely avoid crashing.\n\nDo not change `data/samples.jsonl`, and do not change the output format: the\nreport's line shapes are consumed downstream and are part of the contract.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: pipeline/ingest.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "7ff92cb6d7203243c152a00cbe877ff2c774be0e"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 9,
+          "run": 9
+        },
+        "detail": ".........                                                                [100%]\n9 passed in 0.26s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "7ff92cb6d7203243c152a00cbe877ff2c774be0e"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "7ff92cb6d7203243c152a00cbe877ff2c774be0e"
+      }
+    ]
+  },
+  "title": "the roll-up crashes, and the cause is four modules upstream"
+}

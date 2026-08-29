@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q23 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex a06944a..3b4443a 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,11 +1,17 @@\n def parse_ranges(s):\n-    \"\"\"Parse a string like \"1-3,5,8-10\" into a list of integers.\"\"\"\n-    result = []\n+    \"\"\"Parse a string like \"1-3,5,8-10\" into a sorted list of unique integers.\n+\n+    Ranges are inclusive of both ends; surrounding whitespace is ignored.\n+    \"\"\"\n+    values = set()\n     for part in s.split(\",\"):\n+        part = part.strip()\n+        if not part:\n+            continue\n         if \"-\" in part:\n             a, b = part.split(\"-\")\n-            for n in range(int(a), int(b)):\n-                result.append(n)\n+            for n in range(int(a.strip()), int(b.strip()) + 1):\n+                values.add(n)\n         else:\n-            result.append(int(part))\n-    return result\n+            values.add(int(part))\n+    return sorted(values)\n",
+  "prompt": "The `parse_ranges` function in solution.py parses a compact range string like \"1-3,5,8-10\" into a list of integers. It's got bugs: ranges like \"1-3\" should be inclusive of both ends (so 1, 2 and 3), the result should be sorted in ascending order with duplicates removed even when ranges overlap, and it should tolerate spaces around numbers and dashes. For \"1-3,5,8-10\" the answer is [1, 2, 3, 5, 8, 9, 10]. Fix it. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "db7e4d7faa866ffe89ba687e0017e8dc48d5de7a"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.22s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "db7e4d7faa866ffe89ba687e0017e8dc48d5de7a"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "db7e4d7faa866ffe89ba687e0017e8dc48d5de7a"
+      }
+    ]
+  },
+  "title": "The `parse_ranges` function in solution.py parses a compact range string like"
+}

@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q33 (correct)",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nindex 074f2fd..950e959 100644\n--- a/solution.mjs\n+++ b/solution.mjs\n@@ -1,9 +1,5 @@\n export function average(nums) {\n-  var total = 0;\n-  for (var i = 0; i <= nums.length; i++) {\n-    if (nums[i] !== undefined) {\n-      total = total + nums[i];\n-    }\n-  }\n+  if (nums.length === 0) return 0;\n+  const total = nums.reduce((sum, n) => sum + n, 0);\n   return total / nums.length;\n }\n",
+  "prompt": "Clean up the `average` function in solution.mjs into something modern and readable — it computes the mean of an array of numbers. While you're at it, make it return 0 for an empty array instead of NaN. Don't change the results for non-empty inputs. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "6d67d239b7689ff7739ba9cb108e8315b16f459a"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "6d67d239b7689ff7739ba9cb108e8315b16f459a"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "6d67d239b7689ff7739ba9cb108e8315b16f459a"
+      }
+    ]
+  },
+  "title": "Clean up the `average` function in solution.mjs into something modern and"
+}

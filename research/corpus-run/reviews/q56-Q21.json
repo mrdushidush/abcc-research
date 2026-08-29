@@ -1,0 +1,27 @@
+{
+  "brief_chars": 2587,
+  "completion_tokens": 2960,
+  "ending": "answered",
+  "events": 8,
+  "id": "q56/Q21",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1191,
+  "raw": "{\n  \"assessment\": \"This change creates invoice.py but implements the exact rounding bug described in the prompt instead of fixing it. By iterating over each item individually with `sum(with_tax(c, rate_pct) for c in item_cents)`, tax is applied and rounded per line item rather than once on the subtotal. Consequently, the module still produces incorrect totals that are off by a cent or two.\",\n  \"findings\": [\n    {\n      \"actual\": \"108\",\n      \"at\": \"invoice.py\",\n      \"call\": \"invoice_total([33, 33, 33], 10)\",\n      \"defect\": \"Fails to fix the rounding bug; computes tax individually per item instead of on the subtotal.\",\n      \"expected\": \"109\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2770,
+  "review": {
+    "assessment": "This change creates invoice.py but implements the exact rounding bug described in the prompt instead of fixing it. By iterating over each item individually with `sum(with_tax(c, rate_pct) for c in item_cents)`, tax is applied and rounded per line item rather than once on the subtotal. Consequently, the module still produces incorrect totals that are off by a cent or two.",
+    "findings": [
+      {
+        "actual": "108",
+        "at": "invoice.py",
+        "call": "invoice_total([33, 33, 33], 10)",
+        "defect": "Fails to fix the rounding bug; computes tax individually per item instead of on the subtotal.",
+        "expected": "109"
+      }
+    ]
+  },
+  "seconds": 43.28247833251953,
+  "trace": "Closed",
+  "turns": 1
+}

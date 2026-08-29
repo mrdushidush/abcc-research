@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q25",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nnew file mode 100644\nindex 0000000..1fcb223\n--- /dev/null\n+++ b/solution.py\n@@ -0,0 +1,7 @@\n+def total_cents(prices):\n+    \"\"\"Given a list of price strings like \"19.99\", return the total number of\n+    cents as an integer.\"\"\"\n+    total = 0.0\n+    for p in prices:\n+        total += float(p)\n+    return int(total * 100)\n",
+  "prompt": "The `total_cents` function in solution.py sums a list of price strings like \"19.99\" and returns the total in cents. It uses floating-point arithmetic, so some totals come out wrong — for instance a single \"4.35\" returns 434 instead of 435, and \"19.99\" returns 1998 instead of 1999, because those values can't be represented exactly as floats. Fix it so the totals are always exact to the cent. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "a285766d979d815aedce00da5ac5d9a79e4c051b"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.21s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "a285766d979d815aedce00da5ac5d9a79e4c051b"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "a285766d979d815aedce00da5ac5d9a79e4c051b"
+      }
+    ]
+  },
+  "title": "The `total_cents` function in solution.py sums a list of price strings like"
+}

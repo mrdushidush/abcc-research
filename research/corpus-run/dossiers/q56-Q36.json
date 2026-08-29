@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q36",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nnew file mode 100644\nindex 0000000..37a0747\n--- /dev/null\n+++ b/solution.ts\n@@ -0,0 +1,9 @@\n+export function deepClone<T>(value: T): T {\n+  if (Array.isArray(value)) {\n+    return value.map((v) => v) as unknown as T;\n+  }\n+  if (value && typeof value === \"object\") {\n+    return { ...(value as object) } as T;\n+  }\n+  return value;\n+}\n",
+  "prompt": "The `deepClone` function in solution.ts is supposed to return a deep copy of a value, but it only copies one level: nested objects and arrays are still shared with the original, so mutating the copy's nested data also changes the original. Fix it so nested objects and arrays are cloned all the way down and the copy is fully independent of the original. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d00a368d41f5d85c8ec6be7f1751633432f55f0e"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d00a368d41f5d85c8ec6be7f1751633432f55f0e"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d00a368d41f5d85c8ec6be7f1751633432f55f0e"
+      }
+    ]
+  },
+  "title": "The `deepClone` function in solution.ts is supposed to return a deep copy of a"
+}

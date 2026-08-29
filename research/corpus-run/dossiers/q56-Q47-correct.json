@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q47 (correct)",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nindex 156a457..81e89d8 100644\n--- a/solution.sh\n+++ b/solution.sh\n@@ -1,9 +1,9 @@\n #!/usr/bin/env bash\n-# Integer-divide the first argument by the second.\n+# Integer-divide the first argument by the second, guarding against zero divisor.\n a=\"$1\"\n b=\"$2\"\n if [ \"$b\" -eq 0 ]; then\n-  echo \"Infinity\"\n-else\n-  echo $(( a / b ))\n+  echo \"error: division by zero\" >&2\n+  exit 1\n fi\n+echo $(( a / b ))\n",
+  "prompt": "The script solution.sh integer-divides its first argument by its second and prints the result. The division-by-zero handling is wrong: when the second argument is 0 it currently just prints \"Infinity\" to stdout and exits successfully, which hides the error from callers. Fix it so a zero divisor instead prints an error message to stderr, exits with a non-zero status, and prints nothing to stdout — while normal division still works (e.g. bash solution.sh 10 2 prints 5).",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "3b7ea59e98abefad920841987debfcecd4b28933"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "3b7ea59e98abefad920841987debfcecd4b28933"
+      }
+    ]
+  },
+  "title": "The script solution.sh integer-divides its first argument by its second and"
+}

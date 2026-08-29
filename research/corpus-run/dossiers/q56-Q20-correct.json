@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q20 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex b4762d8..3524c8a 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,9 +1,4 @@\n def keep_present(values):\n-    \"\"\"Return a new list containing the values that are present, in their\n-    original order.\"\"\"\n-    result = []\n-    for i in range(len(values)):\n-        v = values[i]\n-        if v:\n-            result.append(v)\n-    return result\n+    \"\"\"Return a new list containing the values that are present (not None),\n+    in their original order.\"\"\"\n+    return [v for v in values if v is not None]\n",
+  "prompt": "Refactor `keep_present` in solution.py to be cleaner and more Pythonic. It filters a list down to the values that are actually present — that is, it should drop the None entries and keep everything else, preserving order. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "2a07ba9ee86ffe2a40620d2f22bf8e4fdd19dcc8"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "2a07ba9ee86ffe2a40620d2f22bf8e4fdd19dcc8"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "2a07ba9ee86ffe2a40620d2f22bf8e4fdd19dcc8"
+      }
+    ]
+  },
+  "title": "Refactor `keep_present` in solution.py to be cleaner and more Pythonic"
+}

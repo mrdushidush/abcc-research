@@ -180,9 +180,12 @@ construction rather than by measurement.
 the correct-tree population**, any one of them fixed as a rung defect before the milestone closes;
 and the report volume on wrong trees measured, so the new falsifier above has a number.
 
-⏳ **HALF BUILT, 2026-08-30 (`a3ca3fa`, ADR-0017).** The deterministic half is running: `abcc-gate`
-is the eighth crate, the ladder is `structural → acceptance → veto → standard`, and **the
-conjunction is `Report::headline` rather than code** — so the Judge, when it arrives, has nothing
+✅ **BOTH HALVES BUILT AND BOTH EXIT CLAUSES MET.** The deterministic half landed 2026-08-30
+(`a3ca3fa`, ADR-0017), the Judge 2026-08-31 (`ec53917`, ADR-0018), and the corpora were run
+2026-08-29 (`57b3ae9`) — see the two blocks below. ▶ **The milestone is closable on David's word.**
+
+`abcc-gate` is the eighth crate, the ladder is `structural → acceptance → veto → standard`, and
+**the conjunction is `Report::headline` rather than code** — so the Judge has nothing
 to wire a vote into. 🎉 **F518: it was run against all 25 real attempts on this project's own log
 and refused 25 of 25** — 16 structural at 0.0 s, 7 veto (*the tree does not build*), 2 standard
 (*every test passes; clippy refuses at 101/100*), and **0 by the acceptance rung, which never once
@@ -193,14 +196,66 @@ else.
 So the standard rung has **zero false fails** and stays at the limit this repository already
 declares — a gate that accepts un-mergeable work spends the reviewer's minutes on what CI was
 going to say anyway, and W13 grades this project on exactly those minutes.
-⚠ **Which means the exit clause above is satisfied VACUOUSLY by F518 and is not yet met**: under
-this bar the 25 attempts contain **no correct trees at all**, so *zero false fails* says nothing
-yet. 🚨 **Do not read 25-of-25 as the criterion met.**
+⚠ The exit clause was then **satisfied VACUOUSLY by F518**: under this bar the 25 attempts contain
+**no correct trees at all**, so *zero false fails* said nothing. 🚨 **25-of-25 was never the
+criterion met** — and it is now met by something else.
 
-▶ **What is left:** the Judge as one model call seeing the measurements, pairwise against the
-pre-image · schema-constrained decoding, which arrives with it · **the Q56 and K corpora run**,
-which is what the correct-tree clause actually needs · the report-volume number the new falsifier
-wants.
+🎉🎉 **THE CORPORA ARE RUN — 2026-08-29, `57b3ae9`, `research/ACCEPTANCE-C-corpora.md`.** Four
+`#[ignore]`d tests in two files: `tests/corpus.rs` walks the ladder over three populations with no
+model call, and `tests/corpus_review.rs` asks the Judge about each tree it wrote a dossier for.
+**59 tasks over five languages, 121 measured trees, and the answer key re-verified here at 59 of
+59** (`verify.sh` FAILs every fixture and PASSes every refsol) rather than inherited from the
+import. Artifacts in `research/corpus-run/`.
+
+> ▶ **CORRECT TREES: 48 `Green`, 11 `Unverified`, 0 `Red`. The exit clause is met, and not
+> vacuously.** Nothing was fixed as a rung defect because nothing refused.
+> ▶ **WRONG TREES: 35 `Green`, 13 `Red`, 11 `Unverified`.** The two halves cross-tabulate exactly:
+> every tree the ladder could measure it passed on the right answer, and of those 48 it refused
+> **13 of the wrong answers and accepted 35.**
+
+🚨 **So the new falsifier has its number: the deterministic ladder separates right from wrong on
+13 of 48 measurable trees — 27% — and 35 wrong trees reach an operator green unless something reads
+the diff.** That is not a rung defect and there is nothing to fix: the donor's design is that the
+visible tests are happy-path and a wrong answer passes them on purpose, so a gate measuring the
+tests a repository *has* will accept these. It is the situation ADR-0008 built the Judge for, stated
+as a fraction.
+
+🚨 **The population is three wrong tiers, and the split *is* the 27%:** **13 stubs** (null
+implementations that fail their own visible tests — `Red` 13 of 13), **35 naive** (a plausible wrong
+answer that passes them — `Green` 35 of 35), and **3 shams** — K's own *local wrong answer*, which
+fixes the symptom the ticket named and leaves the defect. **All 3 shams are `Green`.** A
+deterministic gate cannot separate *fixed the bug* from *fixed the reported symptom*, because both
+pass the tests the repository has. The rungs are not wrong; the information is not in them.
+
+🎉 **AND THE SECOND CLAUSE IS ANSWERED TOO — the report volume is low and the reviewer is good.**
+One model call per wrong tree, champion at 32k, `--parallel 1`, **39.8 minutes**:
+
+> **59 of 59 answered**, 59 of 59 parsed as the shape asked for, one turn each, no truncation.
+> **86 findings — 42 trees got exactly one, one got none, one hit the cap of five.** Median **1**.
+> **43 of the 46 trees where recall is a question name the defect the answer key probes** — read by
+> hand against each `verify.sh`, not scored automatically.
+
+▶ **So the new falsifier is not triggered on this population.** 86 findings across 59 wrong trees is
+one to three lines with a command in it, which is a cost worth paying for what it buys — and the
+sharpest thing it buys is on the **11 trees no rung could measure at all** (8 shell ship no test, 3
+rust ship no test function): there the gate can only ever say `Unverified`, and **the Judge found
+the real defect 10 times in 11.**
+
+🚨 **F521's anti-restatement sentence works exactly where it can and cannot where it can't**:
+**0 restatement candidates out of 56 findings on green trees**, **6 of 14 on refused ones** — because
+when the acceptance rung has already refused a stub, the only defect in the tree is the one the rung
+found. None of the six is F521's actual failure mode, which was a bare echo of an exit code.
+
+Four findings the run produced that were not asked for. **F523** — the fixtures are **two tiers**
+and the corpus's own note says one. **F524** — `Q05`, `Q11` and `Q52` ship **no test function at
+all**, so `cargo test` exits 0 printing `0 passed`; the raw command says 38 fixtures pass and the
+gate says 35, because `Reading::Cargo` calls the other three `NothingToRun` — **F517's mechanism
+caught three trees from an unrelated corpus without being touched.** **F527** — the 55 s cold-build
+figure is a property of *this workspace*, not of gate walks: **121 trees in 47 s**, slowest 0.97 s,
+so do not budget Fleet off it. 🚨 **F529** — nine CRLF files in the K suite turned a six-line change
+into a **190-line whole-file diff**: invisible to every rung, and **not** invisible to the Judge,
+whose entire design is `-` pre-image and `+` post-image. It would have degraded every K review
+silently. *A diff is a rendering, and a rendering can be wrong about a change that is right.*
 
 ### ▶ FLEET — two slots on one box
 

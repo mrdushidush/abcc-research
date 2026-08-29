@@ -1,0 +1,33 @@
+{
+  "headline": {
+    "detail": "generatedMessage: true,\ncode: 'ERR_ASSERTION',\nactual: {},\nexpected: { odd: [ 1, 3 ], even: [ 2, 4 ] },\noperator: 'deepStrictEqual',\ndiff: 'simple'\n}\nNode.js v24.15.0",
+    "headline": "red",
+    "rung": "acceptance"
+  },
+  "id": "q56/Q31",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nnew file mode 100644\nindex 0000000..8642df6\n--- /dev/null\n+++ b/solution.mjs\n@@ -0,0 +1,4 @@\n+export function groupBy(arr, keyFn) {\n+  // TODO: implement\n+  return {};\n+}\n",
+  "prompt": "Implement `groupBy(arr, keyFn)` in solution.mjs. It groups the elements of `arr` into an object keyed by the value that `keyFn` returns for each element — for example groupBy([1,2,3,4], n => n % 2 === 0 ? \"even\" : \"odd\") gives { odd: [1, 3], even: [2, 4] }. Items within each group should stay in the order they appeared in the input. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "2aed233298ccb7841221a7c39559690a0b50a4fd"
+      },
+      {
+        "counts": null,
+        "detail": "generatedMessage: true,\ncode: 'ERR_ASSERTION',\nactual: {},\nexpected: { odd: [ 1, 3 ], even: [ 2, 4 ] },\noperator: 'deepStrictEqual',\ndiff: 'simple'\n}\nNode.js v24.15.0",
+        "exit": 1,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "2aed233298ccb7841221a7c39559690a0b50a4fd"
+      }
+    ]
+  },
+  "title": "Implement `groupBy(arr, keyFn)` in solution.mjs"
+}

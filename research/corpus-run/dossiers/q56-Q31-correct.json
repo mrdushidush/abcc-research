@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q31 (correct)",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nindex 8642df6..303cf72 100644\n--- a/solution.mjs\n+++ b/solution.mjs\n@@ -1,4 +1,11 @@\n export function groupBy(arr, keyFn) {\n-  // TODO: implement\n-  return {};\n+  const result = {};\n+  for (const item of arr) {\n+    const key = keyFn(item);\n+    if (!Object.prototype.hasOwnProperty.call(result, key)) {\n+      result[key] = [];\n+    }\n+    result[key].push(item);\n+  }\n+  return result;\n }\n",
+  "prompt": "Implement `groupBy(arr, keyFn)` in solution.mjs. It groups the elements of `arr` into an object keyed by the value that `keyFn` returns for each element — for example groupBy([1,2,3,4], n => n % 2 === 0 ? \"even\" : \"odd\") gives { odd: [1, 3], even: [2, 4] }. Items within each group should stay in the order they appeared in the input. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d42f3d475762e23ca6c14f224d27cc06851c21b0"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d42f3d475762e23ca6c14f224d27cc06851c21b0"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d42f3d475762e23ca6c14f224d27cc06851c21b0"
+      }
+    ]
+  },
+  "title": "Implement `groupBy(arr, keyFn)` in solution.mjs"
+}

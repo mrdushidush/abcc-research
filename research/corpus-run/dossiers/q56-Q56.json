@@ -1,0 +1,37 @@
+{
+  "headline": {
+    "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::newer_patch_is_greater\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q56 v0.1.0 (D:\\ac\\q56-Q56\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.27s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q56-793e22f3993ee7e5.exe)",
+    "headline": "red",
+    "rung": "acceptance"
+  },
+  "id": "q56/Q56",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nnew file mode 100644\nindex 0000000..8ac5b2f\n--- /dev/null\n+++ b/src/lib.rs\n@@ -0,0 +1,22 @@\n+//! Compare two dotted version strings numerically.\n+\n+use std::cmp::Ordering;\n+\n+/// Compare two version strings like \"1.2.0\" and \"1.10.0\".\n+///\n+/// Components are compared numerically, and a shorter version is treated as if\n+/// padded with zeros (so \"1.2\" equals \"1.2.0\").\n+pub fn compare_versions(_a: &str, _b: &str) -> Ordering {\n+    // TODO: implement\n+    Ordering::Equal\n+}\n+\n+#[cfg(test)]\n+mod tests {\n+    use super::*;\n+\n+    #[test]\n+    fn newer_patch_is_greater() {\n+        assert_eq!(compare_versions(\"1.0.1\", \"1.0.0\"), Ordering::Greater);\n+    }\n+}\n",
+  "prompt": "Implement `compare_versions(a, b)` in src/lib.rs. It compares two dotted version strings and returns a std::cmp::Ordering. Components are compared NUMERICALLY, not as text — so \"1.10.0\" is greater than \"1.2.0\" (10 > 2), even though \"10\" sorts before \"2\" lexically. Versions with different numbers of components compare as if the shorter one is padded with trailing zeros, so \"1.2\" equals \"1.2.0\". There's a test showing the basic shape. Handle versions of any length.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "b32e78d3b097a1ba403ecf9d2656b2ce15f7f090"
+      },
+      {
+        "counts": {
+          "failed": 1,
+          "passed": 0,
+          "run": 1
+        },
+        "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::newer_patch_is_greater\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q56 v0.1.0 (D:\\ac\\q56-Q56\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.27s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q56-793e22f3993ee7e5.exe)",
+        "exit": 101,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "b32e78d3b097a1ba403ecf9d2656b2ce15f7f090"
+      }
+    ]
+  },
+  "title": "Implement `compare_versions(a, b)` in src/lib.rs"
+}

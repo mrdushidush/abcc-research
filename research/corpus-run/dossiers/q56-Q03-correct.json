@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q03 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex 5a82a4f..0f6642b 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -3,8 +3,14 @@\n /// Split `total_cents` between `people`, returning each person's share in cents.\n /// The shares should add back up to exactly `total_cents`.\n pub fn split_bill(total_cents: u64, people: u64) -> Vec<u64> {\n-    let share = total_cents / people;\n-    vec![share; people as usize]\n+    if people == 0 {\n+        return Vec::new();\n+    }\n+    let base = total_cents / people;\n+    let remainder = total_cents % people;\n+    (0..people)\n+        .map(|i| base + if i < remainder { 1 } else { 0 })\n+        .collect()\n }\n \n #[cfg(test)]\n",
+  "prompt": "There's a bug in `split_bill` in src/lib.rs. When a bill doesn't divide evenly between people, the shares no longer add up to the total — some cents go missing. Fix it so the returned shares always sum to exactly total_cents, while keeping the split as even as possible. The existing test should still pass.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "34164b3f41e94008c9948caf418af0e1abc6a457"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::splits_evenly ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q03 v0.1.0 (D:\\ac\\q56-Q03\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.36s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q03-c3762ae023b0591e.exe)\nDoc-tests q03",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "34164b3f41e94008c9948caf418af0e1abc6a457"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "34164b3f41e94008c9948caf418af0e1abc6a457"
+      }
+    ]
+  },
+  "title": "There's a bug in `split_bill` in src/lib.rs"
+}

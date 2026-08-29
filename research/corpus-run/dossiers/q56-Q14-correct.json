@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q14 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex cd955ec..f2cede2 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,11 +1,16 @@\n+import copy\n+\n+\n def deep_merge(a, b):\n     \"\"\"Merge dict b into dict a and return the merged result.\n \n-    Values from b take precedence over a. Nested dictionaries should be\n-    merged recursively rather than replaced wholesale, and neither input\n-    should be modified.\n+    Values from b take precedence over a. Nested dictionaries are merged\n+    recursively, and neither input is modified.\n     \"\"\"\n-    result = a\n+    result = copy.deepcopy(a)\n     for key, value in b.items():\n-        result[key] = value\n+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):\n+            result[key] = deep_merge(result[key], value)\n+        else:\n+            result[key] = copy.deepcopy(value)\n     return result\n",
+  "prompt": "The `deep_merge` function in solution.py is supposed to merge two config dictionaries, with the second one's values winning, and nested dictionaries merged recursively. Right now it has problems: nested dicts get clobbered instead of merged, and it modifies the dictionaries passed in. Fix it so nested dicts merge recursively and neither input dict is mutated. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "60eee30bf406f5df9680ab4c3fe35c943ccd1f2e"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.26s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "60eee30bf406f5df9680ab4c3fe35c943ccd1f2e"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "60eee30bf406f5df9680ab4c3fe35c943ccd1f2e"
+      }
+    ]
+  },
+  "title": "The `deep_merge` function in solution.py is supposed to merge two config"
+}

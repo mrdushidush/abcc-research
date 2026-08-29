@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q08 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/eval.rs b/src/eval.rs\nindex 0590002..6ceae14 100644\n--- a/src/eval.rs\n+++ b/src/eval.rs\n@@ -54,12 +54,12 @@ pub fn evaluate(input: &str) -> i64 {\n         }\n     }\n \n-    // Combine the additive terms.\n-    let mut result = *terms.last().unwrap();\n-    for k in (0..ops.len()).rev() {\n-        match ops[k] {\n-            Token::Plus => result = terms[k] + result,\n-            Token::Minus => result = terms[k] - result,\n+    // Combine the additive terms left-to-right so subtraction is left-associative.\n+    let mut result = terms[0];\n+    for (k, op) in ops.iter().enumerate() {\n+        match op {\n+            Token::Plus => result += terms[k + 1],\n+            Token::Minus => result -= terms[k + 1],\n             _ => {}\n         }\n     }\n",
+  "prompt": "This crate evaluates simple integer arithmetic expressions (see src/lib.rs, src/lexer.rs, src/eval.rs). There's a bug: chained subtraction comes out wrong. For example \"10 - 3 - 2\" evaluates to 9, but it should be 5 (subtraction groups left to right: (10 - 3) - 2). Multiplication/division and precedence are fine. Track down the root cause and fix it so expressions with several `+`/`-` operators evaluate correctly. The existing test must still pass.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/eval.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "366aa5fccc5630ea199d662808d9deab7baed442"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::precedence_and_single_subtraction ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q08 v0.1.0 (D:\\ac\\q56-Q08\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.45s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q08-53a8fc0e40288fc0.exe)\nDoc-tests q08",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "366aa5fccc5630ea199d662808d9deab7baed442"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "366aa5fccc5630ea199d662808d9deab7baed442"
+      }
+    ]
+  },
+  "title": "This crate evaluates simple integer arithmetic expressions (see src/lib.rs,"
+}

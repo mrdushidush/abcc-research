@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q06 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex c742498..0906da6 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -3,9 +3,20 @@\n /// Convert an integer in the range 1..=3999 to its Roman numeral form.\n ///\n /// e.g. `int_to_roman(4)` is \"IV\", `int_to_roman(58)` is \"LVIII\".\n-pub fn int_to_roman(_n: u32) -> String {\n-    // TODO: implement\n-    String::new()\n+pub fn int_to_roman(mut n: u32) -> String {\n+    const TABLE: [(u32, &str); 13] = [\n+        (1000, \"M\"), (900, \"CM\"), (500, \"D\"), (400, \"CD\"),\n+        (100, \"C\"), (90, \"XC\"), (50, \"L\"), (40, \"XL\"),\n+        (10, \"X\"), (9, \"IX\"), (5, \"V\"), (4, \"IV\"), (1, \"I\"),\n+    ];\n+    let mut out = String::new();\n+    for (value, symbol) in TABLE {\n+        while n >= value {\n+            out.push_str(symbol);\n+            n -= value;\n+        }\n+    }\n+    out\n }\n \n #[cfg(test)]\n",
+  "prompt": "Implement `int_to_roman` in src/lib.rs. It converts an integer between 1 and 3999 into its Roman numeral string — for example 4 is \"IV\" and 58 is \"LVIII\". The two tests in the file show the shape. It needs to produce correct numerals across the whole range.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "7dd6fb0e898e724fd49e2d7270cff757f66647f6"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 2,
+          "run": 2
+        },
+        "detail": "test tests::small ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q06 v0.1.0 (D:\\ac\\q56-Q06\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.39s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q06-b1712c12f2e307cc.exe)\nDoc-tests q06",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "7dd6fb0e898e724fd49e2d7270cff757f66647f6"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "7dd6fb0e898e724fd49e2d7270cff757f66647f6"
+      }
+    ]
+  },
+  "title": "Implement `int_to_roman` in src/lib.rs"
+}

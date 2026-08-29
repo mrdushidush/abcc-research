@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q22 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex 5895e16..b8981fc 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,16 +1,17 @@\n-import time\n+import threading\n \n \n class Counter:\n-    \"\"\"A counter shared across threads.\"\"\"\n+    \"\"\"A counter that is safe to increment from many threads.\"\"\"\n \n     def __init__(self):\n         self.value = 0\n+        self._lock = threading.Lock()\n \n     def increment(self):\n-        tmp = self.value\n-        time.sleep(0)  # allow other threads to run\n-        self.value = tmp + 1\n+        with self._lock:\n+            self.value += 1\n \n     def get(self):\n-        return self.value\n+        with self._lock:\n+            return self.value\n",
+  "prompt": "The `Counter` class in solution.py is shared across threads, but when several threads call `increment` at the same time the final value comes out too low — updates are being lost because the read and the write aren't done together. Make `increment` safe so that concurrent increments are never lost and the counter ends up equal to the total number of calls. Keep the public interface (`increment`, `get`) the same, and keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "c2beb23e66142c00931545547d9da37e031d066c"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "c2beb23e66142c00931545547d9da37e031d066c"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "c2beb23e66142c00931545547d9da37e031d066c"
+      }
+    ]
+  },
+  "title": "The `Counter` class in solution.py is shared across threads, but when several"
+}

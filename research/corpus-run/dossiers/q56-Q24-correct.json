@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q24 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex b31bb56..edfcb5e 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -5,4 +5,16 @@ def word_wrap(text, width):\n \n     e.g. word_wrap(\"the quick brown fox\", 9) -> \"the quick\\nbrown fox\".\n     \"\"\"\n-    raise NotImplementedError\n+    words = text.split()\n+    if not words:\n+        return \"\"\n+    lines = []\n+    current = words[0]\n+    for word in words[1:]:\n+        if len(current) + 1 + len(word) <= width:\n+            current += \" \" + word\n+        else:\n+            lines.append(current)\n+            current = word\n+    lines.append(current)\n+    return \"\\n\".join(lines)\n",
+  "prompt": "Implement `word_wrap(text, width)` in solution.py. It greedily wraps text into lines no longer than `width` characters, breaking only between words — for example word_wrap(\"the quick brown fox\", 9) gives \"the quick\\nbrown fox\". A word that's longer than `width` still goes on its own line (never split mid-word). Words are separated by whitespace and lines are joined with newlines. It should handle whatever whitespace the input has. The existing test shows the basic case.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "6b633fed8c5b0f3f3dc2cc7ad545e414092d7a69"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.22s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "6b633fed8c5b0f3f3dc2cc7ad545e414092d7a69"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "6b633fed8c5b0f3f3dc2cc7ad545e414092d7a69"
+      }
+    ]
+  },
+  "title": "Implement `word_wrap(text, width)` in solution.py"
+}

@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q42",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nnew file mode 100644\nindex 0000000..804ece2\n--- /dev/null\n+++ b/solution.ts\n@@ -0,0 +1,7 @@\n+export function isPalindrome(s: string): boolean {\n+  var reversed = \"\";\n+  for (var i = s.length - 1; i >= 0; i--) {\n+    reversed = reversed + s[i];\n+  }\n+  return s === reversed;\n+}\n",
+  "prompt": "Clean up the `isPalindrome` function in solution.ts. It should report whether a string is a palindrome, but ignoring case, spaces, and punctuation — only letters and digits count. So \"A man, a plan, a canal: Panama\" is a palindrome, and so is \"Racecar\". Right now it does a raw character-for-character reversal, so those cases come back false. Fix it. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "f0eb7ac50699d3c440aa66adad69a6fa0e0f99f3"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "f0eb7ac50699d3c440aa66adad69a6fa0e0f99f3"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "f0eb7ac50699d3c440aa66adad69a6fa0e0f99f3"
+      }
+    ]
+  },
+  "title": "Clean up the `isPalindrome` function in solution.ts"
+}

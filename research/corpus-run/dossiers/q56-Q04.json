@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q04",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nnew file mode 100644\nindex 0000000..f565de9\n--- /dev/null\n+++ b/src/lib.rs\n@@ -0,0 +1,32 @@\n+//! Parse a comma-separated list of integers, e.g. \"3, -1, 42\".\n+\n+pub fn parse_int_list(s: &str) -> Vec<i64> {\n+    // Scan out each number one digit char at a time.\n+    let mut out = Vec::new();\n+    let mut cur = String::new();\n+    for ch in s.chars() {\n+        if ch.is_ascii_digit() {\n+            cur.push(ch);\n+        } else if ch == ',' {\n+            if !cur.is_empty() {\n+                out.push(cur.parse::<i64>().unwrap());\n+                cur.clear();\n+            }\n+        }\n+        // everything else (spaces, etc.) is ignored\n+    }\n+    if !cur.is_empty() {\n+        out.push(cur.parse::<i64>().unwrap());\n+    }\n+    out\n+}\n+\n+#[cfg(test)]\n+mod tests {\n+    use super::*;\n+\n+    #[test]\n+    fn parses_positive_list() {\n+        assert_eq!(parse_int_list(\"1,2,3\"), vec![1, 2, 3]);\n+    }\n+}\n",
+  "prompt": "The `parse_int_list` function in src/lib.rs is a mess — it scans the string one character at a time. Clean it up into something idiomatic and readable. It's meant to parse a comma-separated list of integers like \"3, -1, 42\" (values can be negative, and there may be stray whitespace around them). Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "1d4124e07da572e960cd18c0c3e196711f102692"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::parses_positive_list ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q04 v0.1.0 (D:\\ac\\q56-Q04\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.38s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q04-040d167fd450d1ba.exe)\nDoc-tests q04",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "1d4124e07da572e960cd18c0c3e196711f102692"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "1d4124e07da572e960cd18c0c3e196711f102692"
+      }
+    ]
+  },
+  "title": "The `parse_int_list` function in src/lib.rs is a mess — it scans the string one"
+}

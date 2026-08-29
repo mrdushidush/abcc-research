@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "k/trace_dropped_samples (correct)",
+  "lang": "python",
+  "patch": "diff --git a/pipeline/ingest.py b/pipeline/ingest.py\nindex be24468..64846a3 100644\n--- a/pipeline/ingest.py\n+++ b/pipeline/ingest.py\n@@ -59,8 +59,11 @@ def accept(raw_records, settings):\n             out.drop(constants.DROP_UNKNOWN_CHANNEL)\n             continue\n \n-        # Quality gate. VALID_FLAGS is written in rev A's lower-case spelling.\n-        flag = rec.get(constants.FLAG_KEY)\n+        # Quality gate. VALID_FLAGS is written in rev A's lower-case spelling,\n+        # so the flag must be folded through normalize.canonical_flag() first --\n+        # rev B firmware emits OK/WARN upper-case (docs/firmware_notes.md), and\n+        # comparing those raw never matches, silently dropping half the fleet.\n+        flag = normalize.canonical_flag(rec.get(constants.FLAG_KEY))\n         if flag not in constants.VALID_FLAGS:\n             out.drop(constants.DROP_BAD_FLAG)\n             continue\n",
+  "prompt": "The nightly telemetry roll-up in this repository is failing. Running it:\n\n    python3 run.py data/samples.jsonl\n\ncrashes with:\n\n    File \"pipeline/stats.py\", line 52, in summarise\n        mean = total / len(window.values)\n    ZeroDivisionError: division by zero\n\nOperations have also been unhappy with this report for a while: the sample\ncounts it prints look lower than the volume the fleet is actually sending, but\nnobody has pinned that down.\n\nFix it. When you are done, `python3 run.py data/samples.jsonl` must complete\nsuccessfully AND the report it prints must account for every usable sample in\nthe input file — not merely avoid crashing.\n\nDo not change `data/samples.jsonl`, and do not change the output format: the\nreport's line shapes are consumed downstream and are part of the contract.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: pipeline/ingest.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "c52ba5ea83cd1454033ff74d630d18180039a67e"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 9,
+          "run": 9
+        },
+        "detail": ".........                                                                [100%]\n9 passed in 0.25s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "c52ba5ea83cd1454033ff74d630d18180039a67e"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "c52ba5ea83cd1454033ff74d630d18180039a67e"
+      }
+    ]
+  },
+  "title": "the roll-up crashes, and the cause is four modules upstream"
+}

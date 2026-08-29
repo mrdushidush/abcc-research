@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q01 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex 1fedaea..ffcbe86 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -3,9 +3,21 @@\n /// Turn a human title into a URL slug.\n ///\n /// e.g. `slugify(\"My First Post!\")` should be `\"my-first-post\"`.\n-pub fn slugify(_title: &str) -> String {\n-    // TODO: implement\n-    String::new()\n+pub fn slugify(title: &str) -> String {\n+    let mut out = String::new();\n+    let mut pending_sep = false;\n+    for c in title.chars() {\n+        if c.is_ascii_alphanumeric() {\n+            if pending_sep && !out.is_empty() {\n+                out.push('-');\n+            }\n+            out.push(c.to_ascii_lowercase());\n+            pending_sep = false;\n+        } else {\n+            pending_sep = true;\n+        }\n+    }\n+    out\n }\n \n #[cfg(test)]\n",
+  "prompt": "I'm building a small blog engine and I need a `slugify` function for turning post titles into URL slugs — for example \"My First Post!\" should become \"my-first-post\". Implement it in src/lib.rs. There are a couple of tests in there already showing the shape I want. Make sure it produces clean slugs for whatever titles people throw at it.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "15af2131b10b590641fabb40bd6992e40aeac723"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 2,
+          "run": 2
+        },
+        "detail": "test tests::two_words ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q01 v0.1.0 (D:\\ac\\q56-Q01\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.41s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q01-601bc0322f0a2ab5.exe)\nDoc-tests q01",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "15af2131b10b590641fabb40bd6992e40aeac723"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "15af2131b10b590641fabb40bd6992e40aeac723"
+      }
+    ]
+  },
+  "title": "I'm building a small blog engine and I need a `slugify` function for turning"
+}

@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q27 (correct)",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nindex ab09877..4b962e9 100644\n--- a/solution.mjs\n+++ b/solution.mjs\n@@ -1,8 +1,8 @@\n export function flatten(arr, depth = 1) {\n-  let result = [];\n+  const result = [];\n   for (const item of arr) {\n-    if (Array.isArray(item)) {\n-      result = result.concat(flatten(item, depth - 1));\n+    if (Array.isArray(item) && depth > 0) {\n+      result.push(...flatten(item, depth - 1));\n     } else {\n       result.push(item);\n     }\n",
+  "prompt": "The `flatten` function in solution.mjs is supposed to flatten a nested array by a given number of levels (default 1), but it ignores the depth argument entirely and always flattens all the way down. Fix it so it respects depth: flatten([1,[2,[3]]]) with the default depth returns [1, 2, [3]], depth 2 goes one level deeper, and a depth of Infinity flattens completely. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "a8e25caddbf4f31ac89954f44b4bb3db840901d6"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "a8e25caddbf4f31ac89954f44b4bb3db840901d6"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "a8e25caddbf4f31ac89954f44b4bb3db840901d6"
+      }
+    ]
+  },
+  "title": "The `flatten` function in solution.mjs is supposed to flatten a nested array by"
+}

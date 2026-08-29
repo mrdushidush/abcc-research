@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "k/round_at_the_line_not_the_total (correct)",
+  "lang": "python",
+  "patch": "diff --git a/billing/pricing.py b/billing/pricing.py\nindex 296c074..a496558 100644\n--- a/billing/pricing.py\n+++ b/billing/pricing.py\n@@ -85,10 +85,9 @@ def price_all(items, catalog, tax_rate):\n def total_of(lines):\n     \"\"\"Sum priced lines into an invoice total.\n \n-    Sums the lines' computed totals and reduces the result to a chargeable\n-    amount once, at the end.\n+    Rounds EACH LINE to a chargeable amount, then sums the rounded lines in\n+    integer cents. Rounding once at the end is not equivalent: the customer\n+    reads the per-line amounts, and the itemised ledger export books them, so a\n+    total computed from unrounded lines disagrees with both. docs/money.md.\n     \"\"\"\n-    running = 0.0\n-    for line in lines:\n-        running += line.total\n-    return money.quantize(running)\n+    return money.sum_amounts([money.quantize(line.total) for line in lines])\n",
+  "prompt": "A customer has queried invoice INV-1005 and they are right.\n\nThe receipt prints its per-line amounts, and if you add them up you get\n£4888.00. The TOTAL line on the same receipt says £4887.99. One penny, but it is\nthe third time this quarter and finance want it dealt with properly rather than\ncredited again.\n\nYou can reproduce it with:\n\n    python3 run.py data/orders.json\n\nFix the billing code so this cannot happen. When you are done,\n`python3 run.py data/orders.json` must complete successfully and every invoice\nit prints must be internally consistent — the per-line amounts it shows must add\nup to the total it shows.\n\nDo not change `data/orders.json`, and do not change the output format: the\nreceipt's line shapes are parsed downstream and are part of the contract.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: billing/pricing.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "8c0c292de01dd648f34a29d26980b60664fbe983"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 18,
+          "run": 18
+        },
+        "detail": "..................                                                       [100%]\n18 passed in 0.31s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "8c0c292de01dd648f34a29d26980b60664fbe983"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "8c0c292de01dd648f34a29d26980b60664fbe983"
+      }
+    ]
+  },
+  "title": "one invoice is off by a penny, and eight of eighteen are wrong"
+}

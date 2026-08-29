@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q34 (correct)",
+  "lang": "node",
+  "patch": "diff --git a/config.mjs b/config.mjs\nindex bf0c4ef..8746f75 100644\n--- a/config.mjs\n+++ b/config.mjs\n@@ -6,5 +6,5 @@ const DEFAULTS = {\n };\n \n export function loadConfig(user) {\n-  return merge(user, DEFAULTS);\n+  return merge(DEFAULTS, user);\n }\ndiff --git a/merge.mjs b/merge.mjs\nindex c93c8e3..b3c9588 100644\n--- a/merge.mjs\n+++ b/merge.mjs\n@@ -1,3 +1,20 @@\n export function merge(base, override) {\n-  return { ...base, ...override };\n+  const result = { ...base };\n+  for (const key of Object.keys(override)) {\n+    const baseVal = result[key];\n+    const overrideVal = override[key];\n+    if (\n+      baseVal &&\n+      overrideVal &&\n+      typeof baseVal === \"object\" &&\n+      typeof overrideVal === \"object\" &&\n+      !Array.isArray(baseVal) &&\n+      !Array.isArray(overrideVal)\n+    ) {\n+      result[key] = merge(baseVal, overrideVal);\n+    } else {\n+      result[key] = overrideVal;\n+    }\n+  }\n+  return result;\n }\n",
+  "prompt": "In this little config module (config.mjs + merge.mjs), `loadConfig(user)` is meant to layer the user's settings on top of the built-in DEFAULTS, with nested objects merged rather than replaced. Two things are broken: the user's settings are being ignored (defaults win), and nested objects get clobbered wholesale so setting one nested field wipes out its siblings. For example loadConfig({ server: { port: 9090 } }) should keep server.host as \"localhost\" while changing the port to 9090, and loadConfig({ debug: true }) should turn debug on. Fix it. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "2 file(s) changed: config.mjs, merge.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "f739c0f1bd943cf9a53a70e141a5ee2049619faf"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "f739c0f1bd943cf9a53a70e141a5ee2049619faf"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "f739c0f1bd943cf9a53a70e141a5ee2049619faf"
+      }
+    ]
+  },
+  "title": "In this little config module (config.mjs + merge.mjs), `loadConfig(user)` is"
+}

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q19",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nnew file mode 100644\nindex 0000000..d1a830b\n--- /dev/null\n+++ b/solution.py\n@@ -0,0 +1,8 @@\n+def human_readable_size(n):\n+    \"\"\"Format a byte count as a human-friendly string.\n+\n+    e.g. 512 -> \"512 B\", 1536 -> \"1.5 KB\".\n+    \"\"\"\n+    if n < 1024:\n+        return f\"{n} B\"\n+    return f\"{n / 1024} KB\"\n",
+  "prompt": "Finish `human_readable_size` in solution.py. It formats a byte count as a human-friendly string. Below 1024 bytes, show the exact integer count with a \" B\" suffix (e.g. 0 -> \"0 B\", 512 -> \"512 B\"). At 1024 and above, scale up through KB, MB, GB, TB, PB using 1024 as the step between units, and show the value with exactly one decimal place (e.g. 1024 -> \"1.0 KB\", 1536 -> \"1.5 KB\", 1048576 -> \"1.0 MB\"). The current version only ever produces KB and doesn't round. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "051ce20df5c2b9fdb0d9d5df30d27809b008f050"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.20s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "051ce20df5c2b9fdb0d9d5df30d27809b008f050"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "051ce20df5c2b9fdb0d9d5df30d27809b008f050"
+      }
+    ]
+  },
+  "title": "Finish `human_readable_size` in solution.py"
+}

@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q30",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nnew file mode 100644\nindex 0000000..78687fd\n--- /dev/null\n+++ b/solution.mjs\n@@ -0,0 +1,3 @@\n+export function sortNumbers(nums) {\n+  return nums.slice().sort();\n+}\n",
+  "prompt": "The `sortNumbers` function in solution.mjs should return a new array with the numbers sorted in ascending order. It works for small single-digit arrays but gets multi-digit numbers and negatives wrong (for instance it sorts [10, 2, 1] as [1, 10, 2]). Fix it so it sorts numerically. Don't mutate the input array. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "82afe36e221ecbbb4565e05ed3892fa8b02bd139"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "82afe36e221ecbbb4565e05ed3892fa8b02bd139"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "82afe36e221ecbbb4565e05ed3892fa8b02bd139"
+      }
+    ]
+  },
+  "title": "The `sortNumbers` function in solution.mjs should return a new array with the"
+}

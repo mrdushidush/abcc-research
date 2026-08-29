@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q48",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nnew file mode 100644\nindex 0000000..4af2940\n--- /dev/null\n+++ b/solution.sh\n@@ -0,0 +1,7 @@\n+#!/usr/bin/env bash\n+# Join the arguments together with commas.\n+result=\"\"\n+for arg in $@; do\n+  result=\"$result,$arg\"\n+done\n+echo \"${result#,}\"\n",
+  "prompt": "The script solution.sh joins its command-line arguments together separated by commas. It works when the arguments are single words, but arguments that contain spaces get split apart — for example `bash solution.sh \"a b\" c` should print \"a b,c\" but instead prints \"a,b,c\". Fix it so each argument is treated as a single unit, spaces and all. A single argument should print unchanged with no comma.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "29835dae8a97c10939bb267ee5c295215c19f01c"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "29835dae8a97c10939bb267ee5c295215c19f01c"
+      }
+    ]
+  },
+  "title": "The script solution.sh joins its command-line arguments together separated by"
+}

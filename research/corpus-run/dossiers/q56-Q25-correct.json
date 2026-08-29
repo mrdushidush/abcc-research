@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q25 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex 1fcb223..a3a95e6 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,7 +1,10 @@\n+from decimal import Decimal\n+\n+\n def total_cents(prices):\n     \"\"\"Given a list of price strings like \"19.99\", return the total number of\n-    cents as an integer.\"\"\"\n-    total = 0.0\n+    cents as an integer, computed exactly (no floating-point error).\"\"\"\n+    total = 0\n     for p in prices:\n-        total += float(p)\n-    return int(total * 100)\n+        total += int((Decimal(p) * 100).to_integral_value())\n+    return total\n",
+  "prompt": "The `total_cents` function in solution.py sums a list of price strings like \"19.99\" and returns the total in cents. It uses floating-point arithmetic, so some totals come out wrong — for instance a single \"4.35\" returns 434 instead of 435, and \"19.99\" returns 1998 instead of 1999, because those values can't be represented exactly as floats. Fix it so the totals are always exact to the cent. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "259d7d16cd5595419decf9387eea5f3abe11cee4"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "259d7d16cd5595419decf9387eea5f3abe11cee4"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "259d7d16cd5595419decf9387eea5f3abe11cee4"
+      }
+    ]
+  },
+  "title": "The `total_cents` function in solution.py sums a list of price strings like"
+}

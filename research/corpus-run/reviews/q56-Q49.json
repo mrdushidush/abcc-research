@@ -1,0 +1,27 @@
+{
+  "brief_chars": 2473,
+  "completion_tokens": 1791,
+  "ending": "answered",
+  "events": 6,
+  "id": "q56/Q49",
+  "ladder": "UNVERIFIED",
+  "lang": "shell",
+  "prompt_tokens": 1134,
+  "raw": "{\n  \"assessment\": \"The change introduces lib.sh containing a normalize() function that relies on a single sed substitution to strip only leading whitespace. It completely omits any regex or logic required to remove trailing whitespace, leaving the stated requirement unfulfilled. Internal spaces are correctly preserved, but trailing padding remains untouched.\",\n  \"findings\": [\n    {\n      \"actual\": \"hi  \",\n      \"at\": \"lib.sh line 5\",\n      \"call\": \"printf '%s' '  hi  ' | sed 's/^[[:space:]]*//'\",\n      \"defect\": \"normalize() does not strip trailing whitespace due to the missing second substitution.\",\n      \"expected\": \"hi\"\n    }\n  ]\n}",
+  "reasoning_tokens": 1621,
+  "review": {
+    "assessment": "The change introduces lib.sh containing a normalize() function that relies on a single sed substitution to strip only leading whitespace. It completely omits any regex or logic required to remove trailing whitespace, leaving the stated requirement unfulfilled. Internal spaces are correctly preserved, but trailing padding remains untouched.",
+    "findings": [
+      {
+        "actual": "hi  ",
+        "at": "lib.sh line 5",
+        "call": "printf '%s' '  hi  ' | sed 's/^[[:space:]]*//'",
+        "defect": "normalize() does not strip trailing whitespace due to the missing second substitution.",
+        "expected": "hi"
+      }
+    ]
+  },
+  "seconds": 25.29878807067871,
+  "trace": "Closed",
+  "turns": 1
+}

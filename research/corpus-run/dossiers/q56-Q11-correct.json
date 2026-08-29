@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q11 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex a4cb42d..ea44bad 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -13,12 +13,11 @@ impl Counter {\n         }\n     }\n \n-    /// Add one to the counter.\n+    /// Add one to the counter. The read-modify-write happens under a single\n+    /// lock acquisition, so concurrent increments can't be lost.\n     pub fn increment(&self) {\n-        let current = *self.value.lock().unwrap();\n-        // yield so other threads get a chance to run before we store\n-        std::thread::yield_now();\n-        *self.value.lock().unwrap() = current + 1;\n+        let mut guard = self.value.lock().unwrap();\n+        *guard += 1;\n     }\n \n     /// Read the current value.\n",
+  "prompt": "The `Counter` in src/lib.rs is meant to be safe to share across threads, but when many threads call `increment` at the same time the final count comes out too low — increments are getting lost. Fix `increment` so that concurrent increments are never lost and the counter always ends up at exactly the number of calls made. Keep the public API (`new`, `increment`, `get`) the same.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "a9374d1ae9fe593408b24c3ea85f3619013f302f"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "a9374d1ae9fe593408b24c3ea85f3619013f302f"
+      }
+    ]
+  },
+  "title": "The `Counter` in src/lib.rs is meant to be safe to share across threads, but"
+}

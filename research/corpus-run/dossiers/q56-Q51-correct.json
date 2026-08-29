@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q51 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex 8f4c93b..7a757ef 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,6 +1,19 @@\n+import re\n+\n+\n def parse_duration(s):\n     \"\"\"Parse a duration string like \"1h30m\" into a total number of seconds.\n \n     Units are h (hours), m (minutes), s (seconds), e.g. \"90s\" -> 90.\n+    Raises ValueError if the string is not a valid duration.\n     \"\"\"\n-    raise NotImplementedError\n+    compact = re.sub(r\"\\s+\", \"\", s.strip())\n+    if not compact:\n+        raise ValueError(\"empty duration\")\n+    tokens = re.findall(r\"(\\d+)([hms])\", compact)\n+    # Reject stray characters / bare numbers: the tokens must account for the\n+    # entire (whitespace-stripped) input.\n+    if not tokens or \"\".join(f\"{n}{u}\" for n, u in tokens) != compact:\n+        raise ValueError(f\"invalid duration: {s!r}\")\n+    multiplier = {\"h\": 3600, \"m\": 60, \"s\": 1}\n+    return sum(int(n) * multiplier[u] for n, u in tokens)\n",
+  "prompt": "Implement `parse_duration(s)` in solution.py. It turns a duration string into a total number of seconds. Durations are written with the unit suffixes h (hours), m (minutes), and s (seconds), and several units can be combined — for example \"1h30m\" is 5400 and \"90s\" is 90. Make it robust for the kinds of strings people actually type. If the input isn't a valid duration, raise a ValueError rather than guessing. The two tests show the basic shape.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "364b0050191f750ae4e23b871c8851acb777df38"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 2,
+          "run": 2
+        },
+        "detail": "..                                                                       [100%]\n2 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "364b0050191f750ae4e23b871c8851acb777df38"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "364b0050191f750ae4e23b871c8851acb777df38"
+      }
+    ]
+  },
+  "title": "Implement `parse_duration(s)` in solution.py"
+}

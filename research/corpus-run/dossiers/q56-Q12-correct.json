@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q12 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex 1a16683..916467b 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -1,14 +1,20 @@\n //! Detect near-by duplicate values.\n \n+use std::collections::HashSet;\n+\n /// Return true if there are two equal values in `nums` whose indices are at\n-/// most `k` apart.\n+/// most `k` apart. Runs in O(n) using a sliding window of the last `k` values.\n pub fn has_duplicate_within_k(nums: &[i64], k: usize) -> bool {\n-    for i in 0..nums.len() {\n-        let end = (i + k).min(nums.len().saturating_sub(1));\n-        for j in (i + 1)..=end {\n-            if nums[i] == nums[j] {\n-                return true;\n-            }\n+    if k == 0 {\n+        return false;\n+    }\n+    let mut window: HashSet<i64> = HashSet::new();\n+    for (i, &x) in nums.iter().enumerate() {\n+        if i > k {\n+            window.remove(&nums[i - k - 1]);\n+        }\n+        if !window.insert(x) {\n+            return true;\n         }\n     }\n     false\n",
+  "prompt": "The `has_duplicate_within_k` function in src/lib.rs works, but it's far too slow on large inputs — for big arrays with a large window `k` it grinds to a halt because it's doing nested scanning. Make it efficient (it should run in roughly linear time regardless of how big `k` is) while keeping its behavior exactly the same. The existing test must still pass.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "7946a1dfddecb0e52e554aa14faf0096c8b6fe5d"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::finds_a_nearby_duplicate ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q12 v0.1.0 (D:\\ac\\q56-Q12\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.57s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q12-c9a9d62fba1f1496.exe)\nDoc-tests q12",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "7946a1dfddecb0e52e554aa14faf0096c8b6fe5d"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "7946a1dfddecb0e52e554aa14faf0096c8b6fe5d"
+      }
+    ]
+  },
+  "title": "The `has_duplicate_within_k` function in src/lib.rs works, but it's far too"
+}

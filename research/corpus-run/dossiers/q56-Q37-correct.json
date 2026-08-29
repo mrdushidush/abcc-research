@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q37 (correct)",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nindex 3c93b1a..c7ad1a8 100644\n--- a/solution.ts\n+++ b/solution.ts\n@@ -1,7 +1,10 @@\n export function range(start: number, end: number, step: number = 1): number[] {\n   const result: number[] = [];\n-  for (let i = start; i < end; i += step) {\n-    result.push(i);\n+  if (step === 0) return result;\n+  if (step > 0) {\n+    for (let i = start; i < end; i += step) result.push(i);\n+  } else {\n+    for (let i = start; i > end; i += step) result.push(i);\n   }\n   return result;\n }\n",
+  "prompt": "The `range(start, end, step)` function in solution.ts returns numbers from start up to (but not including) end, stepping by step (default 1). It works for ascending ranges but a negative step — which should count down, e.g. range(5, 0, -1) is [5, 4, 3, 2, 1] — just returns an empty array. Fix it so negative steps count downward correctly, while keeping ascending behavior the same. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "912a7f6bff6a26ef989f532f252ffcc986443633"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "912a7f6bff6a26ef989f532f252ffcc986443633"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "912a7f6bff6a26ef989f532f252ffcc986443633"
+      }
+    ]
+  },
+  "title": "The `range(start, end, step)` function in solution.ts returns numbers from"
+}

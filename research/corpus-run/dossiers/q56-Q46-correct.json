@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q46 (correct)",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nindex e6223a1..b325e92 100644\n--- a/solution.sh\n+++ b/solution.sh\n@@ -2,4 +2,9 @@\n # Print lines START..END (inclusive, 1-indexed) from stdin.\n start=\"$1\"\n end=\"$2\"\n-head -n \"$end\" | tail -n \"$((end - start))\"\n+# A start past the end is a degenerate (empty) range. Guard it, because\n+# `sed -n \"5,3p\"` would otherwise print the single line at the start address.\n+if [ \"$start\" -gt \"$end\" ]; then\n+  exit 0\n+fi\n+sed -n \"${start},${end}p\"\n",
+  "prompt": "The script solution.sh takes two arguments, START and END, and should print lines START through END (inclusive, 1-indexed) from stdin. It's off by one — the range comes out with the wrong number of lines, and asking for a single line (START == END) returns nothing. Fix it so it prints exactly the inclusive range. It should also behave sensibly at the edges: if END is past the end of input, print through the last line; if START is past the end, print nothing. Run it like: printf 'l1\\nl2\\nl3\\n' | bash solution.sh 2 3",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "b15365fe40b2f4fcffab5663eb8e6f636cfe8862"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "b15365fe40b2f4fcffab5663eb8e6f636cfe8862"
+      }
+    ]
+  },
+  "title": "The script solution.sh takes two arguments, START and END, and should print"
+}

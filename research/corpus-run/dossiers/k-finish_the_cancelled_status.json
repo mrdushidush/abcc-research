@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "k/finish_the_cancelled_status",
+  "lang": "python",
+  "patch": "diff --git a/jobs/charges.py b/jobs/charges.py\nnew file mode 100644\nindex 0000000..65bfeaa\n--- /dev/null\n+++ b/jobs/charges.py\n@@ -0,0 +1,61 @@\n+\"\"\"Billing for compute.\n+\n+Charged per CPU-second, per job kind. A job that produced no usable result is\n+not charged, because charging for it generates a credit request and we lose the\n+staff time twice.\n+\"\"\"\n+\n+from . import status as st\n+\n+# pence per CPU-second, by kind\n+RATES = {\n+    \"render\": 0.85,\n+    \"transcode\": 0.40,\n+    \"index\": 0.25,\n+    \"report\": 0.15,\n+    \"train\": 2.10,\n+}\n+\n+DEFAULT_RATE = 0.30\n+\n+\n+def rate_for(kind):\n+    return RATES.get(kind, DEFAULT_RATE)\n+\n+\n+def is_chargeable(job):\n+    \"\"\"Whether this job's compute is billable.\n+\n+    A failed job is not charged — the customer got nothing.\n+    \"\"\"\n+    if job.status == st.FAILED:\n+        return False\n+    return job.cpu_seconds > 0\n+\n+\n+def charge_pence(job):\n+    if not is_chargeable(job):\n+        return 0.0\n+    return job.cpu_seconds * rate_for(job.kind)\n+\n+\n+def total_pence(jobs):\n+    return sum(charge_pence(j) for j in jobs)\n+\n+\n+def chargeable_jobs(jobs):\n+    return [j for j in jobs if is_chargeable(j)]\n+\n+\n+def by_customer(jobs):\n+    out = {}\n+    for job in jobs:\n+        out[job.customer] = out.get(job.customer, 0.0) + charge_pence(job)\n+    return out\n+\n+\n+def report(jobs):\n+    lines = [\"CHARGES total %.2fp across %d job(s)\" % (total_pence(jobs), len(chargeable_jobs(jobs)))]\n+    for customer in sorted(by_customer(jobs)):\n+        lines.append(\"  %s %.2fp\" % (customer, by_customer(jobs)[customer]))\n+    return \"\\n\".join(lines)\ndiff --git a/jobs/retry.py b/jobs/retry.py\nnew file mode 100644\nindex 0000000..b2ab739\n--- /dev/null\n+++ b/jobs/retry.py\n@@ -0,0 +1,47 @@\n+\"\"\"Retry policy.\n+\n+The scheduler asks this which jobs to requeue. A requeue is\n+`failed` -> `queued`, the one legal transition out of a terminal status.\n+\"\"\"\n+\n+from . import status as st\n+\n+MAX_ATTEMPTS = 3\n+\n+# Kinds that are safe to retry automatically. Anything else needs a human.\n+RETRYABLE_KINDS = frozenset({\"render\", \"transcode\", \"index\", \"report\"})\n+\n+\n+def should_retry(job):\n+    \"\"\"Whether the scheduler should requeue this job.\n+\n+    A job that succeeded is finished. Anything else that has not exhausted its\n+    attempts is a retry candidate.\n+    \"\"\"\n+    if job.status == st.DONE:\n+        return False\n+    if job.attempts >= MAX_ATTEMPTS:\n+        return False\n+    if job.kind not in RETRYABLE_KINDS:\n+        return False\n+    return True\n+\n+\n+def candidates(jobs):\n+    return [j for j in jobs if should_retry(j)]\n+\n+\n+def backoff_seconds(job):\n+    \"\"\"Exponential backoff on attempt count, capped.\"\"\"\n+    return min(300, 15 * (2 ** max(0, job.attempts - 1)))\n+\n+\n+def report(jobs):\n+    picked = candidates(jobs)\n+    lines = [\"RETRY candidates %d\" % len(picked)]\n+    for job in picked:\n+        lines.append(\n+            \"  %s %s attempt %d, backoff %ds\"\n+            % (job.job_id, job.status, job.attempts, backoff_seconds(job))\n+        )\n+    return \"\\n\".join(lines)\ndiff --git a/jobs/sla.py b/jobs/sla.py\nnew file mode 100644\nindex 0000000..06f4e01\n--- /dev/null\n+++ b/jobs/sla.py\n@@ -0,0 +1,52 @@\n+\"\"\"SLA evaluation.\n+\n+A job breaches its SLA when the time from queueing to finishing exceeds\n+`sla_seconds`. A job with no `sla_seconds` has no SLA and cannot breach.\n+\"\"\"\n+\n+from . import status as st\n+\n+# Jobs still in flight are measured against `now` rather than an end time.\n+DEFAULT_SLA_SECONDS = 3600\n+\n+\n+def deadline(job):\n+    \"\"\"The absolute time by which this job must have finished, or None.\"\"\"\n+    limit = job.sla_seconds if job.sla_seconds is not None else DEFAULT_SLA_SECONDS\n+    return job.queued_at + limit\n+\n+\n+def finished_at(job, now):\n+    \"\"\"The time to measure the SLA against.\n+\n+    A job that has finished is measured at its end time; a job still in flight\n+    is measured against the current time, because an unfinished job keeps\n+    accruing.\n+    \"\"\"\n+    if job.status in (st.DONE, st.FAILED):\n+        return job.ended_at if job.ended_at is not None else now\n+    return now\n+\n+\n+def is_breached(job, now):\n+    \"\"\"True when this job has missed its deadline.\"\"\"\n+    if job.sla_seconds is None:\n+        return False\n+    return finished_at(job, now) > deadline(job)\n+\n+\n+def breaches(jobs, now):\n+    return [j for j in jobs if is_breached(j, now)]\n+\n+\n+def margin(job, now):\n+    \"\"\"Seconds of headroom left, negative when breached.\"\"\"\n+    return deadline(job) - finished_at(job, now)\n+\n+\n+def report(jobs, now):\n+    bad = breaches(jobs, now)\n+    lines = [\"SLA breaches %d\" % len(bad)]\n+    for job in bad:\n+        lines.append(\"  %s %s over by %ds\" % (job.job_id, job.customer, -margin(job, now)))\n+    return \"\\n\".join(lines)\ndiff --git a/jobs/summary.py b/jobs/summary.py\nnew file mode 100644\nindex 0000000..8783bc2\n--- /dev/null\n+++ b/jobs/summary.py\n@@ -0,0 +1,52 @@\n+\"\"\"Counts and rates over a set of jobs.\n+\n+The dashboard and the weekly report both read this. Every status the system can\n+produce needs its own bucket — a status that lands in `other` is a status nobody\n+looks at.\n+\"\"\"\n+\n+from . import status as st\n+\n+BUCKETS = (\"queued\", \"running\", \"done\", \"failed\", \"other\")\n+\n+\n+def counts(jobs):\n+    \"\"\"Count jobs per bucket.\"\"\"\n+    out = {b: 0 for b in BUCKETS}\n+    for job in jobs:\n+        if job.status == st.QUEUED:\n+            out[\"queued\"] += 1\n+        elif job.status == st.RUNNING:\n+            out[\"running\"] += 1\n+        elif job.status == st.DONE:\n+            out[\"done\"] += 1\n+        elif job.status == st.FAILED:\n+            out[\"failed\"] += 1\n+        else:\n+            out[\"other\"] += 1\n+    return out\n+\n+\n+def failure_rate(jobs):\n+    \"\"\"Failed jobs as a fraction of jobs that reached a terminal status.\"\"\"\n+    c = counts(jobs)\n+    finished = c[\"done\"] + c[\"failed\"]\n+    if finished == 0:\n+        return 0.0\n+    return c[\"failed\"] / finished\n+\n+\n+def completion_rate(jobs):\n+    c = counts(jobs)\n+    finished = c[\"done\"] + c[\"failed\"]\n+    if finished == 0:\n+        return 0.0\n+    return c[\"done\"] / finished\n+\n+\n+def report(jobs):\n+    c = counts(jobs)\n+    parts = [\"%s=%d\" % (b, c[b]) for b in BUCKETS]\n+    lines = [\"COUNTS \" + \" \".join(parts)]\n+    lines.append(\"RATES failure=%.3f completion=%.3f\" % (failure_rate(jobs), completion_rate(jobs)))\n+    return \"\\n\".join(lines)\n",
+  "prompt": "Support ticket from operations:\n\n  \"Since 4.2 the SLA report is full of jobs we cancelled ourselves. J-017 was\n  cancelled two minutes after it started and the report says it's over its SLA\n  by twenty-four hours. We can't use this report to find real problems any more.\"\n\nThey are right. Reproduce it with:\n\n    python3 run.py data/jobs.json\n\n`cancelled` was added as a status in 4.2. Finish the job properly: make the\nservice treat a cancelled job correctly everywhere it makes a decision based on\nstatus, not only in the report operations complained about.\n\n`docs/status_lifecycle.md` is the specification for what each status means.\n\nDo not change `data/jobs.json`.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "4 file(s) changed: jobs/charges.py, jobs/retry.py, jobs/sla.py, jobs/summary.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "409f3e9fead3eeda154c3c97a712fd4571127662"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 24,
+          "run": 24
+        },
+        "detail": "........................                                                 [100%]\n24 passed in 0.27s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "409f3e9fead3eeda154c3c97a712fd4571127662"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "409f3e9fead3eeda154c3c97a712fd4571127662"
+      }
+    ]
+  },
+  "title": "a status was added to the vocabulary and to one consumer of six"
+}

@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q48 (correct)",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nindex 4af2940..3c6427c 100644\n--- a/solution.sh\n+++ b/solution.sh\n@@ -1,7 +1,11 @@\n #!/usr/bin/env bash\n-# Join the arguments together with commas.\n+# Join the arguments together with commas, preserving each argument intact.\n result=\"\"\n-for arg in $@; do\n-  result=\"$result,$arg\"\n+for arg in \"$@\"; do\n+  if [ -z \"$result\" ]; then\n+    result=\"$arg\"\n+  else\n+    result=\"$result,$arg\"\n+  fi\n done\n-echo \"${result#,}\"\n+echo \"$result\"\n",
+  "prompt": "The script solution.sh joins its command-line arguments together separated by commas. It works when the arguments are single words, but arguments that contain spaces get split apart — for example `bash solution.sh \"a b\" c` should print \"a b,c\" but instead prints \"a,b,c\". Fix it so each argument is treated as a single unit, spaces and all. A single argument should print unchanged with no comma.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "2fa317052506700911700c95f4fb4f9bed2d77ae"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "2fa317052506700911700c95f4fb4f9bed2d77ae"
+      }
+    ]
+  },
+  "title": "The script solution.sh joins its command-line arguments together separated by"
+}

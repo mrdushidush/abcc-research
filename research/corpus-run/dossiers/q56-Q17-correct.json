@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q17 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex 4ead8a5..e6ab78d 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,8 +1,8 @@\n def has_pair_with_sum(nums, target):\n     \"\"\"Return True if any two elements at distinct positions sum to `target`.\"\"\"\n-    n = len(nums)\n-    for i in range(n):\n-        for j in range(i + 1, n):\n-            if nums[i] + nums[j] == target:\n-                return True\n+    seen = set()\n+    for x in nums:\n+        if target - x in seen:\n+            return True\n+        seen.add(x)\n     return False\n",
+  "prompt": "The `has_pair_with_sum` function in solution.py returns whether any two distinct elements of a list add up to a target. It works but it's quadratic, and on large lists it becomes painfully slow. Make it run in roughly linear time while keeping the exact same behavior (two elements at distinct positions). Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "bd6859da1fc207c1bca575eb70753ca47b2e57b4"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.30s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "bd6859da1fc207c1bca575eb70753ca47b2e57b4"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "bd6859da1fc207c1bca575eb70753ca47b2e57b4"
+      }
+    ]
+  },
+  "title": "The `has_pair_with_sum` function in solution.py returns whether any two"
+}

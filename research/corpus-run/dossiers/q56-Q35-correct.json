@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q35 (correct)",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nindex 6b67e51..4ab6cda 100644\n--- a/solution.ts\n+++ b/solution.ts\n@@ -1,8 +1,25 @@\n export function parseQueryString(qs: string): Record<string, string | string[]> {\n   const result: Record<string, string | string[]> = {};\n-  for (const pair of qs.split(\"&\")) {\n-    const [key, value] = pair.split(\"=\");\n-    result[key] = value;\n+  const body = qs.startsWith(\"?\") ? qs.slice(1) : qs;\n+  if (body === \"\") return result;\n+\n+  const decode = (s: string): string => decodeURIComponent(s.replace(/\\+/g, \" \"));\n+\n+  for (const pair of body.split(\"&\")) {\n+    if (pair === \"\") continue;\n+    const eq = pair.indexOf(\"=\");\n+    const key = decode(eq === -1 ? pair : pair.slice(0, eq));\n+    const value = eq === -1 ? \"\" : decode(pair.slice(eq + 1));\n+    if (Object.prototype.hasOwnProperty.call(result, key)) {\n+      const existing = result[key];\n+      if (Array.isArray(existing)) {\n+        existing.push(value);\n+      } else {\n+        result[key] = [existing, value];\n+      }\n+    } else {\n+      result[key] = value;\n+    }\n   }\n   return result;\n }\n",
+  "prompt": "The `parseQueryString` function in solution.ts parses a URL query string like \"a=1&b=2\" into an object. It's too naive. Make it handle real query strings: a repeated key like \"a=1&a=2\" should collect its values into an array ([\"1\",\"2\"]); percent-encoding (%20) and \"+\" should be decoded to spaces and characters; a leading \"?\" should be ignored; a bare key with no \"=\" should map to an empty string; and an empty input should give an empty object. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "799d9b66326b8d80587ab90128a3895d6191ea94"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "799d9b66326b8d80587ab90128a3895d6191ea94"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "799d9b66326b8d80587ab90128a3895d6191ea94"
+      }
+    ]
+  },
+  "title": "The `parseQueryString` function in solution.ts parses a URL query string like"
+}

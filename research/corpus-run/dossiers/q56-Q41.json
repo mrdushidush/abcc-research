@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q41",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nnew file mode 100644\nindex 0000000..ee17965\n--- /dev/null\n+++ b/solution.ts\n@@ -0,0 +1,10 @@\n+export function firstDuplicate(arr: number[]): number | null {\n+  for (let i = 0; i < arr.length; i++) {\n+    for (let j = 0; j < i; j++) {\n+      if (arr[i] === arr[j]) {\n+        return arr[i];\n+      }\n+    }\n+  }\n+  return null;\n+}\n",
+  "prompt": "The `firstDuplicate` function in solution.ts returns the first value that appears a second time as you scan the array left to right (or null if there are no duplicates). It works but it's quadratic and crawls on large inputs. Make it run in roughly linear time while keeping the exact same behavior. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "c8a08472f7b325f389ed366394a1e284927771e3"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "c8a08472f7b325f389ed366394a1e284927771e3"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "c8a08472f7b325f389ed366394a1e284927771e3"
+      }
+    ]
+  },
+  "title": "The `firstDuplicate` function in solution.ts returns the first value that"
+}

@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q29",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nnew file mode 100644\nindex 0000000..d86ac3f\n--- /dev/null\n+++ b/solution.mjs\n@@ -0,0 +1,8 @@\n+export function safeGet(obj, path, defaultValue) {\n+  const parts = path.split(\".\");\n+  let current = obj;\n+  for (const part of parts) {\n+    current = current[part];\n+  }\n+  return current === undefined ? defaultValue : current;\n+}\n",
+  "prompt": "The `safeGet(obj, path, defaultValue)` function in solution.mjs reads a nested value from an object using a dot-separated path like \"a.b.c\". It's supposed to be \"safe\": if the path doesn't exist it should return the provided default instead of throwing. Right now it blows up with a TypeError as soon as it hits a missing or null intermediate value. Fix it so a missing path returns the default, values along the way that are null/undefined are handled gracefully, and genuinely-present falsy values (like 0 or false) are still returned. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "254abca446dfc57e0b7d520c1dd0c6bc57034ffd"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "254abca446dfc57e0b7d520c1dd0c6bc57034ffd"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "254abca446dfc57e0b7d520c1dd0c6bc57034ffd"
+      }
+    ]
+  },
+  "title": "The `safeGet(obj, path, defaultValue)` function in solution.mjs reads a nested"
+}

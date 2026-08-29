@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q50 (correct)",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nindex 332a5a3..aaa0efc 100644\n--- a/solution.sh\n+++ b/solution.sh\n@@ -1,4 +1,4 @@\n #!/usr/bin/env bash\n-# Print the Nth field of each line from stdin.\n+# Print the Nth comma-separated field of each line from stdin (1-indexed).\n n=\"$1\"\n-cut -d' ' -f \"$n\"\n+awk -F',' -v col=\"$n\" '{ print $col }'\n",
+  "prompt": "The script solution.sh takes a column number N as its argument and should print the Nth comma-separated field of each line of stdin (1-indexed). Right now it splits on spaces instead of commas, so it doesn't work on CSV. Fix it to split on commas. It should handle lines that have fewer than N fields (print an empty line for those), and empty fields (a value between two commas) should come through as empty. For example, printf 'a,b,c\\n' | bash solution.sh 2 prints \"b\".",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "a698605810a940933041be23d977765e30d68b6c"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "a698605810a940933041be23d977765e30d68b6c"
+      }
+    ]
+  },
+  "title": "The script solution.sh takes a column number N as its argument and should print"
+}

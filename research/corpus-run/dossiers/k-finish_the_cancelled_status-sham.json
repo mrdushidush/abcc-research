@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "k/finish_the_cancelled_status (sham)",
+  "lang": "python",
+  "patch": "diff --git a/jobs/sla.py b/jobs/sla.py\nindex 06f4e01..d27ead1 100644\n--- a/jobs/sla.py\n+++ b/jobs/sla.py\n@@ -23,7 +23,9 @@ def finished_at(job, now):\n     is measured against the current time, because an unfinished job keeps\n     accruing.\n     \"\"\"\n-    if job.status in (st.DONE, st.FAILED):\n+    # Every TERMINAL status is measured at its end time, cancellation included:\n+    # the clock stops when the operator stops the job (docs/status_lifecycle.md).\n+    if st.is_terminal(job.status):\n         return job.ended_at if job.ended_at is not None else now\n     return now\n \n",
+  "prompt": "Support ticket from operations:\n\n  \"Since 4.2 the SLA report is full of jobs we cancelled ourselves. J-017 was\n  cancelled two minutes after it started and the report says it's over its SLA\n  by twenty-four hours. We can't use this report to find real problems any more.\"\n\nThey are right. Reproduce it with:\n\n    python3 run.py data/jobs.json\n\n`cancelled` was added as a status in 4.2. Finish the job properly: make the\nservice treat a cancelled job correctly everywhere it makes a decision based on\nstatus, not only in the report operations complained about.\n\n`docs/status_lifecycle.md` is the specification for what each status means.\n\nDo not change `data/jobs.json`.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: jobs/sla.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "214e1dd4d968ce56d82ea1571b887ee513cb0f03"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 24,
+          "run": 24
+        },
+        "detail": "........................                                                 [100%]\n24 passed in 0.33s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "214e1dd4d968ce56d82ea1571b887ee513cb0f03"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "214e1dd4d968ce56d82ea1571b887ee513cb0f03"
+      }
+    ]
+  },
+  "title": "a status was added to the vocabulary and to one consumer of six"
+}

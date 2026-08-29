@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q21 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/invoice.py b/invoice.py\nindex dc73f60..be2c005 100644\n--- a/invoice.py\n+++ b/invoice.py\n@@ -2,5 +2,7 @@ from taxes import with_tax\n \n \n def invoice_total(item_cents, rate_pct):\n-    \"\"\"Total for a list of item prices (in cents) with tax applied.\"\"\"\n-    return sum(with_tax(c, rate_pct) for c in item_cents)\n+    \"\"\"Total for a list of item prices (in cents) with tax applied once to the\n+    subtotal, so per-item rounding doesn't accumulate.\"\"\"\n+    subtotal = sum(item_cents)\n+    return with_tax(subtotal, rate_pct)\n",
+  "prompt": "This little billing module (taxes.py + invoice.py) computes an invoice total with tax. The totals come out a cent or two too high on some invoices. The root cause: tax is being rounded on every single line item and then summed, instead of being applied once to the subtotal. Fix it so tax is computed on the sum of the items (rounded once). For example three 33-cent items with 10% tax should total 109 cents, not 108. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: invoice.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d7b194667651b7136e9be00c1bd355e138253d08"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d7b194667651b7136e9be00c1bd355e138253d08"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d7b194667651b7136e9be00c1bd355e138253d08"
+      }
+    ]
+  },
+  "title": "This little billing module (taxes.py + invoice.py) computes an invoice total"
+}

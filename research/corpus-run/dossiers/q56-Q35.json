@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q35",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nnew file mode 100644\nindex 0000000..6b67e51\n--- /dev/null\n+++ b/solution.ts\n@@ -0,0 +1,8 @@\n+export function parseQueryString(qs: string): Record<string, string | string[]> {\n+  const result: Record<string, string | string[]> = {};\n+  for (const pair of qs.split(\"&\")) {\n+    const [key, value] = pair.split(\"=\");\n+    result[key] = value;\n+  }\n+  return result;\n+}\n",
+  "prompt": "The `parseQueryString` function in solution.ts parses a URL query string like \"a=1&b=2\" into an object. It's too naive. Make it handle real query strings: a repeated key like \"a=1&a=2\" should collect its values into an array ([\"1\",\"2\"]); percent-encoding (%20) and \"+\" should be decoded to spaces and characters; a leading \"?\" should be ignored; a bare key with no \"=\" should map to an empty string; and an empty input should give an empty object. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "b06bf4a503c2e56b06e6ff814fb23964c8536b3a"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "b06bf4a503c2e56b06e6ff814fb23964c8536b3a"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "b06bf4a503c2e56b06e6ff814fb23964c8536b3a"
+      }
+    ]
+  },
+  "title": "The `parseQueryString` function in solution.ts parses a URL query string like"
+}

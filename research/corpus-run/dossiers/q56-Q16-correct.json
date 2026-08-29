@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q16 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex c2558f6..9745cac 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,11 +1,5 @@\n def paginate(items, page_size):\n     \"\"\"Split `items` into a list of pages, each with at most page_size items.\"\"\"\n-    pages = []\n-    page = []\n-    for item in items:\n-        page.append(item)\n-        if len(page) == page_size:\n-            pages.append(page)\n-            page = []\n-    pages.append(page)\n-    return pages\n+    if page_size <= 0:\n+        raise ValueError(\"page_size must be positive\")\n+    return [items[i:i + page_size] for i in range(0, len(items), page_size)]\n",
+  "prompt": "The `paginate` function in solution.py splits a list into pages of at most page_size items, but it misbehaves on some inputs: when the list divides evenly into full pages it tacks on a stray empty page at the end, and an empty input list should produce no pages at all (not one empty page). Fix it so the result never contains an empty page. Keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "15cf00c65df477ba64b01d8fd1abb1ae757e9efa"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "15cf00c65df477ba64b01d8fd1abb1ae757e9efa"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "15cf00c65df477ba64b01d8fd1abb1ae757e9efa"
+      }
+    ]
+  },
+  "title": "The `paginate` function in solution.py splits a list into pages of at most"
+}

@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q28",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nnew file mode 100644\nindex 0000000..ab82fbc\n--- /dev/null\n+++ b/solution.mjs\n@@ -0,0 +1,12 @@\n+export function chunk(arr, size) {\n+  const result = [];\n+  let current = [];\n+  for (const item of arr) {\n+    current.push(item);\n+    if (current.length === size) {\n+      result.push(current);\n+      current = [];\n+    }\n+  }\n+  return result;\n+}\n",
+  "prompt": "The `chunk` function in solution.mjs splits an array into groups of `size` elements. There's a bug: when the array doesn't divide evenly it drops the final partial group, and when the array is shorter than a single chunk it returns nothing at all. Fix it so every element ends up in a chunk. You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "61b200809b15aa6ddeba224c72c3425b1133aef4"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "61b200809b15aa6ddeba224c72c3425b1133aef4"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "61b200809b15aa6ddeba224c72c3425b1133aef4"
+      }
+    ]
+  },
+  "title": "The `chunk` function in solution.mjs splits an array into groups of `size`"
+}

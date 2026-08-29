@@ -1,0 +1,33 @@
+{
+  "headline": {
+    "detail": "generatedMessage: true,\ncode: 'ERR_ASSERTION',\nactual: 0,\nexpected: 1,\noperator: 'strictEqual',\ndiff: 'simple'\n}\nNode.js v24.15.0",
+    "headline": "red",
+    "rung": "acceptance"
+  },
+  "id": "q56/Q40",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nnew file mode 100644\nindex 0000000..a2dd6e6\n--- /dev/null\n+++ b/solution.ts\n@@ -0,0 +1,8 @@\n+type Listener = (...args: unknown[]) => void;\n+\n+export class EventEmitter {\n+  on(_event: string, _listener: Listener): void {}\n+  off(_event: string, _listener: Listener): void {}\n+  emit(_event: string, ..._args: unknown[]): void {}\n+  once(_event: string, _listener: Listener): void {}\n+}\n",
+  "prompt": "Implement the `EventEmitter` class in solution.ts. It should support: `on(event, listener)` to register a listener; `emit(event, ...args)` to call every listener registered for that event, in the order they were added, passing the args along; `off(event, listener)` to remove a specific listener; and `once(event, listener)` to register a listener that fires at most once and then removes itself. Emitting an event with no listeners should simply do nothing. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "1bd7a15541a35973c47ee6241eaf5aae700e9f7e"
+      },
+      {
+        "counts": null,
+        "detail": "generatedMessage: true,\ncode: 'ERR_ASSERTION',\nactual: 0,\nexpected: 1,\noperator: 'strictEqual',\ndiff: 'simple'\n}\nNode.js v24.15.0",
+        "exit": 1,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "1bd7a15541a35973c47ee6241eaf5aae700e9f7e"
+      }
+    ]
+  },
+  "title": "Implement the `EventEmitter` class in solution.ts"
+}

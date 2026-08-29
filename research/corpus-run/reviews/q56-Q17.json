@@ -1,0 +1,27 @@
+{
+  "brief_chars": 2558,
+  "completion_tokens": 1863,
+  "ending": "answered",
+  "events": 6,
+  "id": "q56/Q17",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1172,
+  "raw": "{\n  \"assessment\": \"The submitted change introduces a naive nested-loop implementation that runs in quadratic O(n²) time. This directly contradicts the explicit task requirement to optimize the function to run in roughly linear time. While it remains functionally correct and passes the provided acceptance test, it fails to meet the performance constraint.\",\n  \"findings\": [\n    {\n      \"actual\": \"Execution scales quadratically due to nested for-loops; input size of ~3000 takes noticeably longer than required, violating the linear-time optimization goal.\",\n      \"at\": \"/solution.py\",\n      \"call\": \"time python -c \\\"from solution import has_pair_with_sum; has_pair_with_sum(list(range(3000)), 6000)\\\"\",\n      \"defect\": \"Algorithmic Complexity / Task Compliance\",\n      \"expected\": \"Execution scales linearly (or near-linearly), ideally O(n) via a hash set or sorted two-pointer approach, completing almost instantly for this input size.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 1631,
+  "review": {
+    "assessment": "The submitted change introduces a naive nested-loop implementation that runs in quadratic O(n²) time. This directly contradicts the explicit task requirement to optimize the function to run in roughly linear time. While it remains functionally correct and passes the provided acceptance test, it fails to meet the performance constraint.",
+    "findings": [
+      {
+        "actual": "Execution scales quadratically due to nested for-loops; input size of ~3000 takes noticeably longer than required, violating the linear-time optimization goal.",
+        "at": "/solution.py",
+        "call": "time python -c \"from solution import has_pair_with_sum; has_pair_with_sum(list(range(3000)), 6000)\"",
+        "defect": "Algorithmic Complexity / Task Compliance",
+        "expected": "Execution scales linearly (or near-linearly), ideally O(n) via a hash set or sorted two-pointer approach, completing almost instantly for this input size."
+      }
+    ]
+  },
+  "seconds": 26.589719772338867,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q47",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nnew file mode 100644\nindex 0000000..156a457\n--- /dev/null\n+++ b/solution.sh\n@@ -0,0 +1,9 @@\n+#!/usr/bin/env bash\n+# Integer-divide the first argument by the second.\n+a=\"$1\"\n+b=\"$2\"\n+if [ \"$b\" -eq 0 ]; then\n+  echo \"Infinity\"\n+else\n+  echo $(( a / b ))\n+fi\n",
+  "prompt": "The script solution.sh integer-divides its first argument by its second and prints the result. The division-by-zero handling is wrong: when the second argument is 0 it currently just prints \"Infinity\" to stdout and exits successfully, which hides the error from callers. Fix it so a zero divisor instead prints an error message to stderr, exits with a non-zero status, and prints nothing to stdout — while normal division still works (e.g. bash solution.sh 10 2 prints 5).",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "21ff12cff0e36fa3561cf7a360a45928356b9434"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "21ff12cff0e36fa3561cf7a360a45928356b9434"
+      }
+    ]
+  },
+  "title": "The script solution.sh integer-divides its first argument by its second and"
+}

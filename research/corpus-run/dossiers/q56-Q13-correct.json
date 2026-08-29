@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q13 (correct)",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nindex a9feb1f..b8bfd64 100644\n--- a/solution.py\n+++ b/solution.py\n@@ -1,6 +1,38 @@\n def parse_csv_line(line):\n     \"\"\"Parse a single CSV line into a list of field strings.\n \n-    e.g. parse_csv_line('a,b,c') -> ['a', 'b', 'c']\n+    Handles quoted fields (which may contain commas) and doubled \"\" quote\n+    escapes inside quoted fields.\n+    e.g. parse_csv_line('a,\"b,c\",d') -> ['a', 'b,c', 'd']\n     \"\"\"\n-    return line.split(\",\")\n+    fields = []\n+    field = []\n+    in_quotes = False\n+    i = 0\n+    n = len(line)\n+    while i < n:\n+        c = line[i]\n+        if in_quotes:\n+            if c == '\"':\n+                if i + 1 < n and line[i + 1] == '\"':\n+                    field.append('\"')\n+                    i += 2\n+                    continue\n+                in_quotes = False\n+                i += 1\n+                continue\n+            field.append(c)\n+            i += 1\n+        else:\n+            if c == '\"':\n+                in_quotes = True\n+                i += 1\n+            elif c == \",\":\n+                fields.append(\"\".join(field))\n+                field = []\n+                i += 1\n+            else:\n+                field.append(c)\n+                i += 1\n+    fields.append(\"\".join(field))\n+    return fields\n",
+  "prompt": "The `parse_csv_line` function in solution.py splits a CSV line into fields, but it only handles the simplest case. Make it parse a single line of real CSV properly: a field wrapped in double quotes may contain commas, and inside a quoted field a doubled \"\" means a literal double-quote character. For example a,\"b,c\",d has three fields: a, then b,c, then d. The existing test should still pass.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "b5646cc663be288b5f9ffce7b8888740e68283fb"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.30s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "b5646cc663be288b5f9ffce7b8888740e68283fb"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "b5646cc663be288b5f9ffce7b8888740e68283fb"
+      }
+    ]
+  },
+  "title": "The `parse_csv_line` function in solution.py splits a CSV line into fields, but"
+}

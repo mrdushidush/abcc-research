@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q07 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex d4ffacd..fd4321c 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -2,13 +2,25 @@\n \n use std::collections::HashMap;\n \n-/// Return each word paired with how many times it appears, most frequent first.\n+/// Return each word paired with how many times it appears, most frequent first\n+/// (ties broken alphabetically). Case-insensitive; words are runs of alphanumerics.\n pub fn word_frequencies(text: &str) -> Vec<(String, usize)> {\n-    let mut counts = HashMap::new();\n-    for w in text.split(' ') {\n-        *counts.entry(w.to_string()).or_insert(0) += 1;\n+    let mut counts: HashMap<String, usize> = HashMap::new();\n+    let mut current = String::new();\n+    for ch in text.chars() {\n+        if ch.is_ascii_alphanumeric() {\n+            current.push(ch.to_ascii_lowercase());\n+        } else if !current.is_empty() {\n+            *counts.entry(std::mem::take(&mut current)).or_insert(0) += 1;\n+        }\n     }\n-    counts.into_iter().collect()\n+    if !current.is_empty() {\n+        *counts.entry(current).or_insert(0) += 1;\n+    }\n+\n+    let mut freqs: Vec<(String, usize)> = counts.into_iter().collect();\n+    freqs.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));\n+    freqs\n }\n \n #[cfg(test)]\n",
+  "prompt": "The `word_frequencies` function in src/lib.rs is supposed to return words paired with how often they appear, ordered from most frequent to least. Right now the ordering is all over the place and it's fussy about how words are separated and capitalized. Make it robust: treat words case-insensitively, split on any non-alphanumeric characters (punctuation, tabs, newlines — not just spaces), and return the list sorted by count from highest to lowest, breaking ties alphabetically. The existing test should still pass.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "9fcb56c0570bf4bc6378ae213fa62579a04e7767"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::counts_repeats ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q07 v0.1.0 (D:\\ac\\q56-Q07\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.81s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q07-2a4e4e0a47f025ac.exe)\nDoc-tests q07",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "9fcb56c0570bf4bc6378ae213fa62579a04e7767"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "9fcb56c0570bf4bc6378ae213fa62579a04e7767"
+      }
+    ]
+  },
+  "title": "The `word_frequencies` function in src/lib.rs is supposed to return words"
+}

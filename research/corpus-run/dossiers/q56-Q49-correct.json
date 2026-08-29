@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q49 (correct)",
+  "lang": "shell",
+  "patch": "diff --git a/lib.sh b/lib.sh\nindex 31fc2d9..24cc9be 100644\n--- a/lib.sh\n+++ b/lib.sh\n@@ -2,5 +2,5 @@\n \n # Strip surrounding whitespace from the single argument and echo the result.\n normalize() {\n-  echo \"$1\" | sed 's/^[[:space:]]*//'\n+  echo \"$1\" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'\n }\n",
+  "prompt": "The script solution.sh reads lines from stdin and prints each one trimmed of surrounding whitespace, delegating the trimming to the normalize() function in lib.sh. But trailing whitespace isn't being removed — only leading whitespace is. Track down the root cause and fix it so normalize() strips both leading AND trailing whitespace, while leaving whitespace in the middle of a line untouched. Run it like: printf '  hi  \\n' | bash solution.sh",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: lib.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d98c07dbb304f4556e87036b78d313b05d3d0e15"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d98c07dbb304f4556e87036b78d313b05d3d0e15"
+      }
+    ]
+  },
+  "title": "The script solution.sh reads lines from stdin and prints each one trimmed of"
+}

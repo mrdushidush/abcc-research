@@ -1,0 +1,55 @@
+{
+  "brief_chars": 2605,
+  "completion_tokens": 2996,
+  "ending": "answered",
+  "events": 7,
+  "id": "q56/Q35",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1202,
+  "raw": "{\n  \"assessment\": \"The diff adds a new `solution.ts` that implements a naive split-based parser iterating over `&`-separated pairs and splitting each on `=`. This implementation completely lacks the required real-query-string behaviors: it overwrites duplicate keys instead of collecting them into arrays, performs no URL decoding for `%xx` or `+`, does not strip a leading `?`, maps bare keys to `undefined` instead of an empty string, and returns `{ \\\"\\\": undefined }` on empty input rather than `{}`.\",\n  \"findings\": [\n    {\n      \"actual\": \"{ a: '2' }\",\n      \"at\": \"#1\",\n      \"call\": \"node -e 'console.log(require(\\\"./solution\\\").parseQueryString(\\\"a=1&a=2\\\"))'\",\n      \"defect\": \"Repeated keys overwrite the previous value instead of collecting them into an array.\",\n      \"expected\": \"{ a: [ '1', '2' ] }\"\n    },\n    {\n      \"actual\": \"{ msg: '%20hi', plus: 'a+b' }\",\n      \"at\": \"#2\",\n      \"call\": \"node -e 'console.log(require(\\\"./solution\\\").parseQueryString(\\\"msg=%20hi&plus=a+b\\\"))'\",\n      \"defect\": \"No percent-decoding or `+`-to-space conversion is performed.\",\n      \"expected\": \"{ msg: ' hi', plus: 'a b' }\"\n    },\n    {\n      \"actual\": \"{ \\\"\\\": undefined }\",\n      \"at\": \"#3\",\n      \"call\": \"node -e 'console.log(require(\\\"./solution\\\").parseQueryString(\\\"\\\")'\",\n      \"defect\": \"Empty input returns a single key with an undefined value instead of an empty object.\",\n      \"expected\": \"{}\"\n    },\n    {\n      \"actual\": \"{ key: undefined }\",\n      \"at\": \"#4\",\n      \"call\": \"node -e 'console.log(require(\\\"./solution\\\").parseQueryString(\\\"key\\\"))'\",\n      \"defect\": \"Bare keys (no `=`) are assigned `undefined` instead of an empty string.\",\n      \"expected\": \"{ key: '' }\"\n    },\n    {\n      \"actual\": \"{ '?foo': 'bar' }\",\n      \"at\": \"#5\",\n      \"call\": \"node -e 'console.log(require(\\\"./solution\\\").parseQueryString(\\\"?foo=bar\\\"))'\",\n      \"defect\": \"A leading `?` is not stripped; it becomes part of the first key.\",\n      \"expected\": \"{ foo: 'bar' }\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2395,
+  "review": {
+    "assessment": "The diff adds a new `solution.ts` that implements a naive split-based parser iterating over `&`-separated pairs and splitting each on `=`. This implementation completely lacks the required real-query-string behaviors: it overwrites duplicate keys instead of collecting them into arrays, performs no URL decoding for `%xx` or `+`, does not strip a leading `?`, maps bare keys to `undefined` instead of an empty string, and returns `{ \"\": undefined }` on empty input rather than `{}`.",
+    "findings": [
+      {
+        "actual": "{ a: '2' }",
+        "at": "#1",
+        "call": "node -e 'console.log(require(\"./solution\").parseQueryString(\"a=1&a=2\"))'",
+        "defect": "Repeated keys overwrite the previous value instead of collecting them into an array.",
+        "expected": "{ a: [ '1', '2' ] }"
+      },
+      {
+        "actual": "{ msg: '%20hi', plus: 'a+b' }",
+        "at": "#2",
+        "call": "node -e 'console.log(require(\"./solution\").parseQueryString(\"msg=%20hi&plus=a+b\"))'",
+        "defect": "No percent-decoding or `+`-to-space conversion is performed.",
+        "expected": "{ msg: ' hi', plus: 'a b' }"
+      },
+      {
+        "actual": "{ \"\": undefined }",
+        "at": "#3",
+        "call": "node -e 'console.log(require(\"./solution\").parseQueryString(\"\")'",
+        "defect": "Empty input returns a single key with an undefined value instead of an empty object.",
+        "expected": "{}"
+      },
+      {
+        "actual": "{ key: undefined }",
+        "at": "#4",
+        "call": "node -e 'console.log(require(\"./solution\").parseQueryString(\"key\"))'",
+        "defect": "Bare keys (no `=`) are assigned `undefined` instead of an empty string.",
+        "expected": "{ key: '' }"
+      },
+      {
+        "actual": "{ '?foo': 'bar' }",
+        "at": "#5",
+        "call": "node -e 'console.log(require(\"./solution\").parseQueryString(\"?foo=bar\"))'",
+        "defect": "A leading `?` is not stripped; it becomes part of the first key.",
+        "expected": "{ foo: 'bar' }"
+      }
+    ]
+  },
+  "seconds": 37.1340446472168,
+  "trace": "Closed",
+  "turns": 1
+}

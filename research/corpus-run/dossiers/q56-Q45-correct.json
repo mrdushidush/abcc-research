@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q45 (correct)",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nindex 91cd472..b294a89 100644\n--- a/solution.sh\n+++ b/solution.sh\n@@ -1,3 +1,3 @@\n #!/usr/bin/env bash\n-# Strip comment and blank lines from stdin.\n-grep -v '^#'\n+# Strip full-line comments (optionally indented) and blank/whitespace-only lines.\n+grep -vE '^[[:space:]]*(#|$)'\n",
+  "prompt": "The script solution.sh is supposed to strip comment lines and blank lines out of stdin, printing the rest unchanged. A comment line is one whose first non-whitespace character is '#' (so it may be indented), and a blank line is one that is empty or only whitespace. Right now it only removes comments that start with '#' at the very first column, and it leaves blank and indented-comment lines in. Fix it. Note that a '#' appearing later in a line (like an inline comment after code) must NOT cause the line to be dropped. Run it like: bash solution.sh < input.txt",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "658655b206e215e57e218a926e9027ee8c368ec4"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "658655b206e215e57e218a926e9027ee8c368ec4"
+      }
+    ]
+  },
+  "title": "The script solution.sh is supposed to strip comment lines and blank lines out"
+}

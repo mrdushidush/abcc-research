@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q44",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nnew file mode 100644\nindex 0000000..b95ecbf\n--- /dev/null\n+++ b/solution.sh\n@@ -0,0 +1,3 @@\n+#!/usr/bin/env bash\n+# Rough draft frequency tally.\n+tr ' ' '\\n' | sort | uniq -c\n",
+  "prompt": "Finish solution.sh so it reads text from stdin and prints a word-frequency tally: one line per distinct word in the form \"COUNT WORD\", sorted by count from highest to lowest, with ties broken alphabetically by word. Words are separated by any whitespace (spaces, tabs, newlines) and should be compared case-insensitively (lowercase them). For example, the input \"the cat the DOG the cat\" produces:\n3 the\n2 cat\n1 dog\nThe current draft gets the casing, ordering, and output format wrong.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "7ac3a01352701e3d81f9231a22890ef2e7dc5809"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "7ac3a01352701e3d81f9231a22890ef2e7dc5809"
+      }
+    ]
+  },
+  "title": "Finish solution.sh so it reads text from stdin and prints a word-frequency"
+}

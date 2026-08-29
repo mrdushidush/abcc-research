@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q38 (correct)",
+  "lang": "typescript",
+  "patch": "diff --git a/solution.ts b/solution.ts\nindex 73f326b..51c5511 100644\n--- a/solution.ts\n+++ b/solution.ts\n@@ -3,6 +3,9 @@ export type ParseResult<T> =\n   | { ok: false; error: string };\n \n export function safeJsonParse<T>(text: string): ParseResult<T> {\n-  const value = JSON.parse(text) as T;\n-  return { ok: true, value };\n+  try {\n+    return { ok: true, value: JSON.parse(text) as T };\n+  } catch (err) {\n+    return { ok: false, error: err instanceof Error ? err.message : String(err) };\n+  }\n }\n",
+  "prompt": "The `safeJsonParse` function in solution.ts is meant to be a safe wrapper around JSON.parse that never throws: on success it returns { ok: true, value }, and on invalid input it should return { ok: false, error } with an error message string. Right now it doesn't actually catch anything, so bad JSON throws straight through. Fix it so invalid or empty input yields an { ok: false, error } result instead of throwing. You can check the basics with `node test_basic.ts`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.ts",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "93b72b52ee02c6830d0fbf773c719007827b73e7"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "93b72b52ee02c6830d0fbf773c719007827b73e7"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "93b72b52ee02c6830d0fbf773c719007827b73e7"
+      }
+    ]
+  },
+  "title": "The `safeJsonParse` function in solution.ts is meant to be a safe wrapper"
+}

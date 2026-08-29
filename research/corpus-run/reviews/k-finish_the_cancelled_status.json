@@ -1,0 +1,41 @@
+{
+  "brief_chars": 8853,
+  "completion_tokens": 3797,
+  "ending": "answered",
+  "events": 9,
+  "id": "k/finish_the_cancelled_status",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 3298,
+  "raw": "{\n  \"assessment\": \"The change introduces four new consumer modules for billing, retry logic, SLA evaluation, and job summarization. None of these modules account for the `CANCELLED` status added in 4.2, leaving cancelled jobs incorrectly treated as chargeable, retriable, and currently-in-flight across all new decision paths. This propagates the exact operational flaw into the freshly added consumers rather than fixing it.\",\n  \"findings\": [\n    {\n      \"actual\": \"`now` is returned instead of `job.ended_at`, causing in-flight cancelled jobs to be compared against the current wall-clock time and incorrectly reported as SLA breaches.\",\n      \"at\": \"jobs/sla.py\",\n      \"call\": \"sla.finished_at(cancelled_job, now=1000) where job.ended_at=52\",\n      \"defect\": \"`finished_at` falls back to `now` for any status not explicitly in `(DONE, FAILED)`.\",\n      \"expected\": \"`job.ended_at` (e.g., 52), so the SLA deadline is correctly measured against when work actually stopped.\"\n    },\n    {\n      \"actual\": \"`True`, because `status != st.FAILED` and `cpu_seconds > 0`.\",\n      \"at\": \"jobs/charges.py\",\n      \"call\": \"charges.is_chargeable(cancelled_job_with_cpu)\",\n      \"defect\": \"`is_chargeable` only excludes the `FAILED` status, leaving cancelled jobs to be billed for compute time that was halted by operation.\",\n      \"expected\": \"`False`, as cancelled work yields no usable result and should not trigger billing or credit requests.\"\n    },\n    {\n      \"actual\": \"`True`, passing all checks since only `DONE` is explicitly excluded from retry candidates.\",\n      \"at\": \"jobs/retry.py\",\n      \"call\": \"retry.should_retry(cancelled_job)\",\n      \"defect\": \"`should_retry` does not filter out `CANCELLED` jobs, allowing the scheduler to incorrectly mark halted work for automatic requeuing.\",\n      \"expected\": \"`False`, as a cancelled job is a terminal state and must never be requeued.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 3305,
+  "review": {
+    "assessment": "The change introduces four new consumer modules for billing, retry logic, SLA evaluation, and job summarization. None of these modules account for the `CANCELLED` status added in 4.2, leaving cancelled jobs incorrectly treated as chargeable, retriable, and currently-in-flight across all new decision paths. This propagates the exact operational flaw into the freshly added consumers rather than fixing it.",
+    "findings": [
+      {
+        "actual": "`now` is returned instead of `job.ended_at`, causing in-flight cancelled jobs to be compared against the current wall-clock time and incorrectly reported as SLA breaches.",
+        "at": "jobs/sla.py",
+        "call": "sla.finished_at(cancelled_job, now=1000) where job.ended_at=52",
+        "defect": "`finished_at` falls back to `now` for any status not explicitly in `(DONE, FAILED)`.",
+        "expected": "`job.ended_at` (e.g., 52), so the SLA deadline is correctly measured against when work actually stopped."
+      },
+      {
+        "actual": "`True`, because `status != st.FAILED` and `cpu_seconds > 0`.",
+        "at": "jobs/charges.py",
+        "call": "charges.is_chargeable(cancelled_job_with_cpu)",
+        "defect": "`is_chargeable` only excludes the `FAILED` status, leaving cancelled jobs to be billed for compute time that was halted by operation.",
+        "expected": "`False`, as cancelled work yields no usable result and should not trigger billing or credit requests."
+      },
+      {
+        "actual": "`True`, passing all checks since only `DONE` is explicitly excluded from retry candidates.",
+        "at": "jobs/retry.py",
+        "call": "retry.should_retry(cancelled_job)",
+        "defect": "`should_retry` does not filter out `CANCELLED` jobs, allowing the scheduler to incorrectly mark halted work for automatic requeuing.",
+        "expected": "`False`, as a cancelled job is a terminal state and must never be requeued."
+      }
+    ]
+  },
+  "seconds": 58.26643753051758,
+  "trace": "Closed",
+  "turns": 1
+}

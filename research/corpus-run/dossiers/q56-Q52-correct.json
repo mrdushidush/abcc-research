@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q52 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex a523a4e..dbba7a9 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -1,36 +1,55 @@\n //! A fixed-capacity ring buffer.\n \n-use std::marker::PhantomData;\n-\n /// A ring buffer holding at most `capacity` items. Pushing into a full buffer\n /// overwrites the oldest item.\n pub struct RingBuffer<T> {\n-    _marker: PhantomData<T>,\n+    buf: Vec<T>,\n+    capacity: usize,\n+    start: usize,\n+    len: usize,\n }\n \n impl<T: Clone> RingBuffer<T> {\n     /// Create a ring buffer that holds at most `capacity` items.\n-    pub fn new(_capacity: usize) -> Self {\n-        unimplemented!()\n+    pub fn new(capacity: usize) -> Self {\n+        RingBuffer {\n+            buf: Vec::with_capacity(capacity),\n+            capacity,\n+            start: 0,\n+            len: 0,\n+        }\n     }\n \n     /// Append an item. If the buffer is full, the oldest item is overwritten.\n-    pub fn push(&mut self, _item: T) {\n-        unimplemented!()\n+    pub fn push(&mut self, item: T) {\n+        if self.capacity == 0 {\n+            return;\n+        }\n+        if self.len < self.capacity {\n+            self.buf.push(item);\n+            self.len += 1;\n+        } else {\n+            self.buf[self.start] = item;\n+            self.start = (self.start + 1) % self.capacity;\n+        }\n     }\n \n     /// Number of items currently stored (never exceeds the capacity).\n     pub fn len(&self) -> usize {\n-        unimplemented!()\n+        self.len\n     }\n \n     /// True when the buffer holds no items.\n     pub fn is_empty(&self) -> bool {\n-        unimplemented!()\n+        self.len == 0\n     }\n \n     /// The stored items in order from oldest to newest.\n     pub fn to_vec(&self) -> Vec<T> {\n-        unimplemented!()\n+        let mut out = Vec::with_capacity(self.len);\n+        for i in 0..self.len {\n+            out.push(self.buf[(self.start + i) % self.capacity].clone());\n+        }\n+        out\n     }\n }\n",
+  "prompt": "Implement the `RingBuffer<T>` in src/lib.rs — a fixed-capacity ring (circular) buffer. Keep the public API as given: `new(capacity)`, `push(item)`, `len()`, `is_empty()`, and `to_vec()`. It holds at most `capacity` items; once it's full, pushing a new item overwrites the oldest one. `to_vec()` returns the current contents in order from oldest to newest. For example, with capacity 3, pushing 1, 2, 3, 4 leaves the buffer holding [2, 3, 4]. Make sure it behaves correctly no matter how many times it wraps around, and for any capacity. Run `cargo test` to check your work.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "eb9168120089219e85bc5a45a9576d765bc8dc7e"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "eb9168120089219e85bc5a45a9576d765bc8dc7e"
+      }
+    ]
+  },
+  "title": "Implement the `RingBuffer<T>` in src/lib.rs — a fixed-capacity ring (circular)"
+}

@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q43 (correct)",
+  "lang": "shell",
+  "patch": "diff --git a/solution.sh b/solution.sh\nindex 15fff8c..12a87da 100644\n--- a/solution.sh\n+++ b/solution.sh\n@@ -1,7 +1,7 @@\n #!/usr/bin/env bash\n-# Count the number of lines read from stdin.\n+# Count the number of lines read from stdin (including a final unterminated line).\n count=0\n-while read -r line; do\n+while read -r line || [ -n \"$line\" ]; do\n   count=$((count + 1))\n done\n echo \"$count\"\n",
+  "prompt": "The script solution.sh counts how many lines it reads from stdin, but it's off by one when the input doesn't end with a newline — the last unterminated line gets missed. Fix it so the count is correct whether or not the input ends in a newline (an empty input should count as 0 lines). Run it like: printf 'a\\nb\\nc' | bash solution.sh",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.sh",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "32215872b702f2759b404efbce7f377376dd7dfe"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "the profile named an empty command",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "32215872b702f2759b404efbce7f377376dd7dfe"
+      }
+    ]
+  },
+  "title": "The script solution.sh counts how many lines it reads from stdin, but it's off"
+}

@@ -1,0 +1,48 @@
+{
+  "headline": {
+    "headline": "unverified",
+    "missing": [
+      [
+        "acceptance",
+        {
+          "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "why": "nothing_to_run"
+        }
+      ]
+    ]
+  },
+  "id": "q56/Q05 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex fa89644..f3bc9ba 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -2,14 +2,19 @@\n \n use std::collections::HashMap;\n \n-/// Parse `key=value` lines into a map.\n-///\n-/// FIXME: this panics on malformed input; callers want a Result they can handle.\n-pub fn parse_kv(input: &str) -> HashMap<String, String> {\n+/// Parse `key=value` lines into a map, returning an error on any malformed line.\n+pub fn parse_kv(input: &str) -> Result<HashMap<String, String>, String> {\n     let mut m = HashMap::new();\n     for line in input.lines() {\n-        let (k, v) = line.split_once('=').unwrap();\n-        m.insert(k.trim().to_string(), v.trim().to_string());\n+        if line.trim().is_empty() {\n+            continue;\n+        }\n+        match line.split_once('=') {\n+            Some((k, v)) => {\n+                m.insert(k.trim().to_string(), v.trim().to_string());\n+            }\n+            None => return Err(format!(\"malformed line (no '='): {line:?}\")),\n+        }\n     }\n-    m\n+    Ok(m)\n }\n",
+  "prompt": "The `parse_kv` function in src/lib.rs parses \"key=value\" lines into a map, but it panics whenever a line is malformed. Change it to return `Result<HashMap<String, String>, String>` instead: `Ok(map)` on success, or `Err(message)` describing the problem if a line has no '='. Keys and values should be trimmed of surrounding whitespace. Callers pass whole config files, so make sure it handles them gracefully.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "adbe8176b62b829736ca2616b966bcdca4147bbf"
+      },
+      {
+        "outcome": "unmeasured",
+        "rung": "acceptance",
+        "why": {
+          "detail": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "why": "nothing_to_run"
+        }
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "adbe8176b62b829736ca2616b966bcdca4147bbf"
+      }
+    ]
+  },
+  "title": "The `parse_kv` function in src/lib.rs parses \\\"key=value\\\" lines into a map, but"
+}

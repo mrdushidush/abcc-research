@@ -1,0 +1,40 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q32",
+  "lang": "node",
+  "patch": "diff --git a/solution.mjs b/solution.mjs\nnew file mode 100644\nindex 0000000..7c186e2\n--- /dev/null\n+++ b/solution.mjs\n@@ -0,0 +1,9 @@\n+export function intersection(a, b) {\n+  const result = [];\n+  for (const x of a) {\n+    if (b.includes(x) && !result.includes(x)) {\n+      result.push(x);\n+    }\n+  }\n+  return result;\n+}\n",
+  "prompt": "The `intersection` function in solution.mjs returns the unique elements of array `a` that also appear in array `b`, in the order they first appear in `a`. It works but it's quadratic — on large arrays it becomes very slow because of the nested scanning. Make it run in roughly linear time while keeping the exact same behavior (order of `a`, no duplicates). You can check the basics with `node test_basic.mjs`; keep it passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.mjs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "7b36a134dccfd65b48337f54c039341251007033"
+      },
+      {
+        "counts": null,
+        "detail": "basic OK",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "7b36a134dccfd65b48337f54c039341251007033"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "7b36a134dccfd65b48337f54c039341251007033"
+      }
+    ]
+  },
+  "title": "The `intersection` function in solution.mjs returns the unique elements of"
+}

@@ -1,0 +1,37 @@
+{
+  "headline": {
+    "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::simple_title\ntests::two_words\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q01 v0.1.0 (D:\\ac\\q56-Q01\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q01-601bc0322f0a2ab5.exe)",
+    "headline": "red",
+    "rung": "acceptance"
+  },
+  "id": "q56/Q01",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nnew file mode 100644\nindex 0000000..1fedaea\n--- /dev/null\n+++ b/src/lib.rs\n@@ -0,0 +1,24 @@\n+//! URL slug helper for a small blog engine.\n+\n+/// Turn a human title into a URL slug.\n+///\n+/// e.g. `slugify(\"My First Post!\")` should be `\"my-first-post\"`.\n+pub fn slugify(_title: &str) -> String {\n+    // TODO: implement\n+    String::new()\n+}\n+\n+#[cfg(test)]\n+mod tests {\n+    use super::*;\n+\n+    #[test]\n+    fn simple_title() {\n+        assert_eq!(slugify(\"My First Post!\"), \"my-first-post\");\n+    }\n+\n+    #[test]\n+    fn two_words() {\n+        assert_eq!(slugify(\"Hello World\"), \"hello-world\");\n+    }\n+}\n",
+  "prompt": "I'm building a small blog engine and I need a `slugify` function for turning post titles into URL slugs — for example \"My First Post!\" should become \"my-first-post\". Implement it in src/lib.rs. There are a couple of tests in there already showing the shape I want. Make sure it produces clean slugs for whatever titles people throw at it.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "834367d6645e5d6b8f3b22915d2942b3ee9cdff0"
+      },
+      {
+        "counts": {
+          "failed": 2,
+          "passed": 0,
+          "run": 2
+        },
+        "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::simple_title\ntests::two_words\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q01 v0.1.0 (D:\\ac\\q56-Q01\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q01-601bc0322f0a2ab5.exe)",
+        "exit": 101,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "834367d6645e5d6b8f3b22915d2942b3ee9cdff0"
+      }
+    ]
+  },
+  "title": "I'm building a small blog engine and I need a `slugify` function for turning"
+}

@@ -1,0 +1,4 @@
+task	lang	verdict	detail	seconds
+k/finish_the_cancelled_status	python	GREEN		0.89
+k/round_at_the_line_not_the_total	python	GREEN		0.79
+k/trace_dropped_samples	python	GREEN		0.83

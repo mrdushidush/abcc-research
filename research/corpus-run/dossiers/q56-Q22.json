@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q22",
+  "lang": "python",
+  "patch": "diff --git a/solution.py b/solution.py\nnew file mode 100644\nindex 0000000..5895e16\n--- /dev/null\n+++ b/solution.py\n@@ -0,0 +1,16 @@\n+import time\n+\n+\n+class Counter:\n+    \"\"\"A counter shared across threads.\"\"\"\n+\n+    def __init__(self):\n+        self.value = 0\n+\n+    def increment(self):\n+        tmp = self.value\n+        time.sleep(0)  # allow other threads to run\n+        self.value = tmp + 1\n+\n+    def get(self):\n+        return self.value\n",
+  "prompt": "The `Counter` class in solution.py is shared across threads, but when several threads call `increment` at the same time the final value comes out too low — updates are being lost because the read and the write aren't done together. Make `increment` safe so that concurrent increments are never lost and the counter ends up equal to the total number of calls. Keep the public interface (`increment`, `get`) the same, and keep the existing test passing.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: solution.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "2b671f0acd85cc67a9617c004af3c6cc4b7ee653"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": ".                                                                        [100%]\n1 passed in 0.20s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "2b671f0acd85cc67a9617c004af3c6cc4b7ee653"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "2b671f0acd85cc67a9617c004af3c6cc4b7ee653"
+      }
+    ]
+  },
+  "title": "The `Counter` class in solution.py is shared across threads, but when several"
+}

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q09 (correct)",
+  "lang": "rust",
+  "patch": "diff --git a/src/lib.rs b/src/lib.rs\nindex a9da4c8..26bcad4 100644\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -4,15 +4,41 @@\n //! character followed by the decimal count, e.g. \"aaabb\" <-> \"a3b2\".\n \n /// Encode a string of lowercase letters using run-length encoding.\n-pub fn rle_encode(_s: &str) -> String {\n-    // TODO: implement\n-    String::new()\n+pub fn rle_encode(s: &str) -> String {\n+    let mut out = String::new();\n+    let mut chars = s.chars().peekable();\n+    while let Some(c) = chars.next() {\n+        let mut count = 1usize;\n+        while chars.peek() == Some(&c) {\n+            chars.next();\n+            count += 1;\n+        }\n+        out.push(c);\n+        out.push_str(&count.to_string());\n+    }\n+    out\n }\n \n /// Decode a run-length-encoded string back to its original form.\n-pub fn rle_decode(_s: &str) -> String {\n-    // TODO: implement\n-    String::new()\n+pub fn rle_decode(s: &str) -> String {\n+    let mut out = String::new();\n+    let mut chars = s.chars().peekable();\n+    while let Some(c) = chars.next() {\n+        let mut digits = String::new();\n+        while let Some(&d) = chars.peek() {\n+            if d.is_ascii_digit() {\n+                digits.push(d);\n+                chars.next();\n+            } else {\n+                break;\n+            }\n+        }\n+        let count: usize = digits.parse().unwrap_or(1);\n+        for _ in 0..count {\n+            out.push(c);\n+        }\n+    }\n+    out\n }\n \n #[cfg(test)]\n",
+  "prompt": "Implement the two run-length-coding functions in src/lib.rs: `rle_encode` and `rle_decode`. A run of a character repeated n times is written as that character followed by the count — for example \"aaabb\" encodes to \"a3b2\". Decoding reverses it. The input to encode is lowercase letters. The two functions should round-trip any such input, and decode should correctly reverse whatever encode produces. There are tests showing the basic shape.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/lib.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "58799850698ff666ad4463f8689eb103814660be"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 2,
+          "run": 2
+        },
+        "detail": "test tests::encodes_small ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q09 v0.1.0 (D:\\ac\\q56-Q09\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.50s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q09-0c77f0a6781f6842.exe)\nDoc-tests q09",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "58799850698ff666ad4463f8689eb103814660be"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "58799850698ff666ad4463f8689eb103814660be"
+      }
+    ]
+  },
+  "title": "Implement the two run-length-coding functions in src/lib.rs: `rle_encode` and"
+}

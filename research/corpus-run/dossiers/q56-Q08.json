@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "q56/Q08",
+  "lang": "rust",
+  "patch": "diff --git a/src/eval.rs b/src/eval.rs\nnew file mode 100644\nindex 0000000..0590002\n--- /dev/null\n+++ b/src/eval.rs\n@@ -0,0 +1,67 @@\n+//! Reduce a token stream to an integer, honoring `* /` over `+ -`.\n+\n+use crate::lexer::{tokenize, Token};\n+\n+/// Parse one multiplicative term (a run of numbers joined by `*` and `/`),\n+/// advancing `idx` past it. `* /` are applied left-to-right.\n+fn parse_term(tokens: &[Token], idx: &mut usize) -> i64 {\n+    let mut acc = match tokens.get(*idx) {\n+        Some(Token::Num(n)) => {\n+            *idx += 1;\n+            *n\n+        }\n+        _ => 0,\n+    };\n+    while let Some(op) = tokens.get(*idx) {\n+        match op {\n+            Token::Star | Token::Slash => {\n+                *idx += 1;\n+                let rhs = match tokens.get(*idx) {\n+                    Some(Token::Num(n)) => {\n+                        *idx += 1;\n+                        *n\n+                    }\n+                    _ => 0,\n+                };\n+                if matches!(op, Token::Star) {\n+                    acc *= rhs;\n+                } else {\n+                    acc /= rhs;\n+                }\n+            }\n+            _ => break,\n+        }\n+    }\n+    acc\n+}\n+\n+/// Evaluate an arithmetic expression string.\n+pub fn evaluate(input: &str) -> i64 {\n+    let tokens = tokenize(input);\n+    let mut terms: Vec<i64> = Vec::new();\n+    let mut ops: Vec<Token> = Vec::new();\n+    let mut idx = 0;\n+\n+    terms.push(parse_term(&tokens, &mut idx));\n+    while let Some(op) = tokens.get(idx) {\n+        match op {\n+            Token::Plus | Token::Minus => {\n+                ops.push(op.clone());\n+                idx += 1;\n+                terms.push(parse_term(&tokens, &mut idx));\n+            }\n+            _ => break,\n+        }\n+    }\n+\n+    // Combine the additive terms.\n+    let mut result = *terms.last().unwrap();\n+    for k in (0..ops.len()).rev() {\n+        match ops[k] {\n+            Token::Plus => result = terms[k] + result,\n+            Token::Minus => result = terms[k] - result,\n+            _ => {}\n+        }\n+    }\n+    result\n+}\n",
+  "prompt": "This crate evaluates simple integer arithmetic expressions (see src/lib.rs, src/lexer.rs, src/eval.rs). There's a bug: chained subtraction comes out wrong. For example \"10 - 3 - 2\" evaluates to 9, but it should be 5 (subtraction groups left to right: (10 - 3) - 2). Multiplication/division and precedence are fine. Track down the root cause and fix it so expressions with several `+`/`-` operators evaluate correctly. The existing test must still pass.",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: src/eval.rs",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "3a64be957c86f3e6b1edfc2b258eb6c043abb74e"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 1,
+          "run": 1
+        },
+        "detail": "test tests::precedence_and_single_subtraction ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q08 v0.1.0 (D:\\ac\\q56-Q08\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.44s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q08-53a8fc0e40288fc0.exe)\nDoc-tests q08",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "3a64be957c86f3e6b1edfc2b258eb6c043abb74e"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "3a64be957c86f3e6b1edfc2b258eb6c043abb74e"
+      }
+    ]
+  },
+  "title": "This crate evaluates simple integer arithmetic expressions (see src/lib.rs,"
+}
