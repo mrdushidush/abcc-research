@@ -69,19 +69,21 @@ built the Judge for.**
 
 ## The population, and what it actually is
 
-59 tasks, 118 measured trees. Every task ships `prompt.txt`, `task.toml`, `verify.sh`, `fixture/`
-(already a wrong answer) and `refsol/` (the solution file(s) of a right one).
+59 tasks, **121 measured trees**. Every task ships `prompt.txt`, `task.toml`, `verify.sh`,
+`fixture/` (already a wrong answer) and `refsol/` (the solution file(s) of a right one); the K tasks
+add `sham/`.
 
 | suite | tasks | languages |
 |---|---|---|
 | `q56` | 56 | rust 14 · python 15 · node 10 · typescript 9 · shell 8 |
 | `k` | 3 | python, and they are real multi-file projects (19–32 files) |
 
-### The two pairs, and why the wrong one has the `before` it has
+### The three pairs, and why the wrong one has the `before` it has
 
 ```text
 CORRECT   fixture                      ->  fixture + refsol
 WRONG     fixture minus the solution   ->  fixture
+SHAM      fixture                      ->  fixture + sham        (K only, 3)
 ```
 
 The correct pair is the ruled one. The wrong pair's `before` is the fixture with exactly the files
@@ -107,7 +109,7 @@ broken — reading exactly like a real result.
 **This is the finding that qualifies every other number in this file, and the sham tier exists
 because somebody suspected it.** F530's recall is 43 of 46 on the ordinary wrong trees. On the three
 trees the corpus built to be *hard* — the tempting local fix that resolves the reported symptom —
-the reviewer reports **nothing at all**, and it does not report nothing quietly.
+the reviewer reports **nothing at all on 3 of 3**, and it does not report nothing quietly.
 
 `k/round_at_the_line_not_the_total (sham)`, verbatim, all of it:
 
@@ -135,9 +137,20 @@ RESULT: FAIL — expected 'MISMATCHES 0 of 18', got: MISMATCHES 7 of 18
 The fixture has **18 visible tests** and the order set has **18 invoices**, and the two numbers are
 not the same quantity. The reviewer read *18 passed* and wrote *all eighteen discrepancies are
 resolved*, then filed it as a reason to find no defects. **Seven of the eighteen invoices are still
-wrong.** The other sham does the same thing more briefly — *"the acceptance suite confirms correct
-behavior across the updated logic"* — on a tree that still bills four cancelled jobs and requeues
-work an operator stopped.
+wrong.**
+
+🚨 **It is 0 findings on 3 of 3, and all three cite the rungs as positive evidence.** That is the
+part that makes it a pattern rather than one bad call:
+
+| sham | what it actually leaves broken | what the reviewer said |
+|---|---|---|
+| `round_at_the_line` | `MISMATCHES 7 of 18` | *"the host's acceptance suite confirms all eighteen discrepancies are resolved"* |
+| `finish_the_cancelled_status` | still bills 4 cancelled jobs, still requeues them | *"the acceptance suite confirms correct behavior across the updated logic"* |
+| `trace_dropped_samples` | `samples: 30`, should be 54 — rev-B still dropped | *"The structural checks and acceptance tests pass without errors, confirming no regressions were introduced"* |
+
+The third is the tidiest illustration of the tier: the sham guards the `ZeroDivisionError` the
+ticket reported and never touches the ingest filter that is dropping the samples. **It fixed the
+crash and left the bug**, and the reviewer described that as *no regressions*.
 
 ### Why this is the most important paragraph in the file
 
@@ -157,7 +170,8 @@ work an operator stopped.
    gate's honest output.
 
 ⚠ **What this does NOT say.** It is **3 trees**, all python, all from one suite, and a rate cannot
-be built on it. It also **changes no verdict**: the Judge cannot refuse and cannot fail, the ladder
+be built on 3. What can be said is that it is **3 of 3 rather than 1 of 3**, and that the mechanism
+is the same one each time. It also **changes no verdict**: the Judge cannot refuse and cannot fail, the ladder
 had already called all three `Green`, and nothing about the attempt's ending moved. The cost is
 precisely what ADR-0008 said the cost would be — *these reach the operator as reports* — and on
 these three the report was **actively reassuring and wrong**, which is worse than silence and is the
