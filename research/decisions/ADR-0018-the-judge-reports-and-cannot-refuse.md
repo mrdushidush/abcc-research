@@ -8,7 +8,7 @@
   0/8; the runnable triple 10/23 against 1/34; the author's report 0/3 *alongside* the diff) ·
   **F81** (the frozen head) · **F86** (schema-constrained decoding, used nowhere by the donor) ·
   **F498** (the window is observed, not assumed) · **F518** (16 of 25 attempts change nothing) ·
-  **F521** (new, below) · the live population is attempts `a2137` and `a2260` on
+  **F521**, **F522** (both new, below) · the live population is attempts `a2137` and `a2260` on
   `%LOCALAPPDATA%\abcc\abcc-1ae35b6091a63e2c\log.sqlite`
 - **Extends:** ADR-0008 (this is its second line, built), ADR-0009 (the `Claim`/`Outcome` boundary),
   ADR-0011 §3 (the schema seam, used here for the first time)
@@ -119,11 +119,12 @@ indistinguishable from a review of the whole one.
   — so the brief now says the measurements already ran and a finding that repeats one is a line the
   operator reads twice. ⚠ Unmeasured whether the sentence works; it is one call of evidence and the
   corpora are where it gets a population.
-- **The completion is almost entirely trace.** Two calls: 1,708 completion tokens of which **1,589
-  reasoning** (25.5 s), and 7,808 of which **7,474 reasoning** (122 s). The constrained artifact is
-  120–330 tokens; the schema does not constrain the trace and the trace is 93–96% of the spend.
-  ⚠ So the wall-clock cost of A4 is the trace's, not the artifact's, and a bound on the artifact
-  buys nothing on time.
+- 🚨 **F522 — the completion is almost entirely trace, and the schema does not touch it.** Two
+  calls: 1,708 completion tokens of which **1,589 reasoning** (25.5 s), and 7,808 of which **7,474
+  reasoning** (122 s). The constrained artifact is 120–330 tokens; the trace is **93–96% of the
+  spend**. ⚠ So the wall-clock cost of A4 is the trace's, not the artifact's, and a bound on the
+  artifact — `maxItems`, a shorter brief — buys nothing on time. It is the same shape as F511 one
+  level up: the budget goes where nobody was looking.
 - **The prompt is small and `MAX_PATCH_CHARS` is untested in anger** — 1,752 and 1,622 tokens on two
   real reviews against a 16,384-token share. The constant is derived from the 32,768-token window
   and `Head::budget`, and it is falsifiable in flight: when it is wrong the call returns

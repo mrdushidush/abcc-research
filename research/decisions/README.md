@@ -9,8 +9,8 @@ records consumed by `PLAN.md`, never backfilled with dates after the fact (`rese
 from a running system rather than from a workstream, correcting three things the first two real
 runs found, and **ADR-0016** the same day from ten of them. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
 workstream, and **the evidence lives in the workstream doc, not here** — an ADR cites `Wn` and a
-finding id, states the ruling, and says what would overturn it. Findings F1–F521 are closed; next
-free is **F522**.
+finding id, states the ruling, and says what would overturn it. Findings F1–F522 are closed; next
+free is **F523**.
 
 ## The template
 
@@ -55,7 +55,7 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | 15 | [ADR-0015](ADR-0015-what-the-first-real-runs-corrected.md) | The idle gap is ours; a full window is not a fault; silence is not an artifact | F493, F496–F502 |
 | 16 | [ADR-0016](ADR-0016-a-phase-repairs-a-missing-answer.md) | A phase asks again when the model says nothing; a cut turn's tool calls never run | F503–F508 |
 | 17 | [ADR-0017](ADR-0017-the-standard-a-repository-declares.md) | The rung a repository declares for itself; the veto's one rule; `Refused` | F512, F516–F518 |
-| 18 | [ADR-0018](ADR-0018-the-judge-reports-and-cannot-refuse.md) | The Judge reports: it cannot refuse an attempt **and cannot fail one** | ADR-0008, F275–F284, F521 |
+| 18 | [ADR-0018](ADR-0018-the-judge-reports-and-cannot-refuse.md) | The Judge reports: it cannot refuse an attempt **and cannot fail one** | ADR-0008, F275–F284, F521–F522 |
 
 **Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and ADR-0016 as of 2026-08-29,
 ADR-0017 as of 2026-08-30, ADR-0018 as of 2026-08-31. ⚠ ADR-0017 is the first written **from a
