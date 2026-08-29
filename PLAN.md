@@ -180,6 +180,24 @@ construction rather than by measurement.
 the correct-tree population**, any one of them fixed as a rung defect before the milestone closes;
 and the report volume on wrong trees measured, so the new falsifier above has a number.
 
+⏳ **HALF BUILT, 2026-08-30 (`a3ca3fa`, ADR-0017).** The deterministic half is running: `abcc-gate`
+is the eighth crate, the ladder is `structural → acceptance → veto → standard`, and **the
+conjunction is `Report::headline` rather than code** — so the Judge, when it arrives, has nothing
+to wire a vote into. 🎉 **F518: it was run against all 25 real attempts on this project's own log
+and refused 25 of 25** — 16 structural at 0.0 s, 7 veto (*the tree does not build*), 2 standard
+(*every test passes; clippy refuses at 101/100*), and **0 by the acceptance rung, which never once
+fired.** `Accomplished` is reachable for the first time, said by `Headline::Green` and by nothing
+else.
+
+▶ **What is left:** the Judge as one model call seeing the measurements, pairwise against the
+pre-image · schema-constrained decoding, which arrives with it · the Q56 and K corpora run · the
+report-volume number. 🚨 **And one question that is David's** — ADR-0017 § *What is David's*:
+whether *correct tree* in the criterion above means **correct** or means **mergeable**. F512's runs
+10 and 23 compile, pass 281 and 288 tests, and are refused for a function one line over this
+repository's own limit. Under the first reading the standard rung false-fails 2 of 2 and is a rung
+defect; under the second it has zero false fails and this population contains no correct trees at
+all. One entry in a `const` decides it.
+
 ### ▶ FLEET — two slots on one box
 
 **Goal:** answer SUMMARY.md's risk 2 with the real workload rather than an idle probe.
