@@ -185,7 +185,7 @@ the run produced was **settled by measurement rather than by argument** — see 
 below. 🎉 **The milestone that `SUMMARY.md` calls the product is done.**
 
 ✅ **BOTH HALVES BUILT AND BOTH EXIT CLAUSES MET.** The deterministic half landed 2026-08-30
-(`a3ca3fa`, ADR-0017), the Judge 2026-08-31 (`ec53917`, ADR-0018), and the corpora were run
+(`a3ca3fa`, ADR-0017), the Judge 2026-08-30 (`ec53917`, ADR-0018), and the corpora were run
 2026-08-29 (`57b3ae9`) — see the two blocks below. ▶ **The milestone is closable on David's word.**
 
 `abcc-gate` is the eighth crate, the ladder is `structural → acceptance → veto → standard`, and
@@ -326,7 +326,7 @@ enumerated and frozen per attempt · `NextAction { Attempt | Stop | HandToOperat
 budget 2 and no pre-dispatch estimate · **the breaker that reports and never gates, and whose
 input is a real one-token completion** (F539).
 
-✅ **BUILT 2026-08-31 — the receiver exists, and building it found two things the design had
+✅ **BUILT 2026-08-30 — the receiver exists, and building it found two things the design had
 wrong.** `research/FLEET-P2-the-receiver.md`, findings **F548–F549**, ruled the same day as
 **ADR-0022**. The crate is `abcc-fleet` (`6065687`), the fix is `8ef4bfa`, and the entry point is
 `abcc fleet`. **345 tests passing, 10 ignored, clippy clean under `-D warnings`.**

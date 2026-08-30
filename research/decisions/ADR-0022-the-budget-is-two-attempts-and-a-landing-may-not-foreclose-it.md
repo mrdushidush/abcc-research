@@ -6,7 +6,7 @@
   **what the number counts** is fixed here. ⚠ It also adds a fourth caller to
   [ADR-0004](ADR-0004-task-lifecycle.md)'s `Requeue` edge, and a fourth
   `RequeueReason`, without touching the transition table.
-- **Date:** 2026-08-31
+- **Date:** 2026-08-30
 - **Deciders:** David, two calls, on the Fleet build; the first is falsifiable by one test and the
   test was written the wrong way round first
 - **Sources:** `research/FLEET-P2-the-receiver.md` F548, F549 · W4 F373 (the `pass@k` curve),

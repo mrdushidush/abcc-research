@@ -1,12 +1,12 @@
 # FLEET build — the receiver for `Landed::next`, and the two things it found in the design
 
 **Status: the centre of gravity is built and green.** Findings **F548–F549**; next free number is
-**F550**. Built 2026-08-31 against `D:\dev\abcc` at `e51d633`, landed as `8ef4bfa` (the fix) and
+**F550**. Built 2026-08-30 against `D:\dev\abcc` at `e51d633`, landed as `8ef4bfa` (the fix) and
 `6065687` (the crate). **345 tests passing, 10 ignored, clippy clean under `-D warnings`, rustfmt
 clean.** No GPU time was spent: everything below is against a real git repository and a scripted
 model, because what is under test is the fleet's arithmetic and the state machine underneath it.
 
-✅ **BOTH CALLS TAKEN BY DAVID, 2026-08-31 — written up as ADR-0022.**
+✅ **BOTH CALLS TAKEN BY DAVID, 2026-08-30 — written up as ADR-0022.**
 
 1. 🚨 **A retryable ending lands `Queued`, not `Failed`** — the recommendation and the landing
    were in contradiction and the landing won, silently, for the whole of Skeleton and Gate.
@@ -112,7 +112,7 @@ twice"* is then the scheduler dispatching `Attempt` for both, which is what a sc
 `Fresh` in its vocabulary does; the shipped `Cause` enum has one, and that is where the two readings
 part.
 
-▶ **David's call, 2026-08-31: two attempts, one retry.** The difference is 50% of the GPU time
+▶ **David's call, 2026-08-30: two attempts, one retry.** The difference is 50% of the GPU time
 spent on every failing task, so it is worth the paragraph.
 
 ### A budget is spent on a line of enquiry, not on a task
