@@ -50,6 +50,15 @@ alpha across a third of the body, not an anti-aliased rim. Sixel has no alpha ch
 threshold-128 rule punches visible holes in a *floating* sprite. Blended onto the composite the
 feathering renders correctly and costs ~1 ms.
 
+> ⚠ **Corrected 2026-08-30 (F561), one label, not the ruling.** The 5,062 reproduces **exactly**
+> through a decode path written for `abcc-tui` rather than for the spike. The full distribution on
+> `cto-E-idle` at 292×221 is: clear (alpha 0) **49,466** · alpha 1–127 **5,062** · alpha 128–254
+> **3,983** · opaque **6,021**. So *"~10,000 opaque"* is the set a threshold-128 rule **keeps**
+> (6,021 + 3,983 = 10,004), not the set that is opaque, which is **6,021**. The argument is
+> unchanged and slightly starker than its label: of the **15,066** pixels visible at all, **9,045
+> carry partial alpha** — the majority — and the threshold erases a third of them. See
+> `research/CONSOLE-P3-the-encoder-the-composite-and-the-corpus.md` §3.
+
 ### 3. SSE + SQLite, and one integer with four roles
 
 **`seq` is the event id, the SSE `Last-Event-ID`, the paged-read cursor and the scrub position**
@@ -114,6 +123,13 @@ field names stay military even with the theme off.**
 - **The 44 MB of art and the 96 voice lines finally have an expression.** They are copied assets
   (ADR-0001), and two lifecycle states have no line yet (`Holding`, `Commandeered`) — an asset-list
   item that blocks nothing.
+
+  > 🚨 **Corrected 2026-08-30 (F560).** `sprites/` is **28 files and 16 distinct images**: every
+  > `qa-*.png` is a byte-identical copy of its `cto-*` twin, twelve pairs, verified by hash. **The
+  > battlefield has one humanoid design, not two** — the QA unit and the CTO unit cannot be told
+  > apart by their art, so colour, position and label are what separate them. The four GIFs are
+  > `attacking` only and east/west only: no idle animation, no north or south facing. A roster
+  > design that assumed a sprite per role has to be revised.
 - **Two spike-scale unknowns remain and neither blocks the design**: sixel over the *inline*
   viewport (the spike used the alternate screen throughout), and WT's canvas renderer versus
   Direct3D on other machines.
