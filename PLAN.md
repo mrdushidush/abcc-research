@@ -326,10 +326,35 @@ enumerated and frozen per attempt · `NextAction { Attempt | Stop | HandToOperat
 budget 2 and no pre-dispatch estimate · **the breaker that reports and never gates, and whose
 input is a real one-token completion** (F539).
 
-🚨 **Retry budget 2 is still enforced NOWHERE, and that is now this milestone's centre of
-gravity.** `Driver::run` already returns `Landed::next` and nothing receives it. With one slot
-the receiver is a **loop, not a scheduler** — *less* work than the two-slot version, and the
-same design.
+✅ **BUILT 2026-08-31 — the receiver exists, and building it found two things the design had
+wrong.** `research/FLEET-P2-the-receiver.md`, findings **F548–F549**, ruled the same day as
+**ADR-0022**. The crate is `abcc-fleet` (`6065687`), the fix is `8ef4bfa`, and the entry point is
+`abcc fleet`. **345 tests passing, 10 ignored, clippy clean under `-D warnings`.**
+
+* 🚨🚨 **F548 — THE DRIVER'S LANDING FORECLOSED ITS OWN RECOMMENDATION.** A retryable ending
+  returned `next: Attempt { Retry }` beside `landing: Failed`, and `Failed` is terminal:
+  `TaskState::apply` refuses every command on a terminal state *before* it reaches the transition
+  table, and `Driver::run` opens with `Deploy`. **The retry budget could not have been spent from
+  anywhere in the system.** ⚠ Both halves have been asserted in a passing test since Skeleton;
+  neither asked whether the second was reachable from the first, and none could, because acting
+  on a `NextAction` is exactly what nothing did. **A recommendation nothing receives is a
+  recommendation nothing checks.** Fixed: a retryable ending lands `Queued`, and the same ending
+  with no attempt in hand lands `AwaitingOrders` with a question that names the budget.
+* 🚨 **F549 — "retry budget 2" read two ways and the shipped types read it the wrong one.**
+  `Cause::spends_retry_budget()` counts only `Retry`, so a literal reading gives three attempts.
+  F373's table is `pass@k` over *total* attempts — the second buys 6.4–21.1 points, the third
+  0.7–6.7 — and ADR-0010 §3's own heading (*"the third attempt is a per-population decision"*)
+  only parses if budget 2 is attempts 1 and 2. ▶ **David ruled: two attempts, one retry.** It is
+  50% of the GPU spent on every failing task.
+* **The budget is one number in one place** (`abcc-fleet::budget::ATTEMPTS`) and the driver is
+  told **one bit**, never the count — F392 is the donor defect where two mechanisms shared one
+  integer. It is spent on a **line of enquiry**: an `Edit` or a `Rescope` resets the chain and a
+  `Replay` spends nothing, which is `Cause`'s own distinction rather than a new one.
+
+⏸ **What this milestone still owes:** the tool-head set **enumerated and frozen per attempt**
+(ADR-0011), **a tool policy per slot** (which meets POSTURE's ADR-0014), **the breaker whose
+input is a real one-token completion** (F539), and — the only part that needs the box — **the
+exit measurement below, which has not been run.**
 
 **Retired 2026-08-30:** ~~*two slots plus a worktree plus a real build cannot hold inside
 31.92 GiB*~~ — **it held.** Two attempts, two worktrees and real `cargo` builds ran
@@ -517,10 +542,11 @@ template at `research/decisions/README.md`:
 | 19 | [The Judge keeps the rungs' counts and output — withholding them was probed and lost](research/decisions/ADR-0019-the-judge-keeps-the-rung-output.md) | F531, F534–F536 |
 | **20** | [**One slot (N=1) for now**; the memory clause is a **delta + `min_avail_mib` + the blind window**](research/decisions/ADR-0020-one-slot-for-now-and-a-delta-not-a-ceiling.md) | F539–F547 |
 | **21** | [The idle gap watches whether the stream is **delivering**, not whether the model is **saying** anything](research/decisions/ADR-0021-the-idle-gap-watches-delivery-not-content.md) | F537, F538 |
+| **22** | [**Budget 2 = two attempts, one retry**; and a landing may not foreclose the recommendation beside it](research/decisions/ADR-0022-the-budget-is-two-attempts-and-a-landing-may-not-foreclose-it.md) | F548, F549 |
 
 🚨 **Twenty-one now, and rows 17–21 were added 2026-08-30 — this mirror had been
 stale at 16.** **ADR-0020** supersedes **ADR-0003’s count only** (N=2 → N=1; the slot abstraction
-stands) and revises ADR-0006’s thread inventory; **ADR-0021** amends **ADR-0015 §1**.
+stands) and revises ADR-0006’s thread inventory; **ADR-0021** amends **ADR-0015 §1**; **ADR-0022** amends **ADR-0010 §2 and §3** — the stopping rule stands and *what the number counts* is fixed, and it adds a fourth caller to ADR-0004's `Requeue` edge without touching the transition table.
 
 `research/benchmarks/` — §12 also lists this. It is **satisfied in substance already**:
 `research/spikes/` holds the reproducible drivers and `runs/hw-probe/` plus the 62 manifests are now

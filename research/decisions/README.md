@@ -9,8 +9,8 @@ records consumed by `PLAN.md`, never backfilled with dates after the fact (`rese
 from a running system rather than from a workstream, correcting three things the first two real
 runs found, and **ADR-0016** the same day from ten of them. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
 workstream, and **the evidence lives in the workstream doc, not here** — an ADR cites `Wn` and a
-finding id, states the ruling, and says what would overturn it. Findings F1–F547 are closed; next
-free is **F548**.
+finding id, states the ruling, and says what would overturn it. Findings F1–F549 are closed; next
+free is **F550**.
 
 ## The template
 
@@ -59,6 +59,7 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | 19 | [ADR-0019](ADR-0019-the-judge-keeps-the-rung-output.md) | The Judge keeps the rungs' counts and output — withholding them was probed and lost | F531, F534–F536 |
 | **20** | [ADR-0020](ADR-0020-one-slot-for-now-and-a-delta-not-a-ceiling.md) | **One slot (N=1) for now**; the memory clause is a **delta + `min_avail_mib` + the blind window** | F539–F547 |
 | **21** | [ADR-0021](ADR-0021-the-idle-gap-watches-delivery-not-content.md) | The idle gap watches whether the stream is **delivering**, not whether the model is **saying** anything | F537, F538 |
+| **22** | [ADR-0022](ADR-0022-the-budget-is-two-attempts-and-a-landing-may-not-foreclose-it.md) | **Budget 2 = two attempts, one retry**; and a landing may not foreclose the recommendation beside it | F548, F549 |
 
 **Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and ADR-0016 as of 2026-08-29,
 ADR-0017 as of 2026-08-30, ADR-0018 as of 2026-08-31, ADR-0019 as of 2026-08-29. ⚠ ADR-0017 is the first written **from a
@@ -70,12 +71,15 @@ about prose beside a diff is 0 of 3, so the charter was changed to match the evi
 the evidence assumed to match the charter. 🚨 **ADR-0019 is the first decided by a PROBE rather than by an argument or a
 ruling**: F531 left an open question about the brief, David's answer was *measure it before you
 change it*, and the measurement — 15 calls over 3 shams under both views — says the change loses.
-The rejected alternative is kept in the tree as the instrument that rejected it. **Seven** carry a
+The rejected alternative is kept in the tree as the instrument that rejected it. **Nine** carry a
 David ruling rather than a research conclusion: **ADR-0001** (rewrite, not port), **ADR-0004** (the
 lifecycle names, OQ-W3-6), **ADR-0009** (only deterministic rungs may refuse), **ADR-0012** (TUI
-primary, 2026-08-19), **ADR-0015** (three rulings, 2026-08-29) and **ADR-0017** (a correct tree is
-one that could land, 2026-08-30) and **ADR-0019** (probe the shams before changing the brief,
-2026-08-29). 🚨 **Three supersede another in part, and none supersedes one whole.** ADR-0015 takes ADR-0006 § *Timeouts*; **ADR-0020** takes **ADR-0003's *count* only** — N=2 – 1, with the slot abstraction and every other consequence intact, and revises ADR-0006's thread-inventory row *attempt workers = 2* to **1**; **ADR-0021** amends **ADR-0015 §1**, which established that the gap is ours but left *what a gap is* implicit — and it was implemented as *no delta arrived*, which is a content detector.
+primary, 2026-08-19), **ADR-0015** (three rulings, 2026-08-29), **ADR-0017** (a correct tree is
+one that could land, 2026-08-30), **ADR-0019** (probe the shams before changing the brief,
+2026-08-29), **ADR-0020** (one slot, and a delta rather than a ceiling, 2026-08-30) and
+**ADR-0022** (two attempts, and lands `Queued` rather than `Failed`, 2026-08-31). 🚨 **Four supersede another in part, and none supersedes one whole.** ADR-0015 takes ADR-0006 § *Timeouts*; **ADR-0020** takes **ADR-0003's *count* only** — N=2 – 1, with the slot abstraction and every other consequence intact, and revises ADR-0006's thread-inventory row *attempt workers = 2* to **1**; **ADR-0021** amends **ADR-0015 §1**, which established that the gap is ours but left *what a gap is* implicit — and it was implemented as *no delta arrived*, which is a content detector; **ADR-0022** amends **ADR-0010 §2 and §3**, which set the budget and stated it in two ways the shipped `Cause` enum reads differently — the stopping rule stands and *what the number counts* is fixed.
+
+🚨 **ADR-0022 is the first found by BUILDING the receiver rather than by measuring or arguing.** `abcc-drive` had returned a `NextAction` since Skeleton and its own doc said nothing was built to receive it; the moment something did, two values that were each correct in isolation turned out to contradict each other — `next: Attempt` beside a terminal landing, both asserted in a passing test since Skeleton. ⚠ **A recommendation nothing receives is a recommendation nothing checks.**
 
 🚨 **ADR-0020 and ADR-0021 are the first pair where the probe overturned the premise it was written to test.** `PLAN.md`'s FLEET milestone existed because *two turns in flight push each other past the 90 s idle gap*; that had never been measured, is false (F545), and the thing actually killing turns was the detector itself (F537) — caught only because `hw-probe` was sampling the GPU at 75% utilisation through a 90-second *"silence"*. ⚠ **ADR-0020's N=1 is NOT ADR-0003's own falsifier firing**: two slots plus two worktrees plus real builds *held* inside 31.92 GiB. The count drops because the second slot bought nothing measurable (F546), which is the opposite reason.
 
