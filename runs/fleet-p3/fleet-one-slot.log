@@ -1,0 +1,49 @@
+boot  2400 events replayed, 28 task(s)
+      still waiting on you: t1217, t1851, t1962, t2254
+model model confirmed: asked qwen3.6-35b-a3b-mtp@iq3_s, the server reports it has loaded qwen3.6-35b-a3b-mtp@iq3_s, matched exactly
+pulse before the attempt: 1 token(s) in 300 ms — "Thinking", reasoning only
+
+fleet   one slot at exec, 2 attempts per task, on qwen3.6-35b-a3b-mtp@iq3_s
+watch:  abcc watch, in another terminal
+⚠ no control desk here — `abcc run --task t42` is the one with the verbs
+
+
+a2407 ended Uncertain { why: BudgetExhausted { which: "24 rounds" } }
+localize  5 turn(s), 6 tool call(s), 0 denial(s), 35693+2823 tokens (1343 reasoning), trace Closed, 46671 ms
+change    24 turn(s), 26 tool call(s), 0 denial(s), 539047+7701 tokens (4317 reasoning), trace Closed, 142471 ms
+kept      2da3539d86b0be5895b96220abf619b7b52634ba
+gate      not asked — the attempt produced no artifact
+judge     not asked — see the log for why
+task      STANDING BY
+next      Attempt { cause: Retry { of: AttemptId(Seq(2407)) } }  (a recommendation; nothing acted on it)
+
+a2553 ended Uncertain { why: SaidNothing { by: "Recon", completion_tokens: 58, reasoning_tokens: Some(53) } }
+localize  9 turn(s), 8 tool call(s), 0 denial(s), 60690+1358 tokens (1002 reasoning), trace Closed, 28548 ms
+change    did not run — Localize produced no artifact
+kept      545239d9eb4c761656293d1fa17382547b2aa534
+gate      not asked — the attempt produced no artifact
+judge     not asked — see the log for why
+task      INTERVENTION REQUIRED
+next      Attempt { cause: Retry { of: AttemptId(Seq(2553)) } }  (a recommendation; nothing acted on it)
+
+This work is not accepted. Read the checkpoint, then:
+
+  abcc accept <task>   you have read it and take responsibility for it
+  abcc reject <task>   it is not good and the task stops
+
+------------------------------------------------------------
+sortie  2 attempt(s) flown, and nothing is standing by
+
+1 attempt(s) are waiting on you: a2553
+Read each checkpoint, then `abcc accept <task>` or `abcc reject <task>`.
+hw-probe [P3-fleet-one-slot]  219.5s
+  peak VRAM      15402 / 16311 MiB (94.4%)   [sampled, blind window 120 ms]
+  peak temp      78 C   thermal throttle: no   reasons seen: none
+  peak commit    37.79 / 63.92 GiB (59.1%)   [sampled, blind window 1051 ms]
+  min available  11984 MiB
+  pid 12992      peak 14312 MiB on-card + 434.0 MiB host-shared (host-shared is not eviction — see focus_gpu_bytes)
+  pid RAM        peak working set 4.77 GiB (EXACT — kernel high-water mark), +3.41 GiB during this window
+  gpu cadence   n=1995 nominal=100 ms actual mean=110 ms min=100 max=120
+  host cadence   n=212 nominal=1000 ms actual mean=1030 ms min=195 max=1051
+  note: command: D:/dev/abcc/target/debug/abcc.exe fleet --model qwen3.6-35b-a3b-mtp@iq3_s
+  wrote D:/dev/_fleet-p3/fleet-one-slot.json and D:/dev/_fleet-p3/fleet-one-slot.jsonl

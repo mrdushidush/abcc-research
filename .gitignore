@@ -38,6 +38,18 @@ scratch/
 !/runs/fleet-p1/SEQ1.jsonl
 !/runs/fleet-p1/SEQ-F1.jsonl
 
+# FLEET exit measurement, 2026-08-30 (F553). Same rationale as the block above and
+# smaller: these are the rows a later session cannot re-derive, because a peak is only
+# comparable against its OWN session's baseline (F488, F540) and this session's unloaded
+# baseline was 18.20 GiB. Four hw-probe summaries plus the two sortie transcripts, ~40 KB.
+#   /runs/fleet-p3/*.json  the 4 arm summaries, headline + full per-metric stats
+#   /runs/fleet-p3/*.log   the 2 sortie transcripts — the ROOT `*.log` rule hides these
+#                          too, so this negation is needed as well as the /runs/** one.
+# The four .jsonl traces (4 MB) stay out: nothing in them settles a question the way
+# fleet-p1's SEQ1/SEQ-F1 separated a false hang from a true one.
+!/runs/fleet-p3/*.json
+!/runs/fleet-p3/*.log
+
 __pycache__/
 *.pyc
 research/spikes/w4-logprobs/lp-rep*.jsonl

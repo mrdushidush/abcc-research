@@ -1,0 +1,52 @@
+boot  2598 events replayed, 29 task(s)
+      still waiting on you: t1217, t1851, t1962, t2254, t2400
+model model confirmed: asked qwen3.6-35b-a3b-mtp@iq3_s, the server reports it has loaded qwen3.6-35b-a3b-mtp@iq3_s, matched exactly
+pulse before the attempt: 1 token(s) in 409 ms — "Thinking", reasoning only
+
+fleet   one slot at exec, 2 attempts per task, on qwen3.6-35b-a3b-mtp@iq3_s
+watch:  abcc watch, in another terminal
+⚠ no control desk here — `abcc run --task t42` is the one with the verbs
+
+
+a2605 ended Success
+localize  5 turn(s), 3 tool call(s), 0 denial(s), 12509+6321 tokens (5874 reasoning), trace OpenAt200, 83825 ms
+change    9 turn(s), 7 tool call(s), 0 denial(s), 74954+4999 tokens (2223 reasoning), trace Closed, 103799 ms
+kept      69358eda231c1d91193f241b1ac6c50876cb7d68
+    ok    structural  exit 0
+          1 file(s) changed: crates/abcc-fleet/src/budget.rs
+    ok    acceptance  exit 0
+          Doc-tests abcc_core
+          Doc-tests abcc_drive
+          Doc-tests abcc_engine
+          Doc-tests abcc_fleet
+    ok    veto        exit 0
+          nothing vetoed
+    ok    standard    exit 0
+          Checking abcc-tui v0.1.0 (C:\Users\david\AppData\Local\abcc\abcc-1ae35b6091a63e2c\worktrees\t2598-2603\crates\abcc-tui)
+          Checking reqwest v0.13.4
+          Checking abcc-engine v0.1.0 (C:\Users\david\AppData\Local\abcc\abcc-1ae35b6091a63e2c\worktrees\t2598-2603\crates\abcc-engine)
+          Checking abcc-gate v0.1.0 (C:\Users\david\AppData\Local\abcc\abcc-1ae35b6091a63e2c\worktrees\t2598-2603\crates\abcc-gate)
+gate      checks passed (4 measured) (4 of 4 rung(s) measured)
+judge     1 turn(s), 0 tool call(s), 0 denial(s), 1905+1478 tokens (1359 reasoning), trace Closed, 22172 ms
+
+Commandos — a report, and it decided nothing:
+
+  Reviewed the change and reported no findings.
+  
+  This change adds the requested `retries()` function directly adjacent to the existing `available` helper in `crates/abcc-fleet/src/budget.rs`, along with a unit test that validates both the return value and its relationship to `ATTEMPTS`. Compilation succeeds across the entire workspace, and the acceptance suite completes with zero failures, confirming correct integration and no regressions. No defects were found; the implementation matches the task specification exactly and passes all measured checks.
+task      MISSION ACCOMPLISHED
+next      Stop  (a recommendation; nothing acted on it)
+
+------------------------------------------------------------
+sortie  1 attempt(s) flown, and nothing is standing by
+hw-probe [P3-fleet-one-slot-with-build]  292.1s
+  peak VRAM      15687 / 16311 MiB (96.2%)   [sampled, blind window 166 ms]
+  peak temp      71 C   thermal throttle: no   reasons seen: none
+  peak commit    44.42 / 63.92 GiB (69.5%)   [sampled, blind window 4168 ms]
+  min available  6742 MiB
+  pid 12992      peak 14312 MiB on-card + 434.0 MiB host-shared (host-shared is not eviction — see focus_gpu_bytes)
+  pid RAM        peak working set 7.37 GiB (EXACT — kernel high-water mark), +2.08 GiB during this window
+  gpu cadence   n=2655 nominal=100 ms actual mean=110 ms min=100 max=166
+  host cadence   n=260 nominal=1000 ms actual mean=1119 ms min=640 max=4168
+  note: command: D:/dev/abcc/target/debug/abcc.exe fleet --model qwen3.6-35b-a3b-mtp@iq3_s
+  wrote D:/dev/_fleet-p3/fleet-with-build.json and D:/dev/_fleet-p3/fleet-with-build.jsonl

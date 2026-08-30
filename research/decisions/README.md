@@ -9,8 +9,8 @@ records consumed by `PLAN.md`, never backfilled with dates after the fact (`rese
 from a running system rather than from a workstream, correcting three things the first two real
 runs found, and **ADR-0016** the same day from ten of them. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
 workstream, and **the evidence lives in the workstream doc, not here** — an ADR cites `Wn` and a
-finding id, states the ruling, and says what would overturn it. Findings F1–F549 are closed; next
-free is **F550**.
+finding id, states the ruling, and says what would overturn it. Findings F1–F556 are closed; next
+free is **F557**.
 
 ## The template
 
@@ -60,9 +60,14 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | **20** | [ADR-0020](ADR-0020-one-slot-for-now-and-a-delta-not-a-ceiling.md) | **One slot (N=1) for now**; the memory clause is a **delta + `min_avail_mib` + the blind window** | F539–F547 |
 | **21** | [ADR-0021](ADR-0021-the-idle-gap-watches-delivery-not-content.md) | The idle gap watches whether the stream is **delivering**, not whether the model is **saying** anything | F537, F538 |
 | **22** | [ADR-0022](ADR-0022-the-budget-is-two-attempts-and-a-landing-may-not-foreclose-it.md) | **Budget 2 = two attempts, one retry**; and a landing may not foreclose the recommendation beside it | F548, F549 |
+| **23** | [ADR-0023](ADR-0023-a-slot-narrows-the-head-not-just-the-check.md) | A slot's ceiling **narrows the head itself**, not just the check under it — the advertised and enforced surfaces are one list | F404–F422, F551, F552 |
 
-**Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and ADR-0016 as of 2026-08-29,
-ADR-0017 as of 2026-08-30, ADR-0018 as of 2026-08-31, ADR-0019 as of 2026-08-29. ⚠ ADR-0017 is the first written **from a
+**Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 through ADR-0019 as of
+2026-08-29, and ADR-0020 through ADR-0023 as of 2026-08-30. ⚠ **ADR-0017 and ADR-0018 carried
+2026-08-30 and 2026-08-31 until 2026-08-30 (F556)**, and both were corrected against the commit
+that added the file — `df6c55c` and `4f65779`, both 2026-08-29. The other twenty agree exactly.
+The opening of this file is why it matters: a record *"never backfilled with dates after the fact"*
+is a claim about its dates being true. ⚠ ADR-0017 is the first written **from a
 running system rather than before one**: the gate was built and put to all 25 real attempts on the
 log, and only then was its one open question put to David. ADR-0018 is written the same way, from
 two live reviews — and it is the one that **corrected a prompt this project had already

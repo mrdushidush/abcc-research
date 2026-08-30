@@ -2,7 +2,7 @@
 
 - **Status:** ✅ **Accepted** — the *correct tree* clause is **David's ruling of 2026-08-30**
   (§ *David's ruling*, below); the rest was built and measured before it was put to him
-- **Date:** 2026-08-30
+- **Date:** 2026-08-29
 - **Deciders:** David (**the bar is mergeability**, 2026-08-30), written by Claude Code from a
   running gate; the refusal clause it rests on is David's ruling of 2026-08-28 (ADR-0009 §4)
 - **Sources:** **F512** (six working implementations, clippy refuses six), **F516** (a tree changed

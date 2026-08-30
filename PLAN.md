@@ -313,10 +313,11 @@ silently. *A diff is a rendering, and a rendering can be wrong about a change th
 ### ▶ FLEET — one slot on one box
 
 ✅ **DAVID RULED 2026-08-30, after the probe: `--parallel 1`, ONE SLOT. Two slots are
-DEFERRED, not cancelled** — *"we will revise it in the future"*. The milestone is **descoped,
-not dropped**: everything in it that is not the second slot is still owed, and F539 made one of
-those items sharper rather than softer. **Do not re-argue the slot count** — the one measurement
-that would reopen it is named at the foot of this block.
+DEFERRED, not cancelled** — *"we will revise it in the future"*. The milestone was **descoped,
+not dropped**, and everything in it that is not the second slot was then built and measured (see
+CLOSED, below). **Do not re-argue the slot count** — the one measurement that would reopen it is
+named at the foot of this block, and the one-slot memory numbers there are a second, independent
+reason for the same answer.
 
 **Goal:** answer SUMMARY.md's risk 2 with the real workload rather than an idle probe.
 
@@ -351,10 +352,47 @@ wrong.** `research/FLEET-P2-the-receiver.md`, findings **F548–F549**, ruled th
   integer. It is spent on a **line of enquiry**: an `Edit` or a `Rescope` resets the chain and a
   `Replay` spends nothing, which is `Cause`'s own distinction rather than a new one.
 
-⏸ **What this milestone still owes:** the tool-head set **enumerated and frozen per attempt**
-(ADR-0011), **a tool policy per slot** (which meets POSTURE's ADR-0014), **the breaker whose
-input is a real one-token completion** (F539), and — the only part that needs the box — **the
-exit measurement below, which has not been run.**
+✅✅ **CLOSED 2026-08-30.** The four remaining items are done and the exit clause is measured:
+`research/FLEET-P3-the-slot-the-breaker-and-the-bill.md`, findings **F550–F556**, **ADR-0023**.
+`ac02ff5` (the slot ceiling) and `6fbaf4f` (the breaker). **368 tests, 10 ignored, clippy clean
+under `-D warnings`, rustfmt clean.** 🎉 **And the retry budget was spent for real, on the GPU,
+for the first time** — one sortie flew `Fresh` then `Retry` then `AwaitingOrders`, which is
+ADR-0022 happening rather than being argued about, and is what F548's fix bought.
+
+* ⚠ **The frozen tool-head set was already built and tested. Struck rather than rebuilt** —
+  `Head::policy()` was a `const fn` over a compile-time registry and 23 tests already covered it,
+  including the `ptr::eq` freeze test. 🚨 **The one gap was in the plan's favour**: this document
+  asks for the set frozen *per attempt* and the code froze it for the life of the process, which
+  is stronger than asked and made the qualifier vacuous. The slot ceiling below is what makes
+  *per attempt* exact.
+* 🚨 **F552 — a tool policy per slot has to narrow the HEAD, not just the check.** Enforcement
+  alone is a trap: a `Builders` capped at `Read` whose prompt still advertised `run_tests` would
+  ask, be refused and be told on **every attempt forever**, spending a tool round to learn
+  something the prompt could have said. So `Head` alone can no longer answer *what tools do I
+  have*: the unit is `Posting { head, ceiling }`, the table is nine and not four, and the prompt,
+  the wire `tools` array and `Policy::admits` are three renderings of one list. **ADR-0023.**
+* 🚨 **F551 — this document’s own falsifier for that item rested on a false premise.** It said
+  the refusal *"must be `Why::Denied`, which is a `HardFailure` and `NextAction::Stop`"*. The
+  driver does classify it that way and **nothing can reach that arm**: every producer of
+  `Why::Denied` writes it to `ToolCallEnded.unmeasured`, a log field, and no
+  `Ending::Unmeasured(Why::Denied)` is constructed anywhere. A denial is a normal outcome *inside*
+  a phase — the model is told and the round loop continues. Had the premise held, a capped slot
+  would have been a foot-gun. ▶ **The same shape as F548, running the other way:** a
+  classification nothing can produce, beside a recommendation nothing could receive.
+* 🚨🚨 **F550 — the breaker’s first pulse called a healthy champion dead.** It read
+  `choices[0].message.content` and reported `SILENT after 243 ms` against a loaded, idle,
+  fingerprint-confirmed server. A positive control in the same shell said why: at `max_tokens` of
+  **1, 8 and 64** the champion returns `content: ""` every time and puts every token in
+  `reasoning_content`. ▶ **The instrument is `usage.completion_tokens >= 1`** — waiting for prose
+  is not the fix, because the trace runs 9,942–16,564 characters on identical input (F246). ⚠ A
+  zero from an unvalidated instrument is not a measurement, and this one would have reported an
+  outage on every healthy run.
+* **The breaker reports and never gates**, and its two inputs answer two different questions: the
+  rate is F374’s update rule over this log’s own population, and the pulse is a measurement.
+  🚨 `Uncertain` is counted **apart from** failure — F539’s wedge ends every attempt
+  `SaidNothing` or `Timeout`, and counting those as failures gives a confident **0% over a large
+  sample** about a server that is not answering at all. ▶ **A rate cannot tell a hard task from a
+  dead server; only the pulse can**, which is what F539 was saying.
 
 **Retired 2026-08-30:** ~~*two slots plus a worktree plus a real build cannot hold inside
 31.92 GiB*~~ — **it held.** Two attempts, two worktrees and real `cargo` builds ran
@@ -363,8 +401,33 @@ attributable to memory (F547). ⚠ *Held* is doing work in that sentence: commit
 reached **50.02 GiB against 31.92 GiB physical**, so the box was paging. The hypothesis is dead;
 the margin never was generous.
 
-**Exit — RESTATED BY DAVID 2026-08-30, replacing the 28.03 GiB clause:** one attempt at a time,
-with a worktree and a real build, measured with `hw-probe` and reported as **three numbers, not one**:
+**Exit — RESTATED BY DAVID 2026-08-30, replacing the 28.03 GiB clause, and ✅ MET 2026-08-30:**
+one attempt at a time, with a worktree and a real build, measured with `hw-probe` and reported as
+**three numbers, not one**. 🚨 **F553 — the answer, four arms in one session, sample counts read
+before any number was believed (F544; 547–2,655 GPU and 58–260 host samples, none zero):**
+
+| arm | peak commit | `min_avail_mib` | `max_gap_ms` |
+|---|---|---|---|
+| baseline, **unloaded**, same session | 18.20 GiB | 16,674 | 1,016 |
+| baseline, loaded and idle | 34.06 GiB | 15,790 | 1,043 |
+| sortie, the gate never reached | 37.79 GiB | 11,984 | 1,051 |
+| **sortie, with the gate’s cold build** | **44.42 GiB** | **6,742** | **4,168** |
+
+▶ **The delta is 26.22 GiB**, `min_avail_mib` is **6,742**, and the blind window is **4,168 ms**.
+**The model load reproduces a third time** — 15.86 GiB here against 15.24 and 16.01 in two earlier
+sessions, from three different absolute baselines. **And the gate’s build is the bill**: an
+attempt costs 3.74 GiB over a loaded-idle box and 10.37 GiB with the gate, so **6.63 GiB of it is
+the cold `cargo` build** — F542 from the other side. ⚠ **The box was paging**: 44.42 GiB of commit
+against 31.92 GiB of physical. Nothing failed and all four rungs were measured, but *held* is doing
+work in that sentence, as it was in F547.
+
+⚠ **Against two slots, only where the comparison is legal.** F547’s 50.02 GiB is a different
+session’s absolute and is **not** comparable — that is the whole of F540. Free physical RAM and
+scheduler latency are, because neither is cumulative: `min_avail_mib` **6,742 against 2,976**
+(2.3× the headroom) and a blind window of **4.2 s against 19.6 s** for two concurrent builds.
+ADR-0020 was ruled on throughput evidence; this is an independent second reason for it.
+
+The clause as David restated it:
 
 1. **The delta over a same-session baseline.** Never an absolute. The old clause was already
    unmeetable: this session's *unloaded idle* baseline was **17.58 GiB** against session 19's
@@ -406,6 +469,23 @@ run: two real attempts on `D:\dev\abcc`, sequentially and concurrently, one `lla
   slots down until `lms load`. The breaker's input must be a real one-token completion, and
   `NextAction`'s retry budget 2 would otherwise spend both retries against a server that cannot
   answer.
+
+⏸ **TWO CALLS CARRIED OUT OF THIS MILESTONE, both David’s, neither blocking it.**
+
+1. **Should a silent pulse refuse a preflight?** ADR-0010 §4’s *reports and never gates* is aimed
+   at a **statistical** verdict, which the rate is. The pulse is not one — the host asked for a
+   token and watched what happened, which is the shape ADR-0008 lets refuse. F539 spent both
+   retries against a server that could not answer; F550 is a live demonstration that a health
+   check can be confidently wrong. **It ships as a report until ruled otherwise.**
+2. 🚨 **F555 — the gate said MISSION ACCOMPLISHED about a tree `cargo fmt --check` refuses.**
+   All four rungs green, the Judge reporting no findings, and the one function the run wrote has a
+   single-line body rustfmt reformats. The `standard` rung is
+   `cargo clippy --all-targets -- -D warnings`, witnessed by `clippy.toml`; **rustfmt is in none of
+   the four rungs**. ADR-0017’s criterion is *a correct tree is one that could land*, and this one
+   cannot land here without a reformat. ⚠ Same shape as Skeleton’s run 10 failing clippy by one
+   line — the pattern recurred one rung lower. ▶ Add `cargo fmt --check` to the cargo standard
+   unconditionally, or witness it on `rustfmt.toml` (which this repository does not have).
+   **Not changed unilaterally: it moves what the gate accepts, and that is the product.**
 
 ⏸ **WHAT WOULD REOPEN THE SLOT COUNT, and nothing smaller.** F546's whole point is that a
 1.1× difference under 2.7× noise is not a measurement, so *one more pair proves nothing*. The

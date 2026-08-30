@@ -1,7 +1,7 @@
 # ADR-0018 — The Judge reports, in both directions: it cannot refuse an attempt, and it cannot fail one
 
 - **Status:** ✅ **Accepted** — written from a running Judge, after two live reviews on the champion
-- **Date:** 2026-08-31
+- **Date:** 2026-08-29
 - **Deciders:** Claude Code, building A4 under ADR-0008's four rules; the refusal clause it rests on
   is **David's ruling of 2026-08-28** (ADR-0009 §4, *only deterministic rungs may refuse*)
 - **Sources:** ADR-0008's residue measurements — **F275–F284** (pairwise 14/14 against pointwise
