@@ -1,0 +1,17 @@
+boot  2 events replayed, 1 task(s)
+task  t2 version flag
+model model confirmed: asked qwen3.6-35b-a3b-mtp@iq3_s, the server lists (without saying what it has loaded) C:\Users\david\.lmstudio\models\byteshape\Qwen3.6-35B-A3B-MTP-GGUF\Qwen3.6-35B-A3B-IQ3_S-3.06bpw.gguf, matched on the operator's fingerprint "IQ3_S"
+
+running t2 in unit unit-0 on qwen3.6-35b-a3b-mtp@iq3_s
+control: type one of [pause | halt | kill | redirect <prompt> | resume] and press enter
+watch:   abcc watch, in another terminal
+
+
+a8 ended SoftFailure { why: Timeout { after_ms: 90000 } }
+localize  4 turn(s), 7 tool call(s), 0 denial(s), 20597+2069 tokens (reasoning not reported), trace Closed, 33161 ms
+change    3 turn(s), 8 tool call(s), 0 denial(s), 21804+1207 tokens (reasoning not reported), trace Closed, 108553 ms
+kept      e0cf78c799765d22b48e0679471b33c9a4d0c7c0
+gate      not asked — the attempt produced no artifact
+judge     not asked — see the log for why
+task      MISSION FAILED
+next      Attempt { cause: Retry { of: AttemptId(Seq(8)) } }  (a recommendation; nothing acted on it)

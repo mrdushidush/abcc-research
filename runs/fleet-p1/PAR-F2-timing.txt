@@ -1,0 +1,8 @@
+PING before-PAR-F2 ok 1s
+ARM PAR-F2 mode=par start 2026-08-30T10:25:45+03:00
+A start 2026-08-30T10:25:45+03:00
+B start 2026-08-30T10:25:45+03:00
+B rc=0 wall=282s end 2026-08-30T10:30:27+03:00
+A rc=0 wall=378s end 2026-08-30T10:32:03+03:00
+ARM PAR-F2 mode=par total=378s end 2026-08-30T10:32:03+03:00
+PING after-PAR-F2 ok 4s

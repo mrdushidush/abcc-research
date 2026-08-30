@@ -1,0 +1,8 @@
+PING before-PAR-F3 ok 0s
+ARM PAR-F3 mode=par start 2026-08-30T10:54:45+03:00
+A start 2026-08-30T10:54:45+03:00
+B start 2026-08-30T10:54:45+03:00
+B rc=0 wall=866s end 2026-08-30T11:09:11+03:00
+A rc=0 wall=1004s end 2026-08-30T11:11:29+03:00
+ARM PAR-F3 mode=par total=1004s end 2026-08-30T11:11:29+03:00
+PING after-PAR-F3 ok 1s

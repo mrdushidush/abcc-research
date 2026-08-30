@@ -20,6 +20,24 @@ scratch/
 !/runs/hw-probe/**
 !/runs/**/runmeta.json
 
+# FLEET probe, David 2026-08-30. The third carve-out, and the first with a rationale
+# that is not "these rows ARE the answer": these are the rows a LATER session cannot
+# re-derive, because the box they were measured on had Chrome open (F540).
+#   /runs/fleet-p1/*.json  the 12 per-arm summaries          (226 KB with the two below)
+#   /runs/fleet-p1/*.txt   the 6 *-timing.txt
+#   /runs/fleet-p1/*.log   the 24 arm logs — note the ROOT `*.log` rule above also
+#                          hides these, so they need their own negation, not just the
+#                          /runs/** one.
+# And exactly two of the twelve .jsonl traces, 4.7 MB, out of 23 MB:
+#   SEQ1.jsonl / SEQ-F1.jsonl  carry the hw-probe GPU samples that separate F537's
+#                              FALSE hang (75% utilisation through a 90 s "silence")
+#                              from F538's true one. The other ten are routine.
+!/runs/fleet-p1/*.json
+!/runs/fleet-p1/*.txt
+!/runs/fleet-p1/*.log
+!/runs/fleet-p1/SEQ1.jsonl
+!/runs/fleet-p1/SEQ-F1.jsonl
+
 __pycache__/
 *.pyc
 research/spikes/w4-logprobs/lp-rep*.jsonl

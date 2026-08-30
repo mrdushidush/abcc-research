@@ -1,0 +1,17 @@
+boot  2 events replayed, 1 task(s)
+task  t2 version flag
+model model confirmed: asked qwen3.6-35b-a3b-mtp@iq3_s, the server lists (without saying what it has loaded) C:\Users\david\.lmstudio\models\byteshape\Qwen3.6-35B-A3B-MTP-GGUF\Qwen3.6-35B-A3B-IQ3_S-3.06bpw.gguf, matched on the operator's fingerprint "IQ3_S"
+
+running t2 in unit unit-0 on qwen3.6-35b-a3b-mtp@iq3_s
+control: type one of [pause | halt | kill | redirect <prompt> | resume] and press enter
+watch:   abcc watch, in another terminal
+
+
+a8 ended Uncertain { why: TruncatedAtCap { budget: 16384 } }
+localize  6 turn(s), 11 tool call(s), 0 denial(s), 46857+6053 tokens (reasoning not reported), trace Closed, 82587 ms
+change    4 turn(s), 8 tool call(s), 0 denial(s), 45276+18932 tokens (reasoning not reported), trace Closed, 152289 ms
+kept      4076df4f501b9b3fbe1d3d98eda0970bd6d4319e
+gate      not asked — the attempt produced no artifact
+judge     not asked — see the log for why
+task      MISSION FAILED
+next      Attempt { cause: Retry { of: AttemptId(Seq(8)) } }  (a recommendation; nothing acted on it)

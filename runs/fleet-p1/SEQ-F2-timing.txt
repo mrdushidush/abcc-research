@@ -1,0 +1,8 @@
+PING before-SEQ-F2 ok 0s
+ARM SEQ-F2 mode=seq start 2026-08-30T10:33:46+03:00
+A start 2026-08-30T10:33:46+03:00
+A rc=0 wall=456s end 2026-08-30T10:41:22+03:00
+B start 2026-08-30T10:41:22+03:00
+B rc=0 wall=656s end 2026-08-30T10:52:18+03:00
+ARM SEQ-F2 mode=seq total=1112s end 2026-08-30T10:52:18+03:00
+PING after-SEQ-F2 ok 1s

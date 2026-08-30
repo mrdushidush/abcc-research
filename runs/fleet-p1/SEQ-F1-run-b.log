@@ -1,0 +1,17 @@
+boot  2 events replayed, 1 task(s)
+task  t2 paths-only flag
+model model confirmed: asked qwen3.6-35b-a3b-mtp@iq3_s, the server lists (without saying what it has loaded) C:\Users\david\.lmstudio\models\byteshape\Qwen3.6-35B-A3B-MTP-GGUF\Qwen3.6-35B-A3B-IQ3_S-3.06bpw.gguf, matched on the operator's fingerprint "IQ3_S"
+
+running t2 in unit unit-1 on qwen3.6-35b-a3b-mtp@iq3_s
+control: type one of [pause | halt | kill | redirect <prompt> | resume] and press enter
+watch:   abcc watch, in another terminal
+
+
+a8 ended SoftFailure { why: Timeout { after_ms: 90000 } }
+localize  7 turn(s), 7 tool call(s), 0 denial(s), 38394+1163 tokens (reasoning not reported), trace Closed, 155709 ms
+change    did not run — Localize produced no artifact
+kept      38c1bf79df5d31521db76e6e30ebafb569b1483b
+gate      not asked — the attempt produced no artifact
+judge     not asked — see the log for why
+task      MISSION FAILED
+next      Attempt { cause: Retry { of: AttemptId(Seq(8)) } }  (a recommendation; nothing acted on it)

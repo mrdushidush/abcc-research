@@ -310,20 +310,87 @@ into a **190-line whole-file diff**: invisible to every rung, and **not** invisi
 whose entire design is `-` pre-image and `+` post-image. It would have degraded every K review
 silently. *A diff is a rendering, and a rendering can be wrong about a change that is right.*
 
-### ▶ FLEET — two slots on one box
+### ▶ FLEET — one slot on one box
+
+✅ **DAVID RULED 2026-08-30, after the probe: `--parallel 1`, ONE SLOT. Two slots are
+DEFERRED, not cancelled** — *"we will revise it in the future"*. The milestone is **descoped,
+not dropped**: everything in it that is not the second slot is still owed, and F539 made one of
+those items sharper rather than softer. **Do not re-argue the slot count** — the one measurement
+that would reopen it is named at the foot of this block.
 
 **Goal:** answer SUMMARY.md's risk 2 with the real workload rather than an idle probe.
 
-**Exists at the end:** admission as a projection of the store · two slots with a resident model and
-a tool policy each · workspaces isolated and **the gate serialized** · the tool-head set enumerated
-and frozen per attempt · `NextAction { Attempt | Stop | HandToOperator }` with retry budget 2 and no
-pre-dispatch estimate · the breaker that reports and never gates.
+**Exists at the end:** admission as a projection of the store · **one slot** with a resident
+model and a tool policy · workspaces isolated and **the gate serialized** · the tool-head set
+enumerated and frozen per attempt · `NextAction { Attempt | Stop | HandToOperator }` with retry
+budget 2 and no pre-dispatch estimate · **the breaker that reports and never gates, and whose
+input is a real one-token completion** (F539).
 
-**Retires:** *two slots plus a worktree plus a real build cannot hold inside 31.92 GiB.*
+🚨 **Retry budget 2 is still enforced NOWHERE, and that is now this milestone's centre of
+gravity.** `Driver::run` already returns `Landed::next` and nothing receives it. With one slot
+the receiver is a **loop, not a scheduler** — *less* work than the two-slot version, and the
+same design.
 
-**Exit:** two concurrent attempts, each with a worktree and a real build, measured with `hw-probe`
-against a **same-session baseline** (F488 — a `peak_committed_b` quoted across sessions is
-meaningless). Peak must stay under the 28.03 GiB ceiling of record with the box still responsive.
+**Retired 2026-08-30:** ~~*two slots plus a worktree plus a real build cannot hold inside
+31.92 GiB*~~ — **it held.** Two attempts, two worktrees and real `cargo` builds ran
+concurrently beside a resident 14 GiB model with **2,976 MiB still available** and no failure
+attributable to memory (F547). ⚠ *Held* is doing work in that sentence: commit charge
+reached **50.02 GiB against 31.92 GiB physical**, so the box was paging. The hypothesis is dead;
+the margin never was generous.
+
+**Exit — RESTATED BY DAVID 2026-08-30, replacing the 28.03 GiB clause:** one attempt at a time,
+with a worktree and a real build, measured with `hw-probe` and reported as **three numbers, not one**:
+
+1. **The delta over a same-session baseline.** Never an absolute. The old clause was already
+   unmeetable: this session's *unloaded idle* baseline was **17.58 GiB** against session 19's
+   8.99 — **because Chrome was open** — so loading the model alone reached 32.83 GiB, past a
+   "ceiling" the run had not begun to approach. The **delta reproduced to within 0.8 GiB**
+   (15.24 against 16.01 GiB) across those same two sessions. F488 said quote a peak against its
+   own baseline; this clause now obeys it instead of contradicting it (F540).
+2. **`min_avail_mib`** — the free-physical-RAM floor, which is what the box actually feels.
+   Measured at **2,976–3,155 MiB** under two attempts, and *the same in both modes*.
+3. **The blind window** (`max_gap_ms` on the host stream) — which is also the only instrument
+   *"box still responsive"* has ever had (F543): **1.0 s idle · 3.7 s one cold build ·
+   19.6 s two concurrent builds.** A peak quoted without it invites being read as exact, and a
+   sampler that cannot get scheduled for nineteen seconds is the box saying it is not responsive.
+
+▶ **PROBED 2026-08-30 — `research/FLEET-P1-two-slots.md`, findings F537–F547.** Both scenarios were
+run: two real attempts on `D:\dev\abcc`, sequentially and concurrently, one `llama-server` at
+`--parallel 2`. ✅ **Both of the calls it raised are now taken (above).** What it found:
+
+* 🚨 **The premise was wrong.** *Two turns in flight push each other past the 90 s idle gap* had never
+  been measured and is false: max TTFB concurrent **25.5 s**, and the worst wait of the session
+  (**30.3 s**) was **sequential**, driven by a 30k-token prompt. 171 model calls, and **not one
+  timeout that concurrency caused** (F545).
+* 🚨 **The 90 s timeouts this project has been recording were mostly not hangs.** The idle gap was a
+  *content* detector — a turn streaming only tool-call arguments emitted no delta — so a stream
+  delivering ~380 chars/s read as idle while the GPU sat at **75% utilisation and 115 W** (F537).
+  Fixed in `abcc`; a 213.7 s turn now completes instead of dying at 90 s.
+* ✅ **The exit clause could not be met or be meaningful — RULED, and it is rewritten above.**
+  This session's *unloaded idle* baseline was **17.58 GiB** against session 19's 8.99 — **David:
+  *"because Chrome was opened during this session"*** — so loading the model alone reached
+  **32.83 GiB**. The delta reproduces (15.24 against 16.01 GiB). The clause is now **delta over a
+  same-session baseline + `min_avail_mib` + the blind window** (F540).
+* ✅ **Two slots are not a throughput case — RULED: `--parallel 1`, revisit later.** Within-arm
+  variance on the same two tasks is **2.7–2.8×**; the between-arm difference is **1.1×**, and the
+  two matched pairs **disagree in sign** (F546). Memory is a wash (50.60 against 50.02 GiB, F547)
+  and the gate is the whole bill (F542: serialising it costs 34.4 s and buys 4.1 GiB).
+  **Sequential is safe and unblocked**, and it is what ships.
+* 🚨 **What actually threatens the fleet is a wedged server** (F539): one hung generation left
+  `/v1/models` answering normally while every completion returned nothing for 60 s, and took **both**
+  slots down until `lms load`. The breaker's input must be a real one-token completion, and
+  `NextAction`'s retry budget 2 would otherwise spend both retries against a server that cannot
+  answer.
+
+⏸ **WHAT WOULD REOPEN THE SLOT COUNT, and nothing smaller.** F546's whole point is that a
+1.1× difference under 2.7× noise is not a measurement, so *one more pair proves nothing*. The
+reopening evidence is **either** many repetitions per arm on a fixed workload — enough that the
+confidence interval is narrower than the effect — **or**, far cheaper, a *deterministic* subject:
+replay two fixed transcripts rather than two live agents, which removes the sampling variance
+that swamped this probe. ⚠ **Neither is worth doing until something wants the throughput.**
+Two open ends survive either way: `--parallel 1` versus `2` was never compared **under load**
+(everything after the load rung ran on one `--parallel 2` server), and the wedge of F539 has
+**one occurrence and no cause**.
 
 ### ▶ CONSOLE — the reason to use it
 
@@ -445,6 +512,15 @@ template at `research/decisions/README.md`:
 | 14 | [Deny the class via `max_tier`; blast radius, not a sandbox](research/decisions/ADR-0014-deny-the-class-blast-radius.md) | W7, W8 |
 | 15 | [The idle gap is ours; a full window is not a fault; silence is not an artifact](research/decisions/ADR-0015-what-the-first-real-runs-corrected.md) | F493, F496–F502 |
 | 16 | [A phase asks again when the model says nothing; a cut turn's tool calls never run](research/decisions/ADR-0016-a-phase-repairs-a-missing-answer.md) | F503–F508 |
+| 17 | [The rung a repository declares for itself; the veto's one rule; `Refused`](research/decisions/ADR-0017-the-standard-a-repository-declares.md) | F512, F516–F518 |
+| 18 | [The Judge reports: it cannot refuse an attempt **and cannot fail one**](research/decisions/ADR-0018-the-judge-reports-and-cannot-refuse.md) | F275–F284, F521–F522 |
+| 19 | [The Judge keeps the rungs' counts and output — withholding them was probed and lost](research/decisions/ADR-0019-the-judge-keeps-the-rung-output.md) | F531, F534–F536 |
+| **20** | [**One slot (N=1) for now**; the memory clause is a **delta + `min_avail_mib` + the blind window**](research/decisions/ADR-0020-one-slot-for-now-and-a-delta-not-a-ceiling.md) | F539–F547 |
+| **21** | [The idle gap watches whether the stream is **delivering**, not whether the model is **saying** anything](research/decisions/ADR-0021-the-idle-gap-watches-delivery-not-content.md) | F537, F538 |
+
+🚨 **Twenty-one now, and rows 17–21 were added 2026-08-30 — this mirror had been
+stale at 16.** **ADR-0020** supersedes **ADR-0003’s count only** (N=2 → N=1; the slot abstraction
+stands) and revises ADR-0006’s thread inventory; **ADR-0021** amends **ADR-0015 §1**.
 
 `research/benchmarks/` — §12 also lists this. It is **satisfied in substance already**:
 `research/spikes/` holds the reproducible drivers and `runs/hw-probe/` plus the 62 manifests are now

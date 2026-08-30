@@ -9,8 +9,8 @@ records consumed by `PLAN.md`, never backfilled with dates after the fact (`rese
 from a running system rather than from a workstream, correcting three things the first two real
 runs found, and **ADR-0016** the same day from ten of them. The index is `PLAN.md` §7 and is mirrored below. Each traces to a closed Phase 1
 workstream, and **the evidence lives in the workstream doc, not here** — an ADR cites `Wn` and a
-finding id, states the ruling, and says what would overturn it. Findings F1–F522 are closed; next
-free is **F523**.
+finding id, states the ruling, and says what would overturn it. Findings F1–F547 are closed; next
+free is **F548**.
 
 ## The template
 
@@ -57,6 +57,8 @@ disagree, SUMMARY.md wins and the ADR is wrong.
 | 17 | [ADR-0017](ADR-0017-the-standard-a-repository-declares.md) | The rung a repository declares for itself; the veto's one rule; `Refused` | F512, F516–F518 |
 | 18 | [ADR-0018](ADR-0018-the-judge-reports-and-cannot-refuse.md) | The Judge reports: it cannot refuse an attempt **and cannot fail one** | ADR-0008, F275–F284, F521–F522 |
 | 19 | [ADR-0019](ADR-0019-the-judge-keeps-the-rung-output.md) | The Judge keeps the rungs' counts and output — withholding them was probed and lost | F531, F534–F536 |
+| **20** | [ADR-0020](ADR-0020-one-slot-for-now-and-a-delta-not-a-ceiling.md) | **One slot (N=1) for now**; the memory clause is a **delta + `min_avail_mib` + the blind window** | F539–F547 |
+| **21** | [ADR-0021](ADR-0021-the-idle-gap-watches-delivery-not-content.md) | The idle gap watches whether the stream is **delivering**, not whether the model is **saying** anything | F537, F538 |
 
 **Every ADR is `Accepted`** — fourteen as of 2026-08-28, ADR-0015 and ADR-0016 as of 2026-08-29,
 ADR-0017 as of 2026-08-30, ADR-0018 as of 2026-08-31, ADR-0019 as of 2026-08-29. ⚠ ADR-0017 is the first written **from a
@@ -73,8 +75,9 @@ David ruling rather than a research conclusion: **ADR-0001** (rewrite, not port)
 lifecycle names, OQ-W3-6), **ADR-0009** (only deterministic rungs may refuse), **ADR-0012** (TUI
 primary, 2026-08-19), **ADR-0015** (three rulings, 2026-08-29) and **ADR-0017** (a correct tree is
 one that could land, 2026-08-30) and **ADR-0019** (probe the shams before changing the brief,
-2026-08-29). ⚠ ADR-0015 is the only one that
-**supersedes another in part** — ADR-0006 § *Timeouts* — leaving the rest of ADR-0006 standing.
+2026-08-29). 🚨 **Three supersede another in part, and none supersedes one whole.** ADR-0015 takes ADR-0006 § *Timeouts*; **ADR-0020** takes **ADR-0003's *count* only** — N=2 – 1, with the slot abstraction and every other consequence intact, and revises ADR-0006's thread-inventory row *attempt workers = 2* to **1**; **ADR-0021** amends **ADR-0015 §1**, which established that the gap is ours but left *what a gap is* implicit — and it was implemented as *no delta arrived*, which is a content detector.
+
+🚨 **ADR-0020 and ADR-0021 are the first pair where the probe overturned the premise it was written to test.** `PLAN.md`'s FLEET milestone existed because *two turns in flight push each other past the 90 s idle gap*; that had never been measured, is false (F545), and the thing actually killing turns was the detector itself (F537) — caught only because `hw-probe` was sampling the GPU at 75% utilisation through a 90-second *"silence"*. ⚠ **ADR-0020's N=1 is NOT ADR-0003's own falsifier firing**: two slots plus two worktrees plus real builds *held* inside 31.92 GiB. The count drops because the second slot bought nothing measurable (F546), which is the opposite reason.
 
 ## What the ADRs changed while being written
 

@@ -1,0 +1,6 @@
+ARM PAR-F1 mode=par start 2026-08-30T10:18:05+03:00
+A start 2026-08-30T10:18:05+03:00
+B start 2026-08-30T10:18:05+03:00
+A rc=0 wall=91s end 2026-08-30T10:19:36+03:00
+B rc=0 wall=91s end 2026-08-30T10:19:36+03:00
+ARM PAR-F1 mode=par total=91s end 2026-08-30T10:19:36+03:00

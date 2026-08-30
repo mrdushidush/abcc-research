@@ -1,0 +1,17 @@
+boot  2 events replayed, 1 task(s)
+task  t2 paths-only flag
+model model confirmed: asked qwen3.6-35b-a3b-mtp@iq3_s, the server lists (without saying what it has loaded) C:\Users\david\.lmstudio\models\byteshape\Qwen3.6-35B-A3B-MTP-GGUF\Qwen3.6-35B-A3B-IQ3_S-3.06bpw.gguf, matched on the operator's fingerprint "IQ3_S"
+
+running t2 in unit unit-1 on qwen3.6-35b-a3b-mtp@iq3_s
+control: type one of [pause | halt | kill | redirect <prompt> | resume] and press enter
+watch:   abcc watch, in another terminal
+
+
+a8 ended Uncertain { why: BudgetExhausted { which: "24 rounds" } }
+localize  6 turn(s), 10 tool call(s), 0 denial(s), 37872+2000 tokens (reasoning not reported), trace Closed, 64720 ms
+change    24 turn(s), 27 tool call(s), 0 denial(s), 533836+8015 tokens (reasoning not reported), trace Closed, 216840 ms
+kept      ae349b6f026feb8c973e17b28ba3d0378dc6fae6
+gate      not asked — the attempt produced no artifact
+judge     not asked — see the log for why
+task      MISSION FAILED
+next      Attempt { cause: Retry { of: AttemptId(Seq(8)) } }  (a recommendation; nothing acted on it)

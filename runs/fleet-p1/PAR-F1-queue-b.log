@@ -1,0 +1,3 @@
+t2  queued  paths-only flag
+
+run it with:  abcc run --task t2
