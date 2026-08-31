@@ -1,10 +1,10 @@
 # CONSOLE opens — an encoder written from the format, the composite as a type, and a corpus that is smaller than it looks
 
 **Status: FLEET's two residual rulings are landed, and CONSOLE has its first three pieces.**
-Findings **F557–F561**; next free number is **F562**. Built 2026-08-30 against `D:\dev\abcc` at
-`6fbaf4f`, landed as `1a460c3` (the two rulings), `57de658` (the sixel encoder) and `f372c4d` (the
-battlefield, the assets and `abcc paint`). **399 tests passing, 12 ignored, 60 targets, clippy clean
-under `-D warnings`, `cargo fmt --check` clean.**
+Findings **F557–F562**; next free number is **F563**. Built 2026-08-30 against `D:\dev\abcc` at
+`6fbaf4f`, landed as `1a460c3` (the two rulings), `57de658` (the sixel encoder), `f372c4d` (the battlefield,
+the assets and `abcc paint`) and `576432a` (the frame-cost instrument). **399 tests passing, 13
+ignored, 61 targets, clippy clean under `-D warnings`, `cargo fmt --check` clean.**
 
 ▶ **There is something to look at.** `abcc paint --sprites <dir>` composites the real corpus onto an
 opaque isometric field and writes one sixel frame to stdout. It is a still and not a screen, on
@@ -12,7 +12,7 @@ purpose: what it answers is *does this terminal draw **our** composite*, and the
 answer that for the spike's own encoder.
 
 The session's shape was: two rulings David made before going to sleep, then the flagship — and
-**three of the five findings came from measuring things the brief had already written down.**
+**three of the six findings came from measuring things the brief had already written down.**
 
 ---
 
@@ -269,9 +269,9 @@ None of this is blocked, and the order below is the order the exit criterion car
 
 * **The battlefield is not wired to the log.** `paint` reads a directory; the roster has to come
   from the event log's task projection, one sprite per live task, positioned by slot.
-* **A frame is not an animation.** The spike measured 25.6–28.6 FPS for a full-viewport composite
-  and a ~235-sprite ceiling at 15 FPS where **screen area binds before throughput** (F144). Nothing
-  here has been timed yet; that is a measurement to take, not a number to inherit.
+* **A frame is not an animation.** ✅ **Generation is now measured (F562, below) and it is not the
+  problem.** What is still unmeasured is **display** — the terminal receiving and drawing the bytes,
+  which is what the spike's end-to-end 25.6–28.6 FPS includes and this does not.
 * **The GIFs are undecoded.** Four animated assets, and the loader takes the first frame.
 * **The eight verbs and the six fun queries** (ADR-0012 §4, §5) — the control channel, the typed
   lifecycle and the paged read. ⚠ *Eight verbs that half-work are worse than three that work.*
@@ -284,3 +284,54 @@ None of this is blocked, and the order below is the order the exit criterion car
 
 **The exit is unchanged: David runs a real task through it, on purpose, twice, without turning the
 sprites off.**
+
+---
+
+## 6. ✅ F562 — what one frame costs to generate
+
+Taken because §5 above listed it as owed, and because it is the number ADR-0012's animation case
+rests on. Release build, sprites decoded and scaled once the way an animation would hold them, 30
+frames after 3 warm-up frames, kept as `crates/abcc-tui/tests/frame_cost.rs` (`#[ignore]`d, pointed
+by `ABCC_SPRITES`).
+
+| field | sprites | ms/frame | frames/s | bytes | MB/s at 15 FPS |
+|---|---|---|---|---|---|
+| 640×360 | 1 | 0.99 | 1012 | 12,006 | 0.2 |
+| 640×360 | 4 | 1.24 | 805 | 27,037 | 0.4 |
+| 640×360 | 16 | **1.91** | **523** | 73,101 | 1.1 |
+| 1280×720 | 1 | 3.84 | 260 | 12,653 | 0.2 |
+| 1280×720 | 4 | 4.26 | 235 | 27,673 | 0.4 |
+| 1280×720 | 16 | **5.13** | **195** | 73,736 | 1.1 |
+
+▶ **Cost tracks screen area, not sprite count.** Sixteen sprites cost **1.9×** one sprite, while
+four times the area costs **3.9×**. That is F144's *screen area binds before throughput does*
+arriving again from the generation side, and it was not assumed — the table is what says it.
+
+▶ **The transport has room too.** At a C&C 15 FPS tick the worst row is **~1.1 MB/s** against the
+**~23.5 MB/s** Windows Terminal was measured ingesting (F144).
+
+⚠ **This is GENERATION ONLY.** Composite plus encode, with nothing drawn. A fast result here settles
+one thing and no more: **the encoder is not what is in the way.** The end-to-end number — which is
+what the spike's 25.6–28.6 FPS is — has not been taken for this encoder and is still owed.
+
+⚠ **`--release` is not optional.** Debug is roughly **6×** slower on this path; a number taken from
+it would say the opposite of the truth. The test's assertion is deliberately loose (four times the
+tick) because it exists to catch an order-of-magnitude regression on a shared desktop, not to police
+a few per cent.
+
+---
+
+## 7. ▶ The next session is a review, at David's request
+
+*"next session is human in the loop. I want to eyeball the console and terminal rendered so I can
+approve your work."* — David, 2026-08-31.
+
+The review script is the head block of the session brief. What it puts in front of him: `abcc paint`
+at **75, 100 and 120 px** (F143's band — 🚨 **which size reads as C&C is his taste, not a
+measurement**), `abcc watch` in both themes over a log that already holds **29 real tasks**, the
+table above, and the three corpus facts in §3 — of which **F560 is a question for him**, since one
+humanoid design instead of two is either something to live with or a reason to want new art.
+
+🚨 **If what he dislikes is the sixels themselves rather than a colour or a size, that is
+`SUMMARY.md`'s fifth falsifier firing.** The honest response is the text ladder, which already
+exists — that is precisely why it shipped at Skeleton.
