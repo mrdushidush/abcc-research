@@ -1,0 +1,16 @@
+The barometer batch job has been paging the on-call every run since the new
+sensors went in:
+
+    python run.py
+
+    baro.alerts.AlertStorm: 24 of 24 readings are outside 9000-11000 cKPa --
+    the batch is wrong, not the weather
+
+The instruments are fine — someone walked the roof on Tuesday and the bench
+readings match the ones in the file.
+
+Fix it. `python run.py` must complete and the numbers it reports have to be the
+pressures the sensors actually measured.
+
+Do not change anything under `data/`, and do not change the report's line
+shapes — the instrument dashboard parses them.

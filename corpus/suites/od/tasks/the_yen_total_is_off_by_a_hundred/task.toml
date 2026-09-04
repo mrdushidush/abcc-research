@@ -1,0 +1,124 @@
+schema    = 1
+id        = "the_yen_total_is_off_by_a_hundred"
+title     = "the minor-unit scale is hard-coded and the mismatch is raised in reconcile"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier totals the batch and asserts the per-currency totals as well as the \
+  reconciliation, so a PASS establishes that the amounts are what the customers paid and not \
+  that the comparison stopped disagreeing. It is constructed to reject the local fix: dividing \
+  the yen side inside the reconciler makes the check pass while the ledger total for JPY stays \
+  a hundred times high\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 13
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_yen_total_is_off_by_a_hundredp1run.py, line 36, in <module> raise SystemExit(main(sys.arg"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_yen_total_is_off_by_a_hundred/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "every total is in its own currency's minor units (JPY 5280, USD 11750, EUR 1999)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_yen_total_is_off_by_a_hundred/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'total_jpy_minor: 5280', got: total_jpy_minor: 528000 — 528000 means the yen total is still scaled as if yen had cents"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_yen_total_is_off_by_a_hundred/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `till.money.to_minor` multiplies by 100 for every currency while `MINOR_UNITS` \
+  -- in the same file, three lines up -- says JPY is 0 and KWD is 3. The table is right, \
+  complete and unread\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `till/reconcile.py` raises `TotalMismatch`, because the \
+  reconciler is the only thing in the package that compares our arithmetic against someone \
+  else's. It is right and its numbers are right\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `till/reconcile.py` to divide the yen side by a hundred \
+  before comparing, with a comment that is half true -- the provider does settle yen without a \
+  sub-unit. The check passes, settlement unblocks, and `total_jpy_minor` is still 528000 where \
+  the customers paid 5280\
+  """,
+
+  """
+  ðŸš¨ IT IS THE COMPARISON THAT MOVES, NOT THE VALUE. The reconciler is the one thing in the \
+  service that could have caught this and the patch is aimed exactly at it. Every other \
+  consumer of `order_total` -- the ledger line the report prints, and anything downstream of \
+  it -- is left with the wrong number and nothing left to notice\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, every amount in a \
+  two-decimal currency, so `to_minor` is never asked about the two rows of the table that are \
+  not 2. `MINOR_UNITS` is asserted directly, and correctly, which is what makes the module \
+  look as though it handles them\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "single_instance"
+files           = 12
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "till/money.py"
+symptom_module  = "till/reconcile.py"
+hop_distance    = 2

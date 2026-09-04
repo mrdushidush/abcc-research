@@ -1,0 +1,12 @@
+[
+  {"id": "o-1", "currency": "USD", "provider_total_minor": 4250,
+   "lines": [{"sku": "a", "amount": "12.50"}, {"sku": "b", "amount": "30.00"}]},
+  {"id": "o-2", "currency": "EUR", "provider_total_minor": 1999,
+   "lines": [{"sku": "c", "amount": "19.99"}]},
+  {"id": "o-3", "currency": "JPY", "provider_total_minor": 4300,
+   "lines": [{"sku": "d", "amount": "1500"}, {"sku": "e", "amount": "2800"}]},
+  {"id": "o-4", "currency": "JPY", "provider_total_minor": 980,
+   "lines": [{"sku": "f", "amount": "980"}]},
+  {"id": "o-5", "currency": "USD", "provider_total_minor": 7500,
+   "lines": [{"sku": "g", "amount": "25.00"}, {"sku": "h", "amount": "50.00"}]}
+]

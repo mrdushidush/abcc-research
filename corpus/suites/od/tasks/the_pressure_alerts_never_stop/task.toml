@@ -1,0 +1,127 @@
+schema    = 1
+id        = "the_pressure_alerts_never_stop"
+title     = "the unit boundary is crossed twice and the alarm is in the breaker"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier runs the batch and asserts the calibrated mean, the per-sensor mean for the one \
+  sensor that carries a bench offset, and the out-of-range counts, so a PASS establishes that \
+  the readings are the pressures the sensors measured. It is constructed to reject the local \
+  fix: a rescale inside the breaker produces a mean that is within 0.05% of right and a \
+  per-sensor mean that is 18 cKPa out, because the calibration it divided by ten was the only \
+  thing in the value that was not a scale factor\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 12
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_pressure_alerts_never_stopp1run.py, line 31, in <module> raise SystemExit(main(sys.argv))"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_pressure_alerts_never_stop/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "the readings are calibrated once and in range (mean 10130, s2 10150, no alerts)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_pressure_alerts_never_stop/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'mean_ckpa: 10130', got: mean_ckpa: 10125 — 101300 is the double conversion; 10125 is a rescale that divided the calibration too"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_pressure_alerts_never_stop/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `baro.calibrate.apply` calls `units.to_ckpa` on a value `ingest` has already \
+  converted. `docs/units.md` says `ingest` is the unit boundary and the only one. The result \
+  is every reading ten times high, which is not a rounding difference -- it puts the whole \
+  batch outside the instrument's range at once\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `baro/report.py` raises `AlertStorm`, because the \
+  breaker is the only thing in the package that looks at the batch as a whole. Its message is \
+  exactly right and its own comment even names the cause -- *the batch is wrong, not the \
+  weather*\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `baro/report.py` to divide by ten and re-check, and it fires \
+  ONLY when the breaker would have tripped, which is the shape of a symptom fix: invisible on \
+  every input that was already fine. The run goes clean and the mean comes out at 10125 \
+  against 10130\
+  """,
+
+  """
+  ðŸš¨ THE SHAM'S NUMBER IS ALMOST RIGHT, AND THAT IS THE POINT. Dividing the calibrated value \
+  by ten also divides the bench offset by ten, so the only thing left wrong is the calibration \
+  -- 18 cKPa on the one sensor that has an offset. A reviewer reading the diff sees a \
+  defensible-looking guard; the tell is in a file the patch never mentions\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: six tests, each function given a \
+  value already in the unit it expects, so nothing composes `ingest` with `calibrate`. \
+  `report.summarise` is exercised only on batches inside the bounds -- which is exactly the \
+  branch the sham does not touch\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "implied"
+files           = 13
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "baro/calibrate.py"
+symptom_module  = "baro/report.py"
+hop_distance    = 2

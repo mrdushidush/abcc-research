@@ -1,0 +1,15 @@
+Settlement is stuck on yesterday's batch:
+
+    python run.py
+
+    till.reconcile.TotalMismatch: 2 orders disagree with the provider;
+    first is o-3: we say 430000, they say 4300
+
+o-3 is a Japanese order, 1500 yen plus 2800 yen. The provider is right: the
+customer paid 4300 yen.
+
+Fix it. `python run.py` must complete and the per-currency totals it prints have
+to be the amounts the customers actually paid.
+
+Do not change `data/orders.json` and do not change the report's line shapes —
+the settlement import parses them.
