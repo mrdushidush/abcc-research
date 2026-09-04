@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2960,
+  "completion_tokens": 4376,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_percentile_takes_the_wrong_index",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1338,
+  "raw": "{\n  \"assessment\": \"This change introduces latency/percentiles.py with a nearest-rank percentile calculator, but the index formula int(n * p) consistently overshoots by one rank for standard window sizes. Consequently, value_at returns the maximum observation instead of the specified percentile boundary, violating the documented computation rules.\\n\\nDefect 1:\\n- call: python -c \\\"from latency.percentiles import value_at; print(value_at(list(range(1, 21)), 0.95))\\\"\\n- expected: 19 (the nineteenth observation in a sorted sequence)\\n- actual: 20 (the twentieth observation / maximum)\",\n  \"findings\": [\n    {\n      \"actual\": \"20\",\n      \"at\": \"latency/percentiles.py: value_at\",\n      \"call\": \"python -c \\\"from latency.percentiles import value_at; print(value_at(list(range(1, 21)), 0.95))\\\"\",\n      \"defect\": \"index = int(n * p) computes the nineteenth percentile of twenty samples as index 19 (the maximum), whereas the specification requires index 18.\",\n      \"expected\": \"19\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4101,
+  "review": {
+    "assessment": "This change introduces latency/percentiles.py with a nearest-rank percentile calculator, but the index formula int(n * p) consistently overshoots by one rank for standard window sizes. Consequently, value_at returns the maximum observation instead of the specified percentile boundary, violating the documented computation rules.\n\nDefect 1:\n- call: python -c \"from latency.percentiles import value_at; print(value_at(list(range(1, 21)), 0.95))\"\n- expected: 19 (the nineteenth observation in a sorted sequence)\n- actual: 20 (the twentieth observation / maximum)",
+    "findings": [
+      {
+        "actual": "20",
+        "at": "latency/percentiles.py: value_at",
+        "call": "python -c \"from latency.percentiles import value_at; print(value_at(list(range(1, 21)), 0.95))\"",
+        "defect": "index = int(n * p) computes the nineteenth percentile of twenty samples as index 19 (the maximum), whereas the specification requires index 18.",
+        "expected": "19"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 63.48704147338867,
+  "trace": "Closed",
+  "turns": 1
+}

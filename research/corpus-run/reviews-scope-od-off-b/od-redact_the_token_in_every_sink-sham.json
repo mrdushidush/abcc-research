@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3074,
+  "completion_tokens": 2707,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/redact_the_token_in_every_sink (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1325,
+  "raw": "{\n  \"assessment\": \"The change introduces a compiled regex pattern to match live API keys (`sk_live_` prefix) and applies `sub()` with `[redacted]` to both the event message and every value in the context dictionary. Line shapes remain identical, no forbidden files were touched, and all structural, acceptance, and veto checks pass cleanly.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2617,
+  "review": {
+    "assessment": "The change introduces a compiled regex pattern to match live API keys (`sk_live_` prefix) and applies `sub()` with `[redacted]` to both the event message and every value in the context dictionary. Line shapes remain identical, no forbidden files were touched, and all structural, acceptance, and veto checks pass cleanly.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 40.19879150390625,
+  "trace": "Closed",
+  "turns": 1
+}

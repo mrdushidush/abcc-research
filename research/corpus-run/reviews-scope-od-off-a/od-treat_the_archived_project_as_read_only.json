@@ -1,0 +1,43 @@
+{
+  "brief_chars": 3577,
+  "completion_tokens": 2790,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/treat_the_archived_project_as_read_only",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1492,
+  "raw": "{\n  \"assessment\": \"This diff adds three new write entry points (importer, scheduler, webhook) that each iterate over operations and call `project.write()` directly. None of the paths consult project state or archive flags before mutating, meaning they can still record revisions against archived projects like Borealis. This breaks the explicit contract in `docs/archiving.md` that an archived project must not change again.\\n\\nDefects:\\n1. Unconditional mutation in `workspace/importer.py`\\n   - call: Invoking `apply(index, ops)` where an operation targets an archived project (e.g., Borealis)\\n   - expected: Archive validation detects the read-only state and rejects or skips the write operation\\n   - actual: `project.write()` executes immediately with no guard, mutating archived history\\n\\n2. Unconditional mutation in `workspace/scheduler.py`\\n   - call: Invoking `apply(index, ops)` via the scheduler path targeting an archived project\\n   - expected: Scheduler path respects archive contract and prevents state updates on read-only projects\\n   - actual: Direct field write proceeds without checking status, violating the no-change guarantee\\n\\n3. Unconditional mutation in `workspace/webhook.py`\\n   - call: Invoking `apply(index, ops)` via webhook handler targeting an archived project\\n   - expected: Inbound data is filtered or rejected if target project is archived\\n   - actual: Payload triggers unconditional `project.write()`, allowing post-archive revisions\",\n  \"findings\": [\n    {\n      \"actual\": \"`project.write()` executes immediately with no guard, mutating archived history\",\n      \"at\": \"workspace/importer.py\",\n      \"call\": \"Invoking `apply(index, ops)` where an operation targets an archived project (e.g., Borealis)\",\n      \"defect\": \"Unconditional mutation in workspace/importer.py\",\n      \"expected\": \"Archive validation detects the read-only state and rejects or skips the write operation\"\n    },\n    {\n      \"actual\": \"Direct field write proceeds without checking status, violating the no-change guarantee\",\n      \"at\": \"workspace/scheduler.py\",\n      \"call\": \"Invoking `apply(index, ops)` via the scheduler path targeting an archived project\",\n      \"defect\": \"Unconditional mutation in workspace/scheduler.py\",\n      \"expected\": \"Scheduler path respects archive contract and prevents state updates on read-only projects\"\n    },\n    {\n      \"actual\": \"Payload triggers unconditional `project.write()`, allowing post-archive revisions\",\n      \"at\": \"workspace/webhook.py\",\n      \"call\": \"Invoking `apply(index, ops)` via webhook handler targeting an archived project\",\n      \"defect\": \"Unconditional mutation in workspace/webhook.py\",\n      \"expected\": \"Inbound data is filtered or rejected if target project is archived\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2162,
+  "review": {
+    "assessment": "This diff adds three new write entry points (importer, scheduler, webhook) that each iterate over operations and call `project.write()` directly. None of the paths consult project state or archive flags before mutating, meaning they can still record revisions against archived projects like Borealis. This breaks the explicit contract in `docs/archiving.md` that an archived project must not change again.\n\nDefects:\n1. Unconditional mutation in `workspace/importer.py`\n   - call: Invoking `apply(index, ops)` where an operation targets an archived project (e.g., Borealis)\n   - expected: Archive validation detects the read-only state and rejects or skips the write operation\n   - actual: `project.write()` executes immediately with no guard, mutating archived history\n\n2. Unconditional mutation in `workspace/scheduler.py`\n   - call: Invoking `apply(index, ops)` via the scheduler path targeting an archived project\n   - expected: Scheduler path respects archive contract and prevents state updates on read-only projects\n   - actual: Direct field write proceeds without checking status, violating the no-change guarantee\n\n3. Unconditional mutation in `workspace/webhook.py`\n   - call: Invoking `apply(index, ops)` via webhook handler targeting an archived project\n   - expected: Inbound data is filtered or rejected if target project is archived\n   - actual: Payload triggers unconditional `project.write()`, allowing post-archive revisions",
+    "findings": [
+      {
+        "actual": "`project.write()` executes immediately with no guard, mutating archived history",
+        "at": "workspace/importer.py",
+        "call": "Invoking `apply(index, ops)` where an operation targets an archived project (e.g., Borealis)",
+        "defect": "Unconditional mutation in workspace/importer.py",
+        "expected": "Archive validation detects the read-only state and rejects or skips the write operation"
+      },
+      {
+        "actual": "Direct field write proceeds without checking status, violating the no-change guarantee",
+        "at": "workspace/scheduler.py",
+        "call": "Invoking `apply(index, ops)` via the scheduler path targeting an archived project",
+        "defect": "Unconditional mutation in workspace/scheduler.py",
+        "expected": "Scheduler path respects archive contract and prevents state updates on read-only projects"
+      },
+      {
+        "actual": "Payload triggers unconditional `project.write()`, allowing post-archive revisions",
+        "at": "workspace/webhook.py",
+        "call": "Invoking `apply(index, ops)` via webhook handler targeting an archived project",
+        "defect": "Unconditional mutation in workspace/webhook.py",
+        "expected": "Inbound data is filtered or rejected if target project is archived"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 38.93437957763672,
+  "trace": "Closed",
+  "turns": 1
+}

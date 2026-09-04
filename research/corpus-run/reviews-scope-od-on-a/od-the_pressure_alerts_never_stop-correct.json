@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3347,
+  "completion_tokens": 2850,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_pressure_alerts_never_stop (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1387,
+  "raw": "{\n  \"assessment\": \"The change is strictly limited to `baro/calibrate.py`. It removes an incorrect unit conversion on `reading[\\\"ckpa\\\"]`, fixing the batch job's double-processing of already-converted sensor values. All structural checks, acceptance tests (6 run / 6 passed), and veto checks completed successfully with no failures or restrictions.\\n\\nFindings: none\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2752,
+  "review": {
+    "assessment": "The change is strictly limited to `baro/calibrate.py`. It removes an incorrect unit conversion on `reading[\"ckpa\"]`, fixing the batch job's double-processing of already-converted sensor values. All structural checks, acceptance tests (6 run / 6 passed), and veto checks completed successfully with no failures or restrictions.\n\nFindings: none",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 44.2481689453125,
+  "trace": "Closed",
+  "turns": 1
+}

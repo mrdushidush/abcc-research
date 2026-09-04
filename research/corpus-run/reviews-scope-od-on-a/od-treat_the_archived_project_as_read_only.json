@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3859,
+  "completion_tokens": 2632,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/treat_the_archived_project_as_read_only",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1549,
+  "raw": "{\n  \"assessment\": \"This diff introduces three new write paths (importer, scheduler, webhook) but contains no logic to verify project status before mutation. It does not show a fourth path or any archive-verification logic anywhere in the tree it started from, leaving the compliance contract unmet.\",\n  \"findings\": [\n    {\n      \"actual\": \"All three modules blindly iterate over ops and call `project.write()` without checking whether the target project is archived. State mutates regardless of archival status.\",\n      \"at\": \"workspace/importer.py, workspace/scheduler.py, workspace/webhook.py\",\n      \"call\": \"python -c \\\"from workspace.importer import apply; from workspace.project import Project; idx = {'Borealis': Project(name='Borealis', archived=True)}; apply(idx, [{'project':'Borealis','field':'status'})]\\\"\",\n      \"defect\": \"Unconditional writes in new modules\",\n      \"expected\": \"Operation should refuse and raise/return an error for the archived project, consistent with `docs/archiving.md`'s contract that archived projects do not change.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2377,
+  "review": {
+    "assessment": "This diff introduces three new write paths (importer, scheduler, webhook) but contains no logic to verify project status before mutation. It does not show a fourth path or any archive-verification logic anywhere in the tree it started from, leaving the compliance contract unmet.",
+    "findings": [
+      {
+        "actual": "All three modules blindly iterate over ops and call `project.write()` without checking whether the target project is archived. State mutates regardless of archival status.",
+        "at": "workspace/importer.py, workspace/scheduler.py, workspace/webhook.py",
+        "call": "python -c \"from workspace.importer import apply; from workspace.project import Project; idx = {'Borealis': Project(name='Borealis', archived=True)}; apply(idx, [{'project':'Borealis','field':'status'})]\"",
+        "defect": "Unconditional writes in new modules",
+        "expected": "Operation should refuse and raise/return an error for the archived project, consistent with `docs/archiving.md`'s contract that archived projects do not change."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 40.210060119628906,
+  "trace": "Closed",
+  "turns": 1
+}

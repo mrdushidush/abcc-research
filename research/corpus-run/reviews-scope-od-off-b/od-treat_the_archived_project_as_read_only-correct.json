@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3838,
+  "completion_tokens": 4180,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/treat_the_archived_project_as_read_only (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1521,
+  "raw": "{\n  \"assessment\": \"This change introduces a pre-write validation using `guard.writable()` across three write pathways (`importer`, `scheduler`, and `webhook`), ensuring that operations targeting archived projects are skipped and correctly excluded from the audit log. Since structural validation, acceptance tests, and veto checks all completed successfully without errors or rejections, the implementation correctly enforces the archiving contract for these paths. No defects were identified in this change.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 4070,
+  "review": {
+    "assessment": "This change introduces a pre-write validation using `guard.writable()` across three write pathways (`importer`, `scheduler`, and `webhook`), ensuring that operations targeting archived projects are skipped and correctly excluded from the audit log. Since structural validation, acceptance tests, and veto checks all completed successfully without errors or rejections, the implementation correctly enforces the archiving contract for these paths. No defects were identified in this change.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 61.678550720214844,
+  "trace": "Closed",
+  "turns": 1
+}

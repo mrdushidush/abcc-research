@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2852,
+  "completion_tokens": 4628,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_backoff_is_linear",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1281,
+  "raw": "{\n  \"assessment\": \"The diff introduces `retrypolicy/backoff.py` with a basic linear delay function (`BASE_S * attempt`) and standard scheduling utilities, but leaves the per-attempt wait times mismatched against the documented schedule. Specifically, the fifth attempt currently waits five seconds instead of the required sixteen, failing to implement the specified backoff progression.\",\n  \"findings\": [\n    {\n      \"actual\": \"5\",\n      \"at\": \"retrypolicy/backoff.py:delay\",\n      \"call\": \"python -c \\\"from retrypolicy.backoff import delay; print(delay(5))\\\"\",\n      \"defect\": \"Delay calculation returns 5 seconds for attempt five, contradicting the documented sixteen-second wait.\",\n      \"expected\": \"16\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4442,
+  "review": {
+    "assessment": "The diff introduces `retrypolicy/backoff.py` with a basic linear delay function (`BASE_S * attempt`) and standard scheduling utilities, but leaves the per-attempt wait times mismatched against the documented schedule. Specifically, the fifth attempt currently waits five seconds instead of the required sixteen, failing to implement the specified backoff progression.",
+    "findings": [
+      {
+        "actual": "5",
+        "at": "retrypolicy/backoff.py:delay",
+        "call": "python -c \"from retrypolicy.backoff import delay; print(delay(5))\"",
+        "defect": "Delay calculation returns 5 seconds for attempt five, contradicting the documented sixteen-second wait.",
+        "expected": "16"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 69.44132995605469,
+  "trace": "Closed",
+  "turns": 1
+}

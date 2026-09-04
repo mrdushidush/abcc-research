@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3215,
+  "completion_tokens": 2572,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/the_yen_total_is_off_by_a_hundred (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1359,
+  "raw": "{\n  \"assessment\": \"The change updates `to_minor` in `till/money.py` to delegate scale resolution to `minor_units(currency)` instead of hard-coding a factor of 100. This correctly handles zero-subdivision currencies like JPY, aligning the calculated minor units with the provider's figures for order o-3. The diff stays strictly within scope, leaving `data/orders.json` and report shapes untouched.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2464,
+  "review": {
+    "assessment": "The change updates `to_minor` in `till/money.py` to delegate scale resolution to `minor_units(currency)` instead of hard-coding a factor of 100. This correctly handles zero-subdivision currencies like JPY, aligning the calculated minor units with the provider's figures for order o-3. The diff stays strictly within scope, leaving `data/orders.json` and report shapes untouched.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 38.842655181884766,
+  "trace": "Closed",
+  "turns": 1
+}

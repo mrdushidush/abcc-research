@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2960,
+  "completion_tokens": 4007,
+  "ending": "answered",
+  "events": 9,
+  "id": "od/the_percentile_takes_the_wrong_index",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1338,
+  "raw": "{\n  \"assessment\": \"The change introduces `percentiles.py` with a `value_at` function that calculates percentile indices using `int(n * p)`. This formula yields an off-by-one error for standard nearest-rank percentiles, as demonstrated by the p95 of 20 samples returning index 19 instead of the required index 18. The implementation must adjust for zero-based indexing to align with the specification and dashboard expectations.\",\n  \"findings\": [\n    {\n      \"actual\": \"19\",\n      \"at\": \"latency/percentiles.py:15\",\n      \"call\": \"value_at(list(range(20)), 0.95)\",\n      \"defect\": \"Off-by-one in percentile index calculation\",\n      \"expected\": \"18\"\n    }\n  ]\n}",
+  "reasoning_tokens": 3815,
+  "review": {
+    "assessment": "The change introduces `percentiles.py` with a `value_at` function that calculates percentile indices using `int(n * p)`. This formula yields an off-by-one error for standard nearest-rank percentiles, as demonstrated by the p95 of 20 samples returning index 19 instead of the required index 18. The implementation must adjust for zero-based indexing to align with the specification and dashboard expectations.",
+    "findings": [
+      {
+        "actual": "19",
+        "at": "latency/percentiles.py:15",
+        "call": "value_at(list(range(20)), 0.95)",
+        "defect": "Off-by-one in percentile index calculation",
+        "expected": "18"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 56.51849365234375,
+  "trace": "Closed",
+  "turns": 1
+}

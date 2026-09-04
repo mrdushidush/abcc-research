@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3074,
+  "completion_tokens": 3570,
+  "ending": "answered",
+  "events": 9,
+  "id": "od/redact_the_token_in_every_sink (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1325,
+  "raw": "{\n  \"assessment\": \"This change introduces a module-level compiled regex that redacts `sk_live_` prefixed strings in both the event title and context values before they are formatted into lines. Line shapes and implicit string coercion remain unchanged, matching original behavior for non-string types. All host measurements (structural, acceptance, veto) pass without regression.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3480,
+  "review": {
+    "assessment": "This change introduces a module-level compiled regex that redacts `sk_live_` prefixed strings in both the event title and context values before they are formatted into lines. Line shapes and implicit string coercion remain unchanged, matching original behavior for non-string types. All host measurements (structural, acceptance, veto) pass without regression.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 56.848602294921875,
+  "trace": "Closed",
+  "turns": 1
+}

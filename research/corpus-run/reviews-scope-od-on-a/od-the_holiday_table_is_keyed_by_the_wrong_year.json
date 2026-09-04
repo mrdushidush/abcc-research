@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3504,
+  "completion_tokens": 3254,
+  "ending": "answered",
+  "events": 9,
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1555,
+  "raw": "{\n  \"assessment\": \"This change introduces only `worksched/holidays.py`. Because the diff does not show any modifications to the scheduler's core logic or imports, I cannot verify how this module is integrated into the broader tree, nor can I confirm whether other files rely on this lookup. The task scope requires that every printed date be an open day; without seeing the caller, I am limited to auditing the logic inside this new file itself.\\n\\nThe diff adds a holiday dictionary keyed by calendar year and two utility functions. However, the `for_year` function intentionally queries the table using `year - 1`, which retrieves the previous year's holidays instead of the requested calendar year. This directly contradicts both the internal docstring warning about re-keying and the task description noting that the lookup is already 'a year off'.\",\n  \"findings\": [\n    {\n      \"actual\": \"False (looks up 2025 data, which does not contain April 3)\",\n      \"at\": \"worksched/holidays.py:17\",\n      \"call\": \"python -c \\\"from worksched.holidays import is_holiday; from datetime import date; print(is_holiday(date(2026, 4, 3)))\\\"\",\n      \"defect\": \"`for_year` retrieves holidays for the preceding calendar year instead of the requested one.\",\n      \"expected\": \"True (April 3, 2026 is explicitly listed as a closure in the 2026 table)\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2914,
+  "review": {
+    "assessment": "This change introduces only `worksched/holidays.py`. Because the diff does not show any modifications to the scheduler's core logic or imports, I cannot verify how this module is integrated into the broader tree, nor can I confirm whether other files rely on this lookup. The task scope requires that every printed date be an open day; without seeing the caller, I am limited to auditing the logic inside this new file itself.\n\nThe diff adds a holiday dictionary keyed by calendar year and two utility functions. However, the `for_year` function intentionally queries the table using `year - 1`, which retrieves the previous year's holidays instead of the requested calendar year. This directly contradicts both the internal docstring warning about re-keying and the task description noting that the lookup is already 'a year off'.",
+    "findings": [
+      {
+        "actual": "False (looks up 2025 data, which does not contain April 3)",
+        "at": "worksched/holidays.py:17",
+        "call": "python -c \"from worksched.holidays import is_holiday; from datetime import date; print(is_holiday(date(2026, 4, 3)))\"",
+        "defect": "`for_year` retrieves holidays for the preceding calendar year instead of the requested one.",
+        "expected": "True (April 3, 2026 is explicitly listed as a closure in the 2026 table)"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 51.81962203979492,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,29 @@
+{
+  "brief_chars": 5062,
+  "completion_tokens": 6654,
+  "ending": "answered",
+  "events": 14,
+  "id": "od/count_the_partial_refund",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 2009,
+  "raw": "{\n  \"assessment\": \"The change introduces four new renderer modules (`csv_out`, `html_out`, `json_out`, `summary`) that replace or augment existing rendering paths, each containing identical logic to compute transaction totals by summing charges and subtracting refunds.\",\n  \"findings\": [\n    {\n      \"actual\": \"All four renderers check strictly `txn['kind'] == kinds.REFUND`. If the accounting data uses a distinct constant for partial refunds (e.g., `PARTIAL_REFUND`), these modules treat them as charges and incorrectly add their amounts to the running total in every renderer.\",\n      \"at\": \"statement/csv_out.py, statement/html_out.py, statement/json_out.py, statement/summary.py\",\n      \"call\": \"python run.py (with ledger containing a partial refund transaction)\",\n      \"defect\": \"Conditional kind mismatch across all renderers\",\n      \"expected\": \"Partial refunds should be subtracted regardless of their specific kind constant, yielding 9000 cents for the stated ledger.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 6413,
+  "review": {
+    "assessment": "The change introduces four new renderer modules (`csv_out`, `html_out`, `json_out`, `summary`) that replace or augment existing rendering paths, each containing identical logic to compute transaction totals by summing charges and subtracting refunds.",
+    "findings": [
+      {
+        "actual": "All four renderers check strictly `txn['kind'] == kinds.REFUND`. If the accounting data uses a distinct constant for partial refunds (e.g., `PARTIAL_REFUND`), these modules treat them as charges and incorrectly add their amounts to the running total in every renderer.",
+        "at": "statement/csv_out.py, statement/html_out.py, statement/json_out.py, statement/summary.py",
+        "call": "python run.py (with ledger containing a partial refund transaction)",
+        "defect": "Conditional kind mismatch across all renderers",
+        "expected": "Partial refunds should be subtracted regardless of their specific kind constant, yielding 9000 cents for the stated ledger."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 103.9297103881836,
+  "trace": "Closed",
+  "turns": 1
+}

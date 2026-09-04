@@ -1,0 +1,21 @@
+{
+  "brief_chars": 6148,
+  "completion_tokens": 3283,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/expire_the_trial_everywhere (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 2230,
+  "raw": "{\n  \"assessment\": \"The change centralizes all entitlement checks into `model.is_entitled()` and applies it across all four consumers (`access.py`, `digest.py`, `seats.py`, `support.py`). This replaces the stale `ENTITLED_STATUSES` tuple with a date-aware check that correctly treats lapsed trials as unentitled, matching the rule in `docs/trials.md`. Structural, acceptance (7/7), and veto checks all pass without issues.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3165,
+  "review": {
+    "assessment": "The change centralizes all entitlement checks into `model.is_entitled()` and applies it across all four consumers (`access.py`, `digest.py`, `seats.py`, `support.py`). This replaces the stale `ENTITLED_STATUSES` tuple with a date-aware check that correctly treats lapsed trials as unentitled, matching the rule in `docs/trials.md`. Structural, acceptance (7/7), and veto checks all pass without issues.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 47.1187858581543,
+  "trace": "Closed",
+  "turns": 1
+}

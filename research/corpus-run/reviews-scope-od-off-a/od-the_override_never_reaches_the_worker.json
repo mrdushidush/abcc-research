@@ -1,0 +1,36 @@
+{
+  "brief_chars": 3102,
+  "completion_tokens": 3346,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_override_never_reaches_the_worker",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1332,
+  "raw": "{\n  \"assessment\": \"This change introduces a standalone `bootcfg/overrides.py` containing an `apply()` utility that merges configuration by strict type matching, but performs no integration into the existing startup pipeline so the reported configuration remains unchanged and still fails validation. Furthermore, its reliance on exact type identity (`type() is not type()`) guarantees it will discard overrides parsed as strings from environment files, reproducing the known bug rather than fixing it.\",\n  \"findings\": [\n    {\n      \"actual\": \"Fails with ThroughputTooLow reporting defaults (concurrency=1, batch=100) because `apply` is never called or imported by any modified file in this diff.\",\n      \"at\": \"bootcfg/overrides.py\",\n      \"call\": \"python run.py\",\n      \"defect\": \"Unintegrated override logic\",\n      \"expected\": \"Configuration reflects concurrency=8 and batch=500; bootcfg passes throughput validation.\"\n    },\n    {\n      \"actual\": \"Returns {'throughput': 100} because `type('500') is not type(100)` short-circuits the merge, skipping the override entirely.\",\n      \"at\": \"bootcfg/overrides.py:apply\",\n      \"call\": \"apply(base={'throughput': 100}, raw={'throughput': '500'})\",\n      \"defect\": \"Brittle type checking rejects string overrides\",\n      \"expected\": \"Returns {'throughput': 500} after validating the override is compatible.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2991,
+  "review": {
+    "assessment": "This change introduces a standalone `bootcfg/overrides.py` containing an `apply()` utility that merges configuration by strict type matching, but performs no integration into the existing startup pipeline so the reported configuration remains unchanged and still fails validation. Furthermore, its reliance on exact type identity (`type() is not type()`) guarantees it will discard overrides parsed as strings from environment files, reproducing the known bug rather than fixing it.",
+    "findings": [
+      {
+        "actual": "Fails with ThroughputTooLow reporting defaults (concurrency=1, batch=100) because `apply` is never called or imported by any modified file in this diff.",
+        "at": "bootcfg/overrides.py",
+        "call": "python run.py",
+        "defect": "Unintegrated override logic",
+        "expected": "Configuration reflects concurrency=8 and batch=500; bootcfg passes throughput validation."
+      },
+      {
+        "actual": "Returns {'throughput': 100} because `type('500') is not type(100)` short-circuits the merge, skipping the override entirely.",
+        "at": "bootcfg/overrides.py:apply",
+        "call": "apply(base={'throughput': 100}, raw={'throughput': '500'})",
+        "defect": "Brittle type checking rejects string overrides",
+        "expected": "Returns {'throughput': 500} after validating the override is compatible."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 48.68524932861328,
+  "trace": "Closed",
+  "turns": 1
+}

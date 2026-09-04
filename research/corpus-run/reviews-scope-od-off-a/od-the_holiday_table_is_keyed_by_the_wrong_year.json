@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3222,
+  "completion_tokens": 3546,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1498,
+  "raw": "{\n  \"assessment\": \"The change introduces `worksched/holidays.py` with a hardcoded calendar-year holiday table and helper functions to query it. It corrects the previous off-by-one fiscal-year lookup but reintroduces an arithmetic error in `for_year(year)` that subtracts one from the requested year instead of using it directly. Consequently, any date checked against this module will be incorrectly validated against the prior year's holidays.\",\"findings\": [\n    {\n      \"actual\": \"['2025-01-01', '2025-05-26', '2025-12-25', '2025-12-26']\",\n      \"at\": \"worksched/holidays.py line 14\",\n      \"call\": \"python -c \\\"from worksched.holidays import for_year; print(for_year(2026))\\\"\",\n      \"defect\": \"Holiday lookup retrieves wrong calendar year\",\n      \"expected\": \"[\\\"2026-01-01\\\", \\\"2026-04-03\\\", \\\"2026-05-25\\\", \\\"2026-12-25\\\", \\\"2026-12-28\\\"]\"\n    }\n  ]}",
+  "reasoning_tokens": 3249,
+  "review": {
+    "assessment": "The change introduces `worksched/holidays.py` with a hardcoded calendar-year holiday table and helper functions to query it. It corrects the previous off-by-one fiscal-year lookup but reintroduces an arithmetic error in `for_year(year)` that subtracts one from the requested year instead of using it directly. Consequently, any date checked against this module will be incorrectly validated against the prior year's holidays.",
+    "findings": [
+      {
+        "actual": "['2025-01-01', '2025-05-26', '2025-12-25', '2025-12-26']",
+        "at": "worksched/holidays.py line 14",
+        "call": "python -c \"from worksched.holidays import for_year; print(for_year(2026))\"",
+        "defect": "Holiday lookup retrieves wrong calendar year",
+        "expected": "[\"2026-01-01\", \"2026-04-03\", \"2026-05-25\", \"2026-12-25\", \"2026-12-28\"]"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 45.55440902709961,
+  "trace": "Closed",
+  "turns": 1
+}

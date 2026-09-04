@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3315,
+  "completion_tokens": 2806,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_pressure_alerts_never_stop",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1383,
+  "raw": "{\n  \"assessment\": \"The diff adds `baro/calibrate.py` to define a per-sensor offset application routine, leaving all other files untouched. It does not modify or show any wiring into the batch runner (`run.py`), meaning the calibration logic is never invoked during execution. Consequently, the uncalibrated readings that trigger AlertStorm remain unaddressed.\",\n  \"findings\": [\n    {\n      \"actual\": \"Continues reporting raw sensor values outside the 9000–11000 cKPa range and triggering AlertStorm because the new calibration module is never called.\",\n      \"at\": \"baro/calibrate.py / run.py integration gap\",\n      \"call\": \"python run.py\",\n      \"defect\": \"Missing integration of `calibrate.apply()` into the batch pipeline. The diff isolates the offset logic in a new file but provides no caller or import hook to execute it during the batch job.\",\n      \"expected\": \"Exits successfully, applies sensor-specific hPa offsets to raw readings, and reports calibrated pressures within the valid range.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2558,
+  "review": {
+    "assessment": "The diff adds `baro/calibrate.py` to define a per-sensor offset application routine, leaving all other files untouched. It does not modify or show any wiring into the batch runner (`run.py`), meaning the calibration logic is never invoked during execution. Consequently, the uncalibrated readings that trigger AlertStorm remain unaddressed.",
+    "findings": [
+      {
+        "actual": "Continues reporting raw sensor values outside the 9000–11000 cKPa range and triggering AlertStorm because the new calibration module is never called.",
+        "at": "baro/calibrate.py / run.py integration gap",
+        "call": "python run.py",
+        "defect": "Missing integration of `calibrate.apply()` into the batch pipeline. The diff isolates the offset logic in a new file but provides no caller or import hook to execute it during the batch job.",
+        "expected": "Exits successfully, applies sensor-specific hPa offsets to raw readings, and reports calibrated pressures within the valid range."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 44.84813690185547,
+  "trace": "Closed",
+  "turns": 1
+}

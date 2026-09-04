@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2921,
+  "completion_tokens": 3083,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_prorate_assumes_a_thirty_day_month",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1303,
+  "raw": "{\n  \"assessment\": \"This change introduces `subs/prorate.py` but leaves `days_in(year, month)` hardcoded to always return 30, completely ignoring the calendar month and year passed as arguments. Consequently, refunds for any billing month that does not have exactly thirty days (like February's twenty-eight) will still be calculated incorrectly against a static denominator instead of the actual month length.\",\n  \"findings\": [\n    {\n      \"actual\": \"30\",\n      \"at\": \"subs/prorate.py:12\",\n      \"call\": \"python -c \\\"from subs.prorate import days_in; print(days_in(2026, 2))\\\"\",\n      \"defect\": \"`days_in` ignores its parameters and always returns 30\",\n      \"expected\": \"28\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2889,
+  "review": {
+    "assessment": "This change introduces `subs/prorate.py` but leaves `days_in(year, month)` hardcoded to always return 30, completely ignoring the calendar month and year passed as arguments. Consequently, refunds for any billing month that does not have exactly thirty days (like February's twenty-eight) will still be calculated incorrectly against a static denominator instead of the actual month length.",
+    "findings": [
+      {
+        "actual": "30",
+        "at": "subs/prorate.py:12",
+        "call": "python -c \"from subs.prorate import days_in; print(days_in(2026, 2))\"",
+        "defect": "`days_in` ignores its parameters and always returns 30",
+        "expected": "28"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 40.90871047973633,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,21 @@
+{
+  "brief_chars": 6430,
+  "completion_tokens": 5736,
+  "ending": "answered",
+  "events": 12,
+  "id": "od/expire_the_trial_everywhere (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 2287,
+  "raw": "{\n  \"assessment\": \"The change centralizes entitlement logic into a new `model.is_entitled` function and updates all four consumers (`access.py`, `digest.py`, `seats.py`, `support.py`) to use it. The implementation correctly checks for trial expiry by delegating to `calendar.lapsed(account.trial_ends_on, as_of)`, ensuring that expired trials are treated exactly like cancelled accounts (not entitled). No defects were found.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 5622,
+  "review": {
+    "assessment": "The change centralizes entitlement logic into a new `model.is_entitled` function and updates all four consumers (`access.py`, `digest.py`, `seats.py`, `support.py`) to use it. The implementation correctly checks for trial expiry by delegating to `calendar.lapsed(account.trial_ends_on, as_of)`, ensuring that expired trials are treated exactly like cancelled accounts (not entitled). No defects were found.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 82.99864959716797,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3174,
+  "completion_tokens": 2359,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/the_yen_total_is_off_by_a_hundred",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1408,
+  "raw": "{\n  \"assessment\": \"The diff adds till/money.py to define ISO-correct minor-unit scales for various currencies and provides a to_minor() conversion function. However, the implementation of to_minor() completely ignores its currency argument and hardcodes a multiplier of 100, failing to apply the newly defined currency-specific scales. Consequently, this change does not fix the JPY mismatch and actively breaks support for zero-minor-unit currencies like JPY or KWD.\",\n  \"findings\": [\n    {\n      \"actual\": \"430000\",\n      \"at\": \"till/money.py::to_minor\",\n      \"call\": \"python -c \\\"from till.money import to_minor; print(to_minor('4300', 'JPY'))\\\"\",\n      \"defect\": \"to_minor ignores the currency parameter and hardcodes multiplication by 100, rendering the newly added MINOR_UNITS mapping useless for conversion.\",\n      \"expected\": \"4300\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2130,
+  "review": {
+    "assessment": "The diff adds till/money.py to define ISO-correct minor-unit scales for various currencies and provides a to_minor() conversion function. However, the implementation of to_minor() completely ignores its currency argument and hardcodes a multiplier of 100, failing to apply the newly defined currency-specific scales. Consequently, this change does not fix the JPY mismatch and actively breaks support for zero-minor-unit currencies like JPY or KWD.",
+    "findings": [
+      {
+        "actual": "430000",
+        "at": "till/money.py::to_minor",
+        "call": "python -c \"from till.money import to_minor; print(to_minor('4300', 'JPY'))\"",
+        "defect": "to_minor ignores the currency parameter and hardcodes multiplication by 100, rendering the newly added MINOR_UNITS mapping useless for conversion.",
+        "expected": "4300"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 33.06571960449219,
+  "trace": "Closed",
+  "turns": 1
+}

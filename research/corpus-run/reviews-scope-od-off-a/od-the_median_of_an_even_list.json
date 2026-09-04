@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2667,
+  "completion_tokens": 3239,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_median_of_an_even_list",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1248,
+  "raw": "{\n  \"assessment\": \"The change introduces a new `median()` function in `cohort/stats.py` that computes the middle index using integer division (`n // 2`). This logic bypasses the requirement to average the two central values when the dataset contains an even number of elements, directly contradicting the finance standard where [3000, 4200, 4400, 5000] must yield 4300. As written, any report feeding even-length cohorts into this function will produce systematically incorrect medians.\\n\\nDefects found:\\n1. **Even-length median ignores averaging**\\n   - `call`: `python -c \\\"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\\\"`\\n   - `expected`: 4300\\n   - `actual`: 4400\",\n  \"findings\": [\n    {\n      \"actual\": \"4400\",\n      \"at\": \"cohort/stats.py:9\",\n      \"call\": \"python -c \\\"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\\\"\",\n      \"defect\": \"Even-length median ignores averaging\",\n      \"expected\": \"4300\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2912,
+  "review": {
+    "assessment": "The change introduces a new `median()` function in `cohort/stats.py` that computes the middle index using integer division (`n // 2`). This logic bypasses the requirement to average the two central values when the dataset contains an even number of elements, directly contradicting the finance standard where [3000, 4200, 4400, 5000] must yield 4300. As written, any report feeding even-length cohorts into this function will produce systematically incorrect medians.\n\nDefects found:\n1. **Even-length median ignores averaging**\n   - `call`: `python -c \"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\"`\n   - `expected`: 4300\n   - `actual`: 4400",
+    "findings": [
+      {
+        "actual": "4400",
+        "at": "cohort/stats.py:9",
+        "call": "python -c \"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\"",
+        "defect": "Even-length median ignores averaging",
+        "expected": "4300"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 43.31156539916992,
+  "trace": "Closed",
+  "turns": 1
+}

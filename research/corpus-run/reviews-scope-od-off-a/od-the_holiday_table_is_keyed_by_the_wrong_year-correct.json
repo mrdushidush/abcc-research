@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2783,
+  "completion_tokens": 1320,
+  "ending": "answered",
+  "events": 6,
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1248,
+  "raw": "{\n  \"assessment\": \"The change removes a `-1` offset from `worksched/holidays.for_year`, correcting the holiday table lookup to target the exact requested year rather than the preceding one. This directly fixes the reported off-by-one error in holiday detection without touching the data directory or altering report formatting.\\n\\nBased on the host's measurements, I found no defects. The acceptance suite already ran six checks covering the scheduling logic and report output with zero failures, and structural/veto hooks triggered no issues. `python run.py` completes successfully and all printed dates align with open office days.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 1182,
+  "review": {
+    "assessment": "The change removes a `-1` offset from `worksched/holidays.for_year`, correcting the holiday table lookup to target the exact requested year rather than the preceding one. This directly fixes the reported off-by-one error in holiday detection without touching the data directory or altering report formatting.\n\nBased on the host's measurements, I found no defects. The acceptance suite already ran six checks covering the scheduling logic and report output with zero failures, and structural/veto hooks triggered no issues. `python run.py` completes successfully and all printed dates align with open office days.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 21.44851303100586,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3203,
+  "completion_tokens": 6552,
+  "ending": "answered",
+  "events": 14,
+  "id": "od/the_prorate_assumes_a_thirty_day_month",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1360,
+  "raw": "{\n  \"assessment\": \"The change introduces a new module, `subs/prorate.py`, intended to calculate prorated refunds, but it implements the logic using a hardcoded constant for month length instead of actual calendar days. By defaulting every month to 30 days (`DAYS_IN_MONTH = 30`), the code ignores the requirement to handle shorter months like February correctly (e.g., refunding $19.28 instead of $20.00). This results in over-refunding for any customer cancelling during a non-30-day month.\",\n  \"findings\": [\n    {\n      \"actual\": \"Returns 2000 (calculated as `max(0, 30 - 10) * 3000 // 30`)\",\n      \"at\": \"subs/prorate.py\",\n      \"call\": \"python -c \\\"from subs.prorate import refund_cents; print(refund_cents({'year': 2026, 'month': 2, 'days_used': 10, 'monthly_cents': 3000}))\\\"\",\n      \"defect\": \"Incorrect denominator logic for non-30-day months\",\n      \"expected\": \"Returns 1928 (calculated as `max(0, 28 - 10) * 3000 // 28`)\"\n    }\n  ]\n}",
+  "reasoning_tokens": 6232,
+  "review": {
+    "assessment": "The change introduces a new module, `subs/prorate.py`, intended to calculate prorated refunds, but it implements the logic using a hardcoded constant for month length instead of actual calendar days. By defaulting every month to 30 days (`DAYS_IN_MONTH = 30`), the code ignores the requirement to handle shorter months like February correctly (e.g., refunding $19.28 instead of $20.00). This results in over-refunding for any customer cancelling during a non-30-day month.",
+    "findings": [
+      {
+        "actual": "Returns 2000 (calculated as `max(0, 30 - 10) * 3000 // 30`)",
+        "at": "subs/prorate.py",
+        "call": "python -c \"from subs.prorate import refund_cents; print(refund_cents({'year': 2026, 'month': 2, 'days_used': 10, 'monthly_cents': 3000}))\"",
+        "defect": "Incorrect denominator logic for non-30-day months",
+        "expected": "Returns 1928 (calculated as `max(0, 28 - 10) * 3000 // 28`)"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 104.16751861572266,
+  "trace": "Closed",
+  "turns": 1
+}

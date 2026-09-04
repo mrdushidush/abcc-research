@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2995,
+  "completion_tokens": 4027,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_percentile_takes_the_wrong_index (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1312,
+  "raw": "{\n  \"assessment\": \"The change modifies `latency/percentiles.py` to apply a `-1` offset to the percentile index calculation and adds lower-bound clamping to prevent negative indices. It directly implements the described fix, maintains the expected line shapes for dashboard parsing, leaves `data/windows.json` untouched, and completes all acceptance checks successfully.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3938,
+  "review": {
+    "assessment": "The change modifies `latency/percentiles.py` to apply a `-1` offset to the percentile index calculation and adds lower-bound clamping to prevent negative indices. It directly implements the described fix, maintains the expected line shapes for dashboard parsing, leaves `data/windows.json` untouched, and completes all acceptance checks successfully.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 61.464080810546875,
+  "trace": "Closed",
+  "turns": 1
+}

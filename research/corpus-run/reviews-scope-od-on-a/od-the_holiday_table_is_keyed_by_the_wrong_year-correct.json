@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3065,
+  "completion_tokens": 1544,
+  "ending": "answered",
+  "events": 6,
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1305,
+  "raw": "{\n  \"assessment\": \"The change corrects the off-by-one error in `holidays.for_year()` by removing the `- 1` offset from the dictionary lookup key. This aligns the function's behavior with its documentation and ensures that when checking dates for a specific year, it retrieves the closure data for that exact year rather than the previous one.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 1454,
+  "review": {
+    "assessment": "The change corrects the off-by-one error in `holidays.for_year()` by removing the `- 1` offset from the dictionary lookup key. This aligns the function's behavior with its documentation and ensures that when checking dates for a specific year, it retrieves the closure data for that exact year rather than the previous one.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 26.621795654296875,
+  "trace": "Closed",
+  "turns": 1
+}

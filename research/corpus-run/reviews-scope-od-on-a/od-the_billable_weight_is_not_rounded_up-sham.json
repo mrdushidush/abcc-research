@@ -1,0 +1,43 @@
+{
+  "brief_chars": 3061,
+  "completion_tokens": 5555,
+  "ending": "answered",
+  "events": 12,
+  "id": "od/the_billable_weight_is_not_rounded_up (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1319,
+  "raw": "{\n  \"assessment\": \"The change targets `shiprate/weights.py` and attempts to replace Python's `round()` with a manual remainder-based calculation. It leaves `STEP_DG` at its original value of 5, modifies the rounding boundary to `remainder >= 2`, and adds an unimplemented rule comment about ignoring the first 0.1 kg.\",\n  \"findings\": [\n    {\n      \"actual\": \"The code rounds up at a remainder of 2 (40% of STEP), not at 2.5 (50%). This biases billable weight upward, violating the 'nearest' rounding rule and causing over-quoting on exact remainders.\",\n      \"at\": \"10\",\n      \"call\": \"python -c \\\"from shiprate.weights import billable; print(billable(7))\\\"\",\n      \"defect\": \"Rounding threshold bias shifts nearest-rounding to 40% instead of 50%.\",\n      \"expected\": \"5\"\n    },\n    {\n      \"actual\": \"The function calculates `weight_dg % STEP_DG` directly on the input without first stripping the initial 0.1 kg (1 dg). The comment declares a carrier rule that is completely absent from the logic.\",\n      \"at\": \"Returns full rounded weight instead of applying the 'first 0.1 kg free' offset.\",\n      \"call\": \"python -c \\\"from shiprate.weights import billable; print(billable(52))\\\"\",\n      \"defect\": \"Unimplemented carrier rule: first 0.1 kg is not stripped before rounding.\",\n      \"expected\": \"Weight should be reduced by 1 dg (or equivalent unit) before modulo, but code ignores the offset.\"\n    },\n    {\n      \"actual\": \"`STEP_DG` remains 5. If `weight_dg` is in decagrams, a half-kilo step requires STEP=50. The constant contradicts both the docstring ('half-kilo step') and standard carrier billing increments.\",\n      \"at\": \"Functions operate on 1/10th of the intended step size.\",\n      \"call\": \"grep -n 'STEP_DG' shiprate/weights.py\",\n      \"defect\": \"Unit mismatch: STEP_DG constant is set to 5 instead of 50 for half-kilo steps.\",\n      \"expected\": \"STEP_DG == 50\"\n    }\n  ]\n}",
+  "reasoning_tokens": 5010,
+  "review": {
+    "assessment": "The change targets `shiprate/weights.py` and attempts to replace Python's `round()` with a manual remainder-based calculation. It leaves `STEP_DG` at its original value of 5, modifies the rounding boundary to `remainder >= 2`, and adds an unimplemented rule comment about ignoring the first 0.1 kg.",
+    "findings": [
+      {
+        "actual": "The code rounds up at a remainder of 2 (40% of STEP), not at 2.5 (50%). This biases billable weight upward, violating the 'nearest' rounding rule and causing over-quoting on exact remainders.",
+        "at": "10",
+        "call": "python -c \"from shiprate.weights import billable; print(billable(7))\"",
+        "defect": "Rounding threshold bias shifts nearest-rounding to 40% instead of 50%.",
+        "expected": "5"
+      },
+      {
+        "actual": "The function calculates `weight_dg % STEP_DG` directly on the input without first stripping the initial 0.1 kg (1 dg). The comment declares a carrier rule that is completely absent from the logic.",
+        "at": "Returns full rounded weight instead of applying the 'first 0.1 kg free' offset.",
+        "call": "python -c \"from shiprate.weights import billable; print(billable(52))\"",
+        "defect": "Unimplemented carrier rule: first 0.1 kg is not stripped before rounding.",
+        "expected": "Weight should be reduced by 1 dg (or equivalent unit) before modulo, but code ignores the offset."
+      },
+      {
+        "actual": "`STEP_DG` remains 5. If `weight_dg` is in decagrams, a half-kilo step requires STEP=50. The constant contradicts both the docstring ('half-kilo step') and standard carrier billing increments.",
+        "at": "Functions operate on 1/10th of the intended step size.",
+        "call": "grep -n 'STEP_DG' shiprate/weights.py",
+        "defect": "Unit mismatch: STEP_DG constant is set to 5 instead of 50 for half-kilo steps.",
+        "expected": "STEP_DG == 50"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 87.35743713378906,
+  "trace": "Closed",
+  "turns": 1
+}

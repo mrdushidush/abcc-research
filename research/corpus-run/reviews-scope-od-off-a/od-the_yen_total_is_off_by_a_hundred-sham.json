@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2954,
+  "completion_tokens": 2462,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/the_yen_total_is_off_by_a_hundred (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1298,
+  "raw": "{\n  \"assessment\": \"The change introduces a currency-specific normalization before mismatch detection: for JPY orders, it divides our internally scaled total by 100 to match the provider's major-unit amounts, effectively resolving false mismatches like o-3 without altering logic for other currencies or touching data/report files. Because this adjustment precisely targets the stated reconciliation failure and all hosted checks pass cleanly, there are no defects to report.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2363,
+  "review": {
+    "assessment": "The change introduces a currency-specific normalization before mismatch detection: for JPY orders, it divides our internally scaled total by 100 to match the provider's major-unit amounts, effectively resolving false mismatches like o-3 without altering logic for other currencies or touching data/report files. Because this adjustment precisely targets the stated reconciliation failure and all hosted checks pass cleanly, there are no defects to report.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 33.45519256591797,
+  "trace": "Closed",
+  "turns": 1
+}

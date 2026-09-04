@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2990,
+  "completion_tokens": 1962,
+  "ending": "answered",
+  "events": 6,
+  "id": "od/the_backoff_is_linear (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1303,
+  "raw": "{\n  \"assessment\": \"This change replaces the linear delay formula with an exponential schedule (`BASE_S * 2 ** (attempt - 1)`) capped by `MAX_S`, correcting the retry behavior to match the runbook's doubling logic without dropping the ceiling. All structural, acceptance, and veto checks passed cleanly against the updated tree.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 1875,
+  "review": {
+    "assessment": "This change replaces the linear delay formula with an exponential schedule (`BASE_S * 2 ** (attempt - 1)`) capped by `MAX_S`, correcting the retry behavior to match the runbook's doubling logic without dropping the ceiling. All structural, acceptance, and veto checks passed cleanly against the updated tree.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 28.15528678894043,
+  "trace": "Closed",
+  "turns": 1
+}

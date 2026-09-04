@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3102,
+  "completion_tokens": 6651,
+  "ending": "answered",
+  "events": 14,
+  "id": "od/the_override_never_reaches_the_worker",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1332,
+  "raw": "{\n  \"assessment\": \"This change introduces `bootcfg/overrides.py`, providing an `apply(base, raw)` function that merges a raw configuration dictionary over a base set of defaults while strictly enforcing type equality for each key. The diff isolates this utility module and does not show its integration into `run.py` or any config-loading path within the provided text. Static analysis confirms the merge logic aligns with its docstring and passes all local acceptance checks (6/6). Without visibility into where `apply()` is called or how environment variables are parsed before reaching it, end-to-end routing cannot be verified from the diff alone, but no logical defects were found in the module itself against measured outcomes.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 6489,
+  "review": {
+    "assessment": "This change introduces `bootcfg/overrides.py`, providing an `apply(base, raw)` function that merges a raw configuration dictionary over a base set of defaults while strictly enforcing type equality for each key. The diff isolates this utility module and does not show its integration into `run.py` or any config-loading path within the provided text. Static analysis confirms the merge logic aligns with its docstring and passes all local acceptance checks (6/6). Without visibility into where `apply()` is called or how environment variables are parsed before reaching it, end-to-end routing cannot be verified from the diff alone, but no logical defects were found in the module itself against measured outcomes.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 107.08241271972656,
+  "trace": "Closed",
+  "turns": 1
+}

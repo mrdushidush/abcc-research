@@ -1,0 +1,29 @@
+{
+  "brief_chars": 6487,
+  "completion_tokens": 4319,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/expire_the_trial_everywhere",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 2376,
+  "raw": "{\n  \"assessment\": \"The change introduces a new `entitlement` package with four consumer modules (`access.py`, `digest.py`, `seats.py`, `support.py`) and a shared model file (`model.py`). It replaces or adds the entry points for feature access, mailing lists, seat billing, and support routing. The implementation hardcodes trial accounts as entitled regardless of expiration dates and leaves the `as_of` parameter completely unused throughout.\",\n  \"findings\": [\n    {\n      \"actual\": \"All four consumer modules rely on `model.ENTITTED_STATUSES`, which explicitly includes `'trial'`. No function in any new file checks `account.trial_ends_on` against the provided date, and the `as_of` argument is accepted but never referenced or used for logic branching.\",\n      \"at\": \"Entitlement logic ignores trial expiration dates\",\n      \"call\": \"grep -rn 'ends_on' entitlement/ ; grep -n 'as_of' entitlement/access.py entitlement/digest.py entitlement/seats.py entitlement/support.py\",\n      \"defect\": \"Systemic missing date validation across all new entitlement consumers and shared model.\",\n      \"expected\": \"Functions should check if an account has status `'trial'` and its `trial_ends_on` date is in the past relative to `as_of`. Expired trials must be treated identically to cancelled accounts (non-entitled).\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4007,
+  "review": {
+    "assessment": "The change introduces a new `entitlement` package with four consumer modules (`access.py`, `digest.py`, `seats.py`, `support.py`) and a shared model file (`model.py`). It replaces or adds the entry points for feature access, mailing lists, seat billing, and support routing. The implementation hardcodes trial accounts as entitled regardless of expiration dates and leaves the `as_of` parameter completely unused throughout.",
+    "findings": [
+      {
+        "actual": "All four consumer modules rely on `model.ENTITTED_STATUSES`, which explicitly includes `'trial'`. No function in any new file checks `account.trial_ends_on` against the provided date, and the `as_of` argument is accepted but never referenced or used for logic branching.",
+        "at": "Entitlement logic ignores trial expiration dates",
+        "call": "grep -rn 'ends_on' entitlement/ ; grep -n 'as_of' entitlement/access.py entitlement/digest.py entitlement/seats.py entitlement/support.py",
+        "defect": "Systemic missing date validation across all new entitlement consumers and shared model.",
+        "expected": "Functions should check if an account has status `'trial'` and its `trial_ends_on` date is in the past relative to `as_of`. Expired trials must be treated identically to cancelled accounts (non-entitled)."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 67.35059356689453,
+  "trace": "Closed",
+  "turns": 1
+}

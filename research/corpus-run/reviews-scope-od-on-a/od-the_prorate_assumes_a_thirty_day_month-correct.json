@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3260,
+  "completion_tokens": 4218,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_prorate_assumes_a_thirty_day_month (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1357,
+  "raw": "{\n  \"assessment\": \"The diff replaces the hardcoded 30-day assumption with dynamic calendar-based month lengths via `calendar.monthrange`. This correctly implements variable denominators including leap years, matching the task's requirement to follow `docs/prorate.md` for actual month lengths. The change is scoped strictly to `subs/prorate.py`, leaves report shapes and test data untouched, and passes all 5 acceptance checks with zero structural or veto failures. No defects were found.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 4105,
+  "review": {
+    "assessment": "The diff replaces the hardcoded 30-day assumption with dynamic calendar-based month lengths via `calendar.monthrange`. This correctly implements variable denominators including leap years, matching the task's requirement to follow `docs/prorate.md` for actual month lengths. The change is scoped strictly to `subs/prorate.py`, leaves report shapes and test data untouched, and passes all 5 acceptance checks with zero structural or veto failures. No defects were found.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 66.6043472290039,
+  "trace": "Closed",
+  "turns": 1
+}

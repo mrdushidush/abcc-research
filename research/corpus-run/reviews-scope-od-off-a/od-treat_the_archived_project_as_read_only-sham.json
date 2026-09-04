@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2802,
+  "completion_tokens": 11623,
+  "ending": "answered",
+  "events": 22,
+  "id": "od/treat_the_archived_project_as_read_only (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1215,
+  "raw": "{\n  \"assessment\": \"The change adds a guard inside `workspace/importer.py`'s loop to check if the target project is archived before applying any operations. If a project is marked as 'archived', the operation is skipped entirely—neither writing to it nor recording it in the audit log of written operations—which honors the contract that an archived project must not change again.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 11527,
+  "review": {
+    "assessment": "The change adds a guard inside `workspace/importer.py`'s loop to check if the target project is archived before applying any operations. If a project is marked as 'archived', the operation is skipped entirely—neither writing to it nor recording it in the audit log of written operations—which honors the contract that an archived project must not change again.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 187.18521118164062,
+  "trace": "Closed",
+  "turns": 1
+}

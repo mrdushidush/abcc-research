@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3435,
+  "completion_tokens": 2829,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/the_retry_budget_never_resets",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1454,
+  "raw": "{\n  \"assessment\": \"The diff introduces a new rate-limiting `Budget` class to control hourly retry quotas. It tracks spent counts in a dictionary keyed by window index, with a hard limit of three retries per window. However, the window calculation logic is broken, causing all events to collide into a single bucket and permanently exhaust the budget after just three attempts.\",\n  \"findings\": [\n    {\n      \"actual\": \"Identical keys (e.g., `0 0`), regardless of input timestamps\",\n      \"at\": \"retryd/budget.py, Budget.window_key\",\n      \"call\": \"python -c \\\"from retryd.budget import Budget; b=Budget(1609459200); print(b.window_key(1609459300), b.window_key(1609462800))\\\"\",\n      \"defect\": \"`Budget.window_key` completely ignores its `ts` argument and computes the key solely from `self.started_at`. This buckets every retry event into a single window, so after `PER_WINDOW` (3) retries are spent, `has_room` permanently returns `False` for all subsequent timestamps.\",\n      \"expected\": \"Two distinct integer values corresponding to different hourly windows based on the input timestamps\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2533,
+  "review": {
+    "assessment": "The diff introduces a new rate-limiting `Budget` class to control hourly retry quotas. It tracks spent counts in a dictionary keyed by window index, with a hard limit of three retries per window. However, the window calculation logic is broken, causing all events to collide into a single bucket and permanently exhaust the budget after just three attempts.",
+    "findings": [
+      {
+        "actual": "Identical keys (e.g., `0 0`), regardless of input timestamps",
+        "at": "retryd/budget.py, Budget.window_key",
+        "call": "python -c \"from retryd.budget import Budget; b=Budget(1609459200); print(b.window_key(1609459300), b.window_key(1609462800))\"",
+        "defect": "`Budget.window_key` completely ignores its `ts` argument and computes the key solely from `self.started_at`. This buckets every retry event into a single window, so after `PER_WINDOW` (3) retries are spent, `has_room` permanently returns `False` for all subsequent timestamps.",
+        "expected": "Two distinct integer values corresponding to different hourly windows based on the input timestamps"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 39.98250961303711,
+  "trace": "Closed",
+  "turns": 1
+}

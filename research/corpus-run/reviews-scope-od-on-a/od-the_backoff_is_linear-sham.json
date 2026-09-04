@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3006,
+  "completion_tokens": 3556,
+  "ending": "answered",
+  "events": 9,
+  "id": "od/the_backoff_is_linear (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1282,
+  "raw": "{\n  \"assessment\": \"Scope and change review complete.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3523,
+  "review": {
+    "assessment": "Scope and change review complete.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 58.3957633972168,
+  "trace": "Closed",
+  "turns": 1
+}

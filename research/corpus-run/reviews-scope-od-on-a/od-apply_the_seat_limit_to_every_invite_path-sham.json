@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3108,
+  "completion_tokens": 10969,
+  "ending": "answered",
+  "events": 21,
+  "id": "od/apply_the_seat_limit_to_every_invite_path (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1310,
+  "raw": "{\n  \"assessment\": \"The change targets `invites/bulk_csv.py` to enforce seat limits on that specific path by importing `limits` and slicing the invite list based on available seats. It resolves one broken path but leaves other invite paths untouched; while acceptance tests pass, this suggests those paths may be compliant or not triggered in the test suite. The change relies heavily on `limits.seats_free()` returning non-negative values for the slice logic to remain safe.\",\n  \"findings\": [\n    {\n      \"actual\": \"Python's slice operator interprets a negative stop index as 'take everything except the last N items' (e.g., list[:-1] drops the last element). This allows adding members even when `seats_free` returns a negative number.\",\n      \"at\": \"invites/bulk_csv.py\",\n      \"call\": \"Simulate a team with limit=5 and used=6 (so seats_free returns -1). Run invite(team, ['a', 'b']).\",\n      \"defect\": \"Negative slice logic fails to enforce limits when team is over limit.\",\n      \"expected\": \"No members added. The loop should process 0 emails because the team is already at capacity.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 10696,
+  "review": {
+    "assessment": "The change targets `invites/bulk_csv.py` to enforce seat limits on that specific path by importing `limits` and slicing the invite list based on available seats. It resolves one broken path but leaves other invite paths untouched; while acceptance tests pass, this suggests those paths may be compliant or not triggered in the test suite. The change relies heavily on `limits.seats_free()` returning non-negative values for the slice logic to remain safe.",
+    "findings": [
+      {
+        "actual": "Python's slice operator interprets a negative stop index as 'take everything except the last N items' (e.g., list[:-1] drops the last element). This allows adding members even when `seats_free` returns a negative number.",
+        "at": "invites/bulk_csv.py",
+        "call": "Simulate a team with limit=5 and used=6 (so seats_free returns -1). Run invite(team, ['a', 'b']).",
+        "defect": "Negative slice logic fails to enforce limits when team is over limit.",
+        "expected": "No members added. The loop should process 0 emails because the team is already at capacity."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 175.3699951171875,
+  "trace": "Closed",
+  "turns": 1
+}

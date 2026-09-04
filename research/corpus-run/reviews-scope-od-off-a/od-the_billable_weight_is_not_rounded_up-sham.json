@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2779,
+  "completion_tokens": 4882,
+  "ending": "answered",
+  "events": 11,
+  "id": "od/the_billable_weight_is_not_rounded_up (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1262,
+  "raw": "{\n  \"assessment\": \"The change replaces Python's built-in `round()` with a manual remainder-based calculation that incorrectly rounds remainders equal to exactly half the step size (2 out of 5) upwards instead of downwards. This introduces a bias towards higher billing steps, directly causing the exact discrepancy described in the task where a 2.0 kg quote becomes a 2.5 kg bill.\",\n  \"findings\": [\n    {\n      \"actual\": \"The manual remainder logic uses `>= 2` as its threshold for rounding up on a step of 5. Standard nearest-neighbor rounding dictates that remainders less than half the step (i.e., < 2.5) must round down. This causes any weight with a remainder of exactly 2 to be rounded to the upper step instead of the current one.\",\n      \"at\": \"shiprate/weights.py\",\n      \"call\": \"python -c \\\"from shiprate.weights import billable; print(billable(102))\\\"\",\n      \"defect\": \"Incorrect rounding threshold for integer remainders. When STEP_DG is 5, a remainder of 2 falls below the mathematical midpoint (2.5) and should round down to the nearest step, but the new logic forces it up.\",\n      \"expected\": \"100\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4584,
+  "review": {
+    "assessment": "The change replaces Python's built-in `round()` with a manual remainder-based calculation that incorrectly rounds remainders equal to exactly half the step size (2 out of 5) upwards instead of downwards. This introduces a bias towards higher billing steps, directly causing the exact discrepancy described in the task where a 2.0 kg quote becomes a 2.5 kg bill.",
+    "findings": [
+      {
+        "actual": "The manual remainder logic uses `>= 2` as its threshold for rounding up on a step of 5. Standard nearest-neighbor rounding dictates that remainders less than half the step (i.e., < 2.5) must round down. This causes any weight with a remainder of exactly 2 to be rounded to the upper step instead of the current one.",
+        "at": "shiprate/weights.py",
+        "call": "python -c \"from shiprate.weights import billable; print(billable(102))\"",
+        "defect": "Incorrect rounding threshold for integer remainders. When STEP_DG is 5, a remainder of 2 falls below the mathematical midpoint (2.5) and should round down to the nearest step, but the new logic forces it up.",
+        "expected": "100"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 73.27288055419922,
+  "trace": "Closed",
+  "turns": 1
+}

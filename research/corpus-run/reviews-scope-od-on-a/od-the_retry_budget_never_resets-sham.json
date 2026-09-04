@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3218,
+  "completion_tokens": 5622,
+  "ending": "answered",
+  "events": 12,
+  "id": "od/the_retry_budget_never_resets (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1351,
+  "raw": "{\n  \"assessment\": \"The diff modifies `retryd/report.py` in isolation and does not show how failures are filtered by window or how the caller populates `retried` versus `dropped`. I cannot verify upstream filtering of budget-exceeded items.\\n\\nThis change removes non-retried failures from the denominator in `retry_rate`, making the function return 1.0 whenever any retries occur. It attempts to decouple scheduler performance from budget limits but mathematically breaks SLA enforcement by ignoring all dropped workloads. Without upstream filtering or a third parameter, this cannot distinguish eligible drops from budget-exceeded ones.\\n\\nDefect 1: SLA alarm permanently bypassed for any workload with retries\\n- call: `retryd.report.retry_rate(['fail_1'], ['fail_2', 'fail_3'])`\\n- expected: A retry rate of ~0.33 (or a mechanism to exclude only budget-exceeded drops)\\n- actual: Returns 1.0 regardless of `dropped`, making the 70% floor check always pass and preventing `RetrySLABreached` from triggering for eligible workloads.\\n\\nThe fix attempts to solve a budget-window mismatch but is implemented incorrectly inside this function. Because `retry_rate` lacks timestamps or window metadata, it cannot distinguish between eligible dropped failures and those excluded due to budget exhaustion. Removing `dropped` entirely turns the metric into a tautology (proportion of retries among only-retried items), which permanently masks SLA breaches for any workload that manages at least one retry. The correct filtering of out-of-window failures must happen upstream before calling this function, or the denominator must be filtered to include only eligible drops as well. As written, it breaks rather than fixes the reliability reporting requirement.\",\n  \"findings\": [\n    {\n      \"actual\": \"Returns 1.0 regardless of `dropped`, making the 70% floor check always pass and preventing `RetrySLABreached` from triggering for eligible workloads.\",\n      \"at\": \"retryd/report.py, `retry_rate` function\",\n      \"call\": \"`retryd.report.retry_rate(['fail_1'], ['fail_2', 'fail_3'])`\",\n      \"defect\": \"SLA alarm permanently bypassed for any workload with retries\",\n      \"expected\": \"A retry rate of ~0.33 (or a mechanism to exclude only budget-exceeded drops)\"\n    }\n  ]\n}",
+  "reasoning_tokens": 5089,
+  "review": {
+    "assessment": "The diff modifies `retryd/report.py` in isolation and does not show how failures are filtered by window or how the caller populates `retried` versus `dropped`. I cannot verify upstream filtering of budget-exceeded items.\n\nThis change removes non-retried failures from the denominator in `retry_rate`, making the function return 1.0 whenever any retries occur. It attempts to decouple scheduler performance from budget limits but mathematically breaks SLA enforcement by ignoring all dropped workloads. Without upstream filtering or a third parameter, this cannot distinguish eligible drops from budget-exceeded ones.\n\nDefect 1: SLA alarm permanently bypassed for any workload with retries\n- call: `retryd.report.retry_rate(['fail_1'], ['fail_2', 'fail_3'])`\n- expected: A retry rate of ~0.33 (or a mechanism to exclude only budget-exceeded drops)\n- actual: Returns 1.0 regardless of `dropped`, making the 70% floor check always pass and preventing `RetrySLABreached` from triggering for eligible workloads.\n\nThe fix attempts to solve a budget-window mismatch but is implemented incorrectly inside this function. Because `retry_rate` lacks timestamps or window metadata, it cannot distinguish between eligible dropped failures and those excluded due to budget exhaustion. Removing `dropped` entirely turns the metric into a tautology (proportion of retries among only-retried items), which permanently masks SLA breaches for any workload that manages at least one retry. The correct filtering of out-of-window failures must happen upstream before calling this function, or the denominator must be filtered to include only eligible drops as well. As written, it breaks rather than fixes the reliability reporting requirement.",
+    "findings": [
+      {
+        "actual": "Returns 1.0 regardless of `dropped`, making the 70% floor check always pass and preventing `RetrySLABreached` from triggering for eligible workloads.",
+        "at": "retryd/report.py, `retry_rate` function",
+        "call": "`retryd.report.retry_rate(['fail_1'], ['fail_2', 'fail_3'])`",
+        "defect": "SLA alarm permanently bypassed for any workload with retries",
+        "expected": "A retry rate of ~0.33 (or a mechanism to exclude only budget-exceeded drops)"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 87.91315460205078,
+  "trace": "Closed",
+  "turns": 1
+}

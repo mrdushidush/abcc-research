@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2853,
+  "completion_tokens": 2562,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/the_retry_budget_never_resets (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1264,
+  "raw": "{\n  \"assessment\": \"The change replaces a constant window key (`self.started_at // WINDOW_SECONDS`) with one derived from the current timestamp (`int(ts) // WINDOW_SECONDS`). Previously, every call to `window_key` returned the same bucket index for the entire process lifetime, causing the retry budget to drain once and never replenish. This directly explains why retries stopped permanently after hitting the per-window limit. The fix allows windows to advance over time so budgets reset and retries resume as new windows open.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2443,
+  "review": {
+    "assessment": "The change replaces a constant window key (`self.started_at // WINDOW_SECONDS`) with one derived from the current timestamp (`int(ts) // WINDOW_SECONDS`). Previously, every call to `window_key` returned the same bucket index for the entire process lifetime, causing the retry budget to drain once and never replenish. This directly explains why retries stopped permanently after hitting the per-window limit. The fix allows windows to advance over time so budgets reset and retries resume as new windows open.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 38.8726692199707,
+  "trace": "Closed",
+  "turns": 1
+}

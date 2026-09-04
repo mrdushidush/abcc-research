@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3521,
+  "completion_tokens": 5368,
+  "ending": "answered",
+  "events": 11,
+  "id": "od/the_slug_collides_after_truncation",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1451,
+  "raw": "{\n  \"assessment\": \"This change adds `pubslug/slugs.py` with a `make()` function that normalizes titles to slugs and an `assign()` function that processes articles in publication order. The code truncates slugs to exactly 20 characters as the comment says is a hard limit from the catalogue column width. However, `assign()` calls `make()` independently for each article — there is no collision detection or disambiguation logic anywhere in this diff. Without seeing `docs/slugs.md` (which the task says defines what should happen), I cannot confirm whether disambiguation was intended and omitted here. The acceptance tests pass, but they may not exercise slug collision scenarios.\",\n  \"findings\": [\n    {\n      \"actual\": \"[{'id': 'a1', 'slug': 'how-to-build-a-resil'}, {'id': 'a2', 'slug': 'how-to-build-a-resil'}]\",\n      \"at\": \"Both articles receive identical slug `how-to-build-a-resil`.\",\n      \"call\": \"python -c \\\"from pubslug.slugs import assign; print(assign([{'id':'a1','title':'How to build a resilient ingest pipeline'},{'id':'a2','title':'How to build a resilient queue consumer'}]))\\\"\",\n      \"defect\": \"Slug collision not resolved in assign().\",\n      \"expected\": \"Articles with colliding base slugs should be disambiguated (e.g., one gets a suffix) per the rules in docs/slugs.md.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 5023,
+  "review": {
+    "assessment": "This change adds `pubslug/slugs.py` with a `make()` function that normalizes titles to slugs and an `assign()` function that processes articles in publication order. The code truncates slugs to exactly 20 characters as the comment says is a hard limit from the catalogue column width. However, `assign()` calls `make()` independently for each article — there is no collision detection or disambiguation logic anywhere in this diff. Without seeing `docs/slugs.md` (which the task says defines what should happen), I cannot confirm whether disambiguation was intended and omitted here. The acceptance tests pass, but they may not exercise slug collision scenarios.",
+    "findings": [
+      {
+        "actual": "[{'id': 'a1', 'slug': 'how-to-build-a-resil'}, {'id': 'a2', 'slug': 'how-to-build-a-resil'}]",
+        "at": "Both articles receive identical slug `how-to-build-a-resil`.",
+        "call": "python -c \"from pubslug.slugs import assign; print(assign([{'id':'a1','title':'How to build a resilient ingest pipeline'},{'id':'a2','title':'How to build a resilient queue consumer'}]))\"",
+        "defect": "Slug collision not resolved in assign().",
+        "expected": "Articles with colliding base slugs should be disambiguated (e.g., one gets a suffix) per the rules in docs/slugs.md."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 78.40535736083984,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,21 @@
+{
+  "brief_chars": 6148,
+  "completion_tokens": 2333,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/expire_the_trial_everywhere (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 2230,
+  "raw": "{\n  \"assessment\": \"This change centralizes the entitlement check into `model.is_entitled()`, which correctly evaluates trial expiration by comparing `trial_ends_on` against `as_of`, and updates all four consumers (`access.py`, `digest.py`, `seats.py`, `support.py`) to use it. The structural, acceptance, and veto checks all pass without issues, confirming imports are valid and the updated logic aligns with existing tests.\\n\\nNo defects found. The change fully addresses the reported gap where lapsed trials were incorrectly treated as entitled across all four consumers.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2200,
+  "review": {
+    "assessment": "This change centralizes the entitlement check into `model.is_entitled()`, which correctly evaluates trial expiration by comparing `trial_ends_on` against `as_of`, and updates all four consumers (`access.py`, `digest.py`, `seats.py`, `support.py`) to use it. The structural, acceptance, and veto checks all pass without issues, confirming imports are valid and the updated logic aligns with existing tests.\n\nNo defects found. The change fully addresses the reported gap where lapsed trials were incorrectly treated as entitled across all four consumers.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 33.95027542114258,
+  "trace": "Closed",
+  "turns": 1
+}

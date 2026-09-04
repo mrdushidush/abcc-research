@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2724,
+  "completion_tokens": 2716,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_backoff_is_linear (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1225,
+  "raw": "{\n  \"assessment\": \"The change replaces the linear delay calculation with an exponential one (`BASE_S * 2 ** (attempt - 1)`), correctly aligning the code with `docs/backoff.md` where attempt five waits sixteen seconds. All structural, acceptance, and veto checks pass cleanly against the updated tree. No defects were found.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2628,
+  "review": {
+    "assessment": "The change replaces the linear delay calculation with an exponential one (`BASE_S * 2 ** (attempt - 1)`), correctly aligning the code with `docs/backoff.md` where attempt five waits sixteen seconds. All structural, acceptance, and veto checks pass cleanly against the updated tree. No defects were found.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 40.16094970703125,
+  "trace": "Closed",
+  "turns": 1
+}

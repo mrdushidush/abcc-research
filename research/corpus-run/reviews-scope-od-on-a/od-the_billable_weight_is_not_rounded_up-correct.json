@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3243,
+  "completion_tokens": 4063,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_billable_weight_is_not_rounded_up (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1369,
+  "raw": "{\n  \"assessment\": \"The diff only modifies `shiprate/weights.py`, strictly adhering to the constraint of not touching `data/parcels.json` or altering report line shapes. It replaces standard rounding-to-nearest with a ceiling-per-step implementation, directly addressing the carrier reconciliation issue where parcels were quoted below the billed weight. Structural checks exit cleanly and acceptance tests pass 5/5.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3963,
+  "review": {
+    "assessment": "The diff only modifies `shiprate/weights.py`, strictly adhering to the constraint of not touching `data/parcels.json` or altering report line shapes. It replaces standard rounding-to-nearest with a ceiling-per-step implementation, directly addressing the carrier reconciliation issue where parcels were quoted below the billed weight. Structural checks exit cleanly and acceptance tests pass 5/5.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 62.76869583129883,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2933,
+  "completion_tokens": 2252,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/the_yen_total_is_off_by_a_hundred (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1302,
+  "raw": "{\n  \"assessment\": \"The change replaces the hardcoded multiplier of `100` with a dynamic scale lookup via `minor_units(currency)`, ensuring currencies like JPY and KWD convert to minor units using their correct decimal scales instead of inflating by two orders of magnitude. The acceptance suite exits successfully with all checks passing, confirming the reconciliation mismatch is resolved. No defects were found in this change.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2152,
+  "review": {
+    "assessment": "The change replaces the hardcoded multiplier of `100` with a dynamic scale lookup via `minor_units(currency)`, ensuring currencies like JPY and KWD convert to minor units using their correct decimal scales instead of inflating by two orders of magnitude. The acceptance suite exits successfully with all checks passing, confirming the reconciliation mismatch is resolved. No defects were found in this change.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 34.0483283996582,
+  "trace": "Closed",
+  "turns": 1
+}

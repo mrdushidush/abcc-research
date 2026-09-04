@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2667,
+  "completion_tokens": 3653,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_median_of_an_even_list",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1248,
+  "raw": "{\n  \"assessment\": \"The diff introduces `cohort/stats.py` with a `median()` function that sorts values and returns the element at index `len // 2`. This implements an upper-middle selection for even-length lists instead of averaging them, directly contradicting the finance standard exemplified in the task. Consequently, any report using this logic will output non-compliant medians for cohorts with an even number of orders.\",\n  \"findings\": [\n    {\n      \"actual\": \"4400\",\n      \"at\": \"cohort/stats.py:median()\",\n      \"call\": \"python -c \\\"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\\\"\",\n      \"defect\": \"Median calculation returns a single upper element for even-length lists instead of averaging them per the finance standard.\",\n      \"expected\": \"4300\"\n    }\n  ]\n}",
+  "reasoning_tokens": 3432,
+  "review": {
+    "assessment": "The diff introduces `cohort/stats.py` with a `median()` function that sorts values and returns the element at index `len // 2`. This implements an upper-middle selection for even-length lists instead of averaging them, directly contradicting the finance standard exemplified in the task. Consequently, any report using this logic will output non-compliant medians for cohorts with an even number of orders.",
+    "findings": [
+      {
+        "actual": "4400",
+        "at": "cohort/stats.py:median()",
+        "call": "python -c \"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\"",
+        "defect": "Median calculation returns a single upper element for even-length lists instead of averaging them per the finance standard.",
+        "expected": "4300"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 50.00456619262695,
+  "trace": "Closed",
+  "turns": 1
+}

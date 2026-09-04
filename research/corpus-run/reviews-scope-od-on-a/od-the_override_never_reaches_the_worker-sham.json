@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3511,
+  "completion_tokens": 3978,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_override_never_reaches_the_worker (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1412,
+  "raw": "{\n  \"assessment\": \"This change modifies capacity.py to import the env module and pass env.declared() to the throughput calculation within check(). By doing so, it ensures that the floor validation uses the configuration values declared for the specific environment (provisioning limits) rather than the process's current runtime config, which likely held incorrect override defaults. The change respects all constraints: no data files or DEFAULTS are modified, and report line shapes remain untouched.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3868,
+  "review": {
+    "assessment": "This change modifies capacity.py to import the env module and pass env.declared() to the throughput calculation within check(). By doing so, it ensures that the floor validation uses the configuration values declared for the specific environment (provisioning limits) rather than the process's current runtime config, which likely held incorrect override defaults. The change respects all constraints: no data files or DEFAULTS are modified, and report line shapes remain untouched.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 68.31568908691406,
+  "trace": "Closed",
+  "turns": 1
+}

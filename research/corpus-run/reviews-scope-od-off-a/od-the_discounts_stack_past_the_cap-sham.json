@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3016,
+  "completion_tokens": 2720,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_discounts_stack_past_the_cap (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1327,
+  "raw": "{\n  \"assessment\": \"The change replaces sequential compounding with a single additive calculation by summing discount percentages via `total_pct` before applying them to `subtotal_cents`. This correctly implements the business rule that combined discounts stack additively (e.g., 20% + 10% = 30%) instead of multiplicatively. The modification preserves integer truncation for cent calculations and leaves all other constraints, including `MAX_TOTAL_PCT`, untouched.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2606,
+  "review": {
+    "assessment": "The change replaces sequential compounding with a single additive calculation by summing discount percentages via `total_pct` before applying them to `subtotal_cents`. This correctly implements the business rule that combined discounts stack additively (e.g., 20% + 10% = 30%) instead of multiplicatively. The modification preserves integer truncation for cent calculations and leaves all other constraints, including `MAX_TOTAL_PCT`, untouched.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 45.280033111572266,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2949,
+  "completion_tokens": 7611,
+  "ending": "answered",
+  "events": 16,
+  "id": "od/the_median_of_an_even_list",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1305,
+  "raw": "{\n  \"assessment\": \"This change introduces a new file, `cohort/stats.py`, which defines a `median` function that sorts values and returns the element at index `len // 2`. This logic incorrectly selects only the upper-middle element for even-length lists instead of averaging the two middle elements, directly reproducing the calculation error Finance rejected (returning 4400 instead of 4300).\",\n  \"findings\": [\n    {\n      \"actual\": \"The function returns `ordered[n // 2]`. For a sorted list `[3000, 4200, 4400, 5000]`, this evaluates to index 2 (the value 4400).\",\n      \"at\": \"cohort/stats.py:10\",\n      \"call\": \"python -c \\\"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\\\"\",\n      \"defect\": \"Incorrect Median Calculation for Even-Length Lists\",\n      \"expected\": \"4300 (average of the two middle elements: 4200 and 4400)\"\n    }\n  ]\n}",
+  "reasoning_tokens": 7331,
+  "review": {
+    "assessment": "This change introduces a new file, `cohort/stats.py`, which defines a `median` function that sorts values and returns the element at index `len // 2`. This logic incorrectly selects only the upper-middle element for even-length lists instead of averaging the two middle elements, directly reproducing the calculation error Finance rejected (returning 4400 instead of 4300).",
+    "findings": [
+      {
+        "actual": "The function returns `ordered[n // 2]`. For a sorted list `[3000, 4200, 4400, 5000]`, this evaluates to index 2 (the value 4400).",
+        "at": "cohort/stats.py:10",
+        "call": "python -c \"from cohort.stats import median; print(median([3000, 4200, 4400, 5000]))\"",
+        "defect": "Incorrect Median Calculation for Even-Length Lists",
+        "expected": "4300 (average of the two middle elements: 4200 and 4400)"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 120.44813537597656,
+  "trace": "Closed",
+  "turns": 1
+}

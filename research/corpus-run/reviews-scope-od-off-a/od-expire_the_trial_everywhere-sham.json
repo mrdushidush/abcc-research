@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3368,
+  "completion_tokens": 2876,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/expire_the_trial_everywhere (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1376,
+  "raw": "{\n  \"assessment\": \"This change introduces an early return for lapsed trials in `entitlement/access.py::features()`, using `calendar.lapsed` to strip premium entitlements and treat expired trials identically to cancelled accounts. It imports the necessary `calendar` module to enforce this time-based rule before falling back to standard entitlement logic. Given that structural, acceptance, and veto checks all passed cleanly without constraint violations, I found no defects in this diff.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2765,
+  "review": {
+    "assessment": "This change introduces an early return for lapsed trials in `entitlement/access.py::features()`, using `calendar.lapsed` to strip premium entitlements and treat expired trials identically to cancelled accounts. It imports the necessary `calendar` module to enforce this time-based rule before falling back to standard entitlement logic. Given that structural, acceptance, and veto checks all passed cleanly without constraint violations, I found no defects in this diff.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 40.35530471801758,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,36 @@
+{
+  "brief_chars": 3435,
+  "completion_tokens": 4842,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_retry_budget_never_resets",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1454,
+  "raw": "{\n  \"assessment\": \"This change introduces `retryd/budget.py`, which defines constants for a 1-hour window and a limit of 3 retries per window, alongside a `Budget` class intended to track spent allowances. However, the implementation contains a critical bug in `window_key` that ignores the provided event timestamp entirely. As a result, every call maps to a single static window key derived only from process start time, breaking the intended per-hour budgeting logic and causing retries to permanently halt after three total events instead of resetting hourly.\",\n  \"findings\": [\n    {\n      \"actual\": \"Identical keys (`0`), because the method ignores `ts` and only computes `self.started_at // WINDOW_SECONDS`.\",\n      \"at\": \"retryd/budget.py, window_key\",\n      \"call\": \"python -c \\\"from retryd.budget import Budget; b = Budget(1000); print(b.window_key(1), b.window_key(3700))\\\"\",\n      \"defect\": \"`window_key` completely ignores its `ts` argument, mapping every event to the same static window key regardless of when it occurred.\",\n      \"expected\": \"Different window keys corresponding to the two distinct timestamps (e.g., accounting for a 3600s gap).\"\n    },\n    {\n      \"actual\": \"`False`, because a single permanent counter is incremented forever, permanently blocking further retries regardless of elapsed time.\",\n      \"at\": \"retryd/budget.py, has_room / spend\",\n      \"call\": \"python -c \\\"from retryd.budget import Budget; b = Budget(1000); [b.spend(i) for i in range(3)]; print(b.has_room(999))\\\"\",\n      \"defect\": \"Because `window_key` ignores timestamps, the budget never resets per hour. It acts as a flat lifetime counter, causing the SLA check to fail permanently after three retries.\",\n      \"expected\": \"`True`, as the budget should allow new attempts once an hour has passed since previous events.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4381,
+  "review": {
+    "assessment": "This change introduces `retryd/budget.py`, which defines constants for a 1-hour window and a limit of 3 retries per window, alongside a `Budget` class intended to track spent allowances. However, the implementation contains a critical bug in `window_key` that ignores the provided event timestamp entirely. As a result, every call maps to a single static window key derived only from process start time, breaking the intended per-hour budgeting logic and causing retries to permanently halt after three total events instead of resetting hourly.",
+    "findings": [
+      {
+        "actual": "Identical keys (`0`), because the method ignores `ts` and only computes `self.started_at // WINDOW_SECONDS`.",
+        "at": "retryd/budget.py, window_key",
+        "call": "python -c \"from retryd.budget import Budget; b = Budget(1000); print(b.window_key(1), b.window_key(3700))\"",
+        "defect": "`window_key` completely ignores its `ts` argument, mapping every event to the same static window key regardless of when it occurred.",
+        "expected": "Different window keys corresponding to the two distinct timestamps (e.g., accounting for a 3600s gap)."
+      },
+      {
+        "actual": "`False`, because a single permanent counter is incremented forever, permanently blocking further retries regardless of elapsed time.",
+        "at": "retryd/budget.py, has_room / spend",
+        "call": "python -c \"from retryd.budget import Budget; b = Budget(1000); [b.spend(i) for i in range(3)]; print(b.has_room(999))\"",
+        "defect": "Because `window_key` ignores timestamps, the budget never resets per hour. It acts as a flat lifetime counter, causing the SLA check to fail permanently after three retries.",
+        "expected": "`True`, as the budget should allow new attempts once an hour has passed since previous events."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 65.85648345947266,
+  "trace": "Closed",
+  "turns": 1
+}

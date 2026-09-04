@@ -1,0 +1,29 @@
+{
+  "brief_chars": 6205,
+  "completion_tokens": 3031,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/expire_the_trial_everywhere",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 2319,
+  "raw": "{\n  \"assessment\": \"This change introduces a new entitlement layer that uniformly gates access, billing, and routing logic on `account.status in model.ENTITLED_STATUSES` without ever evaluating trial expiration dates against the supplied `as_of` parameter. As a result, accounts with past-due trials (ac-104, ac-106) will remain incorrectly treated as entitled across all four consumers until their status is manually updated by an external process.\",\n  \"findings\": [\n    {\n      \"actual\": \"Returns `PREMIUM_FEATURES` and counts billable seats because the code only checks if `account.status == 'trial'`, completely ignoring `as_of` and `trial_ends_on`\",\n      \"at\": \"entitlement/access.py::features, entitlement/seats.py::billable_seats, entitlement/digest.py::recipients, entitlement/support.py::queue\",\n      \"call\": \"Pass an account object with `status=\\\"trial\\\"`, `trial_ends_on=\\\"2024-02-15\\\"` to any consumer function with `as_of=\\\"2024-03-01\\\"`\",\n      \"defect\": \"Trial expiry logic is entirely absent from all new consumers.\",\n      \"expected\": \"Accounts whose trial has expired must be treated exactly like cancelled accounts (unentitled), returning `BASIC_FEATURES`, zero billable seats, standard support queue placement, and exclusion from recipient lists.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2704,
+  "review": {
+    "assessment": "This change introduces a new entitlement layer that uniformly gates access, billing, and routing logic on `account.status in model.ENTITLED_STATUSES` without ever evaluating trial expiration dates against the supplied `as_of` parameter. As a result, accounts with past-due trials (ac-104, ac-106) will remain incorrectly treated as entitled across all four consumers until their status is manually updated by an external process.",
+    "findings": [
+      {
+        "actual": "Returns `PREMIUM_FEATURES` and counts billable seats because the code only checks if `account.status == 'trial'`, completely ignoring `as_of` and `trial_ends_on`",
+        "at": "entitlement/access.py::features, entitlement/seats.py::billable_seats, entitlement/digest.py::recipients, entitlement/support.py::queue",
+        "call": "Pass an account object with `status=\"trial\"`, `trial_ends_on=\"2024-02-15\"` to any consumer function with `as_of=\"2024-03-01\"`",
+        "defect": "Trial expiry logic is entirely absent from all new consumers.",
+        "expected": "Accounts whose trial has expired must be treated exactly like cancelled accounts (unentitled), returning `BASIC_FEATURES`, zero billable seats, standard support queue placement, and exclusion from recipient lists."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 45.5772705078125,
+  "trace": "Closed",
+  "turns": 1
+}

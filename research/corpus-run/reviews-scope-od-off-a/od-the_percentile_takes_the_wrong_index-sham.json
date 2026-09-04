@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2713,
+  "completion_tokens": 4948,
+  "ending": "answered",
+  "events": 11,
+  "id": "od/the_percentile_takes_the_wrong_index (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1255,
+  "raw": "{\n  \"assessment\": \"The change corrects the percentile index by subtracting one, aligning `int(n * p)` with zero-based array indexing and the documented rank expectation (e.g., 19th element for p95 on n=20). Bounds are safely clamped to prevent negative or out-of-range lookups. All structural, acceptance, and veto checks pass cleanly.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 4849,
+  "review": {
+    "assessment": "The change corrects the percentile index by subtracting one, aligning `int(n * p)` with zero-based array indexing and the documented rank expectation (e.g., 19th element for p95 on n=20). Bounds are safely clamped to prevent negative or out-of-range lookups. All structural, acceptance, and veto checks pass cleanly.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 70.77714538574219,
+  "trace": "Closed",
+  "turns": 1
+}

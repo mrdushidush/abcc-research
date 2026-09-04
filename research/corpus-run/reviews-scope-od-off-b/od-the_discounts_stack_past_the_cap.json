@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3011,
+  "completion_tokens": 8961,
+  "ending": "answered",
+  "events": 18,
+  "id": "od/the_discounts_stack_past_the_cap",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1334,
+  "raw": "{\n  \"assessment\": \"The change introduces `checkout/pricing.py`, defining `MAX_TOTAL_PCT` as a hard floor margin for finance, but the `payable()` function completely ignores this constraint. While the sequential discount calculation mathematically matches standard compounding (producing $72 on a $100 item with 20% and 10% codes), it fails to enforce that total discounts cannot exceed the capped threshold. This directly violates the business rule that `MAX_TOTAL_PCT` is 'not a suggestion'.\",\n  \"findings\": [\n    {\n      \"actual\": \"Returns $48 (sequential application of 40% then 20%), ignoring the margin cap.\",\n      \"at\": \"checkout/pricing.py:16-19\",\n      \"call\": \"run python -c \\\"from checkout.pricing import payable; print(payable(10000, [{'pct': 40}, {'pct': 20}]))\\\"\",\n      \"defect\": \"`payable` allows compounded discounts to exceed `MAX_TOTAL_PCT`, violating the hard margin floor.\",\n      \"expected\": \"Final payable must not be less than subtotal * (1 - MAX_TOTAL_PCT / 100). The function should either reject the combination or cap the final price at the allowed minimum.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 8655,
+  "review": {
+    "assessment": "The change introduces `checkout/pricing.py`, defining `MAX_TOTAL_PCT` as a hard floor margin for finance, but the `payable()` function completely ignores this constraint. While the sequential discount calculation mathematically matches standard compounding (producing $72 on a $100 item with 20% and 10% codes), it fails to enforce that total discounts cannot exceed the capped threshold. This directly violates the business rule that `MAX_TOTAL_PCT` is 'not a suggestion'.",
+    "findings": [
+      {
+        "actual": "Returns $48 (sequential application of 40% then 20%), ignoring the margin cap.",
+        "at": "checkout/pricing.py:16-19",
+        "call": "run python -c \"from checkout.pricing import payable; print(payable(10000, [{'pct': 40}, {'pct': 20}]))\"",
+        "defect": "`payable` allows compounded discounts to exceed `MAX_TOTAL_PCT`, violating the hard margin floor.",
+        "expected": "Final payable must not be less than subtotal * (1 - MAX_TOTAL_PCT / 100). The function should either reject the combination or cap the final price at the allowed minimum."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 144.89547729492188,
+  "trace": "Closed",
+  "turns": 1
+}

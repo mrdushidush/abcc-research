@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3838,
+  "completion_tokens": 2054,
+  "ending": "answered",
+  "events": 7,
+  "id": "od/treat_the_archived_project_as_read_only (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1521,
+  "raw": "{\n  \"assessment\": \"This change adds a guard.writable(project) check to three of four write paths in the workspace module: importer, scheduler, and webhook. It leaves exactly one additional apply function unguarded, so archived projects can still be modified through that fourth path.\",\n  \"findings\": [\n    {\n      \"actual\": \"python run.py completes with exit code 0; its write audit shows writes reaching an archived project (Borealis) via the unguarded write path\",\n      \"at\": \"workspace/importer.py:24, workspace/scheduler.py:15, workspace/webhook.py:24 — all three have the guard applied now\",\n      \"call\": \"python run.py\",\n      \"defect\": \"Fourth write path lacks a guard check, violating docs/archiving.md's contract that archived projects do not change again\",\n      \"expected\": \"The write audit should show zero writes to any project marked as archived\"\n    }\n  ]\n}",
+  "reasoning_tokens": 1832,
+  "review": {
+    "assessment": "This change adds a guard.writable(project) check to three of four write paths in the workspace module: importer, scheduler, and webhook. It leaves exactly one additional apply function unguarded, so archived projects can still be modified through that fourth path.",
+    "findings": [
+      {
+        "actual": "python run.py completes with exit code 0; its write audit shows writes reaching an archived project (Borealis) via the unguarded write path",
+        "at": "workspace/importer.py:24, workspace/scheduler.py:15, workspace/webhook.py:24 — all three have the guard applied now",
+        "call": "python run.py",
+        "defect": "Fourth write path lacks a guard check, violating docs/archiving.md's contract that archived projects do not change again",
+        "expected": "The write audit should show zero writes to any project marked as archived"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 33.18337631225586,
+  "trace": "Closed",
+  "turns": 1
+}

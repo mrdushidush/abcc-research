@@ -1,0 +1,36 @@
+{
+  "brief_chars": 3473,
+  "completion_tokens": 3141,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_import_creates_a_second_customer (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1396,
+  "raw": "{\n  \"assessment\": \"The change replaces a strict deduplication guard with a silent counter in `check()`, allowing multiple customer rows mapping to the same folded email to persist instead of raising an error or merging them. This bypasses the import crash but leaves duplicate records in memory, failing to satisfy the requirement that every person has exactly one row and all incoming orders are attached to it.\",\n  \"findings\": [\n    {\n      \"actual\": \"The store retains multiple rows with identical folded emails because `check()` now only counts unique addresses without merging or deduplicating records.\",\n      \"at\": \"crm/link.py\",\n      \"call\": \"Run the import/load routine and query the resulting store for customers sharing a folded email (e.g., ana@example.com).\",\n      \"defect\": \"Duplicate customer rows remain in store, violating one-row-per-person invariant\",\n      \"expected\": \"Exactly one canonical row per unique person; duplicate entries are merged or discarded during load.\"\n    },\n    {\n      \"actual\": \"Orders attached to the surviving/ignored duplicate rows are split across multiple customer records, causing short/incomplete histories for some accounts and inflated counts for others.\",\n      \"at\": \"crm/link.py\",\n      \"call\": \"After running `python run.py`, query an account known to have split history; count orders per person row in the store.\",\n      \"defect\": \"Downstream order fragmentation persists because merging logic is removed rather than implemented\",\n      \"expected\": \"Every incoming order attached to the single canonical person row, resulting in complete order histories.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2787,
+  "review": {
+    "assessment": "The change replaces a strict deduplication guard with a silent counter in `check()`, allowing multiple customer rows mapping to the same folded email to persist instead of raising an error or merging them. This bypasses the import crash but leaves duplicate records in memory, failing to satisfy the requirement that every person has exactly one row and all incoming orders are attached to it.",
+    "findings": [
+      {
+        "actual": "The store retains multiple rows with identical folded emails because `check()` now only counts unique addresses without merging or deduplicating records.",
+        "at": "crm/link.py",
+        "call": "Run the import/load routine and query the resulting store for customers sharing a folded email (e.g., ana@example.com).",
+        "defect": "Duplicate customer rows remain in store, violating one-row-per-person invariant",
+        "expected": "Exactly one canonical row per unique person; duplicate entries are merged or discarded during load."
+      },
+      {
+        "actual": "Orders attached to the surviving/ignored duplicate rows are split across multiple customer records, causing short/incomplete histories for some accounts and inflated counts for others.",
+        "at": "crm/link.py",
+        "call": "After running `python run.py`, query an account known to have split history; count orders per person row in the store.",
+        "defect": "Downstream order fragmentation persists because merging logic is removed rather than implemented",
+        "expected": "Every incoming order attached to the single canonical person row, resulting in complete order histories."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 46.43037033081055,
+  "trace": "Closed",
+  "turns": 1
+}

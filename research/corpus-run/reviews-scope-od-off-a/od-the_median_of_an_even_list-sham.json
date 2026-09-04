@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2698,
+  "completion_tokens": 3295,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_median_of_an_even_list (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1259,
+  "raw": "{\n  \"assessment\": \"This change updates `cohort/stats.py`'s median calculation to return the arithmetic mean of the two central elements for even-length lists, fixing the previous truncation behavior that only returned the upper-middle element. The logic correctly produces the expected value (4300) for the provided four-order example and preserves existing handling for odd-length and empty inputs.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3197,
+  "review": {
+    "assessment": "This change updates `cohort/stats.py`'s median calculation to return the arithmetic mean of the two central elements for even-length lists, fixing the previous truncation behavior that only returned the upper-middle element. The logic correctly produces the expected value (4300) for the provided four-order example and preserves existing handling for odd-length and empty inputs.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 48.65188980102539,
+  "trace": "Closed",
+  "turns": 1
+}

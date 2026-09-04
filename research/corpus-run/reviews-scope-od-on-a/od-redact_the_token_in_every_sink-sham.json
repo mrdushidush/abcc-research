@@ -1,0 +1,36 @@
+{
+  "brief_chars": 3356,
+  "completion_tokens": 3831,
+  "ending": "answered",
+  "events": 9,
+  "id": "od/redact_the_token_in_every_sink (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1382,
+  "raw": "{\n  \"assessment\": \"The diff modifies `observe/errors.py` to import `re`, compile a pattern for live API keys, and apply substitution to both error titles and context values before constructing the report lines. It preserves the original line shapes, leaves all other files untouched, and passes the existing acceptance suite without weakening `observe/audit.py`.\",\n  \"findings\": [\n    {\n      \"actual\": \"[redacted]-ghijk\",\n      \"at\": \"12:34\",\n      \"call\": \"Inject an event where a context value or title contains a key with a hyphen (e.g., sk_live_abc-def). Run the errors.py sink locally or via pytest.\",\n      \"defect\": \"Regex character class truncates valid API keys lacking alphanumeric characters. The pattern `r\\\"sk_live_[A-Za-z0-9]+\\\"` stops matching at the first non-alphanumeric character. If vendor keys include hyphens, underscores, or dots (common in production), only a portion of the secret will be redacted.\",\n      \"expected\": \"[redacted]\"\n    },\n    {\n      \"actual\": \"String representation forced via str() prior to regex substitution\",\n      \"at\": \"14:56\",\n      \"call\": \"Pass an event where a context value is a non-string object (e.g., dict, list, or custom class). Run the sink and inspect the rendered lines.\",\n      \"defect\": \"Context values are explicitly coerced to strings before redaction. The original code relied on .format() to call __str__ implicitly; forcing str() here changes when coercion occurs and can alter output formatting for complex types, risking downstream dashboard parsing breaks or inconsistent log shapes.\",\n      \"expected\": \"Original implicit string conversion via format(), preserving exact type-to-string behavior\"\n    }\n  ]\n}",
+  "reasoning_tokens": 3424,
+  "review": {
+    "assessment": "The diff modifies `observe/errors.py` to import `re`, compile a pattern for live API keys, and apply substitution to both error titles and context values before constructing the report lines. It preserves the original line shapes, leaves all other files untouched, and passes the existing acceptance suite without weakening `observe/audit.py`.",
+    "findings": [
+      {
+        "actual": "[redacted]-ghijk",
+        "at": "12:34",
+        "call": "Inject an event where a context value or title contains a key with a hyphen (e.g., sk_live_abc-def). Run the errors.py sink locally or via pytest.",
+        "defect": "Regex character class truncates valid API keys lacking alphanumeric characters. The pattern `r\"sk_live_[A-Za-z0-9]+\"` stops matching at the first non-alphanumeric character. If vendor keys include hyphens, underscores, or dots (common in production), only a portion of the secret will be redacted.",
+        "expected": "[redacted]"
+      },
+      {
+        "actual": "String representation forced via str() prior to regex substitution",
+        "at": "14:56",
+        "call": "Pass an event where a context value is a non-string object (e.g., dict, list, or custom class). Run the sink and inspect the rendered lines.",
+        "defect": "Context values are explicitly coerced to strings before redaction. The original code relied on .format() to call __str__ implicitly; forcing str() here changes when coercion occurs and can alter output formatting for complex types, risking downstream dashboard parsing breaks or inconsistent log shapes.",
+        "expected": "Original implicit string conversion via format(), preserving exact type-to-string behavior"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 58.229164123535156,
+  "trace": "Closed",
+  "turns": 1
+}

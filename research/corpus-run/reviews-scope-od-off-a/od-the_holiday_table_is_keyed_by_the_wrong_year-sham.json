@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3281,
+  "completion_tokens": 7185,
+  "ending": "answered",
+  "events": 15,
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1399,
+  "raw": "{\n  \"assessment\": \"The change replaces direct date returns with a loop that advances any due date falling on a weekend or office closure to the next available open day. It correctly skips consecutive closed days and maintains the required output tuple shape. All provided checks pass without errors.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 7112,
+  "review": {
+    "assessment": "The change replaces direct date returns with a loop that advances any due date falling on a weekend or office closure to the next available open day. It correctly skips consecutive closed days and maintains the required output tuple shape. All provided checks pass without errors.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 117.97312927246094,
+  "trace": "Closed",
+  "turns": 1
+}

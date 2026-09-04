@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2830,
+  "completion_tokens": 1696,
+  "ending": "answered",
+  "events": 6,
+  "id": "od/the_sort_is_lexicographic (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1251,
+  "raw": "{\n  \"assessment\": \"This change replaces the string-based sort key with an integer one in `ledgerout/ordering.py`, correcting a lexicographical ordering bug where \\\"10\\\" incorrectly appeared immediately after \\\"1\\\". By sorting numerically instead of textually, the sequence now respects true numerical order, satisfying the reader's pre-flight check. The host measurements confirm that structural checks, acceptance tests, and vetoes all pass with this modification.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 1584,
+  "review": {
+    "assessment": "This change replaces the string-based sort key with an integer one in `ledgerout/ordering.py`, correcting a lexicographical ordering bug where \"10\" incorrectly appeared immediately after \"1\". By sorting numerically instead of textually, the sequence now respects true numerical order, satisfying the reader's pre-flight check. The host measurements confirm that structural checks, acceptance tests, and vetoes all pass with this modification.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 24.246044158935547,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,29 @@
+{
+  "brief_chars": 6205,
+  "completion_tokens": 3741,
+  "ending": "answered",
+  "events": 9,
+  "id": "od/expire_the_trial_everywhere",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 2319,
+  "raw": "{\n  \"assessment\": \"This diff introduces four new entitlement modules that gate access and billing on whether an account's status string matches ENTITLED_STATUSES. Each module accepts an as_of argument but never uses it to check trial expiration dates. As a result, the change replicates the original logic that treats expired trials as entitled rather than fixing the defect.\",\"findings\":[\n  {\n    \"actual\": \"PREMIUM_FEATURES\",\n    \"at\": \"entitlement/access.py\",\n    \"call\": \"python -c \\\"from entitlement.model import Account; from entitlement.access import features; print(features(Account({'id': 'ac-104', 'name': 'Tailspin Toys', 'status': 'trial', 'seats': 2, 'trial_ends_on': '2023-02-28'}), as_of='2023-03-01'))\\\"\",\n    \"defect\": \"All four new modules accept an as_of parameter but never compare it against trial end dates. They rely exclusively on the status string, so accounts with trials that ended in February are still treated as entitled.\",\n    \"expected\": \"BASIC_FEATURES\"\n  }\n]\n}",
+  "reasoning_tokens": 3474,
+  "review": {
+    "assessment": "This diff introduces four new entitlement modules that gate access and billing on whether an account's status string matches ENTITLED_STATUSES. Each module accepts an as_of argument but never uses it to check trial expiration dates. As a result, the change replicates the original logic that treats expired trials as entitled rather than fixing the defect.",
+    "findings": [
+      {
+        "actual": "PREMIUM_FEATURES",
+        "at": "entitlement/access.py",
+        "call": "python -c \"from entitlement.model import Account; from entitlement.access import features; print(features(Account({'id': 'ac-104', 'name': 'Tailspin Toys', 'status': 'trial', 'seats': 2, 'trial_ends_on': '2023-02-28'}), as_of='2023-03-01'))\"",
+        "defect": "All four new modules accept an as_of parameter but never compare it against trial end dates. They rely exclusively on the status string, so accounts with trials that ended in February are still treated as entitled.",
+        "expected": "BASIC_FEATURES"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 58.8861198425293,
+  "trace": "Closed",
+  "turns": 1
+}

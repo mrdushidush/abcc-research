@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2826,
+  "completion_tokens": 3813,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/apply_the_seat_limit_to_every_invite_path (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1253,
+  "raw": "{\n  \"assessment\": \"The change introduces a capacity check using `limits.seats_free(team)` before processing any invites, then truncates the incoming email list to that exact number of slots (`emails[:room]`). This ensures batch CSV invitations are strictly bounded by the team's remaining seat allowance without altering existing report schemas or pending data. Structural compilation and acceptance tests pass against the baseline tree.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3716,
+  "review": {
+    "assessment": "The change introduces a capacity check using `limits.seats_free(team)` before processing any invites, then truncates the incoming email list to that exact number of slots (`emails[:room]`). This ensures batch CSV invitations are strictly bounded by the team's remaining seat allowance without altering existing report schemas or pending data. Structural compilation and acceptance tests pass against the baseline tree.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 61.111602783203125,
+  "trace": "Closed",
+  "turns": 1
+}

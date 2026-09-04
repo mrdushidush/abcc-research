@@ -1,0 +1,36 @@
+{
+  "brief_chars": 2802,
+  "completion_tokens": 4745,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/treat_the_archived_project_as_read_only (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1215,
+  "raw": "{\n  \"assessment\": \"The change inserts a state check in `importer.py`'s `apply()` loop, using `continue` to skip any operation targeting an archived project so its fields aren't overwritten. It only patches the importer module and does not touch or coordinate with the other three write paths referenced in the service architecture.\",\n  \"findings\": [\n    {\n      \"actual\": \"Only `importer.py` enforces the guard; the other three interfaces remain fully open to writes on archived projects because they are unmodified.\",\n      \"at\": \"/workspace/importer.py:5\",\n      \"call\": \"Trigger modifications through the remaining three write interfaces (e.g., CLI, API, direct programmatic calls) after this change is deployed.\",\n      \"defect\": \"Unprotected write paths violate the service contract.\",\n      \"expected\": \"Each interface must enforce the read-only constraint on archived projects and refuse modification.\"\n    },\n    {\n      \"actual\": \"`continue` bypasses `written.append(op)`, causing skipped operations to vanish from the return value entirely, leaving gaps in what was actually applied versus what was attempted.\",\n      \"at\": \"/workspace/importer.py:8\",\n      \"call\": \"Run an import operation containing a mix of active and archived project updates via `python run.py`.\",\n      \"defect\": \"Rejected operations silently disappear from the audit trail.\",\n      \"expected\": \"The returned list or printed audit should explicitly account for rejected writes (e.g., logging them or returning them with a rejection flag) to satisfy compliance tracking.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4390,
+  "review": {
+    "assessment": "The change inserts a state check in `importer.py`'s `apply()` loop, using `continue` to skip any operation targeting an archived project so its fields aren't overwritten. It only patches the importer module and does not touch or coordinate with the other three write paths referenced in the service architecture.",
+    "findings": [
+      {
+        "actual": "Only `importer.py` enforces the guard; the other three interfaces remain fully open to writes on archived projects because they are unmodified.",
+        "at": "/workspace/importer.py:5",
+        "call": "Trigger modifications through the remaining three write interfaces (e.g., CLI, API, direct programmatic calls) after this change is deployed.",
+        "defect": "Unprotected write paths violate the service contract.",
+        "expected": "Each interface must enforce the read-only constraint on archived projects and refuse modification."
+      },
+      {
+        "actual": "`continue` bypasses `written.append(op)`, causing skipped operations to vanish from the return value entirely, leaving gaps in what was actually applied versus what was attempted.",
+        "at": "/workspace/importer.py:8",
+        "call": "Run an import operation containing a mix of active and archived project updates via `python run.py`.",
+        "defect": "Rejected operations silently disappear from the audit trail.",
+        "expected": "The returned list or printed audit should explicitly account for rejected writes (e.g., logging them or returning them with a rejection flag) to satisfy compliance tracking."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 67.71256256103516,
+  "trace": "Closed",
+  "turns": 1
+}

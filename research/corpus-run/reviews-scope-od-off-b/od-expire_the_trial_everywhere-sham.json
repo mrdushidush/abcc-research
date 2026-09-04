@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3368,
+  "completion_tokens": 5326,
+  "ending": "answered",
+  "events": 12,
+  "id": "od/expire_the_trial_everywhere (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1376,
+  "raw": "{\n  \"assessment\": \"The change updates `entitlement/access.py` to intercept trial accounts whose expiration date has passed relative to the provided `as_of` date, returning only basic features until conversion or cancellation. This directly enforces the documented rule that expired trials lose premium entitlements immediately, fixing the over-entitlement of Tailspin Toys and Proseware. Based on the provided diff and successful acceptance tests, no defects were found in this change.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 5216,
+  "review": {
+    "assessment": "The change updates `entitlement/access.py` to intercept trial accounts whose expiration date has passed relative to the provided `as_of` date, returning only basic features until conversion or cancellation. This directly enforces the documented rule that expired trials lose premium entitlements immediately, fixing the over-entitlement of Tailspin Toys and Proseware. Based on the provided diff and successful acceptance tests, no defects were found in this change.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 82.52476501464844,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,36 @@
+{
+  "brief_chars": 2921,
+  "completion_tokens": 4935,
+  "ending": "answered",
+  "events": 11,
+  "id": "od/the_prorate_assumes_a_thirty_day_month",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1303,
+  "raw": "{\n  \"assessment\": \"The diff adds subs/prorate.py to calculate refunds based on unused days in a billing cycle. However, it hardcodes every month's length as 30 days regardless of actual calendar rules or leap years. This results in incorrect refund amounts for months with different lengths and fails the specific requirement to refund $19.28 for a February cancellation.\",\n  \"findings\": [\n    {\n      \"actual\": \"30\",\n      \"at\": \"The days_in function ignores calendar logic and always returns 30.\",\n      \"call\": \"python -c \\\"from subs import prorate; print(prorate.days_in(2026, 2))\\\"\",\n      \"defect\": \"days_in ignoring month lengths\",\n      \"expected\": \"28 (for February)\"\n    },\n    {\n      \"actual\": \"1800\",\n      \"at\": \"The refund calculation produces incorrect values for non-30-day months.\",\n      \"call\": \"python -c \\\"from subs import prorate; print(prorate.refund_cents({'year': 2026, 'month': 2, 'days_used': 10, 'monthly_cents': 3000}))\\\"\",\n      \"defect\": \"incorrect refund amount for February\",\n      \"expected\": \"1928\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4622,
+  "review": {
+    "assessment": "The diff adds subs/prorate.py to calculate refunds based on unused days in a billing cycle. However, it hardcodes every month's length as 30 days regardless of actual calendar rules or leap years. This results in incorrect refund amounts for months with different lengths and fails the specific requirement to refund $19.28 for a February cancellation.",
+    "findings": [
+      {
+        "actual": "30",
+        "at": "The days_in function ignores calendar logic and always returns 30.",
+        "call": "python -c \"from subs import prorate; print(prorate.days_in(2026, 2))\"",
+        "defect": "days_in ignoring month lengths",
+        "expected": "28 (for February)"
+      },
+      {
+        "actual": "1800",
+        "at": "The refund calculation produces incorrect values for non-30-day months.",
+        "call": "python -c \"from subs import prorate; print(prorate.refund_cents({'year': 2026, 'month': 2, 'days_used': 10, 'monthly_cents': 3000}))\"",
+        "defect": "incorrect refund amount for February",
+        "expected": "1928"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 71.43218231201172,
+  "trace": "Closed",
+  "turns": 1
+}

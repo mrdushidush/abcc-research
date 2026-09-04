@@ -1,0 +1,36 @@
+{
+  "brief_chars": 3084,
+  "completion_tokens": 3114,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/treat_the_archived_project_as_read_only (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1272,
+  "raw": "{\n  \"assessment\": \"This change inserts a state check at the top of `apply` in workspace/importer.py, skipping any operation targeting an archived project and omitting it from the returned write history.\\n\\nThe diff only touches importer.py, while the task explicitly requires every write path in the service to honour the read-only contract. I did not verify the existence or implementation of the other three write paths, as they are outside the scope of this change set.\",\n  \"findings\": [\n    {\n      \"actual\": \"Only workspace/importer.py is modified; the remaining three service write paths remain unguarded and can still mutate archived projects.\",\n      \"at\": \"workspace/importer.py\",\n      \"call\": \"python run.py with operations routed through the other three write paths targeting a project with state == 'archived'\",\n      \"defect\": \"Incomplete coverage of read-only contract across service write paths\",\n      \"expected\": \"All four write paths enforce the archived project guard and reject or log unauthorized writes.\"\n    },\n    {\n      \"actual\": \"The continue statement drops denied operations from the written list, silently hiding import attempts against archived projects from the compliance audit trail.\",\n      \"at\": \"workspace/importer.py\",\n      \"call\": \"python run.py with an importer batch containing at least one operation targeting a project where project.state == 'archived'\",\n      \"defect\": \"Silent suppression of denied operations in write audit log\",\n      \"expected\": \"Rejected imports should be explicitly logged or recorded so compliance exports reflect the denial.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2764,
+  "review": {
+    "assessment": "This change inserts a state check at the top of `apply` in workspace/importer.py, skipping any operation targeting an archived project and omitting it from the returned write history.\n\nThe diff only touches importer.py, while the task explicitly requires every write path in the service to honour the read-only contract. I did not verify the existence or implementation of the other three write paths, as they are outside the scope of this change set.",
+    "findings": [
+      {
+        "actual": "Only workspace/importer.py is modified; the remaining three service write paths remain unguarded and can still mutate archived projects.",
+        "at": "workspace/importer.py",
+        "call": "python run.py with operations routed through the other three write paths targeting a project with state == 'archived'",
+        "defect": "Incomplete coverage of read-only contract across service write paths",
+        "expected": "All four write paths enforce the archived project guard and reject or log unauthorized writes."
+      },
+      {
+        "actual": "The continue statement drops denied operations from the written list, silently hiding import attempts against archived projects from the compliance audit trail.",
+        "at": "workspace/importer.py",
+        "call": "python run.py with an importer batch containing at least one operation targeting a project where project.state == 'archived'",
+        "defect": "Silent suppression of denied operations in write audit log",
+        "expected": "Rejected imports should be explicitly logged or recorded so compliance exports reflect the denial."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 47.54916000366211,
+  "trace": "Closed",
+  "turns": 1
+}

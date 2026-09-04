@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2783,
+  "completion_tokens": 1003,
+  "ending": "answered",
+  "events": 5,
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1248,
+  "raw": "{\n  \"assessment\": \"The change corrects the off-by-one year offset in `worksched/holidays.for_year`, directly resolving the reported holiday lookup mismatch. The host's acceptance suite already ran and passed all six checks, confirming the fix works correctly without violating output format constraints or modifying protected data files. No defects were found; the findings list is empty.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 912,
+  "review": {
+    "assessment": "The change corrects the off-by-one year offset in `worksched/holidays.for_year`, directly resolving the reported holiday lookup mismatch. The host's acceptance suite already ran and passed all six checks, confirming the fix works correctly without violating output format constraints or modifying protected data files. No defects were found; the findings list is empty.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 14.256461143493652,
+  "trace": "Closed",
+  "turns": 1
+}

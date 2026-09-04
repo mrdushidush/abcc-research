@@ -1,0 +1,36 @@
+{
+  "brief_chars": 3384,
+  "completion_tokens": 4047,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_override_never_reaches_the_worker",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1389,
+  "raw": "{\n  \"assessment\": \"This diff adds a standalone utility module `bootcfg/overrides.py` that implements an overlay with strict runtime type checking, but shows no modifications to the entry point (`run.py`) or configuration loading layer that would actually invoke it during execution. While structural and acceptance checks pass, the integration required to apply environment overrides remains unverified in this patch, and the strict type guard may silently discard string-based configuration values, risking a recurrence of the defaults-only behavior.\",\n  \"findings\": [\n    {\n      \"actual\": \"No live execution output recorded; diff does not show where `apply()` is imported or called in the runtime path.\",\n      \"at\": \"bootcfg/overrides.py\",\n      \"call\": \"python run.py (with prod-eu env)\",\n      \"defect\": \"Unverified Runtime Integration\",\n      \"expected\": \"Boot succeeds, reports concurrency=8, batch=500 from environment config.\"\n    },\n    {\n      \"actual\": \"Overrides silently skipped when raw values are strings and defaults are ints (or vice versa), causing fallback to defaults.\",\n      \"at\": \"bootcfg/overrides.py:13\",\n      \"call\": \"Configure environment with string numeric values (e.g., \\\"8\\\", \\\"500\\\"); defaults remain int.\",\n      \"defect\": \"Silent Type Mismatch Rejection\",\n      \"expected\": \"Values applied after type coercion or explicit conversion error at load time.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 3715,
+  "review": {
+    "assessment": "This diff adds a standalone utility module `bootcfg/overrides.py` that implements an overlay with strict runtime type checking, but shows no modifications to the entry point (`run.py`) or configuration loading layer that would actually invoke it during execution. While structural and acceptance checks pass, the integration required to apply environment overrides remains unverified in this patch, and the strict type guard may silently discard string-based configuration values, risking a recurrence of the defaults-only behavior.",
+    "findings": [
+      {
+        "actual": "No live execution output recorded; diff does not show where `apply()` is imported or called in the runtime path.",
+        "at": "bootcfg/overrides.py",
+        "call": "python run.py (with prod-eu env)",
+        "defect": "Unverified Runtime Integration",
+        "expected": "Boot succeeds, reports concurrency=8, batch=500 from environment config."
+      },
+      {
+        "actual": "Overrides silently skipped when raw values are strings and defaults are ints (or vice versa), causing fallback to defaults.",
+        "at": "bootcfg/overrides.py:13",
+        "call": "Configure environment with string numeric values (e.g., \"8\", \"500\"); defaults remain int.",
+        "defect": "Silent Type Mismatch Rejection",
+        "expected": "Values applied after type coercion or explicit conversion error at load time."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 65.60433959960938,
+  "trace": "Closed",
+  "turns": 1
+}

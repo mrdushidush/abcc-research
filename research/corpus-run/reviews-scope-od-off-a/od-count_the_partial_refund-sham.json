@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2766,
+  "completion_tokens": 1621,
+  "ending": "answered",
+  "events": 6,
+  "id": "od/count_the_partial_refund (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1255,
+  "raw": "{\n  \"assessment\": \"This change modifies `statement/csv_out.py` to explicitly classify `\",\"findings\": []\n}",
+  "reasoning_tokens": 1586,
+  "review": {
+    "assessment": "This change modifies `statement/csv_out.py` to explicitly classify `",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 24.758256912231445,
+  "trace": "Closed",
+  "turns": 1
+}

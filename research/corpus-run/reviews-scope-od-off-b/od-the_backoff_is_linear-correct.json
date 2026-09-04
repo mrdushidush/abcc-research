@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2990,
+  "completion_tokens": 3980,
+  "ending": "answered",
+  "events": 9,
+  "id": "od/the_backoff_is_linear (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1303,
+  "raw": "{\n  \"assessment\": \"The change replaces the linear backoff with an exponential schedule, correctly implementing the doubling sequence described in the runbook and capping delays at `MAX_S`. Structural validation confirms a single file modification, and acceptance tests exit cleanly with all five checks passing. No defects were found.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3901,
+  "review": {
+    "assessment": "The change replaces the linear backoff with an exponential schedule, correctly implementing the doubling sequence described in the runbook and capping delays at `MAX_S`. Structural validation confirms a single file modification, and acceptance tests exit cleanly with all five checks passing. No defects were found.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 59.69551467895508,
+  "trace": "Closed",
+  "turns": 1
+}

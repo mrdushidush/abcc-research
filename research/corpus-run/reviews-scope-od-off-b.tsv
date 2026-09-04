@@ -1,0 +1,73 @@
+task	lang	population	ladder	ending	findings	restatement_candidates	hedge_candidate	seconds	prompt_tokens	completion_tokens	reasoning_tokens
+od/apply_the_seat_limit_to_every_invite_path (correct)	python	correct	GREEN	answered	1	0	false	149.7	1524	5851	5612
+od/apply_the_seat_limit_to_every_invite_path (sham)	python	sham	GREEN	answered	0	0	false	61.1	1253	3813	3716
+od/apply_the_seat_limit_to_every_invite_path	python	wrong	GREEN	answered	2	1	false	36.8	1482	2102	1718
+od/count_the_partial_refund (correct)	python	correct	GREEN	answered	0	0	false	179.4	1686	10523	10323
+od/count_the_partial_refund (sham)	python	sham	GREEN	answered	0	0	false	85.0	1255	4908	4772
+od/count_the_partial_refund	python	wrong	GREEN	answered	1	0	false	103.9	2009	6654	6413
+od/expire_the_trial_everywhere (correct)	python	correct	GREEN	answered	0	0	false	34.0	2230	2333	2200
+od/expire_the_trial_everywhere (sham)	python	sham	GREEN	answered	0	0	false	82.5	1376	5326	5216
+od/expire_the_trial_everywhere	python	wrong	GREEN	answered	1	0	false	45.6	2319	3031	2704
+od/honour_the_do_not_contact_flag (correct)	python	correct	GREEN	answered	0	0	false	42.3	1486	2501	2392
+od/honour_the_do_not_contact_flag (sham)	python	sham	GREEN	answered	0	0	false	80.4	1198	4871	4750
+od/honour_the_do_not_contact_flag	python	wrong	GREEN	answered	1	0	false	44.8	1481	2962	2695
+od/quote_the_new_tax_region (correct)	python	correct	GREEN	answered	2	0	false	73.7	1591	4694	4281
+od/quote_the_new_tax_region (sham)	python	sham	GREEN	answered	2	0	false	55.4	1212	3727	3436
+od/quote_the_new_tax_region	python	wrong	GREEN	answered	2	0	false	55.9	1770	3554	3227
+od/redact_the_token_in_every_sink (correct)	python	correct	GREEN	answered	1	0	false	82.5	1681	5422	5164
+od/redact_the_token_in_every_sink (sham)	python	sham	GREEN	answered	0	0	false	40.2	1325	2707	2617
+od/redact_the_token_in_every_sink	python	wrong	GREEN	answered	1	0	false	59.4	1572	3949	3668
+od/retire_the_legacy_sku_prefix (correct)	python	correct	GREEN	answered	1	0	false	104.2	1477	6658	6445
+od/retire_the_legacy_sku_prefix (sham)	python	sham	GREEN	answered	2	0	false	72.1	1212	4632	4175
+od/retire_the_legacy_sku_prefix	python	wrong	GREEN	answered	1	0	false	33.4	1509	2025	1772
+od/the_backoff_is_linear (correct)	python	correct	GREEN	answered	0	0	false	59.7	1303	3980	3901
+od/the_backoff_is_linear (sham)	python	sham	GREEN	answered	0	0	false	40.2	1225	2716	2628
+od/the_backoff_is_linear	python	wrong	GREEN	answered	1	0	false	69.4	1281	4628	4442
+od/the_billable_weight_is_not_rounded_up (correct)	python	correct	GREEN	answered	0	0	false	158.8	1312	10530	10418
+od/the_billable_weight_is_not_rounded_up (sham)	python	sham	GREEN	answered	0	0	false	84.3	1262	5533	5388
+od/the_billable_weight_is_not_rounded_up	python	wrong	GREEN	answered	1	0	false	84.7	1299	5421	5164
+od/the_discounts_stack_past_the_cap (correct)	python	correct	GREEN	answered	0	0	false	70.5	1360	4895	4798
+od/the_discounts_stack_past_the_cap (sham)	python	sham	GREEN	answered	0	0	false	42.3	1327	2722	2641
+od/the_discounts_stack_past_the_cap	python	wrong	GREEN	answered	1	0	false	144.9	1334	8961	8655
+od/the_export_drops_the_last_page (correct)	python	correct	GREEN	answered	0	0	false	29.6	1255	2051	1955
+od/the_export_drops_the_last_page (sham)	python	sham	GREEN	answered	1	0	false	64.9	1313	4094	3829
+od/the_export_drops_the_last_page	python	wrong	GREEN	answered	1	0	false	38.0	1293	2730	2500
+od/the_holiday_table_is_keyed_by_the_wrong_year (correct)	python	correct	GREEN	answered	0	0	false	14.3	1248	1003	912
+od/the_holiday_table_is_keyed_by_the_wrong_year (sham)	python	sham	GREEN	answered	2	0	false	127.4	1399	8125	7677
+od/the_holiday_table_is_keyed_by_the_wrong_year	python	wrong	GREEN	answered	1	0	false	40.6	1498	2971	2650
+od/the_import_creates_a_second_customer (correct)	python	correct	GREEN	answered	0	0	false	18.5	1273	1180	1079
+od/the_import_creates_a_second_customer (sham)	python	sham	GREEN	answered	2	0	false	54.1	1396	3659	3363
+od/the_import_creates_a_second_customer	python	wrong	GREEN	answered	1	0	false	53.3	1281	3648	3404
+od/the_median_of_an_even_list (correct)	python	correct	GREEN	answered	0	0	false	66.4	1295	4676	4525
+od/the_median_of_an_even_list (sham)	python	sham	GREEN	answered	0	0	false	33.2	1259	2227	2099
+od/the_median_of_an_even_list	python	wrong	GREEN	answered	1	0	false	50.0	1248	3653	3432
+od/the_override_never_reaches_the_worker (correct)	python	correct	GREEN	answered	0	0	false	41.4	1319	2636	2541
+od/the_override_never_reaches_the_worker (sham)	python	sham	GREEN	answered	0	0	false	75.1	1355	4778	4684
+od/the_override_never_reaches_the_worker	python	wrong	GREEN	answered	0	0	false	107.1	1332	6651	6489
+od/the_password_rule_counts_bytes (correct)	python	correct	GREEN	answered	0	0	false	26.1	1310	1741	1633
+od/the_password_rule_counts_bytes (sham)	python	sham	GREEN	answered	0	0	false	57.1	1284	3655	3548
+od/the_password_rule_counts_bytes	python	wrong	GREEN	answered	0	0	false	71.5	1282	4846	4769
+od/the_percentile_takes_the_wrong_index (correct)	python	correct	GREEN	answered	0	0	false	60.7	1324	3988	3881
+od/the_percentile_takes_the_wrong_index (sham)	python	sham	GREEN	answered	0	0	false	64.2	1255	4593	4434
+od/the_percentile_takes_the_wrong_index	python	wrong	GREEN	answered	1	0	false	63.5	1338	4376	4101
+od/the_pressure_alerts_never_stop (correct)	python	correct	GREEN	answered	0	0	false	28.2	1330	1997	1839
+od/the_pressure_alerts_never_stop (sham)	python	sham	GREEN	answered	2	0	false	144.9	1359	9446	9108
+od/the_pressure_alerts_never_stop	python	wrong	GREEN	answered	1	0	false	51.9	1326	3559	3362
+od/the_prorate_assumes_a_thirty_day_month (correct)	python	correct	GREEN	answered	0	0	false	35.8	1300	2531	2434
+od/the_prorate_assumes_a_thirty_day_month (sham)	python	sham	GREEN	answered	0	0	false	26.9	1217	1881	1766
+od/the_prorate_assumes_a_thirty_day_month	python	wrong	GREEN	answered	2	0	false	71.4	1303	4935	4622
+od/the_retry_budget_never_resets (correct)	python	correct	GREEN	answered	0	0	false	38.9	1264	2562	2443
+od/the_retry_budget_never_resets (sham)	python	sham	GREEN	answered	1	0	false	59.1	1294	3974	3598
+od/the_retry_budget_never_resets	python	wrong	GREEN	answered	2	0	false	65.9	1454	4842	4381
+od/the_slug_collides_after_truncation (correct)	python	correct	GREEN	answered	1	0	false	72.4	1436	5158	4934
+od/the_slug_collides_after_truncation (sham)	python	sham	GREEN	answered	3	0	false	102.7	1235	6607	6111
+od/the_slug_collides_after_truncation	python	wrong	GREEN	answered	1	0	false	54.7	1394	3818	3469
+od/the_sort_is_lexicographic (correct)	python	correct	GREEN	answered	0	0	false	24.2	1251	1587	1464
+od/the_sort_is_lexicographic (sham)	python	sham	GREEN	answered	0	0	false	40.8	1321	2795	2701
+od/the_sort_is_lexicographic	python	wrong	GREEN	answered	2	0	false	61.9	1255	4420	4080
+od/the_yen_total_is_off_by_a_hundred (correct)	python	correct	GREEN	answered	0	0	false	34.0	1302	2252	2152
+od/the_yen_total_is_off_by_a_hundred (sham)	python	sham	GREEN	answered	0	0	false	84.0	1298	5265	5169
+od/the_yen_total_is_off_by_a_hundred	python	wrong	GREEN	answered	1	0	false	33.1	1408	2359	2130
+od/treat_the_archived_project_as_read_only (correct)	python	correct	GREEN	answered	0	0	false	61.7	1521	4180	4070
+od/treat_the_archived_project_as_read_only (sham)	python	sham	GREEN	answered	2	0	false	67.7	1215	4745	4390
+od/treat_the_archived_project_as_read_only	python	wrong	GREEN	answered	1	0	false	36.0	1492	2637	2420

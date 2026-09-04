@@ -1,0 +1,21 @@
+{
+  "brief_chars": 2713,
+  "completion_tokens": 4593,
+  "ending": "answered",
+  "events": 10,
+  "id": "od/the_percentile_takes_the_wrong_index (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1255,
+  "raw": "{\n  \"assessment\": \"The change applies an off-by-one adjustment to the percentile index calculation (`int(n * p) - 1`) and wraps the return in explicit bounds clamping `[0, n-1]`. This corrects the selection logic so that a twenty-sample window correctly identifies the nineteenth element as the p95 value rather than the maximum. The implementation aligns with the documented computation and safely handles edge cases where the adjusted index could become negative.\\n\\nDefects: None\\n\\nAssessment: The diff implements the requested mathematical adjustment, adds necessary boundary checks to prevent negative indexing, and passes all structural and acceptance measurements without regression or timeout. No defects found.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 4434,
+  "review": {
+    "assessment": "The change applies an off-by-one adjustment to the percentile index calculation (`int(n * p) - 1`) and wraps the return in explicit bounds clamping `[0, n-1]`. This corrects the selection logic so that a twenty-sample window correctly identifies the nineteenth element as the p95 value rather than the maximum. The implementation aligns with the documented computation and safely handles edge cases where the adjusted index could become negative.\n\nDefects: None\n\nAssessment: The diff implements the requested mathematical adjustment, adds necessary boundary checks to prevent negative indexing, and passes all structural and acceptance measurements without regression or timeout. No defects found.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 64.17135620117188,
+  "trace": "Closed",
+  "turns": 1
+}

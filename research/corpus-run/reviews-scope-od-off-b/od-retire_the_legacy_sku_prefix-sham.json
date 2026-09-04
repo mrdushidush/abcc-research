@@ -1,0 +1,36 @@
+{
+  "brief_chars": 2672,
+  "completion_tokens": 4632,
+  "ending": "answered",
+  "events": 11,
+  "id": "od/retire_the_legacy_sku_prefix (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1212,
+  "raw": "{\n  \"assessment\": \"The change modifies `lookup` to normalize all incoming queries by stripping whitespace and uppercasing them, then conditionally strips a hardcoded \\\"OLD-\\\" prefix before performing the index retrieval. This resolves bookmarked legacy URLs but globally alters query semantics for non-legacy lookups that previously relied on exact casing or spacing.\\n\\nDefects:\\n1. Unintended global normalization breaks case-sensitive SKU matching.\\n   - call: `lookup(index, \\\"sku-variant\\\")` when catalog key is `\\\"sku-variant\\\"`\\n   - expected: returns the product dict for exact match\\n   - actual: query becomes `\\\"SKU-VARIANT\\\"`, causing a lookup miss if keys are not pre-normalized or case-insensitive in the index\\n\\n2. Prefix-only input collapses to empty string, risking false matches or silent failures.\\n   - call: `lookup(index, \\\"OLD-\\\")`\\n   - expected: returns None / not-found signal\\n   - actual: key becomes `\\\"\\\"`, executing `index.get(\\\"\\\")` which may incorrectly match an empty-keyed entry or default behavior depending on dict structure\",\n  \"findings\": [\n    {\n      \"actual\": \"query becomes \\\"SKU-VARIANT\\\", causing a lookup miss if keys are not pre-normalized\",\n      \"at\": \"catalog/search.py:5\",\n      \"call\": \"lookup(index, \\\"sku-variant\\\") where index contains lowercase key \\\"sku-variant\\\"\",\n      \"defect\": \"Unintended global normalization breaks case-sensitive SKU matching.\",\n      \"expected\": \"returns the product dict for exact match\"\n    },\n    {\n      \"actual\": \"key becomes \\\"\\\", executing index.get(\\\"\\\") which may incorrectly match an empty-keyed entry\",\n      \"at\": \"catalog/search.py:6-7\",\n      \"call\": \"lookup(index, \\\"OLD-\\\")\",\n      \"defect\": \"Prefix-only input collapses to empty string, risking false matches.\",\n      \"expected\": \"returns None or appropriate not-found signal\"\n    }\n  ]\n}",
+  "reasoning_tokens": 4175,
+  "review": {
+    "assessment": "The change modifies `lookup` to normalize all incoming queries by stripping whitespace and uppercasing them, then conditionally strips a hardcoded \"OLD-\" prefix before performing the index retrieval. This resolves bookmarked legacy URLs but globally alters query semantics for non-legacy lookups that previously relied on exact casing or spacing.\n\nDefects:\n1. Unintended global normalization breaks case-sensitive SKU matching.\n   - call: `lookup(index, \"sku-variant\")` when catalog key is `\"sku-variant\"`\n   - expected: returns the product dict for exact match\n   - actual: query becomes `\"SKU-VARIANT\"`, causing a lookup miss if keys are not pre-normalized or case-insensitive in the index\n\n2. Prefix-only input collapses to empty string, risking false matches or silent failures.\n   - call: `lookup(index, \"OLD-\")`\n   - expected: returns None / not-found signal\n   - actual: key becomes `\"\"`, executing `index.get(\"\")` which may incorrectly match an empty-keyed entry or default behavior depending on dict structure",
+    "findings": [
+      {
+        "actual": "query becomes \"SKU-VARIANT\", causing a lookup miss if keys are not pre-normalized",
+        "at": "catalog/search.py:5",
+        "call": "lookup(index, \"sku-variant\") where index contains lowercase key \"sku-variant\"",
+        "defect": "Unintended global normalization breaks case-sensitive SKU matching.",
+        "expected": "returns the product dict for exact match"
+      },
+      {
+        "actual": "key becomes \"\", executing index.get(\"\") which may incorrectly match an empty-keyed entry",
+        "at": "catalog/search.py:6-7",
+        "call": "lookup(index, \"OLD-\")",
+        "defect": "Prefix-only input collapses to empty string, risking false matches.",
+        "expected": "returns None or appropriate not-found signal"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 72.12542724609375,
+  "trace": "Closed",
+  "turns": 1
+}

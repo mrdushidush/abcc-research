@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3456,
+  "completion_tokens": 2515,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_yen_total_is_off_by_a_hundred",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1465,
+  "raw": "{\n  \"assessment\": \"The change adds till/money.py with MINOR_UNITS mapping and two utility functions, but leaves to_minor broken and unreferenced by any existing code path in this diff.\",\n  \"findings\": [\n    {\n      \"actual\": \"430000\",\n      \"at\": \"till/money.py:24-25\",\n      \"call\": \"python -c \\\"from till.money import to_minor; print(to_minor('4300', 'JPY'))\\\"\",\n      \"defect\": \"`to_minor` hardcodes multiplication by 100 instead of using the currency-specific minor unit factor from MINOR_UNITS. For JPY (0 decimal places) a 4300-yen order becomes 430000, exactly matching the reported mismatch.\",\n      \"expected\": \"4300\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2306,
+  "review": {
+    "assessment": "The change adds till/money.py with MINOR_UNITS mapping and two utility functions, but leaves to_minor broken and unreferenced by any existing code path in this diff.",
+    "findings": [
+      {
+        "actual": "430000",
+        "at": "till/money.py:24-25",
+        "call": "python -c \"from till.money import to_minor; print(to_minor('4300', 'JPY'))\"",
+        "defect": "`to_minor` hardcodes multiplication by 100 instead of using the currency-specific minor unit factor from MINOR_UNITS. For JPY (0 decimal places) a 4300-yen order becomes 430000, exactly matching the reported mismatch.",
+        "expected": "4300"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 41.065311431884766,
+  "trace": "Closed",
+  "turns": 1
+}

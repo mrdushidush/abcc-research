@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3222,
+  "completion_tokens": 2971,
+  "ending": "answered",
+  "events": 8,
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1498,
+  "raw": "{\n  \"assessment\": \"The change introduces `worksched/holidays.py` with a table keyed by calendar year, but leaves the lookup function subtracting one from the requested year. This contradicts its own documentation and perpetuates the stated 'year off' bug instead of fixing it. As a result, holiday lookups will consistently fetch the previous year's dates, leaving closures like 2026-04-03 unblocked.\",\n  \"findings\": [\n    {\n      \"actual\": \"['2025-01-01', '2025-05-26', '2025-12-25', '2025-12-26']\",\n      \"at\": \"worksched/holidays.py, for_year(year)\",\n      \"call\": \"python -c \\\"from worksched.holidays import for_year; print(for_year(2026))\\\"\",\n      \"defect\": \"Lookup function ignores the calendar-year keying documented in its docstring and fetches the previous year's holidays instead.\",\n      \"expected\": \"['2026-01-01', '2026-04-03', '2026-05-25', '2026-12-25', '2026-12-28']\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2650,
+  "review": {
+    "assessment": "The change introduces `worksched/holidays.py` with a table keyed by calendar year, but leaves the lookup function subtracting one from the requested year. This contradicts its own documentation and perpetuates the stated 'year off' bug instead of fixing it. As a result, holiday lookups will consistently fetch the previous year's dates, leaving closures like 2026-04-03 unblocked.",
+    "findings": [
+      {
+        "actual": "['2025-01-01', '2025-05-26', '2025-12-25', '2025-12-26']",
+        "at": "worksched/holidays.py, for_year(year)",
+        "call": "python -c \"from worksched.holidays import for_year; print(for_year(2026))\"",
+        "defect": "Lookup function ignores the calendar-year keying documented in its docstring and fetches the previous year's holidays instead.",
+        "expected": "['2026-01-01', '2026-04-03', '2026-05-25', '2026-12-25', '2026-12-28']"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 40.58193588256836,
+  "trace": "Closed",
+  "turns": 1
+}
