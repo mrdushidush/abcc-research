@@ -1,0 +1,121 @@
+schema    = 1
+id        = "the_discounts_stack_past_the_cap"
+title     = "discounts compound, and the tempting fix drops the cap"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier prices the batch and asserts every order plus the total payable, so a PASS \
+  establishes both halves of the rule: the percentages add, and the total is capped. It is \
+  constructed to reject the local fix: adding without the cap gives the ticket's 70.00 and \
+  sends an order out at 70% off, twenty points past the floor margin\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 21
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'o1_cents: 7000', got: o1_cents: 7200 — 7200 is the compounded price in the complaint"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_discounts_stack_past_the_cap/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "discounts add and stop at the cap (o-1 7000, o-2 10000, o-4 4000)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_discounts_stack_past_the_cap/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'o2_cents: 10000', got: o2_cents: 6000 — 6000 is 70% off â€” past the floor margin"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_discounts_stack_past_the_cap/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  and the same function, and the sham reaches every order the refsol does. Its scope is \
+  complete and its arithmetic is half a rule\
+  """,
+
+  """
+  THE DEFECT: `pricing.payable` applies each discount to what the previous one left, so 20% \
+  and 10% is 28% off -- a number nobody promised, and one that changes if the codes are \
+  applied in a different order\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER adds the percentages, which is the first half of `docs/discounts.md` \
+  and exactly what the ticket asks for. It produces the customer's 70.00 and then lets o-2 out \
+  at 70% off and o-4 at 60%, where the cap is 50\
+  """,
+
+  """
+  ðŸš¨ THE COMPOUNDING WAS HIDING THE CAP, which is why the cap can be missing from the code \
+  without anyone noticing: three 25% codes compound to 58% off and never reach 50% of the \
+  subtotal, so nothing ever tripped. Removing the compounding without adding the cap makes the \
+  second half of the rule bite for the first time and it is not there\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, every order in them \
+  carrying ONE discount, so compounding never happens and the total never approaches the cap. \
+  `MAX_TOTAL_PCT` and `total_pct` are both asserted directly and are correct\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "inside"
+scope_statement = "implied"
+files           = 10
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "checkout/pricing.py"
+symptom_module  = "checkout/pricing.py"
+hop_distance    = 0

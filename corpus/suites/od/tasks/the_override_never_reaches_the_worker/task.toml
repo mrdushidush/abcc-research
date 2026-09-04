@@ -42,7 +42,7 @@ point3 = "sound"
 point    = 1
 tier     = "donor_fixture"
 verdict  = "FAIL"
-detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_override_never_reaches_the_workerp1run.py, line 26, in <module> raise SystemExit(main(sys"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_override_never_reaches_the_workerp1run.py, line 26, in <module> raise SystemExit(main(sys.a"
 verifier = "rewritten"
 run      = "corpus/suites/od/tasks/the_override_never_reaches_the_worker/verify.sh, host, 2026-09-04"
 

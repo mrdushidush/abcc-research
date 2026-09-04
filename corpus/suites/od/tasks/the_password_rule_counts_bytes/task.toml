@@ -1,0 +1,122 @@
+schema    = 1
+id        = "the_password_rule_counts_bytes"
+title     = "the length rule counts bytes, and the tempting fix counts ASCII"
+lang      = "python"
+kind      = "security"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier replays the captured candidates and asserts the accepted count and five \
+  individual verdicts, so a PASS establishes the rule rather than the one sign-up in the \
+  review. It is constructed to reject the local fix: measuring the ASCII a password reduces to \
+  refuses the eight-character one AND three legitimate twelve-character ones, taking the \
+  accepted count from six to one\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 23
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'accepted: 4', got: accepted: 6 — 6 is the byte count; 1 means legitimate non-ASCII passwords are being refused"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_password_rule_counts_bytes/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "length is twelve characters, in any alphabet (4 accepted of 8)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_password_rule_counts_bytes/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'accepted: 4', got: accepted: 1 — 6 is the byte count; 1 means legitimate non-ASCII passwords are being refused"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_password_rule_counts_bytes/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  and the same one-line predicate. The sham reaches every candidate the refsol reaches and \
+  misses no consumer; it is wrong about what it counts\
+  """,
+
+  """
+  THE DEFECT: `long_enough` measures `len(password.encode("utf-8"))`. Four non-ASCII \
+  characters cost two bytes each, so an eight-character password reaches twelve bytes and is \
+  accepted -- and it is worst for exactly the users least likely to be typing ASCII\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER measures the ASCII the password reduces to, which is a real thing \
+  people write and which does refuse the password in the review. It also refuses a \
+  twelve-character Swedish password, a thirteen-character Japanese one, and `cafÃ©-au-lait`, \
+  because they reduce to nothing, to four digits and to eleven characters\
+  """,
+
+  """
+  ðŸš¨ IT IS A WORSE RULE THAN THE ONE IT REPLACES, not merely an incomplete one: the byte \
+  count was too permissive for some users, and an ASCII count is impossible for them. \
+  `docs/password_policy.md` says so in its last paragraph -- and the reviewer is shown the \
+  prompt and the patch, never the tree, so that paragraph is not in view\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, every password in \
+  them ASCII, where one character is one byte and no test can tell the two counts apart\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "inside"
+scope_statement = "single_instance"
+files           = 10
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "pwpolicy/policy.py"
+symptom_module  = "pwpolicy/policy.py"
+hop_distance    = 0

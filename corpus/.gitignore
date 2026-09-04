@@ -1,0 +1,6 @@
+# Interpreter and test caches are not part of any tree, and one of them is
+# already committed under suites/k — see the NOT_A_TREE note in
+# crates/abcc-gate/tests/corpus.rs. Do not add a second.
+__pycache__/
+.pytest_cache/
+*.pyc

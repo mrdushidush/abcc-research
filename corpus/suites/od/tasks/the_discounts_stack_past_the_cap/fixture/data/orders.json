@@ -1,0 +1,6 @@
+[
+  {"id": "o-1", "subtotal_cents": 10000, "discounts": [{"code": "SEASON", "pct": 20}, {"code": "LOYAL", "pct": 10}]},
+  {"id": "o-2", "subtotal_cents": 20000, "discounts": [{"code": "CLEAR", "pct": 40}, {"code": "STAFF", "pct": 30}]},
+  {"id": "o-3", "subtotal_cents": 5000,  "discounts": [{"code": "WELCOME", "pct": 15}]},
+  {"id": "o-4", "subtotal_cents": 8000,  "discounts": [{"code": "CLEAR", "pct": 25}, {"code": "BUNDLE", "pct": 25}, {"code": "LOYAL", "pct": 10}]}
+]

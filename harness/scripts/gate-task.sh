@@ -49,8 +49,11 @@ grade() { # <workdir> <verify.sh>  -> echoes PASS|FAIL|INVALID and the detail
 
 # TOML-safe: a detail line can carry a Windows traceback with backslashes and
 # double quotes in it, and pasting that into a basic string makes a task.toml
-# that will not parse. Strip both, collapse whitespace, cap at 160 chars.
-toml_safe() { printf '%s' "$1" | tr -d '\\"' | tr -s ' 	' ' ' | cut -c1-160; }
+# that will not parse. 🚨 It can also carry a CARRIAGE RETURN, and eight of
+# these files were written with one before anything tried to parse them: a raw
+# CR inside a basic string is an illegal character, `tr '\n' ' '` in a verify.sh
+# does not touch it, and nothing prints it. Strip all three.
+toml_safe() { printf '%s' "$1" | tr -d '\\"\r' | tr -s ' 	' ' ' | cut -c1-160; }
 
 visible_tests() { # <workdir> -> PASS|FAIL
   ( cd "$1" && "$PY" -m pytest -q >/dev/null 2>&1 ) && echo PASS || echo FAIL

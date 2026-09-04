@@ -1,0 +1,10 @@
+Support raised x-1. The customer cancelled ten days into February 2026 on a
+30.00 plan and we refunded 20.00. February has twenty-eight days, so they used
+ten of twenty-eight and the refund should have been 19.28.
+
+`docs/prorate.md` has the rule. Please make the refunds follow it.
+
+`python run.py` must complete and every refund it prints has to be right.
+
+Do not change `data/cancellations.json` and do not change the report's line
+shapes — the refunds run parses them.

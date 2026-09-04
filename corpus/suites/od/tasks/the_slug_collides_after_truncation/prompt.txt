@@ -1,0 +1,12 @@
+Two of August's articles have the same URL. a1 and a2 — "How to build a
+resilient ingest pipeline" and "How to build a resilient queue consumer" —
+both publish at /blog/how-to-build-a-resil, so the second one overwrote the
+first and the newsletter link goes to the wrong article.
+
+`docs/slugs.md` says what is supposed to happen. Please make it happen.
+
+`python run.py` must complete and the slugs it reports have to satisfy the
+document.
+
+Do not change `data/articles.json` and do not change the report's line shapes —
+the catalogue build parses them.

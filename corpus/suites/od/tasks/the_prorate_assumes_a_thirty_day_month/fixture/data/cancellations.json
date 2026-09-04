@@ -1,0 +1,6 @@
+[
+  {"id": "x-1", "plan": "team",  "year": 2026, "month": 2,  "monthly_cents": 3000, "days_used": 10},
+  {"id": "x-2", "plan": "team",  "year": 2028, "month": 2,  "monthly_cents": 3000, "days_used": 10},
+  {"id": "x-3", "plan": "scale", "year": 2026, "month": 7,  "monthly_cents": 4800, "days_used": 20},
+  {"id": "x-4", "plan": "solo",  "year": 2026, "month": 4,  "monthly_cents": 1500, "days_used": 5}
+]

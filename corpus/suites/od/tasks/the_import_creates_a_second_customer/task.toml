@@ -42,7 +42,7 @@ point3 = "sound"
 point    = 1
 tier     = "donor_fixture"
 verdict  = "FAIL"
-detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_import_creates_a_second_customerp1run.py, line 36, in <module> raise SystemExit(main(sys."
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_import_creates_a_second_customerp1run.py, line 36, in <module> raise SystemExit(main(sys.ar"
 verifier = "rewritten"
 run      = "corpus/suites/od/tasks/the_import_creates_a_second_customer/verify.sh, host, 2026-09-04"
 

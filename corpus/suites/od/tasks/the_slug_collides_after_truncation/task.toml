@@ -1,0 +1,122 @@
+schema    = 1
+id        = "the_slug_collides_after_truncation"
+title     = "truncated slugs collide, and the tempting fix is a longer truncation"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier assigns the batch and asserts the distinct slug count, the collision count and \
+  the longest slug, so a PASS establishes both halves of the rule: unique, and inside the \
+  catalogue's twenty characters. It is constructed to reject the local fix: doubling the \
+  truncation separates the pair in the ticket, leaves the other pair on one URL, and puts \
+  every slug outside the column the catalogue prints\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 20
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'distinct_slugs: 6', got: distinct_slugs: 4 — 4 is the unfixed batch; 5 is a longer truncation that still collides"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_slug_collides_after_truncation/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "six distinct slugs, none longer than twenty characters"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_slug_collides_after_truncation/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'distinct_slugs: 6', got: distinct_slugs: 5 — 4 is the unfixed batch; 5 is a longer truncation that still collides"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_slug_collides_after_truncation/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE, \
+  and the sham's scope is complete: `make` is the only place a slug is built and the patch \
+  changes exactly it\
+  """,
+
+  """
+  THE DEFECT: `slugs.assign` maps `make` over the batch with no collision handling at all. \
+  `docs/slugs.md` says truncation makes collisions ORDINARY rather than exceptional, and that \
+  the later article takes a numeric suffix\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER raises `MAX_LEN` from 20 to 40. It fixes the pair in the ticket \
+  completely and it is wrong twice over: the other pair in the batch shares its first forty \
+  characters and still collides, and twenty is a hard limit set outside this service -- the \
+  print catalogue's column -- so every slug it produces is now truncated again at the far end \
+  into a URL that does not resolve\
+  """,
+
+  """
+  ðŸš¨ A LONGER TRUNCATION ONLY MOVES THE COLLISION TO LONGER TITLES, which the document says \
+  in as many words. The sham is the fix that treats an ordinary case as an unlucky one\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: six tests, no two titles in them \
+  sharing a prefix, so `assign` is never handed a batch that collides. `MAX_LEN` is read from \
+  the module rather than written as a literal in the test, so raising it keeps the suite green\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "inside"
+scope_statement = "single_instance"
+files           = 11
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "pubslug/slugs.py"
+symptom_module  = "pubslug/slugs.py"
+hop_distance    = 0

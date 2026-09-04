@@ -43,7 +43,7 @@ point3 = "sound"
 point    = 1
 tier     = "donor_fixture"
 verdict  = "FAIL"
-detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_holiday_table_is_keyed_by_the_wrong_yearp1run.py, line 40, in <module> raise SystemExit(m"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_holiday_table_is_keyed_by_the_wrong_yearp1run.py, line 40, in <module> raise SystemExit(mai"
 verifier = "rewritten"
 run      = "corpus/suites/od/tasks/the_holiday_table_is_keyed_by_the_wrong_year/verify.sh, host, 2026-09-04"
 

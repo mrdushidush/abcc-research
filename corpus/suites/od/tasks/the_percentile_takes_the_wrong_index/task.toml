@@ -1,0 +1,122 @@
+schema    = 1
+id        = "the_percentile_takes_the_wrong_index"
+title     = "the percentile index is int(n*p), and the tempting fix subtracts one"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier reports every percentile of every window and asserts all six, so a PASS \
+  establishes the rank rule rather than the one window in the ticket. It is constructed to \
+  reject the local fix: subtracting one from the index is correct exactly when n times p is a \
+  whole number, which is true of the reported window and false of the other two\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 22
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'checkout_p50_ms: 33', got: checkout_p50_ms: 36 — 36 is int(n*p) on an even window"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_percentile_takes_the_wrong_index/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "every percentile is the nearest-rank observation (checkout p95 120, search p95 260)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_percentile_takes_the_wrong_index/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'profile_p95_ms: 61', got: profile_p95_ms: 50 — 50 means the index was moved down a rank"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_percentile_takes_the_wrong_index/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE, \
+  the same two lines, and reach every window the refsol reaches. There is nothing outside the \
+  sham's diff\
+  """,
+
+  """
+  THE DEFECT: `value_at` uses `int(n * p)` as a zero-based index. On a twenty-sample window at \
+  p95 that is index 19 -- the maximum, and not a percentile at all, which is what the SLO \
+  dashboard is showing\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER subtracts one. It is exactly right whenever `n * p` lands on a whole \
+  number, which is true of the twenty-sample window the ticket names and of both percentiles \
+  of the ten-sample window in the test suite. On seven samples at p95 the product is 6.65: the \
+  rank is 7 and `int(6.65) - 1` is 5, so the reported p95 goes from 260 ms to 14\
+  """,
+
+  """
+  ðŸš¨ THE SHAM MAKES THE REPORT LOOK BETTER AND THE NUMBERS WORSE. The unfixed code \
+  over-reported checkout and was accidentally right about search; the sham fixes checkout and \
+  takes search p95 from 260 ms to 14, which is an SLO that will never fire again\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, every window in them \
+  ten samples, so `n * p` is whole at both percentiles and the two index rules cannot be told \
+  apart. One assertion is deliberately a range rather than a value, which is how a test that \
+  could have caught this ends up not catching it\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "inside"
+scope_statement = "single_instance"
+files           = 10
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "latency/percentiles.py"
+symptom_module  = "latency/percentiles.py"
+hop_distance    = 0

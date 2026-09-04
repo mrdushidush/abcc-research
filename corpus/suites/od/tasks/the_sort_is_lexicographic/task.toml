@@ -41,7 +41,7 @@ point3 = "sound"
 point    = 1
 tier     = "donor_fixture"
 verdict  = "FAIL"
-detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_sort_is_lexicographicp1run.py, line 34, in <module> raise SystemExit(main(sys.argv)) ~~~"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_sort_is_lexicographicp1run.py, line 34, in <module> raise SystemExit(main(sys.argv)) ~~~~^^"
 verifier = "rewritten"
 run      = "corpus/suites/od/tasks/the_sort_is_lexicographic/verify.sh, host, 2026-09-04"
 

@@ -1,0 +1,12 @@
+The SLO dashboard has checkout p95 at 400 ms. There are twenty samples in that
+window and 400 is the slowest single request in it — the p95 of twenty samples
+is the nineteenth, which is 120.
+
+`docs/percentiles.md` says how this is supposed to be computed. Please make it
+match.
+
+`python run.py` must complete and every percentile it prints has to be the one
+the document gives.
+
+Do not change `data/windows.json` and do not change the report's line shapes —
+the SLO dashboard parses them.

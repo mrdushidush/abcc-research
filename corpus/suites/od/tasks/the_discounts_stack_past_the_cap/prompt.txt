@@ -1,0 +1,12 @@
+A customer complained and they are right. Order o-1 is 100.00 with a 20%
+seasonal code and a 10% loyalty code, and we charged 72.00. Both codes were in
+the basket saying what they take off, so the customer expected 70.00.
+
+`docs/discounts.md` says how discounts are supposed to work here. Please make
+the code do that.
+
+`python run.py` must complete and every line of the margin report has to be
+right.
+
+Do not change `data/orders.json`, do not change `MAX_TOTAL_PCT`, and do not
+change the report's line shapes — the margin report parses them.

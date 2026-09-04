@@ -1,0 +1,34 @@
+[
+ {
+  "id": "c1",
+  "password": "Ünïcödé!"
+ },
+ {
+  "id": "c2",
+  "password": "Ünïcödé!23"
+ },
+ {
+  "id": "c3",
+  "password": "correcthorse"
+ },
+ {
+  "id": "c4",
+  "password": "short"
+ },
+ {
+  "id": "c5",
+  "password": "ÅÄÖåäöÅÄÖåäö"
+ },
+ {
+  "id": "c6",
+  "password": "passwrd12"
+ },
+ {
+  "id": "c7",
+  "password": "日本語のパスワード1234"
+ },
+ {
+  "id": "c8",
+  "password": "café-au-lait"
+ }
+]

@@ -1,0 +1,10 @@
+Security review found that we accepted "Ünïcödé!" as a password on sign-up. It
+is eight characters. Our stated minimum is twelve.
+
+`docs/password_policy.md` has the rule. Please make the code enforce it.
+
+`python run.py` must complete and the verdicts it prints have to be the ones the
+policy gives.
+
+Do not change `data/candidates.json`, do not change `MIN_LENGTH`, and do not
+change the report's line shapes — the security review parses them.
