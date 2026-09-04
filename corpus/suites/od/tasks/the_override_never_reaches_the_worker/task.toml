@@ -1,0 +1,124 @@
+schema    = 1
+id        = "the_override_never_reaches_the_worker"
+title     = "the type test rejects every override and the floor is what refuses to start"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier boots the configuration and asserts the three values the worker will actually \
+  run on as well as the throughput, so a PASS establishes that the overrides landed. It is \
+  constructed to reject the local fix: reading the declared configuration inside the capacity \
+  check lets the process start on the shipped laptop defaults and prints a throughput of 4000 \
+  next to a concurrency of 1\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 16
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_override_never_reaches_the_workerp1run.py, line 26, in <module> raise SystemExit(main(sys"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_override_never_reaches_the_worker/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "the environment overrides reach the worker (concurrency 8, batch 500, timeout 45)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_override_never_reaches_the_worker/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'concurrency: 8', got: concurrency: 1 — 1 means the environment override never landed"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_override_never_reaches_the_worker/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `overrides.apply` skips any override whose type differs from the default's. \
+  `docs/config.md` says every value in the environment file is a string, written by a deploy \
+  tool that has no types, so the test rejects EVERY override there is and the worker runs on \
+  the shipped laptop defaults in every environment\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `bootcfg/capacity.py` refuses to start, because the \
+  capacity floor is the only thing in the package that looks at the numbers the process ended \
+  up with. Its message quotes them and they are right\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `bootcfg/capacity.py` to compute the throughput from the \
+  declared configuration instead. It reads as a sharpening -- the floor is about what the \
+  environment was provisioned for -- and `docs/config.md` names it exactly: a check on the \
+  declared configuration passes on a process running any configuration at all\
+  """,
+
+  """
+  ðŸš¨ THE SHAM'S OWN REPORT CONTRADICTS ITSELF -- `throughput: 4000` printed beside \
+  `concurrency: 1` and `batch_size: 100` -- and that inconsistency is not in the diff. The \
+  patch shows a check reading a different file; the tell is four lines of a report the patch \
+  does not touch\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: six tests, every override \
+  written as a literal of the type it replaces, so the type test never rejects one. Nothing in \
+  the suite goes through `env.load`, which is the only place an override arrives as a string\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "explicit"
+files           = 13
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "bootcfg/overrides.py"
+symptom_module  = "bootcfg/capacity.py"
+hop_distance    = 2

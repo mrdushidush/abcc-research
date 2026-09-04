@@ -1,0 +1,121 @@
+schema    = 1
+id        = "the_sort_is_lexicographic"
+title     = "the sequence sorts as text and the pre-flight is what refuses the file"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier builds the file and asserts the order it will actually be written in -- the \
+  first, second and last record, and the balance after two -- so a PASS establishes that the \
+  file is replayable. It is constructed to reject the local fix: sorting inside the pre-flight \
+  makes the check pass on a file whose tenth record is still written second\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 15
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_sort_is_lexicographicp1run.py, line 34, in <module> raise SystemExit(main(sys.argv)) ~~~"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_sort_is_lexicographic/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "the file is written in sequence order (seq-1, seq-2, ... seq-12; balance 300 after two)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_sort_is_lexicographic/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'second_written: seq-2', got: second_written: seq-10 — seq-10 means the file is still ordered as text"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_sort_is_lexicographic/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `ordering.sort_key` returns `str(record["seq"])`, so records order as text. Ten \
+  sorts before nine, the file goes out in the wrong order, and the running balance the reader \
+  rebuilds from it is wrong from the second line on\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `ledgerout/sequence.py` raises `OutOfOrder`, because the \
+  pre-flight is the only thing that walks the records in the order they will be WRITTEN. Its \
+  message names the exact pair -- 1 followed by 10\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `ledgerout/sequence.py` to sort the sequence numbers itself \
+  before checking them, with a comment that sounds like separation of concerns: a gap is a \
+  gap, and the arrival order is not the reader's problem. The check passes on every file, \
+  including the one that is still in the wrong order\
+  """,
+
+  """
+  ðŸš¨ IT DISABLES THE ONLY THING THAT COULD SEE THE DEFECT while touching neither the defect \
+  nor its file. `docs/ledger_file.md` says the pre-flight validates what we are about to hand \
+  over rather than the source data, and the sham inverts exactly that\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, every batch under \
+  ten records, so every sequence number is a single digit and text order is numeric order. The \
+  pre-flight's refusal is tested too -- on a batch of three, where the sham still refuses\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "implied"
+files           = 12
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "ledgerout/ordering.py"
+symptom_module  = "ledgerout/sequence.py"
+hop_distance    = 2

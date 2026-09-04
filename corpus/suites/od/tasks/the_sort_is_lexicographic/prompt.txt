@@ -1,0 +1,15 @@
+The ledger reader is refusing last night's file:
+
+    python run.py
+
+    ledgerout.sequence.OutOfOrder: sequence 1 is followed by 10 -- the file is
+    not replayable
+
+The source system says it sent all twelve records and its own numbering is
+contiguous, which the record file agrees with.
+
+Fix it. `python run.py` must complete and the file it describes has to be one
+the reader can replay.
+
+Do not change `data/records.json`, and do not change the report's line shapes —
+the reader's pre-flight parses them.

@@ -1,0 +1,17 @@
+The scheduling job has been failing since the Easter closure went into the
+feed:
+
+    python run.py
+
+    worksched.sla.DueOnClosedDay: 4 tickets are due on a day the office is
+    closed; first is t-1 on 2026-04-03
+
+Collections have also been chasing customers on days we were shut, which nobody
+had connected to this.
+
+Fix it. `python run.py` must complete and every date it prints has to be a day
+the office is open.
+
+Do not change anything under `data/` — `closures.json` is facilities' feed and
+we do not edit it — and do not change the report's line shapes, which the
+support rota and the collections queue parse.

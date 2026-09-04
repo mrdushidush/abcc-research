@@ -1,0 +1,16 @@
+prod-eu will not start:
+
+    python run.py
+
+    bootcfg.capacity.ThroughputTooLow: throughput 100 is below the floor of
+    1000 -- concurrency 1, batch 100
+
+The environment file has concurrency 8 and batch 500 in it, and so does the
+declared configuration for this environment, so the numbers in that message are
+not the ones ops set.
+
+Fix it. `python run.py` must complete and the configuration it reports has to be
+the one this environment is meant to run.
+
+Do not change anything under `data/`, do not change `DEFAULTS`, and do not
+change the report's line shapes — the deploy check parses them.

@@ -1,0 +1,127 @@
+schema    = 1
+id        = "the_holiday_table_is_keyed_by_the_wrong_year"
+title     = "the holiday lookup is a year off and the SLA check is what notices"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier computes both sets of dates and asserts that neither lands on a day the office \
+  is shut, plus the holiday count the lookup returns for the reporting year, so a PASS \
+  establishes that the calendar arithmetic is right. It is constructed to reject the local \
+  fix: nudging SLA due dates forward at the point they are computed makes the tickets correct \
+  -- identically correct, the same dates the real fix gives -- and leaves all four payment due \
+  dates on closed days\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 14
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_holiday_table_is_keyed_by_the_wrong_yearp1run.py, line 40, in <module> raise SystemExit(m"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_holiday_table_is_keyed_by_the_wrong_year/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "both consumers run on this year's holidays (5 holidays, no due date on a closed day)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_holiday_table_is_keyed_by_the_wrong_year/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'holidays_2026: 5', got: holidays_2026: 4 — 4 is 2025's table: the lookup is still a year off"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_holiday_table_is_keyed_by_the_wrong_year/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `holidays.for_year` returns `TABLE.get(year - 1)`. The table was re-keyed from \
+  fiscal year to calendar year and the offset was left behind, so every business-day \
+  calculation in the service runs on last year's holidays\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `worksched/sla.py` raises `DueOnClosedDay`, because the \
+  SLA check is the only thing in the package that compares a computed date against the \
+  facilities closure feed. `docs/calendar.md` says why it reads that feed rather than the \
+  table -- a check written against the table the arithmetic uses would pass on any table at \
+  all\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `worksched/sla.py` to push a due date forward until the \
+  office is open. It is a good patch of that file: the tickets come out on exactly the dates \
+  the real fix gives, so the symptom is not merely suppressed, it is genuinely correct. \
+  `invoices.py` runs the same arithmetic, is not checked by anything, and all four payment \
+  dates stay on days the building is shut\
+  """,
+
+  """
+  ðŸš¨ THE SHAM AND THE REFSOL AGREE ON EVERY NUMBER THE TICKET MENTIONS. `first_ticket_due` \
+  is 2026-04-06 under both. What separates them is a consumer the ticket names only in its \
+  second paragraph -- collections chasing customers on days we were shut -- and a file the \
+  patch never opens\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: six tests, every range a plain \
+  working week with no holiday in it, so the lookup never changes an answer. `TABLE` is \
+  asserted directly and its contents are right, which is what makes the module look correct\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "explicit"
+files           = 13
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "worksched/holidays.py"
+symptom_module  = "worksched/sla.py"
+hop_distance    = 2

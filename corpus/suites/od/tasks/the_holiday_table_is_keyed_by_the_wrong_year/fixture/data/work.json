@@ -1,0 +1,56 @@
+{
+  "tickets": [
+    {
+      "id": "t-1",
+      "opened": "2026-04-01",
+      "sla_days": 2
+    },
+    {
+      "id": "t-2",
+      "opened": "2026-04-01",
+      "sla_days": 3
+    },
+    {
+      "id": "t-3",
+      "opened": "2026-03-31",
+      "sla_days": 3
+    },
+    {
+      "id": "t-4",
+      "opened": "2026-04-07",
+      "sla_days": 2
+    },
+    {
+      "id": "t-5",
+      "opened": "2026-12-23",
+      "sla_days": 2
+    },
+    {
+      "id": "t-6",
+      "opened": "2026-04-02",
+      "sla_days": 1
+    }
+  ],
+  "invoices": [
+    {
+      "id": "i-1",
+      "issued": "2026-04-01",
+      "terms_days": 2
+    },
+    {
+      "id": "i-2",
+      "issued": "2026-03-30",
+      "terms_days": 4
+    },
+    {
+      "id": "i-3",
+      "issued": "2026-12-22",
+      "terms_days": 3
+    },
+    {
+      "id": "i-4",
+      "issued": "2026-12-23",
+      "terms_days": 3
+    }
+  ]
+}
