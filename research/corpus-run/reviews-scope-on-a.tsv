@@ -1,0 +1,122 @@
+task	lang	population	ladder	ending	findings	restatement_candidates	hedge_candidate	seconds	prompt_tokens	completion_tokens	reasoning_tokens
+k/finish_the_cancelled_status (correct)	python	correct	GREEN	answered	0	0	false	83.5	1941	5881	5667
+k/finish_the_cancelled_status (sham)	python	sham	GREEN	answered	1	0	false	54.4	1367	3600	3321
+k/finish_the_cancelled_status	python	wrong	GREEN	answered	4	0	false	69.4	3355	5039	4523
+k/round_at_the_line_not_the_total (correct)	python	correct	GREEN	answered	0	0	false	27.4	1467	1789	1684
+k/round_at_the_line_not_the_total (sham)	python	sham	GREEN	answered	0	0	false	72.9	1433	4901	4780
+k/round_at_the_line_not_the_total	python	wrong	GREEN	answered	2	0	false	55.0	2025	3402	2963
+k/trace_dropped_samples (correct)	python	correct	GREEN	answered	2	0	false	62.3	1437	4110	3795
+k/trace_dropped_samples (sham)	python	sham	GREEN	answered	1	0	false	58.4	1370	3698	3476
+k/trace_dropped_samples	python	wrong	GREEN	answered	1	0	false	67.8	1965	4370	4124
+q56/Q01 (correct)	rust	correct	GREEN	answered	0	0	false	50.9	1504	3418	3300
+q56/Q01	rust	wrong	RED	answered	1	0	false	15.1	1459	900	755
+q56/Q02 (correct)	rust	correct	GREEN	answered	0	0	false	14.4	1518	1032	938
+q56/Q02	rust	wrong	RED	answered	1	1	false	32.5	1487	2266	1982
+q56/Q03 (correct)	rust	correct	GREEN	answered	0	0	false	34.4	1479	2262	2185
+q56/Q03	rust	wrong	GREEN	answered	1	0	false	33.4	1492	2340	2109
+q56/Q04 (correct)	rust	correct	GREEN	answered	0	0	false	32.3	1583	2359	2169
+q56/Q04	rust	wrong	GREEN	answered	3	0	false	70.9	1602	4845	4374
+q56/Q05 (correct)	rust	correct	UNVERIFIED	answered	0	0	false	100.7	1441	6340	6273
+q56/Q05	rust	wrong	UNVERIFIED	answered	2	0	false	35.5	1333	2684	2354
+q56/Q06 (correct)	rust	correct	GREEN	answered	0	0	false	30.8	1596	1953	1766
+q56/Q06	rust	wrong	RED	answered	2	0	false	29.5	1463	2365	2022
+q56/Q07 (correct)	rust	correct	GREEN	answered	0	0	false	39.8	1683	2587	2492
+q56/Q07	rust	wrong	GREEN	answered	1	0	false	38.7	1568	2720	2509
+q56/Q08 (correct)	rust	correct	GREEN	answered	0	0	false	26.0	1547	1985	1899
+q56/Q08	rust	wrong	GREEN	answered	1	0	false	58.9	1946	4077	3870
+q56/Q09 (correct)	rust	correct	GREEN	answered	0	0	false	36.8	1746	2665	2537
+q56/Q09	rust	wrong	RED	answered	0	0	false	29.4	1569	2217	2000
+q56/Q10 (correct)	rust	correct	GREEN	answered	0	0	false	42.2	1608	3075	2977
+q56/Q10	rust	wrong	RED	answered	1	1	false	20.1	1441	1436	1211
+q56/Q11 (correct)	rust	correct	UNVERIFIED	answered	0	0	false	108.6	1323	6916	6782
+q56/Q11	rust	wrong	UNVERIFIED	answered	1	0	false	29.8	1417	2151	1943
+q56/Q12 (correct)	rust	correct	GREEN	answered	0	0	false	75.3	1597	5336	5137
+q56/Q12	rust	wrong	GREEN	answered	1	1	false	104.4	1548	6262	6024
+q56/Q13 (correct)	python	correct	GREEN	answered	0	0	false	121.6	1500	7466	7387
+q56/Q13	python	wrong	GREEN	answered	2	0	false	30.4	1230	2301	2002
+q56/Q14 (correct)	python	correct	GREEN	answered	0	0	false	34.4	1329	2475	2381
+q56/Q14	python	wrong	GREEN	answered	2	0	false	34.7	1248	2641	2339
+q56/Q15 (correct)	python	correct	GREEN	answered	1	0	false	20.5	1279	1306	1085
+q56/Q15	python	wrong	GREEN	answered	1	0	false	30.0	1279	2241	2050
+q56/Q16 (correct)	python	correct	GREEN	answered	0	0	false	90.4	1296	6074	5938
+q56/Q16	python	wrong	GREEN	answered	2	0	false	32.9	1257	2388	2101
+q56/Q17 (correct)	python	correct	GREEN	answered	0	0	false	36.2	1259	2517	2457
+q56/Q17	python	wrong	GREEN	answered	1	0	false	47.1	1229	3377	3108
+q56/Q18 (correct)	python	correct	GREEN	answered	0	0	false	19.0	1253	1346	1200
+q56/Q18	python	wrong	GREEN	answered	1	0	false	26.0	1222	2017	1555
+q56/Q19 (correct)	python	correct	GREEN	answered	0	0	false	72.4	1449	5892	5760
+q56/Q19	python	wrong	GREEN	answered	2	0	false	27.9	1332	2131	1871
+q56/Q20 (correct)	python	correct	GREEN	answered	0	0	false	15.9	1241	1196	1072
+q56/Q20	python	wrong	GREEN	answered	0	0	false	41.2	1204	3028	2718
+q56/Q21 (correct)	python	correct	GREEN	answered	0	0	false	26.7	1293	1857	1581
+q56/Q21	python	wrong	GREEN	answered	1	0	false	23.5	1248	1582	1300
+q56/Q22 (correct)	python	correct	GREEN	answered	0	0	false	17.6	1314	1184	1061
+q56/Q22	python	wrong	GREEN	answered	1	0	false	25.4	1271	1690	1318
+q56/Q23 (correct)	python	correct	GREEN	answered	0	0	false	45.0	1429	3141	3027
+q56/Q23	python	wrong	GREEN	answered	3	0	false	36.7	1320	2652	2320
+q56/Q24 (correct)	python	correct	GREEN	answered	0	0	false	30.1	1319	2095	1940
+q56/Q24	python	wrong	RED	answered	1	0	false	18.3	1319	1197	1024
+q56/Q25 (correct)	python	correct	GREEN	answered	0	0	false	48.2	1327	3398	3324
+q56/Q25	python	wrong	GREEN	answered	1	0	false	29.9	1273	2229	2020
+q56/Q26 (correct)	node	correct	GREEN	answered	0	0	false	87.2	1516	5796	5558
+q56/Q26	node	wrong	GREEN	answered	3	0	false	45.6	1202	2917	2522
+q56/Q27 (correct)	node	correct	GREEN	answered	0	0	false	38.5	1263	2637	2575
+q56/Q27	node	wrong	GREEN	answered	1	0	false	60.4	1248	4351	3924
+q56/Q28 (correct)	node	correct	GREEN	answered	0	0	false	27.1	1245	1947	1862
+q56/Q28	node	wrong	GREEN	answered	1	0	false	32.0	1220	2095	1924
+q56/Q29 (correct)	node	correct	GREEN	answered	0	0	false	63.5	1268	4097	3816
+q56/Q29	node	wrong	GREEN	answered	1	0	false	40.9	1258	3054	2793
+q56/Q30 (correct)	node	correct	GREEN	answered	0	0	false	17.9	1183	1282	1181
+q56/Q30	node	wrong	GREEN	answered	1	0	false	49.2	1170	3366	3132
+q56/Q31 (correct)	node	correct	GREEN	answered	0	0	false	33.9	1263	2307	2145
+q56/Q31	node	wrong	RED	answered	1	0	false	14.8	1253	1008	829
+q56/Q32 (correct)	node	correct	GREEN	answered	0	0	false	28.4	1241	2021	1879
+q56/Q32	node	wrong	GREEN	answered	1	0	false	43.9	1214	3277	3026
+q56/Q33 (correct)	node	correct	GREEN	answered	0	0	false	28.8	1233	1942	1853
+q56/Q33	node	wrong	GREEN	answered	3	0	false	37.3	1202	2644	2280
+q56/Q34 (correct)	node	correct	GREEN	answered	0	0	false	31.5	1475	2249	2147
+q56/Q34	node	wrong	GREEN	answered	2	0	false	50.0	1368	3780	3442
+q56/Q35 (correct)	typescript	correct	GREEN	answered	0	0	false	63.5	1464	4396	4312
+q56/Q35	typescript	wrong	GREEN	answered	5	0	false	44.1	1259	3187	2662
+q56/Q36 (correct)	typescript	correct	GREEN	answered	0	0	false	23.6	1296	1574	1415
+q56/Q36	typescript	wrong	GREEN	answered	1	0	false	22.1	1226	1472	1199
+q56/Q37 (correct)	typescript	correct	GREEN	answered	0	0	false	34.6	1304	2468	2339
+q56/Q37	typescript	wrong	GREEN	answered	1	0	false	22.8	1238	1640	1445
+q56/Q38 (correct)	typescript	correct	GREEN	answered	0	0	false	29.6	1276	2234	2039
+q56/Q38	typescript	wrong	GREEN	answered	1	0	false	31.6	1240	2286	2096
+q56/Q39 (correct)	typescript	correct	GREEN	answered	0	0	false	19.0	1195	1309	1132
+q56/Q39	typescript	wrong	GREEN	answered	1	0	false	22.4	1181	1579	1400
+q56/Q40 (correct)	typescript	correct	GREEN	answered	0	0	false	44.9	1498	3176	3084
+q56/Q40	typescript	wrong	RED	answered	1	1	false	20.9	1290	1449	1175
+q56/Q41 (correct)	typescript	correct	GREEN	answered	0	0	false	20.7	1252	1407	1266
+q56/Q41	typescript	wrong	GREEN	answered	1	0	false	33.3	1217	2323	2131
+q56/Q42 (correct)	typescript	correct	GREEN	answered	0	0	false	42.0	1299	2727	2648
+q56/Q42	typescript	wrong	GREEN	answered	1	0	false	20.3	1206	1309	1112
+q56/Q43 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	31.2	1216	2357	2270
+q56/Q43	shell	wrong	UNVERIFIED	answered	1	0	false	35.9	1189	2480	2279
+q56/Q44 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	37.4	1304	2615	2498
+q56/Q44	shell	wrong	UNVERIFIED	answered	4	0	false	44.3	1195	3284	2789
+q56/Q45 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	39.8	1236	2730	2538
+q56/Q45	shell	wrong	UNVERIFIED	answered	2	0	false	24.4	1202	1816	1537
+q56/Q46 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	40.6	1308	2777	2605
+q56/Q46	shell	wrong	UNVERIFIED	answered	2	0	false	139.7	1244	9257	9017
+q56/Q47 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	23.7	1264	1701	1578
+q56/Q47	shell	wrong	UNVERIFIED	answered	1	0	false	24.5	1223	1776	1495
+q56/Q48 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	29.8	1248	2035	1904
+q56/Q48	shell	wrong	UNVERIFIED	answered	1	0	false	31.0	1187	2228	1986
+q56/Q49 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	28.5	1203	2030	1927
+q56/Q49	shell	wrong	UNVERIFIED	answered	1	0	false	42.8	1191	2849	2628
+q56/Q50 (correct)	shell	correct	UNVERIFIED	answered	0	0	false	25.9	1236	1805	1707
+q56/Q50	shell	wrong	UNVERIFIED	answered	1	0	false	34.9	1205	2469	2321
+q56/Q51 (correct)	python	correct	GREEN	answered	0	0	false	55.8	1438	4045	3810
+q56/Q51	python	wrong	RED	answered	1	0	false	18.2	1291	1323	1122
+q56/Q52 (correct)	rust	correct	UNVERIFIED	answered	0	0	false	54.3	1774	3902	3776
+q56/Q52	rust	wrong	UNVERIFIED	answered	3	1	false	46.4	1555	3272	2822
+q56/Q53 (correct)	node	correct	GREEN	answered	1	0	false	109.9	1623	7435	7239
+q56/Q53	node	wrong	RED	answered	1	0	false	19.4	1278	1381	1179
+q56/Q54 (correct)	python	correct	GREEN	answered	1	0	false	106.5	1529	7680	7340
+q56/Q54	python	wrong	RED	answered	1	0	false	19.9	1305	1363	1153
+q56/Q55 (correct)	typescript	correct	GREEN	answered	0	0	false	21.8	1386	1599	1502
+q56/Q55	typescript	wrong	RED	answered	1	0	false	25.4	1250	1777	1446
+q56/Q56 (correct)	rust	correct	GREEN	answered	0	0	false	48.9	1623	3358	3264
+q56/Q56	rust	wrong	RED	answered	1	1	false	16.5	1542	1146	897

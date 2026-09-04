@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2764,
+  "completion_tokens": 1472,
+  "ending": "answered",
+  "events": 6,
+  "id": "q56/Q36",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1226,
+  "raw": "{\n  \"assessment\": \"The task requires recursively cloning nested objects and arrays so that every level is independent of the original. The diff replaces the file with a shallow-copy implementation: `Array.map(v => v)` creates a new array but keeps references to its elements, and `{ ...value }` spreads an object while copying property values by reference. It handles primitives correctly, stops at the first nesting level, and fails to recurse into nested structures.\",\n  \"findings\": [\n    {\n      \"actual\": \"clone.a[0].b becomes 99; original is mutated because arrays/objects are shared references\",\n      \"at\": \"solution.ts:3-4 (array branch) and solution.ts:5-6 (object branch)\",\n      \"call\": \"node -e \\\"import {deepClone} from './solution'; const orig = {a: [{b: 2}]}; const clone = deepClone(orig); clone.a[0].b = 99; console.log(orig.a[0].b === 1 ? 'PASS' : 'FAIL');\\\"\",\n      \"defect\": \"Shallow copy instead of recursive deep copy\",\n      \"expected\": \"original remains unchanged (prints PASS)\"\n    }\n  ]\n}",
+  "reasoning_tokens": 1199,
+  "review": {
+    "assessment": "The task requires recursively cloning nested objects and arrays so that every level is independent of the original. The diff replaces the file with a shallow-copy implementation: `Array.map(v => v)` creates a new array but keeps references to its elements, and `{ ...value }` spreads an object while copying property values by reference. It handles primitives correctly, stops at the first nesting level, and fails to recurse into nested structures.",
+    "findings": [
+      {
+        "actual": "clone.a[0].b becomes 99; original is mutated because arrays/objects are shared references",
+        "at": "solution.ts:3-4 (array branch) and solution.ts:5-6 (object branch)",
+        "call": "node -e \"import {deepClone} from './solution'; const orig = {a: [{b: 2}]}; const clone = deepClone(orig); clone.a[0].b = 99; console.log(orig.a[0].b === 1 ? 'PASS' : 'FAIL');\"",
+        "defect": "Shallow copy instead of recursive deep copy",
+        "expected": "original remains unchanged (prints PASS)"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 22.139205932617188,
+  "trace": "Closed",
+  "turns": 1
+}

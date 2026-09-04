@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3438,
+  "completion_tokens": 3534,
+  "ending": "answered",
+  "events": 8,
+  "id": "q56/Q40 (correct)",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1441,
+  "raw": "{\n  \"assessment\": \"The change replaces the method stubs with a complete `EventEmitter` implementation using a `Map<string, Listener[]>` to store listeners per event. It correctly handles registration (`on`), removal (`off`), emission (`emit` by iterating over a shallow copy of the listener array to avoid mutation issues during callbacks), and one-time firing (`once` via a wrapper that unregisters itself before invoking the original listener). No defects were identified; the implementation matches the provided stubs, adheres to standard EventEmitter semantics, and passes all recorded acceptance checks.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3399,
+  "review": {
+    "assessment": "The change replaces the method stubs with a complete `EventEmitter` implementation using a `Map<string, Listener[]>` to store listeners per event. It correctly handles registration (`on`), removal (`off`), emission (`emit` by iterating over a shallow copy of the listener array to avoid mutation issues during callbacks), and one-time firing (`once` via a wrapper that unregisters itself before invoking the original listener). No defects were identified; the implementation matches the provided stubs, adheres to standard EventEmitter semantics, and passes all recorded acceptance checks.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 49.047210693359375,
+  "trace": "Closed",
+  "turns": 1
+}

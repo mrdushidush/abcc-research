@@ -1,0 +1,2 @@
+task	lang	population	ladder	ending	findings	restatement_candidates	hedge_candidate	seconds	prompt_tokens	completion_tokens	reasoning_tokens
+k/finish_the_cancelled_status (sham)	python	sham	GREEN	answered	1	0	false	141.6	1367	8063	7820

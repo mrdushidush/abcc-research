@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3575,
+  "completion_tokens": 4396,
+  "ending": "answered",
+  "events": 10,
+  "id": "q56/Q35 (correct)",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1464,
+  "raw": "{\n  \"assessment\": \"The diff exactly addresses the scope defined in the task: stripping a leading '?', returning early for empty strings, handling bare keys as empty-string values, decoding '+' to spaces alongside percent-encoding, and collapsing repeated query parameters into arrays. No out-of-scope refactoring or unrelated changes are present.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 4312,
+  "review": {
+    "assessment": "The diff exactly addresses the scope defined in the task: stripping a leading '?', returning early for empty strings, handling bare keys as empty-string values, decoding '+' to spaces alongside percent-encoding, and collapsing repeated query parameters into arrays. No out-of-scope refactoring or unrelated changes are present.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 63.46316146850586,
+  "trace": "Closed",
+  "turns": 1
+}

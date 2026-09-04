@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3042,
+  "completion_tokens": 3247,
+  "ending": "answered",
+  "events": 9,
+  "id": "k/finish_the_cancelled_status (sham)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1310,
+  "raw": "{\n  \"assessment\": \"The change replaces the hardcoded `st.DONE` / `st.FAILED` check with a call to `st.is_terminal()`. This correctly delegates status classification, ensuring that newly added terminal statuses like `CANCELLED` stop the SLA clock at their `ended_at` timestamp instead of defaulting to the current time. The change directly addresses the reported SLA inflation for self-cancelled jobs and aligns with the lifecycle specification.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3135,
+  "review": {
+    "assessment": "The change replaces the hardcoded `st.DONE` / `st.FAILED` check with a call to `st.is_terminal()`. This correctly delegates status classification, ensuring that newly added terminal statuses like `CANCELLED` stop the SLA clock at their `ended_at` timestamp instead of defaulting to the current time. The change directly addresses the reported SLA inflation for self-cancelled jobs and aligns with the lifecycle specification.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 51.70244216918945,
+  "trace": "Closed",
+  "turns": 1
+}

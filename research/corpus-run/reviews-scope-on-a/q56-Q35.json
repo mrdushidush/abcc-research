@@ -1,0 +1,57 @@
+{
+  "brief_chars": 2887,
+  "completion_tokens": 3187,
+  "ending": "answered",
+  "events": 8,
+  "id": "q56/Q35",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1259,
+  "raw": "{\n  \"assessment\": \"This change introduces a brand-new `solution.ts` with an 8-line implementation that relies entirely on naive string splitting (`&` and `=`). It completely fails to address any of the specified requirements: repeated keys are overwritten instead of collected into arrays, percent-encoding (`%XX`) and plus signs (`+`) are left undecoded, bare keys resolve to `undefined` instead of an empty string, an empty input yields a single falsy entry instead of `{}`, and a leading `?` is treated as part of the first key.\",\n  \"findings\": [\n    {\n      \"actual\": \"{ a: \\\"2\\\" }\",\n      \"at\": \"Repeated keys overwrite previous values instead of collecting them into an array.\",\"call\": \"parseQueryString(\\\"a=1&a=2\\\")\",\"defect\": \"],\",\n      \"expected\": \"{ a: [\\\"1\\\", \\\"2\\\"] }\"\n    },\n    {\n      \"actual\": \"{ x: \\\"%20\\\", y: \\\"+\\\" }\",\n      \"at\": \"Percent-encoded characters and plus signs are not decoded to spaces or their respective characters.\",\n      \"call\": \"parseQueryString(\\\"x=%20&y=+\\\")\",\n      \"defect\": \"],\",\"expected\": \"{ x: \\\" \\\", y: \\\" \\\" }\"\n    },\n    {\n      \"actual\": \"{ key: undefined }\",\n      \"at\": \"Bare keys (missing `=`) are assigned `undefined` instead of an empty string.\",\n      \"call\": \"parseQueryString(\\\"key\\\")\",\n      \"defect\": \"],\",\"expected\": \"{ key: \\\"\\\" }\"\n    },\n    {\n      \"actual\": \"{ \\\"\\\": undefined }\",\n      \"at\": \"Empty input results in a single entry with an empty string key instead of returning `{}`.\",\n      \"call\": \"parseQueryString(\\\"\\\")\",\n      \"defect\": \"],\",\"expected\": \"{}\"\n    },\n    {\n      \"actual\": \"{ \\\"?a\\\": \\\"1\\\" }\",\n      \"at\": \"A leading `?` is not stripped and becomes part of the first key.\",\n      \"call\": \"parseQueryString(\\\"?a=1\\\")\",\n      \"defect\": \"],\",\"expected\": \"{ a: \\\"1\\\" }\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2662,
+  "review": {
+    "assessment": "This change introduces a brand-new `solution.ts` with an 8-line implementation that relies entirely on naive string splitting (`&` and `=`). It completely fails to address any of the specified requirements: repeated keys are overwritten instead of collected into arrays, percent-encoding (`%XX`) and plus signs (`+`) are left undecoded, bare keys resolve to `undefined` instead of an empty string, an empty input yields a single falsy entry instead of `{}`, and a leading `?` is treated as part of the first key.",
+    "findings": [
+      {
+        "actual": "{ a: \"2\" }",
+        "at": "Repeated keys overwrite previous values instead of collecting them into an array.",
+        "call": "parseQueryString(\"a=1&a=2\")",
+        "defect": "],",
+        "expected": "{ a: [\"1\", \"2\"] }"
+      },
+      {
+        "actual": "{ x: \"%20\", y: \"+\" }",
+        "at": "Percent-encoded characters and plus signs are not decoded to spaces or their respective characters.",
+        "call": "parseQueryString(\"x=%20&y=+\")",
+        "defect": "],",
+        "expected": "{ x: \" \", y: \" \" }"
+      },
+      {
+        "actual": "{ key: undefined }",
+        "at": "Bare keys (missing `=`) are assigned `undefined` instead of an empty string.",
+        "call": "parseQueryString(\"key\")",
+        "defect": "],",
+        "expected": "{ key: \"\" }"
+      },
+      {
+        "actual": "{ \"\": undefined }",
+        "at": "Empty input results in a single entry with an empty string key instead of returning `{}`.",
+        "call": "parseQueryString(\"\")",
+        "defect": "],",
+        "expected": "{}"
+      },
+      {
+        "actual": "{ \"?a\": \"1\" }",
+        "at": "A leading `?` is not stripped and becomes part of the first key.",
+        "call": "parseQueryString(\"?a=1\")",
+        "defect": "],",
+        "expected": "{ a: \"1\" }"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 44.12188720703125,
+  "trace": "Closed",
+  "turns": 1
+}

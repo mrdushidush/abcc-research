@@ -1,0 +1,57 @@
+{
+  "brief_chars": 2605,
+  "completion_tokens": 3268,
+  "ending": "answered",
+  "events": 8,
+  "id": "q56/Q35",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1202,
+  "raw": "{\n  \"assessment\": \"This change adds a fresh `solution.ts` containing only a naive implementation that splits on \\\"&\\\" and \\\"=\\\" without addressing any of the specified requirements for real query strings. It completely fails to handle repeated keys as arrays, character decoding, leading \\\"?\\\" stripping, bare key mapping, or empty input normalization.\",\n  \"findings\": [\n    {\n      \"actual\": \"{ a: \\\"2\\\" }\",\n      \"at\": \"1\",\n      \"call\": \"parseQueryString(\\\"a=1&a=2\\\")\",\n      \"defect\": \"Repeated keys overwrite previous values instead of collecting them into arrays.\",\n      \"expected\": \"{ a: [\\\"1\\\", \\\"2\\\"] }\"\n    },\n    {\n      \"actual\": \"{ \\\"\\\": undefined }\",\n      \"at\": \"2\",\n      \"call\": \"parseQueryString(\\\"\\\")\",\n      \"defect\": \"Empty input produces an object with an empty-string key mapped to undefined instead of an empty object.\",\n      \"expected\": \"{}\"\n    },\n    {\n      \"actual\": \"{ a: \\\"%20\\\", b: \\\"+\\\" }\",\n      \"at\": \"3\",\n      \"call\": \"parseQueryString(\\\"a=%20&b=+\\\")\",\n      \"defect\": \"\\\"+\\\" and percent-encoded sequences are not decoded into spaces or their corresponding characters.\",\n      \"expected\": \"{ a: \\\" \\\", b: \\\" \\\" }\"\n    },\n    {\n      \"actual\": \"{ \\\"?a\\\": \\\"1\\\" }\",\n      \"at\": \"4\",\n      \"call\": \"parseQueryString(\\\"?a=1\\\")\",\n      \"defect\": \"Leading \\\"?\\\" is treated as part of the first key rather than being stripped.\",\n      \"expected\": \"{ a: \\\"1\\\" }\"\n    },\n    {\n      \"actual\": \"{ a: \\\"1\\\", \\\"\\\": undefined }\",\n      \"at\": \"5\",\n      \"call\": \"parseQueryString(\\\"a=1&\\\")\",\n      \"defect\": \"Trailing ampersands create an empty string key mapped to undefined instead of being ignored.\",\n      \"expected\": \"{ a: \\\"1\\\" }\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2761,
+  "review": {
+    "assessment": "This change adds a fresh `solution.ts` containing only a naive implementation that splits on \"&\" and \"=\" without addressing any of the specified requirements for real query strings. It completely fails to handle repeated keys as arrays, character decoding, leading \"?\" stripping, bare key mapping, or empty input normalization.",
+    "findings": [
+      {
+        "actual": "{ a: \"2\" }",
+        "at": "1",
+        "call": "parseQueryString(\"a=1&a=2\")",
+        "defect": "Repeated keys overwrite previous values instead of collecting them into arrays.",
+        "expected": "{ a: [\"1\", \"2\"] }"
+      },
+      {
+        "actual": "{ \"\": undefined }",
+        "at": "2",
+        "call": "parseQueryString(\"\")",
+        "defect": "Empty input produces an object with an empty-string key mapped to undefined instead of an empty object.",
+        "expected": "{}"
+      },
+      {
+        "actual": "{ a: \"%20\", b: \"+\" }",
+        "at": "3",
+        "call": "parseQueryString(\"a=%20&b=+\")",
+        "defect": "\"+\" and percent-encoded sequences are not decoded into spaces or their corresponding characters.",
+        "expected": "{ a: \" \", b: \" \" }"
+      },
+      {
+        "actual": "{ \"?a\": \"1\" }",
+        "at": "4",
+        "call": "parseQueryString(\"?a=1\")",
+        "defect": "Leading \"?\" is treated as part of the first key rather than being stripped.",
+        "expected": "{ a: \"1\" }"
+      },
+      {
+        "actual": "{ a: \"1\", \"\": undefined }",
+        "at": "5",
+        "call": "parseQueryString(\"a=1&\")",
+        "defect": "Trailing ampersands create an empty string key mapped to undefined instead of being ignored.",
+        "expected": "{ a: \"1\" }"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 41.5797119140625,
+  "trace": "Closed",
+  "turns": 1
+}

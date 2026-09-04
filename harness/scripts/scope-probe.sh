@@ -121,7 +121,9 @@ if ! "$RESEARCH/harness/scripts/ping.sh" "$ABCC_MODEL" "$ABCC_URL"; then
 fi
 
 run_arm() {
-  local scope="$1" tag="scope-$1-a"
+  # $SAMPLE names the sample, so the SAME arm can be asked twice. That pair is
+  # the noise floor, and without it a changed tree cannot be told from a re-ask.
+  local scope="$1" tag="scope-$1-${SAMPLE:-a}"
   local log="$LOGS/$tag-$(date +%Y%m%d-%H%M%S).log"
   echo
   echo "=== ARM $scope -> reviews-$tag/  (log: $log)"

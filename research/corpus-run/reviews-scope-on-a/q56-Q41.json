@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2699,
+  "completion_tokens": 2323,
+  "ending": "answered",
+  "events": 7,
+  "id": "q56/Q41",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1217,
+  "raw": "{\n  \"assessment\": \"\",\n  \"findings\": [\n    {\n      \"actual\": \"Executes two nested loops regardless of array size, yielding O(N²) time complexity and high latency on large inputs without early duplicates.\",\n      \"at\": \"/solution.ts\",\n      \"call\": \"node -e \\\"import('./solution.ts').then(m => { let arr = Array.from({length: 50000}, () => Math.floor(Math.random() * 25000)); console.time('bench'); m.firstDuplicate(arr); console.timeEnd('bench'); })\\\"\",\n      \"defect\": \"Performance Requirement Not Met (Quadratic Time Complexity Preserved)\",\n      \"expected\": \"Execution completes in ~1–10ms using O(N) time via a Set or hash map.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2131,
+  "review": {
+    "assessment": "",
+    "findings": [
+      {
+        "actual": "Executes two nested loops regardless of array size, yielding O(N²) time complexity and high latency on large inputs without early duplicates.",
+        "at": "/solution.ts",
+        "call": "node -e \"import('./solution.ts').then(m => { let arr = Array.from({length: 50000}, () => Math.floor(Math.random() * 25000)); console.time('bench'); m.firstDuplicate(arr); console.timeEnd('bench'); })\"",
+        "defect": "Performance Requirement Not Met (Quadratic Time Complexity Preserved)",
+        "expected": "Execution completes in ~1–10ms using O(N) time via a Set or hash map."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 33.305179595947266,
+  "trace": "Closed",
+  "turns": 1
+}

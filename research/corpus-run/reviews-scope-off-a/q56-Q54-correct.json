@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3697,
+  "completion_tokens": 4723,
+  "ending": "answered",
+  "events": 10,
+  "id": "q56/Q54 (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1472,
+  "raw": "{\n  \"assessment\": \"The change replaces a `NotImplementedError` stub with a complete Kahn's algorithm implementation. It builds an in-degree map and a reverse adjacency list, initializes a min-heap with all zero-indegree nodes (including those appearing only as dependencies), processes the graph while maintaining alphabetical tie-breaking via `heapq`, and correctly returns `None` on cycle detection by comparing result length to node count.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 4620,
+  "review": {
+    "assessment": "The change replaces a `NotImplementedError` stub with a complete Kahn's algorithm implementation. It builds an in-degree map and a reverse adjacency list, initializes a min-heap with all zero-indegree nodes (including those appearing only as dependencies), processes the graph while maintaining alphabetical tie-breaking via `heapq`, and correctly returns `None` on cycle detection by comparing result length to node count.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 64.75189971923828,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3979,
+  "completion_tokens": 7680,
+  "ending": "answered",
+  "events": 14,
+  "id": "q56/Q54 (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1529,
+  "raw": "{\n  \"assessment\": \"The change implements topological sort using Kahn's algorithm with a min-heap for deterministic alphabetical ordering. It correctly aggregates all nodes (including those appearing only in dependency lists), builds the reverse adjacency graph, and detects cycles by comparing result length against total node count.\\n\\nScope check: The task requires handling nodes appearing only as dependencies, alphabetical tie-breaking, cycle detection, and returning None on cycles. The diff covers all these requirements.\\n\\nDiff summary: Replaced a stub with a full topological sort implementation using heapq and defaultdict. Collects all nodes into a set, computes in-degrees by iterating over deps.items(), initializes the heap with zero-indegree nodes, processes them while decrementing dependents' in-degrees, and returns None if not all nodes are resolved.\\n\\nDefects found: One critical typo in variable name that causes an immediate runtime crash on any non-trivial input.\",\n  \"findings\": [\n    {\n      \"actual\": \"NameError: name 'indegrade' is not defined\",\n      \"at\": \"solution.py:17 (inside the deps.items() loop)\",\n      \"call\": \"python -c \\\"from solution import topological_sort; print(topological_sort({'B': ['A']}))\\\"\",\n      \"defect\": \"Variable name mismatch: `indegrade` is used instead of the defined `indegree`. This raises a NameError on any input with at least one dependency.\",\n      \"expected\": \"List or None (execution completes without exception)\"\n    }\n  ]\n}",
+  "reasoning_tokens": 7340,
+  "review": {
+    "assessment": "The change implements topological sort using Kahn's algorithm with a min-heap for deterministic alphabetical ordering. It correctly aggregates all nodes (including those appearing only in dependency lists), builds the reverse adjacency graph, and detects cycles by comparing result length against total node count.\n\nScope check: The task requires handling nodes appearing only as dependencies, alphabetical tie-breaking, cycle detection, and returning None on cycles. The diff covers all these requirements.\n\nDiff summary: Replaced a stub with a full topological sort implementation using heapq and defaultdict. Collects all nodes into a set, computes in-degrees by iterating over deps.items(), initializes the heap with zero-indegree nodes, processes them while decrementing dependents' in-degrees, and returns None if not all nodes are resolved.\n\nDefects found: One critical typo in variable name that causes an immediate runtime crash on any non-trivial input.",
+    "findings": [
+      {
+        "actual": "NameError: name 'indegrade' is not defined",
+        "at": "solution.py:17 (inside the deps.items() loop)",
+        "call": "python -c \"from solution import topological_sort; print(topological_sort({'B': ['A']}))\"",
+        "defect": "Variable name mismatch: `indegrade` is used instead of the defined `indegree`. This raises a NameError on any input with at least one dependency.",
+        "expected": "List or None (execution completes without exception)"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 106.49152374267578,
+  "trace": "Closed",
+  "turns": 1
+}

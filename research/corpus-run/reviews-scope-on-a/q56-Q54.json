@@ -1,0 +1,29 @@
+{
+  "brief_chars": 3257,
+  "completion_tokens": 1363,
+  "ending": "answered",
+  "events": 5,
+  "id": "q56/Q54",
+  "ladder": "RED",
+  "lang": "python",
+  "prompt_tokens": 1305,
+  "raw": "{\n  \"assessment\": \"Scope check: The task requires a complete topological sort implementation with cycle detection, alphabetical ordering for ties, and inclusion of all nodes (even implicit ones). The diff provides only a function signature, docstring, and a `NotImplementedError` stub, covering zero percent of the required logic. No algorithmic changes are present in the tree.\",\n  \"findings\": [\n    {\n      \"actual\": \"Raises NotImplementedError immediately upon any call\",\n      \"at\": \"solution.py:8\",\n      \"call\": \"python -c \\\"from solution import topological_sort; print(topological_sort({'b': [], 'a': ['b']}))\\\"\",\n      \"defect\": \"Missing implementation of topological sort algorithm, cycle detection, and alphabetical tie-breaking logic.\",\n      \"expected\": \"Valid dependency order list (e.g., ['b', 'a']) without raising an exception\"\n    }\n  ]\n}",
+  "reasoning_tokens": 1153,
+  "review": {
+    "assessment": "Scope check: The task requires a complete topological sort implementation with cycle detection, alphabetical ordering for ties, and inclusion of all nodes (even implicit ones). The diff provides only a function signature, docstring, and a `NotImplementedError` stub, covering zero percent of the required logic. No algorithmic changes are present in the tree.",
+    "findings": [
+      {
+        "actual": "Raises NotImplementedError immediately upon any call",
+        "at": "solution.py:8",
+        "call": "python -c \"from solution import topological_sort; print(topological_sort({'b': [], 'a': ['b']}))\"",
+        "defect": "Missing implementation of topological sort algorithm, cycle detection, and alphabetical tie-breaking logic.",
+        "expected": "Valid dependency order list (e.g., ['b', 'a']) without raising an exception"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Present",
+  "seconds": 19.872608184814453,
+  "trace": "Closed",
+  "turns": 1
+}

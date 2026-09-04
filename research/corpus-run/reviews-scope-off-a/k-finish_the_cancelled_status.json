@@ -1,0 +1,50 @@
+{
+  "brief_chars": 8853,
+  "completion_tokens": 4464,
+  "ending": "answered",
+  "events": 10,
+  "id": "k/finish_the_cancelled_status",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 3298,
+  "raw": "{\n  \"assessment\": \"This change introduces four new modules for billing, retry logic, SLA evaluation, and job summaries. Each module explicitly filters or categorizes jobs by status but omits handling of the `CANCELLED` terminal state introduced in 4.2. As a result, cancelled jobs are incorrectly treated as active or eligible for retries/billing/SLA metrics across all four services.\",\n  \"findings\": [\n    {\n      \"actual\": \"`sla.finished_at` returns the current time (`now`) instead of a terminal timestamp, causing `is_breached` to return True and report massive false-positive SLA violations for terminated work.\",\n      \"at\": \"jobs/sla.py\",\n      \"call\": \"python3 -c \\\"from jobs import sla, status; job = type('J', {'status': status.CANCELLED, 'sla_seconds': 120, 'queued_at': 1700000000, 'ended_at': None})(); print(sla.is_breached(job, 1700000000))\\\"\",\n      \"defect\": \"SLA evaluation falsely counts terminated work as breached\",\n      \"expected\": \"Returns False (cancelled jobs are terminal and do not breach SLA).\"\n    },\n    {\n      \"actual\": \"`retry.should_retry` bypasses the `DONE` check, evaluates attempts/kind, and returns True for cancelled jobs that meet those conditions.\",\n      \"at\": \"jobs/retry.py\",\n      \"call\": \"python3 -c \\\"from jobs import retry, status; job = type('J', {'status': status.CANCELLED, 'kind': 'render', 'attempts': 1})(); print(retry.should_retry(job))\\\"\",\n      \"defect\": \"Retry policy attempts to requeue permanently cancelled jobs\",\n      \"expected\": \"Returns False (cancelled jobs are terminal and should not be automatically requeued).\"\n    },\n    {\n      \"actual\": \"`charges.is_chargeable` only excludes `FAILED`, allowing any job with cpu_seconds > 0 to be billed, including halted/cancelled work.\",\n      \"at\": \"jobs/charges.py\",\n      \"call\": \"python3 -c \\\"from jobs import charges, status; job = type('J', {'status': status.CANCELLED, 'cpu_seconds': 5.2})(); print(charges.is_chargeable(job))\\\"\",\n      \"defect\": \"Billing charges customers for compute that was halted mid-run\",\n      \"expected\": \"Returns False (customers are not charged for compute that was terminated before completion).\"\n    },\n    {\n      \"actual\": \"`summary.counts` lacks a dedicated bucket for `CANCELLED`, dumping them into the opaque `other` counter.\",\n      \"at\": \"jobs/summary.py\",\n      \"call\": \"python3 -c \\\"from jobs import summary, status; job = type('J', {'status': status.CANCELLED})(); print(summary.counts([job]))\\\"\",\n      \"defect\": \"Summary statistics hide the `cancelled` status in an opaque bucket\",\n      \"expected\": \"Counts include a dedicated bucket for `cancelled`, keeping operational visibility intact.\"\n    }\n  ]\n}",
+  "reasoning_tokens": 3763,
+  "review": {
+    "assessment": "This change introduces four new modules for billing, retry logic, SLA evaluation, and job summaries. Each module explicitly filters or categorizes jobs by status but omits handling of the `CANCELLED` terminal state introduced in 4.2. As a result, cancelled jobs are incorrectly treated as active or eligible for retries/billing/SLA metrics across all four services.",
+    "findings": [
+      {
+        "actual": "`sla.finished_at` returns the current time (`now`) instead of a terminal timestamp, causing `is_breached` to return True and report massive false-positive SLA violations for terminated work.",
+        "at": "jobs/sla.py",
+        "call": "python3 -c \"from jobs import sla, status; job = type('J', {'status': status.CANCELLED, 'sla_seconds': 120, 'queued_at': 1700000000, 'ended_at': None})(); print(sla.is_breached(job, 1700000000))\"",
+        "defect": "SLA evaluation falsely counts terminated work as breached",
+        "expected": "Returns False (cancelled jobs are terminal and do not breach SLA)."
+      },
+      {
+        "actual": "`retry.should_retry` bypasses the `DONE` check, evaluates attempts/kind, and returns True for cancelled jobs that meet those conditions.",
+        "at": "jobs/retry.py",
+        "call": "python3 -c \"from jobs import retry, status; job = type('J', {'status': status.CANCELLED, 'kind': 'render', 'attempts': 1})(); print(retry.should_retry(job))\"",
+        "defect": "Retry policy attempts to requeue permanently cancelled jobs",
+        "expected": "Returns False (cancelled jobs are terminal and should not be automatically requeued)."
+      },
+      {
+        "actual": "`charges.is_chargeable` only excludes `FAILED`, allowing any job with cpu_seconds > 0 to be billed, including halted/cancelled work.",
+        "at": "jobs/charges.py",
+        "call": "python3 -c \"from jobs import charges, status; job = type('J', {'status': status.CANCELLED, 'cpu_seconds': 5.2})(); print(charges.is_chargeable(job))\"",
+        "defect": "Billing charges customers for compute that was halted mid-run",
+        "expected": "Returns False (customers are not charged for compute that was terminated before completion)."
+      },
+      {
+        "actual": "`summary.counts` lacks a dedicated bucket for `CANCELLED`, dumping them into the opaque `other` counter.",
+        "at": "jobs/summary.py",
+        "call": "python3 -c \"from jobs import summary, status; job = type('J', {'status': status.CANCELLED})(); print(summary.counts([job]))\"",
+        "defect": "Summary statistics hide the `cancelled` status in an opaque bucket",
+        "expected": "Counts include a dedicated bucket for `cancelled`, keeping operational visibility intact."
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 63.9095344543457,
+  "trace": "Closed",
+  "turns": 1
+}
