@@ -1,0 +1,11 @@
+Security found a customer's live API key sitting in an issue in our error
+tracker. It came from this service — the key is in the context we attach, and
+the vendor has it now.
+
+`docs/logging.md` says what the rule is. Please make this service keep it.
+
+`python run.py` must complete and the audit it prints has to say so.
+
+Do not change `data/events.json`, do not weaken `observe/audit.py` — it is the
+check, not the fix — and do not change the report's line shapes, which the
+security dashboard parses.

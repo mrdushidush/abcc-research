@@ -1,0 +1,7 @@
+[
+  {"ts": "2026-09-01T00:01:00Z", "level": "info",  "message": "sync started", "context": {"tenant": "acme"}},
+  {"ts": "2026-09-01T00:01:04Z", "level": "warn",  "message": "retrying with key sk_live_9QF3mZ1pKd", "context": {"tenant": "acme", "attempt": "2"}},
+  {"ts": "2026-09-01T00:01:09Z", "level": "error", "message": "upstream rejected the request", "context": {"tenant": "acme", "authorization": "Bearer sk_live_9QF3mZ1pKd"}},
+  {"ts": "2026-09-01T00:02:00Z", "level": "info",  "message": "sync finished", "context": {"tenant": "acme", "rows": "1204"}},
+  {"ts": "2026-09-01T00:02:03Z", "level": "error", "message": "rotation failed for sk_live_2Bd7wRt0Xu", "context": {"tenant": "globex"}}
+]

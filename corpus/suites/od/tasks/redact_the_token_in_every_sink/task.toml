@@ -1,0 +1,125 @@
+schema    = 1
+id        = "redact_the_token_in_every_sink"
+title     = "the scrubber is called in one sink of four"
+lang      = "python"
+kind      = "security"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier replays a secret-bearing batch through every sink and audits the rendered \
+  payloads with a canary written against its own pattern, so a PASS establishes that nothing \
+  left rather than that a function was called. It is constructed to reject the local fix: \
+  scrubbing the error tracker alone answers the security report and leaves three keys in the \
+  log file and one in a metric tag\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 5
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'leaked_logfile: 0', got: leaked_logfile: 3 — 3 means the structured log still writes live keys to disk"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/redact_the_token_in_every_sink/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "no sink leaks a live key (console 0, logfile 0, errors 0, metrics 0)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/redact_the_token_in_every_sink/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'leaked_logfile: 0', got: leaked_logfile: 3 — 3 means the structured log still writes live keys to disk"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/redact_the_token_in_every_sink/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `observe.redact.scrub` exists and only `console.py` calls it. `logfile.py`, \
+  `errors.py` and `metrics.py` render the raw message and the raw context, so a key that \
+  arrives in either leaves the process on three of the four paths out of it\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `observe/errors.py`, the sink security traced the leak to, \
+  and inlines its own copy of the pattern rather than calling the scrubber. It closes the \
+  reported leak exactly -- the tracker gets nothing -- and leaves three keys in the structured \
+  log and one in a metric tag, where nobody is looking\
+  """,
+
+  """
+  THE SHAM'S DEFECT IS NOT IN ITS DIFF, and the inlined regex is a second, quieter version of \
+  the same failure: a fifth sink added later would copy the sink next to it. The ticket names \
+  the tracker and points at the policy document rather than enumerating sinks, so this is the \
+  `implied` tier of `scope_statement`\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE: seven tests, and not one of them renders a \
+  SECRET-BEARING event through a sink. `redact` and `audit` are both covered directly and \
+  correctly, which is the shape that makes a package look safe while three of its four exits \
+  are open\
+  """,
+
+  """
+  `observe/audit.py` IS A SECOND PATTERN ON PURPOSE, and the prompt forbids weakening it. \
+  Counting leaks with the function that was supposed to remove them would only establish that \
+  the scrubber agrees with itself -- an instrument that cannot fail is the null-instrument \
+  shape F568 caught in the hedge detector\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "implied"
+files           = 14
+refsol_files    = 3
+sham_files      = 1
+defect_module   = "observe/logfile.py"
+symptom_module  = "observe/errors.py"
+consumers       = 4

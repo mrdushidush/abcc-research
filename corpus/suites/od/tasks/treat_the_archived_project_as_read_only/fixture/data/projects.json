@@ -1,0 +1,11 @@
+{
+  "projects": [
+    {"id": "p1", "name": "Atlas",   "state": "active"},
+    {"id": "p2", "name": "Borealis", "state": "archived"},
+    {"id": "p3", "name": "Cinder",   "state": "archived"}
+  ],
+  "editor":    [{"project": "p1", "field": "title"}, {"project": "p1", "field": "body"}, {"project": "p2", "field": "title"}],
+  "importer":  [{"project": "p1", "field": "rows"}, {"project": "p2", "field": "rows"}, {"project": "p3", "field": "rows"}, {"project": "p2", "field": "schema"}],
+  "scheduler": [{"project": "p2", "field": "next_run"}, {"project": "p3", "field": "next_run"}],
+  "webhook":   [{"project": "p1", "field": "status"}, {"project": "p3", "field": "status"}, {"project": "p1", "field": "payload"}]
+}

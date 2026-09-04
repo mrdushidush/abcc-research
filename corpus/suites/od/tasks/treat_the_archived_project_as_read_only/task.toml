@@ -1,0 +1,117 @@
+schema    = 1
+id        = "treat_the_archived_project_as_read_only"
+title     = "the read-only guard is asked on one write path of four"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier replays a write batch and asserts each path's accepted count plus the total \
+  revisions recorded against archived projects, so a PASS establishes behaviour and not \
+  presence. It is constructed to reject the local fix: guarding the importer alone takes the \
+  archived revisions from six to three and leaves the scheduler and the webhook writing to \
+  projects a customer archived in March\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 6
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'importer_writes: 1', got: importer_writes: 4 — 4 means the importer still loads rows into archived projects"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/treat_the_archived_project_as_read_only/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "no write path touches an archived project (editor 2, importer 1, scheduler 0, webhook 2, archived_touched 0)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/treat_the_archived_project_as_read_only/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'scheduler_writes: 0', got: scheduler_writes: 2 — 2 means the scheduler still stamps archived projects"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/treat_the_archived_project_as_read_only/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `workspace.guard.writable` exists and only `editor.py` calls it. `importer.py`, \
+  `scheduler.py` and `webhook.py` write unconditionally, so three of the four paths into a \
+  project ignore the one state that is supposed to stop them\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `workspace/importer.py`, the path the compliance reviewer \
+  traced, and compares against the literal string `"archived"` rather than calling the guard. \
+  It fixes exactly what was reported and leaves the scheduler stamping next-run times on two \
+  archived projects and the webhook writing status to a third\
+  """,
+
+  """
+  THE INLINED COMPARISON IS THE SECOND HALF OF THE DEFECT AND THE DOCS SAY SO: \
+  `docs/archiving.md` records that the state list has already grown once and that every writer \
+  which spelled the comparison out itself had to be found again. The sham re-creates the \
+  condition the guard was extracted to end, in the file it was extracted from\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE: six tests, every project in them active except \
+  in the two that exercise `guard` directly. No test drives a WRITE PATH against an archived \
+  project, which is the one combination the package gets wrong on three paths of four\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "explicit"
+files           = 14
+refsol_files    = 3
+sham_files      = 1
+defect_module   = "workspace/scheduler.py"
+symptom_module  = "workspace/importer.py"
+consumers       = 4

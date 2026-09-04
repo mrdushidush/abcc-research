@@ -1,0 +1,11 @@
+Our first two Irish orders were quoted at zero tax. EU-IE opened last month and
+checkout accepts it, so the orders went through at the wrong price and finance
+has had to re-issue both.
+
+`docs/regions.md` says what opening a region actually takes. Please finish it.
+
+`python run.py` must complete and every number in the run has to be the one a
+live region gives.
+
+Do not change `data/orders.json` and do not change the report's line shapes —
+the finance close parses them.

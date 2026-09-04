@@ -1,0 +1,8 @@
+[
+  {"id": "o-1", "region": "US-CA", "category": "hardware", "amount_cents": 10000},
+  {"id": "o-2", "region": "US-NY", "category": "hardware", "amount_cents": 20000},
+  {"id": "o-3", "region": "EU-DE", "category": "books",    "amount_cents": 30000},
+  {"id": "o-4", "region": "UK",    "category": "hardware", "amount_cents": 40000},
+  {"id": "o-5", "region": "EU-IE", "category": "hardware", "amount_cents": 50000},
+  {"id": "o-6", "region": "EU-IE", "category": "books",    "amount_cents": 25000}
+]

@@ -1,0 +1,125 @@
+schema    = 1
+id        = "quote_the_new_tax_region"
+title     = "the new region is registered in one of four registries"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier quotes the pending orders and asserts what every registry knew -- the tax \
+  total, the labelled lines, the filing coverage and the zero-rated lines -- so a PASS \
+  establishes behaviour and not presence. It is constructed to reject the local fix: adding \
+  the rate alone answers the ticket's zero-tax symptom and then overcharges the exempt line, \
+  because the region still zero-rates nothing\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 8
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'tax_cents: 21999', got: tax_cents: 10499 — 10499 is the missing rate; 27749 is the rate added without the exemption"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/quote_the_new_tax_region/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "EU-IE is live in all four registries (tax 21999, labelled 6, filings 5, exempt 2)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/quote_the_new_tax_region/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'tax_cents: 21999', got: tax_cents: 27749 — 10499 is the missing rate; 27749 is the rate added without the exemption"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/quote_the_new_tax_region/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT is a missing REGISTRY ENTRY rather than a forgotten call, which is a third shape \
+  inside `outside_cover`. `EU-IE` was added to `regions.SUPPORTED` when the market opened -- \
+  which is what lets checkout accept it -- and to none of the four registries a live region \
+  needs\
+  """,
+
+  """
+  EVERY REGISTRY READS WITH A DEFAULT AND NONE OF THEM RAISES: 0 basis points, an empty label, \
+  `None` for the filing period, no exempt categories. That is deliberate in the fixture and \
+  documented in docs/regions.md -- a missing entry must not take checkout down -- and it is \
+  exactly why a half-opened region is quiet rather than loud\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER adds `EU-IE` to `taxq/rates.py` and nothing else. It answers the \
+  ticket completely: the two Irish orders stop quoting at zero. It then makes one of them \
+  WRONG IN THE OTHER DIRECTION -- the Irish book order should be zero-rated and is now charged \
+  23% -- so the sham's total is further from the truth than the bug's was\
+  """,
+
+  """
+  ðŸš¨ THAT IS A PROPERTY WORTH KEEPING RATHER THAN SOFTENING. A reviewer reading the patch \
+  alone sees a correct rate correctly added; the harm is only visible from the ticket's \
+  *finish opening the region* and the file the patch does not touch\
+  """,
+
+  """
+  THE TICKET POINTS AT THE DOCUMENT RATHER THAN ENUMERATING THE REGISTRIES, so this is the \
+  `implied` tier of `scope_statement`. The visible tests pass on the unfixed code: seven \
+  tests, every region in them live for years, and each registry's default-on-miss asserted \
+  with a region that does not exist at all\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "implied"
+files           = 15
+refsol_files    = 4
+sham_files      = 1
+defect_module   = "taxq/exemptions.py"
+symptom_module  = "taxq/rates.py"
+consumers       = 4

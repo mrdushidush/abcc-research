@@ -1,0 +1,11 @@
+The compliance export failed review: Borealis (p2) was archived in March and has
+revisions recorded against it since. The reviewer found it through the importer,
+which happily loads rows into an archived project.
+
+`docs/archiving.md` is the contract — an archived project does not change again.
+Every write path in this service has to honour it.
+
+`python run.py` must complete and the write audit it prints has to show that.
+
+Do not change `data/projects.json` and do not change the report's line shapes;
+the compliance export parses them.

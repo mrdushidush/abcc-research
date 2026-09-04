@@ -1,0 +1,6 @@
+[
+  {"id": "t-01", "customer": "ana", "kind": "charge",         "amount_cents": 12000, "date": "2026-08-03"},
+  {"id": "t-02", "customer": "ana", "kind": "charge",         "amount_cents": 4500,  "date": "2026-08-09"},
+  {"id": "t-03", "customer": "ana", "kind": "refund",         "amount_cents": 4500,  "date": "2026-08-11"},
+  {"id": "t-04", "customer": "ana", "kind": "partial_refund", "amount_cents": 3000,  "date": "2026-08-14"}
+]

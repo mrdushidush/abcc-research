@@ -1,0 +1,123 @@
+schema    = 1
+id        = "count_the_partial_refund"
+title     = "the partial refund is subtracted in one renderer of four"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier renders the statement four ways and asserts each total, so a PASS establishes \
+  behaviour and not presence. It is constructed to reject the local fix: correcting the CSV \
+  alone answers the accountant and leaves the customer portal, the emailed statement and the \
+  support console each 6000 cents high on the same customer\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 7
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'csv_total: 9000', got: csv_total: 15000 — 15000 is the partial refund added instead of subtracted"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/count_the_partial_refund/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "every renderer subtracts the partial refund (csv, json, html, summary all 9000)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/count_the_partial_refund/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'json_total: 9000', got: json_total: 15000 — 15000 means the portal still adds the partial refund"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/count_the_partial_refund/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT is duplicated arithmetic rather than a forgotten helper, which is a different \
+  shape from the other `outside_cover` tasks in this suite. Four renderers each compute the \
+  total themselves -- the loop was copied between them as each was written -- and all four \
+  test `kind == REFUND` while `kinds.REFUND_KINDS` names two kinds\
+  """,
+
+  """
+  IT FAILS IN THE WORST DIRECTION, which is what makes one report enough to notice and four \
+  wrong: the else branch treats anything that is not a full refund as money coming IN, so a \
+  3000-cent partial refund moves a total by 6000 rather than by 0\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `statement/csv_out.py`, the renderer the accountant reads, \
+  and writes the string `"partial_refund"` into a tuple beside `kinds.REFUND` rather than \
+  using `kinds.REFUND_KINDS`. The CSV is then exactly right and the portal, the email and the \
+  support console still disagree with it by 6000 cents\
+  """,
+
+  """
+  THE SHAM'S DEFECT IS NOT IN ITS DIFF. The ticket names ONE report and one customer -- the \
+  `single_instance` tier of `scope_statement` -- so the extent has to come from noticing that \
+  a statement total is computed in more than one place, which the patch itself gives no sign \
+  of\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE: eight tests, and the four cross-renderer ones \
+  assert that the renderers AGREE with each other, which they do -- wrongly and identically. \
+  `kinds.REFUND_KINDS` is asserted directly and is correct; nothing reads it\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "single_instance"
+files           = 14
+refsol_files    = 4
+sham_files      = 1
+defect_module   = "statement/json_out.py"
+symptom_module  = "statement/csv_out.py"
+consumers       = 4

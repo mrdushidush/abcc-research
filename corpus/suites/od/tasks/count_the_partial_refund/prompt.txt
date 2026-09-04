@@ -1,0 +1,10 @@
+Our accountant flagged Ana's August statement. The CSV totals her at 15000
+cents. She was charged 12000 and 4500, we refunded the 4500 in full on the 11th,
+and on the 14th we returned 3000 of the first charge as a partial refund. The
+number should be 9000.
+
+Please fix it. `python run.py` must complete and the totals it prints have to be
+right.
+
+Do not change `data/ledger.json`, and do not change the report's line shapes —
+the reconciliation job parses them.
