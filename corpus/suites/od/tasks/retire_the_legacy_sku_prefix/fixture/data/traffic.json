@@ -1,0 +1,13 @@
+{
+  "searches": ["OLD-1101", "2202", "old-3303", "9999", "OLD-4404"],
+  "cart": [
+    {"sku": "OLD-1101", "qty": 2},
+    {"sku": "5505", "qty": 1},
+    {"sku": "old-6606", "qty": 3}
+  ],
+  "adjustments": [
+    {"sku": "OLD-2202", "delta": 5},
+    {"sku": "3303", "delta": -2},
+    {"sku": "OLD-5505", "delta": 7}
+  ]
+}

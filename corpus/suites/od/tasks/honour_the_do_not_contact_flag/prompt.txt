@@ -1,0 +1,9 @@
+Bo (c-02) set do-not-contact in June and got a win-back email from us last
+Thursday. That is the second complaint this month and the policy in
+`docs/contact_policy.md` is not ambiguous about what the flag means.
+
+Make the outbound plan obey it. `python run.py` has to complete and every
+audience count in it must be the count the policy gives.
+
+Do not change `data/contacts.json`, and do not change the report's line shapes —
+the send scheduler parses them.

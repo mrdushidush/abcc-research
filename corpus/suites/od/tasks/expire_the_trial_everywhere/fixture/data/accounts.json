@@ -1,0 +1,10 @@
+[
+  {"id": "ac-101", "name": "Northwind Traders",  "status": "active",    "seats": 12, "trial_ends_on": null},
+  {"id": "ac-102", "name": "Fabrikam",           "status": "active",    "seats": 4,  "trial_ends_on": null},
+  {"id": "ac-103", "name": "Contoso Logistics",  "status": "cancelled", "seats": 30, "trial_ends_on": null},
+  {"id": "ac-104", "name": "Tailspin Toys",      "status": "trial",     "seats": 6,  "trial_ends_on": "2026-02-14"},
+  {"id": "ac-105", "name": "Wingtip Papers",     "status": "trial",     "seats": 3,  "trial_ends_on": "2026-09-20"},
+  {"id": "ac-106", "name": "Proseware",          "status": "trial",     "seats": 9,  "trial_ends_on": "2026-02-28"},
+  {"id": "ac-107", "name": "Adventure Works",    "status": "active",    "seats": 2,  "trial_ends_on": null},
+  {"id": "ac-108", "name": "Lucerne Publishing", "status": "suspended", "seats": 40, "trial_ends_on": null}
+]

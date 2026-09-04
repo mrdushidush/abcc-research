@@ -1,0 +1,7 @@
+{
+  "team": {"id": "acme", "seat_limit": 10, "seats_used": 7},
+  "direct": ["ana@acme.test", "bo@acme.test"],
+  "bulk": ["cy@acme.test", "di@acme.test", "eu@acme.test", "fi@acme.test"],
+  "sso": ["gu@acme.test", "ha@acme.test", "il@acme.test"],
+  "api": ["jo@acme.test", "ka@acme.test"]
+}

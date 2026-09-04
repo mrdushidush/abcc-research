@@ -1,0 +1,8 @@
+[
+  {"sku": "1101", "name": "Bench hook",        "price_cents": 1450, "on_hand": 12},
+  {"sku": "2202", "name": "Marking gauge",     "price_cents": 2290, "on_hand": 4},
+  {"sku": "3303", "name": "Card scraper",      "price_cents": 780,  "on_hand": 40},
+  {"sku": "4404", "name": "Sharpening stone",  "price_cents": 5600, "on_hand": 7},
+  {"sku": "5505", "name": "Dovetail saw",      "price_cents": 8900, "on_hand": 2},
+  {"sku": "6606", "name": "Mortise chisel",    "price_cents": 3100, "on_hand": 15}
+]

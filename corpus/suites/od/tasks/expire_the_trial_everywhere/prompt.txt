@@ -1,0 +1,15 @@
+Two accounts whose trials ended back in February still have the premium
+feature set. Tailspin Toys (ac-104) and Proseware (ac-106) both ran out months
+ago and they still have SSO and the audit log.
+
+`docs/trials.md` says what the rule is: once a trial's last day has passed the
+account is not entitled to anything, exactly like a cancelled one, until it
+converts. Trial expiry has to be honoured everywhere this service asks whether
+an account is entitled — not only where the feature set is decided.
+
+Please fix it. `python run.py` must complete and every number in the report has
+to be the one the rule gives.
+
+Do not change `data/accounts.json`, do not move `AS_OF`, and do not change the
+report's line shapes: they are parsed by the finance import and the support rota
+generator downstream.

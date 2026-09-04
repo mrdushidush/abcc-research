@@ -1,0 +1,117 @@
+schema    = 1
+id        = "retire_the_legacy_sku_prefix"
+title     = "the legacy SKU prefix is folded in one reader of four"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier replays the traffic file and asserts how much of it resolved on each of the \
+  four readers, so a PASS establishes behaviour and not presence. It is constructed to reject \
+  the local fix: folding in the search path alone answers the support ticket and leaves the \
+  cart mispricing and the warehouse feed silently discarding two thirds of its adjustments\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 3
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'search_hits: 4', got: search_hits: 1 — 1 means only the one canonical query resolves"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/retire_the_legacy_sku_prefix/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "every reader folds the SKU (search 4, cart 3, inventory 3, export 6)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/retire_the_legacy_sku_prefix/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'cart_priced: 3', got: cart_priced: 1 — 1 means the cart still drops legacy-spelled lines"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/retire_the_legacy_sku_prefix/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: the product index is keyed on the canonical SKU and four readers look up in it. \
+  `export.py` was written after the migration and folds through `skus.normalize`; `search.py`, \
+  `cart.py` and `inventory.py` predate it and pass the raw string straight to `index.get`, so \
+  any `OLD-`-prefixed or lower-case spelling misses\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `catalog/search.py` and inlines the prefix strip rather than \
+  calling `skus.normalize`. It answers the ticket completely -- the bookmarked lookup resolves \
+  -- and it leaves the cart dropping two of three lines and the warehouse feed applying one \
+  adjustment of three, which is the failure that costs money and produces no error\
+  """,
+
+  """
+  THE SHAM'S DEFECT IS NOT IN ITS DIFF. The ticket names ONE lookup, so this is the \
+  `single_instance` tier of `scope_statement`: the extent is neither stated nor implied by a \
+  policy sentence, it has to come from the observation that a SKU arriving from outside is not \
+  only a search query. That is the hardest of the three tiers and it is here on purpose\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE: six tests, every SKU in them canonical, so no \
+  lookup in the suite needs folding. `normalize` itself is covered thoroughly in isolation -- \
+  which is the shape that makes a reader believe the package handles spellings it does not\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "single_instance"
+files           = 14
+refsol_files    = 3
+sham_files      = 1
+defect_module   = "catalog/cart.py"
+symptom_module  = "catalog/search.py"
+consumers       = 4

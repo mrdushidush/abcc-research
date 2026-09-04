@@ -1,0 +1,111 @@
+schema = 1
+id     = "od"
+title  = "OD-series — the defect outside the diff"
+
+# ---------------------------------------------------------------------------
+# Why this suite exists
+#
+# `research/GATE-P4-the-scope-sentence.md` measured F536's scope sentence over
+# 363 model calls and it LOST to its own noise floor: 23 trees changed under the
+# treatment against 27 when nothing changed at all. That is the aggregate, and
+# the aggregate is not the whole reading. Split by the SHAPE of the wrong answer,
+# the same run is coherent:
+#
+#   sham                            refsol    sham patch   shape              0->1?
+#   finish_the_cancelled_status     4 files   1 file       incomplete cover   YES
+#   trace_dropped_samples           ingest    stats.py     wrong file         YES
+#   round_at_the_line_not_the_total pricing   pricing.py   right file, wrong  no
+#
+# It fired on both trees whose defect lies OUTSIDE THE DIFF and on neither where
+# it does not -- 2 of 2 and 0 of 1 -- and both stayed 0 across two control
+# samples. n = 3 is a lead, not a result. This suite is the population that can
+# turn it into one.
+#
+# THE DESIGN RULE, and it is the whole point:
+#
+#   The sham's defect must be UNREACHABLE FROM THE PATCH ALONE and REACHABLE
+#   FROM THE PATCH PLUS THE TICKET.
+#
+# A reviewer is shown a title, a prompt and a diff -- never the tree
+# (`crates/abcc-gate/tests/corpus_review.rs`). So a task here is built around
+# what those three carry. If the ticket does not state or imply the extent, no
+# instruction can recover it and the tree measures nothing. If the diff already
+# shows the defect, the deterministic ladder or a plain read finds it and the
+# scope question is not what answered.
+#
+# THE COROLLARY, and it is what makes the suite falsifiable rather than a
+# demonstration: one third of the tasks are `inside` -- a wrong local fix in the
+# single file the fix belongs in, with the scope complete. A switch that fires on
+# those as often as on the other two thirds is producing volume, not scope.
+#
+# 🚨 FIXTURE SIZE IS NOT AN AXIS HERE, AND THAT IS A DECISION.
+# The K suite's fixtures are ~12k tokens because K measures a SUBJECT under
+# context pressure, and pressure comes from the fixture. This suite measures a
+# JUDGE, which is handed a patch and a prompt and never opens the tree, so a
+# larger fixture would cost authoring time and reach the measurement through
+# nothing. These fixtures are small on purpose. They are still real programs:
+# `run.py` executes, `verify.sh` grades behaviour and not presence, and every
+# sham is GREEN on the deterministic ladder.
+# ---------------------------------------------------------------------------
+
+[provenance]
+donor       = "od-series"          # authored, not imported
+imported_at = "2026-09-04"
+
+caveats = [
+  """
+  AUTHORED, NOT IMPORTED, AND AUTHORED BY THE SAME PROCESS THAT WILL BE MEASURED \
+  AGAINST IT. There is no donor baseline and no human baseline. `refsol` proves a task is \
+  solvable and that the verifier accepts a correct answer; it calibrates difficulty against \
+  nothing. 🚨 The sharper risk is specific to this suite: the tasks were written knowing what \
+  the scope sentence says, so a task could be built to be answerable BY THAT SENTENCE. The \
+  `inside` third is the guard against it -- if the treatment fires there too, the tier is \
+  measuring volume, and the tier says so rather than the author remembering to\
+  """,
+
+  """
+  THE THREE SHAPES ARE NOT EQUALLY NATURAL. `outside_cover` (a rule that must land at N \
+  sites) and `outside_file` (a symptom whose cause is upstream) are common defect shapes in \
+  real repositories; `inside` is too. But the RATIO here is 8:8:8 by construction and says \
+  nothing about how often each occurs in the wild. A rate measured on this suite is a rate \
+  per shape, never a rate per defect\
+  """,
+
+  """
+  EVERY PROBE OVER THIS SUITE OWES A NOISE FLOOR ARM MEASURED ON THIS SUITE. The corpus-wide \
+  figure -- 27 of 121 trees change when the identical question is asked twice -- is q56+k's \
+  number and does not transfer. Nothing in this stack samples at temperature zero: the engine \
+  sends no temperature, no top_p and no seed, so two arms cannot tell a treatment from a coin \
+  flip (research/GATE-P4-the-scope-sentence.md §1)\
+  """,
+
+  """
+  THE PROMPT IS PART OF THE INSTRUMENT. `scope_statement` in each task's `[donor_tags]` says \
+  whether the ticket states the extent (`explicit`), implies it as a property that must hold \
+  (`implied`), or names one case of a general defect (`single_instance`). A result that does \
+  not report the split may be reading a ceiling (a ticket so explicit that the control finds \
+  it too) or a floor (one so narrow that nothing could) as an effect size\
+  """,
+]
+
+[aggregate]
+include_verifiable  = ["full"]
+exclude_quarantined = true
+
+# ---------------------------------------------------------------------------
+# Variants, identical in shape to the K suite: `control` is no operator and open
+# permissions, so a difference between two subjects is a difference between the
+# subjects and not between two operator tracks.
+# ---------------------------------------------------------------------------
+[[variant]]
+id          = "control"
+permissions = { mode = "allow" }
+operator    = []
+
+[[variant]]
+id          = "gated"
+permissions = { mode = "workspace_write" }
+requires    = ["tool_gate"]
+expect      = { gate_fires = { min = 1 } }
+operator    = [ { on = { gate = {} }, do = "approve" } ]
+default     = "deny"

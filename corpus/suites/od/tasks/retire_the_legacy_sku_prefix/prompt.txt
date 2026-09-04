@@ -1,0 +1,9 @@
+Support ticket 4417: a customer followed a bookmark to OLD-8842, got "no such
+product", and bought the equivalent from somebody else. They pasted the URL and
+it is a perfectly good SKU in the catalog.
+
+Fix it so a lookup like that resolves. `python run.py` must complete and the
+reconciliation numbers it prints have to be right.
+
+Do not change anything under `data/`, and do not change the report's line
+shapes — the ops dashboard parses them.

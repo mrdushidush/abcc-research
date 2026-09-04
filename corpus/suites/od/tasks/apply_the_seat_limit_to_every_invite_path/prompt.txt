@@ -1,0 +1,11 @@
+Acme is on a ten-seat plan and their team page shows eighteen members. Finance
+found it in the provisioning audit; nobody has been billed for the extra eight.
+
+The invariant in `docs/seats.md` is that `seats_used` never exceeds
+`seat_limit`. Every path that can add a member to a team has to enforce it.
+
+Fix it. `python run.py` must complete and the audit numbers it prints have to be
+the ones the invariant gives.
+
+Do not change `data/pending.json` and do not change the report's line shapes —
+the provisioning audit parses them.

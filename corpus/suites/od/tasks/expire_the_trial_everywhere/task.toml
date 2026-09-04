@@ -1,0 +1,121 @@
+schema    = 1
+id        = "expire_the_trial_everywhere"
+title     = "trial expiry is honoured in one consumer of four"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier runs the report and asserts all four consumer counts, so a PASS establishes \
+  behaviour and not presence. It is constructed to reject the local fix: patching the feature \
+  check alone makes `premium` correct and leaves `digest`, `seats` and `priority` counting \
+  accounts whose trials ended in February\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 1
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'premium: 4', got: premium: 6 — 6 means lapsed trials still hold premium features"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/expire_the_trial_everywhere/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "all four consumers honour trial expiry (premium 4, digest 4, seats 21, priority 1)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/expire_the_trial_everywhere/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'digest: 4', got: digest: 6 — 6 means the digest still mails lapsed trials"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/expire_the_trial_everywhere/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `model.ENTITLED_STATUSES` was written before `trial_ends_on` existed and still \
+  answers *what kind of account is this* rather than *is this account entitled today*. Four \
+  consumers -- access, digest, seats and support -- each test membership of that tuple inline, \
+  so a trial that ended in February is entitled in all four\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `entitlement/access.py`, the file the ticket's symptom is in. \
+  It is correct as far as it goes: `premium` drops from 6 to 4, the two accounts the ticket \
+  named lose their premium features, and the visible tests stay green. It leaves the digest \
+  mailing lapsed trials, 15 seats on the finance plan that are not billable, and two lapsed \
+  trials on the priority support rota\
+  """,
+
+  """
+  THE SHAM'S DEFECT IS NOT IN ITS DIFF, WHICH IS THE POINT (suite.toml). The patch touches one \
+  file and that file is afterwards correct; what is wrong with it is the three files it does \
+  not touch. A reviewer shown the patch AND the ticket can reach that -- the ticket says \
+  *everywhere this service asks whether an account is entitled* -- and a reviewer shown the \
+  patch alone cannot\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE, deliberately: seven tests covering active, \
+  cancelled and suspended accounts, the arithmetic of each consumer, and one trial that is \
+  still running. None of them puts a LAPSED trial through a consumer. That is how the class \
+  stays broken while the suite stays green, and it is what makes the sham tree GREEN on the \
+  deterministic ladder so the Judge is the only opinion there is\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "explicit"
+files           = 14
+refsol_files    = 5
+sham_files      = 1
+defect_module   = "entitlement/model.py"
+symptom_module  = "entitlement/access.py"
+consumers       = 4

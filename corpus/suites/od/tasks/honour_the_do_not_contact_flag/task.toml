@@ -1,0 +1,118 @@
+schema    = 1
+id        = "honour_the_do_not_contact_flag"
+title     = "do-not-contact is checked on one marketing channel of four"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier runs the outbound plan and asserts all four channel audience counts, so a PASS \
+  establishes behaviour and not presence. It is constructed to reject the local fix: \
+  suppressing the win-back campaign alone satisfies the complaint in the ticket and leaves the \
+  promotional SMS and the push channel sending to the same contacts\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 2
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'winback: 2', got: winback: 4 — 4 means the win-back campaign still mails suppressed contacts"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/honour_the_do_not_contact_flag/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "every marketing channel honours do-not-contact (newsletter 4, winback 2, promo_sms 3, push 4)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/honour_the_do_not_contact_flag/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'promo_sms: 3', got: promo_sms: 6 — 6 means the Tuesday SMS still texts suppressed contacts"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/honour_the_do_not_contact_flag/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `outbound.suppression.is_suppressed` is older than three of the four channels \
+  and only `newsletter.py` calls it. `winback.py`, `promo_sms.py` and `push.py` each filter on \
+  their own eligibility rule -- a segment, a phone number, a push token -- and never ask about \
+  the flag\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `outbound/winback.py`, the channel the complaint names, and \
+  inlines `contact.do_not_contact` rather than calling the helper. It fixes the reported case \
+  exactly: Bo stops getting win-back mail. Three suppressed contacts still receive the Tuesday \
+  SMS and the push campaign\
+  """,
+
+  """
+  THE SHAM'S DEFECT IS NOT IN ITS DIFF. The one file it touches is correct afterwards; what is \
+  wrong is the two it does not touch. The ticket does not enumerate the channels -- it points \
+  at the policy document, which says *not on a different channel* -- so the extent is IMPLIED \
+  rather than stated, and this task is the `implied` tier of `scope_statement`\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE: six tests covering each channel's own \
+  eligibility rule and the suppression helper in isolation. Only the newsletter is ever tested \
+  WITH a suppressed contact, because the newsletter is the one channel that was written \
+  correctly\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "implied"
+files           = 13
+refsol_files    = 3
+sham_files      = 1
+defect_module   = "outbound/promo_sms.py"
+symptom_module  = "outbound/winback.py"
+consumers       = 4

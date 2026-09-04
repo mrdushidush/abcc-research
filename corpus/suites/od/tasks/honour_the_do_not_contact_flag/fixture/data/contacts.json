@@ -1,0 +1,9 @@
+[
+  {"id": "c-01", "email": "ana@example.com",   "phone": "+15550101", "push_token": "p-01", "do_not_contact": false, "segment": "active"},
+  {"id": "c-02", "email": "bo@example.com",    "phone": "+15550102", "push_token": null,   "do_not_contact": true,  "segment": "lapsed"},
+  {"id": "c-03", "email": "cy@example.com",    "phone": null,        "push_token": "p-03", "do_not_contact": false, "segment": "lapsed"},
+  {"id": "c-04", "email": "di@example.com",    "phone": "+15550104", "push_token": "p-04", "do_not_contact": true,  "segment": "active"},
+  {"id": "c-05", "email": "eu@example.com",    "phone": "+15550105", "push_token": "p-05", "do_not_contact": false, "segment": "lapsed"},
+  {"id": "c-06", "email": "fi@example.com",    "phone": "+15550106", "push_token": null,   "do_not_contact": true,  "segment": "lapsed"},
+  {"id": "c-07", "email": "gu@example.com",    "phone": "+15550107", "push_token": "p-07", "do_not_contact": false, "segment": "active"}
+]

@@ -1,0 +1,118 @@
+schema    = 1
+id        = "apply_the_seat_limit_to_every_invite_path"
+title     = "the seat limit is enforced on one invite path of four"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier replays the pending queue and asserts the accepted count on each of the four \
+  paths plus the final seat total, so a PASS establishes behaviour and not presence. It is \
+  constructed to reject the local fix: capping the CSV importer alone brings the team to \
+  fifteen members on a ten-seat plan instead of eighteen\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 4
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'accepted_bulk: 1', got: accepted_bulk: 4 — 4 means the CSV importer still ignores the limit"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/apply_the_seat_limit_to_every_invite_path/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "every invite path enforces the seat limit (direct 2, bulk 1, sso 0, api 0, seats_used 10)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/apply_the_seat_limit_to_every_invite_path/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'accepted_sso: 0', got: accepted_sso: 3 — 3 means SSO provisioning still adds members with no seats left"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/apply_the_seat_limit_to_every_invite_path/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `invites.limits.has_room` exists and only `direct.py` calls it. `bulk_csv.py`, \
+  `sso.py` and `api.py` add members unconditionally, and all four draw on the same budget \
+  inside one run, so the overage is the sum of three paths rather than a property of any one \
+  of them\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `invites/bulk_csv.py`, the path finance traced the overage \
+  to. It is a good patch of that file -- it even reads `seats_free` rather than inventing its \
+  own arithmetic -- and it takes the team from eighteen members to fifteen on a ten-seat plan. \
+  SSO just-in-time provisioning and the API still add members with no seats left\
+  """,
+
+  """
+  THE SHAM'S DEFECT IS NOT IN ITS DIFF. The ticket states the extent in words -- *every path \
+  that can add a member to a team* -- so this is the `explicit` tier of `scope_statement`, and \
+  it is the tier where a control brief has the best chance of finding the gap without any \
+  instruction to look for one. A tier that only holds hard cases cannot show a ceiling\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE: six tests, every team in them built with a \
+  hundred seats and none of them using more than three, so no path is ever asked what it does \
+  at the ceiling. `limits` is covered directly, which is the shape that makes a reader believe \
+  the limit is enforced\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_cover"
+scope_statement = "explicit"
+files           = 14
+refsol_files    = 3
+sham_files      = 1
+defect_module   = "invites/sso.py"
+symptom_module  = "invites/bulk_csv.py"
+consumers       = 4
