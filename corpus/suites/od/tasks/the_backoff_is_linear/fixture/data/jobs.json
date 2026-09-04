@@ -1,0 +1,7 @@
+[
+  {"id": "j-1", "queue": "sync",    "attempts": 5},
+  {"id": "j-2", "queue": "sync",    "attempts": 8},
+  {"id": "j-3", "queue": "webhook", "attempts": 3},
+  {"id": "j-4", "queue": "webhook", "attempts": 7},
+  {"id": "j-5", "queue": "email",   "attempts": 1}
+]

@@ -1,0 +1,11 @@
+Finance rejected the August cohort report. The median for north came out 4400.
+There are four orders in north — 3000, 4200, 4400 and 5000 — and the two middle
+ones are 4200 and 4400, so the median is 4300.
+
+`docs/median.md` has the standard. Please make the report follow it.
+
+`python run.py` must complete and every median it prints has to be the one the
+standard gives.
+
+Do not change `data/orders.json` and do not change the report's line shapes —
+the finance reconciliation parses them.

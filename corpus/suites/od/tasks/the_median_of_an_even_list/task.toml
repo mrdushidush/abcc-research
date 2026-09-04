@@ -1,0 +1,120 @@
+schema    = 1
+id        = "the_median_of_an_even_list"
+title     = "the median takes the upper middle, and the tempting fix truncates"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier runs the report and asserts every regional median, so a PASS establishes the \
+  rounding half of the standard as well as the midpoint half. It is constructed to reject the \
+  local fix: taking the midpoint without rounding gives the ticket's 4300 for north and 1000 \
+  for south, where the two middle values are 1000 and 1001 and the standard says 1001\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 19
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'median_north_cents: 4300', got: median_north_cents: 4400 — 4400 is the upper middle, which is the number in the ticket"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_median_of_an_even_list/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "every median is the midpoint rounded half up (north 4300, south 1001)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_median_of_an_even_list/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'median_south_cents: 1001', got: median_south_cents: 1000 — 1000 is a truncated midpoint â€” the standard rounds half up"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_median_of_an_even_list/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  and the same four lines. There is no second call site and nothing outside the sham's diff; \
+  it implements the first half of a two-half rule\
+  """,
+
+  """
+  THE DEFECT: `stats.median` returns `ordered[n // 2]` for every size. On an even cohort that \
+  is the UPPER of the two middle values, which reads high on every even month\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER is the midpoint with integer division. It gives the ticket's number \
+  exactly -- north becomes 4300 -- and biases every even cohort whose two middles sum to an \
+  odd number DOWNWARD by a cent. `docs/median.md` names that bias, says it is always in the \
+  same direction, and says that is what makes it visible in a reconciliation of thousands of \
+  cohorts\
+  """,
+
+  """
+  SOUTH IS THE DISCRIMINATING COHORT AND THE TICKET NEVER MENTIONS IT: middles 1000 and 1001, \
+  standard 1001, sham 1000. The fixture happens to be right about south -- the upper middle is \
+  1001 -- so the sham makes one region correct and a second one newly wrong\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, every cohort in them \
+  an ODD size, so the even branch is never taken at all\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "inside"
+scope_statement = "single_instance"
+files           = 10
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "cohort/stats.py"
+symptom_module  = "cohort/stats.py"
+hop_distance    = 0

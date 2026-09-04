@@ -1,0 +1,120 @@
+schema    = 1
+id        = "the_backoff_is_linear"
+title     = "the backoff is linear, and the tempting fix drops the ceiling"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier prints the whole eight-attempt schedule and asserts it, plus the longest wait \
+  and the totals, so a PASS establishes both halves of the policy. It is constructed to reject \
+  the local fix: doubling without the ceiling gives the ticket's sixteen seconds at attempt \
+  five and waits two minutes at attempt eight, where the runbook flattens at sixty\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 18
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "expected 'schedule_8: 1,2,4,8,16,32,60,60', got: schedule_8: 1,2,3,4,5,6,7,8 — 1,2,3,... is linear; 1,2,4,...,64,128 is doubling with no ceiling"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_backoff_is_linear/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "the schedule doubles and flattens at MAX_S (1,2,4,8,16,32,60,60)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_backoff_is_linear/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'schedule_8: 1,2,4,8,16,32,60,60', got: schedule_8: 1,2,4,8,16,32,64,128 — 1,2,3,... is linear; 1,2,4,...,64,128 is doubling with no ceiling"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_backoff_is_linear/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  and the same one-line function. There is no consumer the sham missed and nothing outside its \
+  diff; it implements one half of a two-half rule\
+  """,
+
+  """
+  THE DEFECT: `backoff.delay` returns `BASE_S * attempt`. The policy in `docs/backoff.md` is \
+  doubling AND a sixty-second ceiling, and the fixture has neither\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER is `BASE_S * 2 ** (attempt - 1)` with no `min`. It matches the \
+  runbook's table at every attempt the ticket mentions -- 1, 2, 4, 8, 16 -- and diverges at \
+  seven and eight, where the runbook flattens at sixty and the sham waits 64 and 128. `MAX_S` \
+  is defined in the file the patch edits and is left unread\
+  """,
+
+  """
+  A CRITERION JOINED BY *AND* IS TWO REQUIREMENTS, which is the shape this task is built on: \
+  doubling *and* never longer than MAX_S. The sham satisfies the first, the fixture satisfies \
+  neither, and the ticket only ever complains about the first\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, none of which asks \
+  for an attempt late enough that `MAX_S` would bind -- the largest delay any of them looks at \
+  is the third. `MAX_S` is asserted as a constant and is correct\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "inside"
+scope_statement = "explicit"
+files           = 11
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "retrypolicy/backoff.py"
+symptom_module  = "retrypolicy/backoff.py"
+hop_distance    = 0

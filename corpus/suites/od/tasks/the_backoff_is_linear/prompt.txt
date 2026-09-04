@@ -1,0 +1,10 @@
+The runbook and the code disagree. When sync went down on Tuesday the fifth
+retry fired five seconds after the fourth; `docs/backoff.md` says attempt five
+waits sixteen seconds, and on-call were watching a queue that hammered a dead
+upstream eight times in under a minute.
+
+Make the code match the document. `python run.py` must complete and the schedule
+it prints has to be the one in the runbook.
+
+Do not change `data/jobs.json`, do not change `BASE_S` or `MAX_S`, and do not
+change the report's line shapes — the runbook generator parses them.

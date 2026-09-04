@@ -1,0 +1,10 @@
+Carrier reconciliation flagged p-1. It is a 2.2 kg parcel, we quoted the
+customer for 2.0 kg, and the carrier billed us for 2.5. We paid the difference.
+
+`docs/billable_weight.md` has the rule. Please make the quote follow it.
+
+`python run.py` must complete and the billable weights it prints have to be what
+the carrier will charge for.
+
+Do not change `data/parcels.json` and do not change the report's line shapes —
+carrier reconciliation parses them.

@@ -1,0 +1,10 @@
+[
+  {"id": "p-1", "weight_dg": 22, "destination": "domestic"},
+  {"id": "p-2", "weight_dg": 21, "destination": "domestic"},
+  {"id": "p-3", "weight_dg": 15, "destination": "domestic"},
+  {"id": "p-4", "weight_dg": 48, "destination": "domestic"},
+  {"id": "p-5", "weight_dg": 7,  "destination": "domestic"},
+  {"id": "p-6", "weight_dg": 100, "destination": "domestic"},
+  {"id": "p-7", "weight_dg": 26, "destination": "domestic"},
+  {"id": "p-8", "weight_dg": 31, "destination": "domestic"}
+]
