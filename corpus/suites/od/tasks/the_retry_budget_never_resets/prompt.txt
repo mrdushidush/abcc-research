@@ -1,0 +1,15 @@
+The overnight retry replay has started failing:
+
+    python run.py
+
+    retryd.report.RetrySLABreached: retry rate 21% is below the 70% floor:
+    11 of 14 failures were never retried
+
+Reliability say the same thing from the other side: retries seem to stop after
+the first hour of a bad night and never start again, whatever the hour.
+
+Fix it. `python run.py` must complete and the numbers it reports have to be the
+ones the budget in `docs/retry_budget.md` gives.
+
+Do not change `data/failures.json`, do not change `PER_WINDOW`, and do not
+change the report's line shapes — the reliability dashboard parses them.

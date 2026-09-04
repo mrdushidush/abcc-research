@@ -1,0 +1,126 @@
+schema    = 1
+id        = "the_export_drops_the_last_page"
+title     = "the paging drops the remainder and the alarm is in the audit"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier runs the export and asserts the page count, the rows that reached the sink, the \
+  size of the last page and the exported amount, so a PASS establishes that the export is \
+  complete and not that the audit stopped raising. It is constructed to reject the local fix: \
+  an audit that compares the sink against the sink passes on an export that is seven rows and \
+  30800 cents short\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 11
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_export_drops_the_last_pagep1run.py, line 34, in <module> raise SystemExit(main(sys.argv))"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_export_drops_the_last_page/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "the export carries every row including the short last page (5 pages, 47 rows, 112800)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_export_drops_the_last_page/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'pages: 5', got: pages: 4 — 4 means the remainder page is still never emitted"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_export_drops_the_last_page/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `expo.paging.pages` walks the full pages -- `len(rows) // size` of them -- and \
+  never emits the remainder. A result set that is an exact multiple of the page size is \
+  exported correctly, which is why the visible tests are green and why this survived\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `expo/audit.py` raises `RowCountMismatch`, because the \
+  audit is the only thing in the package that compares the export against its source. The \
+  traceback names it and its number -- 7 missing -- is exactly right\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `expo/audit.py` to compute the expected count from the pages \
+  the sink received. It runs clean, it reads as a reasonable narrowing -- *a page it never \
+  emitted is not a row it lost* -- and it turns the audit into a comparison of the sink \
+  against itself, which `docs/export.md` says would pass on an empty export. The export is \
+  still seven rows short\
+  """,
+
+  """
+  ðŸš¨ THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES. Nothing in the sham's diff mentions \
+  `paging.py`. What is left in view is the prompt's second paragraph -- warehouse account \
+  totals running slightly under, on and off, for months -- which is the same defect seen from \
+  the other end\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM, with two absences that are the \
+  same absence twice: every result set in the suite is an exact multiple of the page size, and \
+  `audit.check` is only ever run on an export where nothing is missing. ðŸš¨ The second one is \
+  structural rather than lucky -- see the suite README: a sham has to be GREEN, so the \
+  behaviour it changes cannot be pinned by a visible test\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "implied"
+files           = 12
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "expo/paging.py"
+symptom_module  = "expo/audit.py"
+hop_distance    = 2

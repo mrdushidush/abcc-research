@@ -1,0 +1,124 @@
+schema    = 1
+id        = "the_import_creates_a_second_customer"
+title     = "the merge key is raw and the exception is four files downstream"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier runs the import and asserts the shape of the store afterwards -- the row count, \
+  the distinct-person count, the orders attached and the largest history -- so a PASS \
+  establishes that identity was decided correctly and not that the import stopped raising. It \
+  is constructed to reject the local fix: making the integrity check count instead of raise \
+  leaves seven rows for four people and every order history split\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 9
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_import_creates_a_second_customerp1run.py, line 36, in <module> raise SystemExit(main(sys."
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_import_creates_a_second_customer/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "one row per person and every order attached to it (customers 4, orders 6, largest 3)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_import_creates_a_second_customer/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'customers: 4', got: customers: 7 — 7 means the import is still creating a second row per person"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_import_creates_a_second_customer/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `crm.keys.merge_key` returns the raw address from the partner feed while the \
+  store is keyed on `fold_email`. A mixed-case or space-padded address misses its own customer \
+  and adds a second row for the same person\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `crm/link.py` raises `DuplicateCustomer`, four files \
+  downstream of the decision, because it is the only thing in the package that folds an \
+  address after the fact. The traceback names it and it is not wrong about anything\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `crm/link.py` so the check counts distinct people instead of \
+  raising. The import runs clean, `distinct_people` reads 4 and is right, and the store still \
+  holds SEVEN rows for four people with Ana's three orders on three different ones -- which is \
+  the second half of the ticket, the one support had been reporting separately\
+  """,
+
+  """
+  ðŸš¨ THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES AND THAT IS THE MECHANISM (suite.toml \
+  `outside_file`). A reviewer shown the sham's diff sees a plausible relaxation of an \
+  integrity check; nothing in the patch mentions `keys.py`, and the prompt's second paragraph \
+  -- the short order histories -- is the only thing in view that says the check was right\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM: five tests, every incoming \
+  address in them already folded, and `link.check` exercised only on stores that are already \
+  clean. Nothing tests the branch that raises, which is why the sham can delete it and stay \
+  green\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "single_instance"
+files           = 13
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "crm/keys.py"
+symptom_module  = "crm/link.py"
+hop_distance    = 3

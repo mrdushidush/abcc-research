@@ -1,0 +1,15 @@
+The nightly partner import has been failing since Friday:
+
+    python run.py
+
+    crm.link.DuplicateCustomer: two customers for ana@example.com: c1 and n100
+
+Support have also been saying for a while that some customers' order histories
+look short — an account with three orders showing one — but nobody had linked
+the two.
+
+Fix it. `python run.py` must complete and the store it reports has to be right:
+one row per person, every incoming order attached to the right one.
+
+Do not change anything under `data/`, and do not change the report's line shapes
+— the data-quality dashboard parses them.

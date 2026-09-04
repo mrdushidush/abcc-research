@@ -1,0 +1,8 @@
+[
+  {"order": "x1", "email": "Ana@Example.com",   "amount_cents": 1200},
+  {"order": "x2", "email": " ana@example.com ", "amount_cents": 800},
+  {"order": "x3", "email": "bo@example.com",    "amount_cents": 4500},
+  {"order": "x4", "email": "cy@EXAMPLE.com",    "amount_cents": 2000},
+  {"order": "x5", "email": "di@example.com",    "amount_cents": 700},
+  {"order": "x6", "email": "ana@example.com",   "amount_cents": 300}
+]

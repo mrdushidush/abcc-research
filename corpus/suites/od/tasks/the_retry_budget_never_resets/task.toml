@@ -1,0 +1,125 @@
+schema    = 1
+id        = "the_retry_budget_never_resets"
+title     = "the budget window is the process start, and the alarm is in the SLA check"
+lang      = "python"
+kind      = "bugfix"
+
+# Smaller than K's 2400 because the fixture is a fraction of K's size: this suite
+# measures a reviewer over a patch, not a subject under context pressure
+# (suite.toml). 900 was K's original ceiling and it bound only the 2.5x-slower
+# model on 12k-token fixtures.
+timeout_s = 900
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+  the verifier replays the day and asserts how many failures were retried, how many windows \
+  the budget actually used and the SLA rate, so a PASS establishes behaviour and not that the \
+  exception stopped. It is constructed to reject the local fix: redefining the SLA denominator \
+  makes the rate 100% while three retries of fourteen failures still leave the night \
+  unrecovered, and `windows_used` still reads 1\
+  """
+
+[selection]
+gate3      = true
+gate3_rank = 10
+
+# GATE BEGIN
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "sound"
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "run.py exited 1: Traceback (most recent call last): File D:acgatethe_retry_budget_never_resetsp1run.py, line 34, in <module> raise SystemExit(main(sys.argv))"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_retry_budget_never_resets/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "the budget resets hourly (retried 11, dropped 3, 4 windows, 78%)"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_retry_budget_never_resets/verify.sh, host, 2026-09-04"
+
+[[gate.evidence]]
+point    = 3
+tier     = "sham"
+verdict  = "FAIL"
+detail   = "expected 'retried: 11', got: retried: 3 — 3 means the budget still never resets after the first hour"
+verifier = "rewritten"
+run      = "corpus/suites/od/tasks/the_retry_budget_never_resets/verify.sh, host, 2026-09-04"
+# GATE END
+[provenance]
+donor       = "od-series"
+imported_at = "2026-09-04"
+
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
+               "fixture", "verify", "refsol", "sham", "variants", "disposition",
+               "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE DEFECT: `Budget.window_key` returns `self.started_at // WINDOW_SECONDS` and ignores its \
+  own `ts` argument, so every event in a replay lands in the window the budget was constructed \
+  in. Three retries are spent in the first minute and the budget never resets for the rest of \
+  the day\
+  """,
+
+  """
+  THE SYMPTOM IS IN A DIFFERENT FILE: `retryd/report.py` raises `RetrySLABreached`, because \
+  the SLA check is the only thing in the package that looks at the day as a whole. The \
+  traceback names `report.py` and `report.py` is right about everything it says\
+  """,
+
+  """
+  THE LOCAL WRONG ANSWER patches `retryd/report.py` to compute the rate over the failures that \
+  were retried rather than over every failure. It reads as a defensible definition -- a \
+  failure we had no budget for was never eligible -- and it is circular: the rate becomes 100% \
+  by construction and is highest exactly when the scheduler is retrying least. \
+  `docs/retry_budget.md` says why the denominator is what it is\
+  """,
+
+  """
+  ðŸš¨ THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES. Nothing in the sham's diff mentions \
+  `budget.py`. What is left in view is the prompt's second paragraph -- *retries seem to stop \
+  after the first hour and never start again* -- and `windows_used: 1` in a report the patch \
+  does not change\
+  """,
+
+  """
+  THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM, with two deliberate absences: \
+  every timestamp in the suite is inside ONE hour, so the budget is never asked to reset, and \
+  every `report` case is one where nothing was dropped, so the denominator is never pinned\
+  """,
+
+  """
+  NO HUMAN BASELINE. The refsol was authored alongside the task, so point 2 establishes that \
+  the task is solvable and that the verifier accepts a correct answer. It does not calibrate \
+  difficulty against a human engineer\
+  """,
+]
+
+[donor_tags]
+shape           = "outside_file"
+scope_statement = "implied"
+files           = 12
+refsol_files    = 1
+sham_files      = 1
+defect_module   = "retryd/budget.py"
+symptom_module  = "retryd/report.py"
+hop_distance    = 2

@@ -1,0 +1,15 @@
+The nightly export is failing the audit:
+
+    python run.py
+
+    expo.audit.RowCountMismatch: 47 rows in, 40 rows out -- 7 missing
+
+The loader team also mentioned last week that account totals in the warehouse
+have been running slightly under what the source system reports, on and off,
+for months.
+
+Fix it. `python run.py` must complete and the export it audits has to contain
+every row.
+
+Do not change anything under `data/`, do not change `PAGE_SIZE`, and do not
+change the report's line shapes — the loader's pre-flight parses them.
