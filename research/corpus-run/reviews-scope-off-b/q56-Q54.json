@@ -1,0 +1,29 @@
+{
+  "brief_chars": 2975,
+  "completion_tokens": 1036,
+  "ending": "answered",
+  "events": 5,
+  "id": "q56/Q54",
+  "ladder": "RED",
+  "lang": "python",
+  "prompt_tokens": 1248,
+  "raw": "{\n  \"assessment\": \"The change introduces solution.py as a new file containing only a stub definition for topological_sort that immediately raises NotImplementedError. It does not perform any dependency resolution, cycle detection, or alphabetical tie-breaking, leaving the function completely unimplemented.\",\n  \"findings\": [\n    {\n      \"actual\": \"Raises NotImplementedError on any input\",\n      \"at\": \"solution.py:8\",\n      \"call\": \"python -c \\\"from solution import topological_sort; print(topological_sort({'b': ['a'], 'a': []}))\\\"\",\n      \"defect\": \"Function is a stub and does not implement the required logic\",\n      \"expected\": \"Returns a valid topological ordering list such as ['a', 'b']\"\n    }\n  ]\n}",
+  "reasoning_tokens": 859,
+  "review": {
+    "assessment": "The change introduces solution.py as a new file containing only a stub definition for topological_sort that immediately raises NotImplementedError. It does not perform any dependency resolution, cycle detection, or alphabetical tie-breaking, leaving the function completely unimplemented.",
+    "findings": [
+      {
+        "actual": "Raises NotImplementedError on any input",
+        "at": "solution.py:8",
+        "call": "python -c \"from solution import topological_sort; print(topological_sort({'b': ['a'], 'a': []}))\"",
+        "defect": "Function is a stub and does not implement the required logic",
+        "expected": "Returns a valid topological ordering list such as ['a', 'b']"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 14.555960655212402,
+  "trace": "Closed",
+  "turns": 1
+}

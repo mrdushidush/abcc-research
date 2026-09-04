@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3460,
+  "completion_tokens": 2154,
+  "ending": "answered",
+  "events": 7,
+  "id": "k/round_at_the_line_not_the_total (correct)",
+  "ladder": "GREEN",
+  "lang": "python",
+  "prompt_tokens": 1410,
+  "raw": "{\n  \"assessment\": \"This change fixes floating-point drift by quantizing each line individually before aggregation, ensuring the printed per-line amounts sum exactly to the displayed total and resolving the penny-off discrepancy across invoices.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2094,
+  "review": {
+    "assessment": "This change fixes floating-point drift by quantizing each line individually before aggregation, ensuring the printed per-line amounts sum exactly to the displayed total and resolving the penny-off discrepancy across invoices.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 32.54584503173828,
+  "trace": "Closed",
+  "turns": 1
+}

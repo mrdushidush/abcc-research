@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3293,
+  "completion_tokens": 3896,
+  "ending": "answered",
+  "events": 9,
+  "id": "q56/Q35 (correct)",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1407,
+  "raw": "{\n  \"assessment\": \"The change correctly implements all specified behaviors: stripping the leading '?', handling empty input, decoding '+' and percent-encoding, mapping bare keys to an empty string, and collecting repeated values into arrays. The acceptance test passed with no structural or veto issues.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 3819,
+  "review": {
+    "assessment": "The change correctly implements all specified behaviors: stripping the leading '?', handling empty input, decoding '+' and percent-encoding, mapping bare keys to an empty string, and collecting repeated values into arrays. The acceptance test passed with no structural or veto issues.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 58.733642578125,
+  "trace": "Closed",
+  "turns": 1
+}

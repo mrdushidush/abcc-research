@@ -1,0 +1,21 @@
+{
+  "brief_chars": 3438,
+  "completion_tokens": 3088,
+  "ending": "answered",
+  "events": 8,
+  "id": "q56/Q40 (correct)",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1441,
+  "raw": "{\n  \"assessment\": \"The change replaces the placeholder methods with a functional `EventEmitter` implementation using a `Map<string, Listener[]>` to track listeners per event. Registration (`on`), emission (`emit` with safe array copying), removal (`off`), and one-time execution (`once`) are all implemented correctly according to the specification. The host's structural, acceptance, and veto checks all pass without issues.\",\n  \"findings\": []\n}",
+  "reasoning_tokens": 2985,
+  "review": {
+    "assessment": "The change replaces the placeholder methods with a functional `EventEmitter` implementation using a `Map<string, Listener[]>` to track listeners per event. Registration (`on`), emission (`emit` with safe array copying), removal (`off`), and one-time execution (`once`) are all implemented correctly according to the specification. The host's structural, acceptance, and veto checks all pass without issues.",
+    "findings": []
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 42.45047378540039,
+  "trace": "Closed",
+  "turns": 1
+}

@@ -1,0 +1,50 @@
+{
+  "brief_chars": 2605,
+  "completion_tokens": 2475,
+  "ending": "answered",
+  "events": 7,
+  "id": "q56/Q35",
+  "ladder": "GREEN",
+  "lang": "typescript",
+  "prompt_tokens": 1202,
+  "raw": "{\n  \"assessment\": \"The change introduces a new file containing only the initial naive implementation, completely failing to implement any of the requested query string enhancements such as repeated key array collection, URL decoding, or edge-case handling.\",\n  \"findings\": [\n    {\n      \"actual\": \"{ a: \\\"2\\\" }\",\n      \"at\": \"solution.ts\",\n      \"call\": \"parseQueryString(\\\"a=1&a=2\\\")\",\n      \"defect\": \"Repeated keys overwrite previous values instead of collecting them into an array.\",\n      \"expected\": \"{ a: [\\\"1\\\", \\\"2\\\"] }\"\n    },\n    {\n      \"actual\": \"{ q: \\\"%20%26+\\\" }\",\n      \"at\": \"solution.ts\",\n      \"call\": \"parseQueryString(\\\"q=%20%26+\\\")\",\n      \"defect\": \"No URL decoding is implemented; '+' signs and percent-encoded sequences remain unprocessed.\",\n      \"expected\": \"{ q: \\\" &+\\\" }\"\n    },\n    {\n      \"actual\": \"{ bare: undefined }\",\n      \"at\": \"solution.ts\",\n      \"call\": \"parseQueryString(\\\"bare\\\")\",\n      \"defect\": \"Bare keys without a value assignment map to undefined instead of an empty string.\",\n      \"expected\": \"{ bare: \\\"\\\" }\"\n    },\n    {\n      \"actual\": \"{ \\\"\\\": undefined }\",\n      \"at\": \"solution.ts\",\n      \"call\": \"parseQueryString(\\\"\\\")\",\n      \"defect\": \"Empty input splits into a single empty pair, creating an object with a falsy key and undefined value instead of returning an empty object.\",\n      \"expected\": \"{}\"\n    }\n  ]\n}",
+  "reasoning_tokens": 2080,
+  "review": {
+    "assessment": "The change introduces a new file containing only the initial naive implementation, completely failing to implement any of the requested query string enhancements such as repeated key array collection, URL decoding, or edge-case handling.",
+    "findings": [
+      {
+        "actual": "{ a: \"2\" }",
+        "at": "solution.ts",
+        "call": "parseQueryString(\"a=1&a=2\")",
+        "defect": "Repeated keys overwrite previous values instead of collecting them into an array.",
+        "expected": "{ a: [\"1\", \"2\"] }"
+      },
+      {
+        "actual": "{ q: \"%20%26+\" }",
+        "at": "solution.ts",
+        "call": "parseQueryString(\"q=%20%26+\")",
+        "defect": "No URL decoding is implemented; '+' signs and percent-encoded sequences remain unprocessed.",
+        "expected": "{ q: \" &+\" }"
+      },
+      {
+        "actual": "{ bare: undefined }",
+        "at": "solution.ts",
+        "call": "parseQueryString(\"bare\")",
+        "defect": "Bare keys without a value assignment map to undefined instead of an empty string.",
+        "expected": "{ bare: \"\" }"
+      },
+      {
+        "actual": "{ \"\": undefined }",
+        "at": "solution.ts",
+        "call": "parseQueryString(\"\")",
+        "defect": "Empty input splits into a single empty pair, creating an object with a falsy key and undefined value instead of returning an empty object.",
+        "expected": "{}"
+      }
+    ]
+  },
+  "rung_view": "Full",
+  "scope_note": "Absent",
+  "seconds": 32.807437896728516,
+  "trace": "Closed",
+  "turns": 1
+}
