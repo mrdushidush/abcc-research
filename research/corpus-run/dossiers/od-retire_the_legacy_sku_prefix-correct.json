@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/retire_the_legacy_sku_prefix (correct)",
+  "lang": "python",
+  "patch": "diff --git a/catalog/cart.py b/catalog/cart.py\nindex 4513660..1779d91 100644\n--- a/catalog/cart.py\n+++ b/catalog/cart.py\n@@ -1,8 +1,10 @@\n \"\"\"Cart pricing.\"\"\"\n \n+from . import skus\n+\n \n def price_line(index, line):\n-    product = index.get(line[\"sku\"])\n+    product = index.get(skus.normalize(line[\"sku\"]))\n     if product is None:\n         return None\n     return product.price_cents * int(line[\"qty\"])\ndiff --git a/catalog/inventory.py b/catalog/inventory.py\nindex 2838066..534c271 100644\n--- a/catalog/inventory.py\n+++ b/catalog/inventory.py\n@@ -1,10 +1,12 @@\n \"\"\"Stock adjustments from the warehouse feed.\"\"\"\n \n+from . import skus\n+\n \n def apply(index, adjustments):\n     applied = []\n     for adjustment in adjustments:\n-        product = index.get(adjustment[\"sku\"])\n+        product = index.get(skus.normalize(adjustment[\"sku\"]))\n         if product is None:\n             continue\n         product.on_hand += int(adjustment[\"delta\"])\ndiff --git a/catalog/search.py b/catalog/search.py\nindex e9e03c8..b6c6c16 100644\n--- a/catalog/search.py\n+++ b/catalog/search.py\n@@ -1,8 +1,10 @@\n \"\"\"Product search by SKU.\"\"\"\n \n+from . import skus\n+\n \n def lookup(index, query):\n-    return index.get(query)\n+    return index.get(skus.normalize(query))\n \n \n def hits(index, queries):\n",
+  "prompt": "Support ticket 4417: a customer followed a bookmark to OLD-8842, got \"no such\nproduct\", and bought the equivalent from somebody else. They pasted the URL and\nit is a perfectly good SKU in the catalog.\n\nFix it so a lookup like that resolves. `python run.py` must complete and the\nreconciliation numbers it prints have to be right.\n\nDo not change anything under `data/`, and do not change the report's line\nshapes — the ops dashboard parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "3 file(s) changed: catalog/cart.py, catalog/inventory.py, catalog/search.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "0cbbfd2141f0b3c9e1f0ee2eb25425a20061a08f"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.25s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "0cbbfd2141f0b3c9e1f0ee2eb25425a20061a08f"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "0cbbfd2141f0b3c9e1f0ee2eb25425a20061a08f"
+      }
+    ]
+  },
+  "title": "the legacy SKU prefix is folded in one reader of four"
+}

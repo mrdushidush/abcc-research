@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_yen_total_is_off_by_a_hundred (correct)",
+  "lang": "python",
+  "patch": "diff --git a/till/money.py b/till/money.py\nindex 121861f..c0f15f0 100644\n--- a/till/money.py\n+++ b/till/money.py\n@@ -21,5 +21,9 @@ def minor_units(currency):\n \n \n def to_minor(amount, currency):\n-    \"\"\"Convert a decimal amount string to an integer count of minor units.\"\"\"\n-    return int(round(float(amount) * 100))\n+    \"\"\"Convert a decimal amount string to an integer count of minor units.\n+\n+    The scale is the currency's, not two: yen have no subdivision and the\n+    Kuwaiti dinar has three (docs/minor_units.md).\n+    \"\"\"\n+    return int(round(float(amount) * (10 ** minor_units(currency))))\n",
+  "prompt": "Settlement is stuck on yesterday's batch:\n\n    python run.py\n\n    till.reconcile.TotalMismatch: 2 orders disagree with the provider;\n    first is o-3: we say 430000, they say 4300\n\no-3 is a Japanese order, 1500 yen plus 2800 yen. The provider is right: the\ncustomer paid 4300 yen.\n\nFix it. `python run.py` must complete and the per-currency totals it prints have\nto be the amounts the customers actually paid.\n\nDo not change `data/orders.json` and do not change the report's line shapes —\nthe settlement import parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: till/money.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "adaa119e2a34d18437e286db9647e62b4a643de6"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "adaa119e2a34d18437e286db9647e62b4a643de6"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "adaa119e2a34d18437e286db9647e62b4a643de6"
+      }
+    ]
+  },
+  "title": "the minor-unit scale is hard-coded and the mismatch is raised in reconcile"
+}

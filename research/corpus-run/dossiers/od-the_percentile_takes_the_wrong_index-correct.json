@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_percentile_takes_the_wrong_index (correct)",
+  "lang": "python",
+  "patch": "diff --git a/latency/percentiles.py b/latency/percentiles.py\nindex 378302b..016dd9e 100644\n--- a/latency/percentiles.py\n+++ b/latency/percentiles.py\n@@ -13,8 +13,11 @@ def value_at(values, p):\n     n = len(ordered)\n     if n == 0:\n         return 0\n-    index = int(n * p)\n-    return ordered[min(n - 1, index)]\n+    # Nearest rank: the smallest rank r with r/n >= p, and ranks count from 1\n+    # (docs/percentiles.md). `int(n * p)` is that rank only when n * p is a\n+    # whole number, and one short of it every other time.\n+    index = math.ceil(n * p) - 1\n+    return ordered[max(0, min(n - 1, index))]\n \n \n def summary(values):\n",
+  "prompt": "The SLO dashboard has checkout p95 at 400 ms. There are twenty samples in that\nwindow and 400 is the slowest single request in it — the p95 of twenty samples\nis the nineteenth, which is 120.\n\n`docs/percentiles.md` says how this is supposed to be computed. Please make it\nmatch.\n\n`python run.py` must complete and every percentile it prints has to be the one\nthe document gives.\n\nDo not change `data/windows.json` and do not change the report's line shapes —\nthe SLO dashboard parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: latency/percentiles.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "793a21ca2062ff1397047a69086258ad32e56884"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "793a21ca2062ff1397047a69086258ad32e56884"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "793a21ca2062ff1397047a69086258ad32e56884"
+      }
+    ]
+  },
+  "title": "the percentile index is int(n*p), and the tempting fix subtracts one"
+}

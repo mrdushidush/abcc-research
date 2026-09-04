@@ -1,6 +1,6 @@
 {
   "headline": {
-    "detail": "dependencies contain a cycle.\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_linear_chain - NotImplementedError\n1 failed in 0.27s",
+    "detail": "dependencies contain a cycle.\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_linear_chain - NotImplementedError\n1 failed in 0.29s",
     "headline": "red",
     "rung": "acceptance"
   },
@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "782e6c6602c678f18b84ce047823e6b2a7aaeab4"
+        "sha": "33a449512ba7af8131f668e95debde1940af2733"
       },
       {
         "counts": {
@@ -25,11 +25,11 @@
           "passed": 0,
           "run": 1
         },
-        "detail": "dependencies contain a cycle.\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_linear_chain - NotImplementedError\n1 failed in 0.27s",
+        "detail": "dependencies contain a cycle.\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_linear_chain - NotImplementedError\n1 failed in 0.29s",
         "exit": 1,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "782e6c6602c678f18b84ce047823e6b2a7aaeab4"
+        "sha": "33a449512ba7af8131f668e95debde1940af2733"
       }
     ]
   },

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/treat_the_archived_project_as_read_only (correct)",
+  "lang": "python",
+  "patch": "diff --git a/workspace/importer.py b/workspace/importer.py\nindex 6e8b822..08a3124 100644\n--- a/workspace/importer.py\n+++ b/workspace/importer.py\n@@ -1,10 +1,14 @@\n \"\"\"The CSV importer.\"\"\"\n \n+from . import guard\n+\n \n def apply(index, ops):\n     written = []\n     for op in ops:\n         project = index[op[\"project\"]]\n+        if not guard.writable(project):\n+            continue\n         project.write(op[\"field\"])\n         written.append(op)\n     return written\ndiff --git a/workspace/scheduler.py b/workspace/scheduler.py\nindex 35ffa50..fc7ebee 100644\n--- a/workspace/scheduler.py\n+++ b/workspace/scheduler.py\n@@ -1,10 +1,14 @@\n \"\"\"The recurring-job scheduler, which stamps the next run time.\"\"\"\n \n+from . import guard\n+\n \n def apply(index, ops):\n     written = []\n     for op in ops:\n         project = index[op[\"project\"]]\n+        if not guard.writable(project):\n+            continue\n         project.write(op[\"field\"])\n         written.append(op)\n     return written\ndiff --git a/workspace/webhook.py b/workspace/webhook.py\nindex 040c81a..7a382fa 100644\n--- a/workspace/webhook.py\n+++ b/workspace/webhook.py\n@@ -1,10 +1,14 @@\n \"\"\"Inbound webhooks from the build system.\"\"\"\n \n+from . import guard\n+\n \n def apply(index, ops):\n     written = []\n     for op in ops:\n         project = index[op[\"project\"]]\n+        if not guard.writable(project):\n+            continue\n         project.write(op[\"field\"])\n         written.append(op)\n     return written\n",
+  "prompt": "The compliance export failed review: Borealis (p2) was archived in March and has\nrevisions recorded against it since. The reviewer found it through the importer,\nwhich happily loads rows into an archived project.\n\n`docs/archiving.md` is the contract — an archived project does not change again.\nEvery write path in this service has to honour it.\n\n`python run.py` must complete and the write audit it prints has to show that.\n\nDo not change `data/projects.json` and do not change the report's line shapes;\nthe compliance export parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "3 file(s) changed: workspace/importer.py, workspace/scheduler.py, workspace/webhook.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "78e86f699ed66e07d528a8175f98a05af81ab193"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "78e86f699ed66e07d528a8175f98a05af81ab193"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "78e86f699ed66e07d528a8175f98a05af81ab193"
+      }
+    ]
+  },
+  "title": "the read-only guard is asked on one write path of four"
+}

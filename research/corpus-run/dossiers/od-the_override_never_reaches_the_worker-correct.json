@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_override_never_reaches_the_worker (correct)",
+  "lang": "python",
+  "patch": "diff --git a/bootcfg/overrides.py b/bootcfg/overrides.py\nindex 7007c09..e22ac00 100644\n--- a/bootcfg/overrides.py\n+++ b/bootcfg/overrides.py\n@@ -11,7 +11,11 @@ def apply(base, raw):\n     for key, value in raw.items():\n         if key not in base:\n             continue\n-        if type(value) is not type(base[key]):\n+        # Coerce to the default's type rather than refusing: the deploy tool\n+        # writes every value as a string and always will (docs/config.md), so a\n+        # type test here rejects every override there is.\n+        try:\n+            out[key] = type(base[key])(value)\n+        except (TypeError, ValueError):\n             continue\n-        out[key] = value\n     return out\n",
+  "prompt": "prod-eu will not start:\n\n    python run.py\n\n    bootcfg.capacity.ThroughputTooLow: throughput 100 is below the floor of\n    1000 -- concurrency 1, batch 100\n\nThe environment file has concurrency 8 and batch 500 in it, and so does the\ndeclared configuration for this environment, so the numbers in that message are\nnot the ones ops set.\n\nFix it. `python run.py` must complete and the configuration it reports has to be\nthe one this environment is meant to run.\n\nDo not change anything under `data/`, do not change `DEFAULTS`, and do not\nchange the report's line shapes — the deploy check parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: bootcfg/overrides.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d3da83a1a8fcd63e1aa74813df5f2a6f4d31044a"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d3da83a1a8fcd63e1aa74813df5f2a6f4d31044a"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d3da83a1a8fcd63e1aa74813df5f2a6f4d31044a"
+      }
+    ]
+  },
+  "title": "the type test rejects every override and the floor is what refuses to start"
+}

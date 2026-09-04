@@ -16,7 +16,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "3a64be957c86f3e6b1edfc2b258eb6c043abb74e"
+        "sha": "4040576dcfd5a0b8e2622b0afa9d235f747cc224"
       },
       {
         "counts": {
@@ -24,11 +24,11 @@
           "passed": 1,
           "run": 1
         },
-        "detail": "test tests::precedence_and_single_subtraction ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q08 v0.1.0 (D:\\ac\\q56-Q08\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.44s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q08-53a8fc0e40288fc0.exe)\nDoc-tests q08",
+        "detail": "test tests::precedence_and_single_subtraction ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q08 v0.1.0 (D:\\ac\\q56-Q08\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.51s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q08-53a8fc0e40288fc0.exe)\nDoc-tests q08",
         "exit": 0,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "3a64be957c86f3e6b1edfc2b258eb6c043abb74e"
+        "sha": "4040576dcfd5a0b8e2622b0afa9d235f747cc224"
       },
       {
         "counts": null,
@@ -36,7 +36,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "veto",
-        "sha": "3a64be957c86f3e6b1edfc2b258eb6c043abb74e"
+        "sha": "4040576dcfd5a0b8e2622b0afa9d235f747cc224"
       }
     ]
   },

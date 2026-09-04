@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_prorate_assumes_a_thirty_day_month (correct)",
+  "lang": "python",
+  "patch": "diff --git a/subs/prorate.py b/subs/prorate.py\nindex 73daf61..1775d21 100644\n--- a/subs/prorate.py\n+++ b/subs/prorate.py\n@@ -4,12 +4,18 @@ A cancellation refunds the unused part of the month the customer already paid\n for. The denominator is the length of THAT month.\n \"\"\"\n \n+import calendar\n+\n DAYS_IN_MONTH = 30\n \n \n def days_in(year, month):\n-    \"\"\"How many days the given month has.\"\"\"\n-    return DAYS_IN_MONTH\n+    \"\"\"How many days the given month has.\n+\n+    The real length of the real month, leap years included -- the customer paid\n+    for a month and not for thirty days (docs/prorate.md).\n+    \"\"\"\n+    return calendar.monthrange(year, month)[1]\n \n \n def refund_cents(record):\n",
+  "prompt": "Support raised x-1. The customer cancelled ten days into February 2026 on a\n30.00 plan and we refunded 20.00. February has twenty-eight days, so they used\nten of twenty-eight and the refund should have been 19.28.\n\n`docs/prorate.md` has the rule. Please make the refunds follow it.\n\n`python run.py` must complete and every refund it prints has to be right.\n\nDo not change `data/cancellations.json` and do not change the report's line\nshapes — the refunds run parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: subs/prorate.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "ac788944265ad61636f706bef12243d89c929885"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "ac788944265ad61636f706bef12243d89c929885"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "ac788944265ad61636f706bef12243d89c929885"
+      }
+    ]
+  },
+  "title": "the proration denominator is thirty, and the tempting fix special-cases February"
+}

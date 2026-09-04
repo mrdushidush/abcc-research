@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/expire_the_trial_everywhere (sham)",
+  "lang": "python",
+  "patch": "diff --git a/entitlement/access.py b/entitlement/access.py\nindex 41b488b..21a876c 100644\n--- a/entitlement/access.py\n+++ b/entitlement/access.py\n@@ -1,6 +1,6 @@\n \"\"\"Feature access — what the product unlocks for an account.\"\"\"\n \n-from . import model\n+from . import calendar, model\n \n PREMIUM_FEATURES = (\"export\", \"sso\", \"audit_log\")\n BASIC_FEATURES = (\"export\",)\n@@ -8,6 +8,11 @@ BASIC_FEATURES = (\"export\",)\n \n def features(account, as_of):\n     if account.status in model.ENTITLED_STATUSES:\n+        # A trial that has run out does not keep premium features.\n+        if account.status == model.STATUS_TRIAL and calendar.lapsed(\n+            account.trial_ends_on, as_of\n+        ):\n+            return BASIC_FEATURES\n         return PREMIUM_FEATURES\n     return BASIC_FEATURES\n \n",
+  "prompt": "Two accounts whose trials ended back in February still have the premium\nfeature set. Tailspin Toys (ac-104) and Proseware (ac-106) both ran out months\nago and they still have SSO and the audit log.\n\n`docs/trials.md` says what the rule is: once a trial's last day has passed the\naccount is not entitled to anything, exactly like a cancelled one, until it\nconverts. Trial expiry has to be honoured everywhere this service asks whether\nan account is entitled — not only where the feature set is decided.\n\nPlease fix it. `python run.py` must complete and every number in the report has\nto be the one the rule gives.\n\nDo not change `data/accounts.json`, do not move `AS_OF`, and do not change the\nreport's line shapes: they are parsed by the finance import and the support rota\ngenerator downstream.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: entitlement/access.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "0c7e08c9a1616fa4d4bbf548a9a4cce62fb6dd89"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 7,
+          "run": 7
+        },
+        "detail": ".......                                                                  [100%]\n7 passed in 0.38s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "0c7e08c9a1616fa4d4bbf548a9a4cce62fb6dd89"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "0c7e08c9a1616fa4d4bbf548a9a4cce62fb6dd89"
+      }
+    ]
+  },
+  "title": "trial expiry is honoured in one consumer of four"
+}

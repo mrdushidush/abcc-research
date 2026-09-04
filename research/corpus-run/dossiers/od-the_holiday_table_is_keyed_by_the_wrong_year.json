@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_holiday_table_is_keyed_by_the_wrong_year",
+  "lang": "python",
+  "patch": "diff --git a/worksched/holidays.py b/worksched/holidays.py\nnew file mode 100644\nindex 0000000..8bf88e6\n--- /dev/null\n+++ b/worksched/holidays.py\n@@ -0,0 +1,21 @@\n+\"\"\"The company holiday table.\n+\n+⚠ Re-keyed in 2025. It used to be keyed by FISCAL year, which starts in the\n+previous calendar year; it is now keyed by calendar year, which is what every\n+caller means by `year`.\n+\"\"\"\n+\n+TABLE = {\n+    2025: [\"2025-01-01\", \"2025-05-26\", \"2025-12-25\", \"2025-12-26\"],\n+    2026: [\"2026-01-01\", \"2026-04-03\", \"2026-05-25\", \"2026-12-25\", \"2026-12-28\"],\n+    2027: [\"2027-01-01\", \"2027-03-26\"],\n+}\n+\n+\n+def for_year(year):\n+    \"\"\"Every company holiday in `year`, as ISO date strings.\"\"\"\n+    return TABLE.get(year - 1, [])\n+\n+\n+def is_holiday(day):\n+    return day.isoformat() in for_year(day.year)\n",
+  "prompt": "The scheduling job has been failing since the Easter closure went into the\nfeed:\n\n    python run.py\n\n    worksched.sla.DueOnClosedDay: 4 tickets are due on a day the office is\n    closed; first is t-1 on 2026-04-03\n\nCollections have also been chasing customers on days we were shut, which nobody\nhad connected to this.\n\nFix it. `python run.py` must complete and every date it prints has to be a day\nthe office is open.\n\nDo not change anything under `data/` — `closures.json` is facilities' feed and\nwe do not edit it — and do not change the report's line shapes, which the\nsupport rota and the collections queue parse.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: worksched/holidays.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "0219fae0378635f936de9d23b2485afd08a54bb5"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.25s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "0219fae0378635f936de9d23b2485afd08a54bb5"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "0219fae0378635f936de9d23b2485afd08a54bb5"
+      }
+    ]
+  },
+  "title": "the holiday lookup is a year off and the SLA check is what notices"
+}

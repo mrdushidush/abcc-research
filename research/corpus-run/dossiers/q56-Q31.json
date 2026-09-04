@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "2aed233298ccb7841221a7c39559690a0b50a4fd"
+        "sha": "584a0cfff5717089315a67356a8857d7be6f3820"
       },
       {
         "counts": null,
@@ -25,7 +25,7 @@
         "exit": 1,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "2aed233298ccb7841221a7c39559690a0b50a4fd"
+        "sha": "584a0cfff5717089315a67356a8857d7be6f3820"
       }
     ]
   },

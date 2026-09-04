@@ -1,6 +1,6 @@
 {
   "headline": {
-    "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::compound\ntests::small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q06 v0.1.0 (D:\\ac\\q56-Q06\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q06-b1712c12f2e307cc.exe)",
+    "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::compound\ntests::small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q06 v0.1.0 (D:\\ac\\q56-Q06\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.36s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q06-b1712c12f2e307cc.exe)",
     "headline": "red",
     "rung": "acceptance"
   },
@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "369bc95faf0521aa0f794e42aa81f8b16efc5bc0"
+        "sha": "d7aeb70f48532eaa8b01faa948aaa464a3fc7bfc"
       },
       {
         "counts": {
@@ -25,11 +25,11 @@
           "passed": 0,
           "run": 2
         },
-        "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::compound\ntests::small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q06 v0.1.0 (D:\\ac\\q56-Q06\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q06-b1712c12f2e307cc.exe)",
+        "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::compound\ntests::small\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q06 v0.1.0 (D:\\ac\\q56-Q06\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.36s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q06-b1712c12f2e307cc.exe)",
         "exit": 101,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "369bc95faf0521aa0f794e42aa81f8b16efc5bc0"
+        "sha": "d7aeb70f48532eaa8b01faa948aaa464a3fc7bfc"
       }
     ]
   },

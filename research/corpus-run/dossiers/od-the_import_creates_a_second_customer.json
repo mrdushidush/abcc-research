@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_import_creates_a_second_customer",
+  "lang": "python",
+  "patch": "diff --git a/crm/keys.py b/crm/keys.py\nnew file mode 100644\nindex 0000000..562d52b\n--- /dev/null\n+++ b/crm/keys.py\n@@ -0,0 +1,15 @@\n+\"\"\"Identity keys.\n+\n+An email address is not a key. `fold_email` makes one: the store is built on\n+the folded form and every lookup into it has to be.\n+\"\"\"\n+\n+\n+def fold_email(email):\n+    \"\"\"The canonical form of an email address for identity purposes.\"\"\"\n+    return str(email).strip().lower()\n+\n+\n+def merge_key(record):\n+    \"\"\"The key an incoming record is merged on.\"\"\"\n+    return record[\"email\"]\n",
+  "prompt": "The nightly partner import has been failing since Friday:\n\n    python run.py\n\n    crm.link.DuplicateCustomer: two customers for ana@example.com: c1 and n100\n\nSupport have also been saying for a while that some customers' order histories\nlook short — an account with three orders showing one — but nobody had linked\nthe two.\n\nFix it. `python run.py` must complete and the store it reports has to be right:\none row per person, every incoming order attached to the right one.\n\nDo not change anything under `data/`, and do not change the report's line shapes\n— the data-quality dashboard parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: crm/keys.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "789ce75a34ec6a4c9e99bcdd2ede9447dc4dd718"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "789ce75a34ec6a4c9e99bcdd2ede9447dc4dd718"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "789ce75a34ec6a4c9e99bcdd2ede9447dc4dd718"
+      }
+    ]
+  },
+  "title": "the merge key is raw and the exception is four files downstream"
+}

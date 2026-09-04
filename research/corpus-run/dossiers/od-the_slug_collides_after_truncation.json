@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_slug_collides_after_truncation",
+  "lang": "python",
+  "patch": "diff --git a/pubslug/slugs.py b/pubslug/slugs.py\nnew file mode 100644\nindex 0000000..8fcb4bf\n--- /dev/null\n+++ b/pubslug/slugs.py\n@@ -0,0 +1,27 @@\n+\"\"\"Slugs.\n+\n+MAX_LEN is 20 because the print catalogue prints the URL and its column is\n+twenty characters wide. It is a hard limit set outside this service.\n+\"\"\"\n+\n+MAX_LEN = 20\n+\n+\n+def make(title):\n+    \"\"\"The slug for one title, truncated to `MAX_LEN`.\"\"\"\n+    out = []\n+    for ch in title.lower():\n+        out.append(ch if ch.isalnum() else \"-\")\n+    slug = \"\".join(out)\n+    while \"--\" in slug:\n+        slug = slug.replace(\"--\", \"-\")\n+    slug = slug.strip(\"-\")[:MAX_LEN]\n+    return slug.strip(\"-\")\n+\n+\n+def assign(articles):\n+    \"\"\"A slug for every article, in publication order.\"\"\"\n+    out = []\n+    for article in articles:\n+        out.append({\"id\": article[\"id\"], \"slug\": make(article[\"title\"])})\n+    return out\n",
+  "prompt": "Two of August's articles have the same URL. a1 and a2 — \"How to build a\nresilient ingest pipeline\" and \"How to build a resilient queue consumer\" —\nboth publish at /blog/how-to-build-a-resil, so the second one overwrote the\nfirst and the newsletter link goes to the wrong article.\n\n`docs/slugs.md` says what is supposed to happen. Please make it happen.\n\n`python run.py` must complete and the slugs it reports have to satisfy the\ndocument.\n\nDo not change `data/articles.json` and do not change the report's line shapes —\nthe catalogue build parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: pubslug/slugs.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "714de1250117dbc3ce329b84f20dfca38f09f139"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.25s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "714de1250117dbc3ce329b84f20dfca38f09f139"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "714de1250117dbc3ce329b84f20dfca38f09f139"
+      }
+    ]
+  },
+  "title": "truncated slugs collide, and the tempting fix is a longer truncation"
+}

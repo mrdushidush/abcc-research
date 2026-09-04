@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_percentile_takes_the_wrong_index",
+  "lang": "python",
+  "patch": "diff --git a/latency/percentiles.py b/latency/percentiles.py\nnew file mode 100644\nindex 0000000..378302b\n--- /dev/null\n+++ b/latency/percentiles.py\n@@ -0,0 +1,21 @@\n+\"\"\"Percentiles, by nearest rank.\n+\n+Milliseconds, integers, no interpolation: the reported value is always one of\n+the observations.\n+\"\"\"\n+\n+import math\n+\n+\n+def value_at(values, p):\n+    \"\"\"The `p` percentile of `values`, by nearest rank.\"\"\"\n+    ordered = sorted(values)\n+    n = len(ordered)\n+    if n == 0:\n+        return 0\n+    index = int(n * p)\n+    return ordered[min(n - 1, index)]\n+\n+\n+def summary(values):\n+    return {\"p50\": value_at(values, 0.50), \"p95\": value_at(values, 0.95)}\n",
+  "prompt": "The SLO dashboard has checkout p95 at 400 ms. There are twenty samples in that\nwindow and 400 is the slowest single request in it — the p95 of twenty samples\nis the nineteenth, which is 120.\n\n`docs/percentiles.md` says how this is supposed to be computed. Please make it\nmatch.\n\n`python run.py` must complete and every percentile it prints has to be the one\nthe document gives.\n\nDo not change `data/windows.json` and do not change the report's line shapes —\nthe SLO dashboard parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: latency/percentiles.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "2f5460b5ff62321117cab14af85e74863c5445fe"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.26s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "2f5460b5ff62321117cab14af85e74863c5445fe"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "2f5460b5ff62321117cab14af85e74863c5445fe"
+      }
+    ]
+  },
+  "title": "the percentile index is int(n*p), and the tempting fix subtracts one"
+}

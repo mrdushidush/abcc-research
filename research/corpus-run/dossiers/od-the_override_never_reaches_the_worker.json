@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_override_never_reaches_the_worker",
+  "lang": "python",
+  "patch": "diff --git a/bootcfg/overrides.py b/bootcfg/overrides.py\nnew file mode 100644\nindex 0000000..7007c09\n--- /dev/null\n+++ b/bootcfg/overrides.py\n@@ -0,0 +1,17 @@\n+\"\"\"Applying the environment over the defaults.\"\"\"\n+\n+\n+def apply(base, raw):\n+    \"\"\"`base` with any override in `raw` laid over it.\n+\n+    An override only counts if it is the same kind of value as the default it\n+    replaces -- a setting must not change type underneath the code that reads it.\n+    \"\"\"\n+    out = dict(base)\n+    for key, value in raw.items():\n+        if key not in base:\n+            continue\n+        if type(value) is not type(base[key]):\n+            continue\n+        out[key] = value\n+    return out\n",
+  "prompt": "prod-eu will not start:\n\n    python run.py\n\n    bootcfg.capacity.ThroughputTooLow: throughput 100 is below the floor of\n    1000 -- concurrency 1, batch 100\n\nThe environment file has concurrency 8 and batch 500 in it, and so does the\ndeclared configuration for this environment, so the numbers in that message are\nnot the ones ops set.\n\nFix it. `python run.py` must complete and the configuration it reports has to be\nthe one this environment is meant to run.\n\nDo not change anything under `data/`, do not change `DEFAULTS`, and do not\nchange the report's line shapes — the deploy check parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: bootcfg/overrides.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "1fa8b1ae97de08c13df341073375babd4ef2db73"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.27s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "1fa8b1ae97de08c13df341073375babd4ef2db73"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "1fa8b1ae97de08c13df341073375babd4ef2db73"
+      }
+    ]
+  },
+  "title": "the type test rejects every override and the floor is what refuses to start"
+}

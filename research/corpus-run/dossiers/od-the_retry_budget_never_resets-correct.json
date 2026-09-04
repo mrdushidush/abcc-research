@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_retry_budget_never_resets (correct)",
+  "lang": "python",
+  "patch": "diff --git a/retryd/budget.py b/retryd/budget.py\nindex d3e4e87..f049fc3 100644\n--- a/retryd/budget.py\n+++ b/retryd/budget.py\n@@ -16,7 +16,7 @@ class Budget:\n \n     def window_key(self, ts):\n         \"\"\"Which hour window `ts` falls in.\"\"\"\n-        return self.started_at // WINDOW_SECONDS\n+        return int(ts) // WINDOW_SECONDS\n \n     def has_room(self, ts):\n         return self.spent.get(self.window_key(ts), 0) < PER_WINDOW\n",
+  "prompt": "The overnight retry replay has started failing:\n\n    python run.py\n\n    retryd.report.RetrySLABreached: retry rate 21% is below the 70% floor:\n    11 of 14 failures were never retried\n\nReliability say the same thing from the other side: retries seem to stop after\nthe first hour of a bad night and never start again, whatever the hour.\n\nFix it. `python run.py` must complete and the numbers it reports have to be the\nones the budget in `docs/retry_budget.md` gives.\n\nDo not change `data/failures.json`, do not change `PER_WINDOW`, and do not\nchange the report's line shapes — the reliability dashboard parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: retryd/budget.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "990cfdc001e07049260476029aa31b20864888a9"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "990cfdc001e07049260476029aa31b20864888a9"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "990cfdc001e07049260476029aa31b20864888a9"
+      }
+    ]
+  },
+  "title": "the budget window is the process start, and the alarm is in the SLA check"
+}

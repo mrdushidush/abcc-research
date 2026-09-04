@@ -1,6 +1,6 @@
 {
   "headline": {
-    "detail": "\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:6: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_hours_and_minutes - NotImplementedError\nFAILED test_basic.py::test_seconds_only - NotImplementedError\n2 failed in 0.26s",
+    "detail": "\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:6: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_hours_and_minutes - NotImplementedError\nFAILED test_basic.py::test_seconds_only - NotImplementedError\n2 failed in 0.29s",
     "headline": "red",
     "rung": "acceptance"
   },
@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "5ac37ed1d4c1bd3971669dacc4f9c2a1658054e9"
+        "sha": "4758af25a09d586cfc0f43ac891bd8da1efbd7fe"
       },
       {
         "counts": {
@@ -25,11 +25,11 @@
           "passed": 0,
           "run": 2
         },
-        "detail": "\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:6: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_hours_and_minutes - NotImplementedError\nFAILED test_basic.py::test_seconds_only - NotImplementedError\n2 failed in 0.26s",
+        "detail": "\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:6: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_hours_and_minutes - NotImplementedError\nFAILED test_basic.py::test_seconds_only - NotImplementedError\n2 failed in 0.29s",
         "exit": 1,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "5ac37ed1d4c1bd3971669dacc4f9c2a1658054e9"
+        "sha": "4758af25a09d586cfc0f43ac891bd8da1efbd7fe"
       }
     ]
   },

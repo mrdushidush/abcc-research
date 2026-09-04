@@ -1,6 +1,6 @@
 {
   "headline": {
-    "detail": "e.g. word_wrap(\"the quick brown fox\", 9) -> \"the quick\\nbrown fox\".\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_basic_wrap - NotImplementedError\n1 failed in 0.27s",
+    "detail": "e.g. word_wrap(\"the quick brown fox\", 9) -> \"the quick\\nbrown fox\".\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_basic_wrap - NotImplementedError\n1 failed in 0.30s",
     "headline": "red",
     "rung": "acceptance"
   },
@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "cae2055af01dc1a52e1b9111581e759b107a1b91"
+        "sha": "5e00d1060c880cb2864fa6c951fa87de235776b4"
       },
       {
         "counts": {
@@ -25,11 +25,11 @@
           "passed": 0,
           "run": 1
         },
-        "detail": "e.g. word_wrap(\"the quick brown fox\", 9) -> \"the quick\\nbrown fox\".\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_basic_wrap - NotImplementedError\n1 failed in 0.27s",
+        "detail": "e.g. word_wrap(\"the quick brown fox\", 9) -> \"the quick\\nbrown fox\".\n\"\"\"\n>       raise NotImplementedError\nE       NotImplementedError\nsolution.py:8: NotImplementedError\n=========================== short test summary info ===========================\nFAILED test_basic.py::test_basic_wrap - NotImplementedError\n1 failed in 0.30s",
         "exit": 1,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "cae2055af01dc1a52e1b9111581e759b107a1b91"
+        "sha": "5e00d1060c880cb2864fa6c951fa87de235776b4"
       }
     ]
   },

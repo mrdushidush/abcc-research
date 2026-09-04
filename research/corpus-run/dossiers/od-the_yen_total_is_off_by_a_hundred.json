@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_yen_total_is_off_by_a_hundred",
+  "lang": "python",
+  "patch": "diff --git a/till/money.py b/till/money.py\nnew file mode 100644\nindex 0000000..121861f\n--- /dev/null\n+++ b/till/money.py\n@@ -0,0 +1,25 @@\n+\"\"\"Money, in minor units.\n+\n+Nothing downstream of this module sees a decimal string. A total is an integer\n+count of the currency's smallest unit, which is what the payment provider\n+settles in and what the ledger stores.\n+\"\"\"\n+\n+# How many decimal places a currency's minor unit has. It is NOT two everywhere:\n+# ISO 4217 gives 0 for yen and 3 for the Kuwaiti dinar, among others.\n+MINOR_UNITS = {\n+    \"USD\": 2,\n+    \"EUR\": 2,\n+    \"GBP\": 2,\n+    \"JPY\": 0,\n+    \"KWD\": 3,\n+}\n+\n+\n+def minor_units(currency):\n+    return MINOR_UNITS[currency]\n+\n+\n+def to_minor(amount, currency):\n+    \"\"\"Convert a decimal amount string to an integer count of minor units.\"\"\"\n+    return int(round(float(amount) * 100))\n",
+  "prompt": "Settlement is stuck on yesterday's batch:\n\n    python run.py\n\n    till.reconcile.TotalMismatch: 2 orders disagree with the provider;\n    first is o-3: we say 430000, they say 4300\n\no-3 is a Japanese order, 1500 yen plus 2800 yen. The provider is right: the\ncustomer paid 4300 yen.\n\nFix it. `python run.py` must complete and the per-currency totals it prints have\nto be the amounts the customers actually paid.\n\nDo not change `data/orders.json` and do not change the report's line shapes —\nthe settlement import parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: till/money.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "464e50f9dfe626b3777af2a91a8edfb2f3fcc1d4"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "464e50f9dfe626b3777af2a91a8edfb2f3fcc1d4"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "464e50f9dfe626b3777af2a91a8edfb2f3fcc1d4"
+      }
+    ]
+  },
+  "title": "the minor-unit scale is hard-coded and the mismatch is raised in reconcile"
+}

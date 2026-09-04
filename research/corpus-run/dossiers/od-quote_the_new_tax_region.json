@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/quote_the_new_tax_region",
+  "lang": "python",
+  "patch": "diff --git a/taxq/exemptions.py b/taxq/exemptions.py\nnew file mode 100644\nindex 0000000..43a2067\n--- /dev/null\n+++ b/taxq/exemptions.py\n@@ -0,0 +1,12 @@\n+\"\"\"Registry 4 — the product categories a region zero-rates.\"\"\"\n+\n+EXEMPT = {\n+    \"US-CA\": (),\n+    \"US-NY\": (\"clothing\",),\n+    \"EU-DE\": (\"books\",),\n+    \"UK\": (\"books\", \"childrenswear\"),\n+}\n+\n+\n+def exempt(region, category):\n+    return category in EXEMPT.get(region, ())\ndiff --git a/taxq/filing.py b/taxq/filing.py\nnew file mode 100644\nindex 0000000..9501d1e\n--- /dev/null\n+++ b/taxq/filing.py\n@@ -0,0 +1,12 @@\n+\"\"\"Registry 3 — how often we file in a region.\"\"\"\n+\n+PERIODS = {\n+    \"US-CA\": \"quarterly\",\n+    \"US-NY\": \"quarterly\",\n+    \"EU-DE\": \"monthly\",\n+    \"UK\": \"quarterly\",\n+}\n+\n+\n+def period(region):\n+    return PERIODS.get(region)\ndiff --git a/taxq/labels.py b/taxq/labels.py\nnew file mode 100644\nindex 0000000..ee3c9bf\n--- /dev/null\n+++ b/taxq/labels.py\n@@ -0,0 +1,12 @@\n+\"\"\"Registry 2 — what the tax line is called on the invoice.\"\"\"\n+\n+LABELS = {\n+    \"US-CA\": \"CA Sales Tax\",\n+    \"US-NY\": \"NY Sales Tax\",\n+    \"EU-DE\": \"USt.\",\n+    \"UK\": \"VAT\",\n+}\n+\n+\n+def label(region):\n+    return LABELS.get(region, \"\")\ndiff --git a/taxq/rates.py b/taxq/rates.py\nnew file mode 100644\nindex 0000000..0af5e45\n--- /dev/null\n+++ b/taxq/rates.py\n@@ -0,0 +1,12 @@\n+\"\"\"Registry 1 — the rate, in basis points.\"\"\"\n+\n+RATES = {\n+    \"US-CA\": 725,\n+    \"US-NY\": 887,\n+    \"EU-DE\": 1900,\n+    \"UK\": 2000,\n+}\n+\n+\n+def basis_points(region):\n+    return RATES.get(region, 0)\n",
+  "prompt": "Our first two Irish orders were quoted at zero tax. EU-IE opened last month and\ncheckout accepts it, so the orders went through at the wrong price and finance\nhas had to re-issue both.\n\n`docs/regions.md` says what opening a region actually takes. Please finish it.\n\n`python run.py` must complete and every number in the run has to be the one a\nlive region gives.\n\nDo not change `data/orders.json` and do not change the report's line shapes —\nthe finance close parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "4 file(s) changed: taxq/exemptions.py, taxq/filing.py, taxq/labels.py, taxq/rates.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "a9889578f12996c26eefd278eea40c5e7693ec2d"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 7,
+          "run": 7
+        },
+        "detail": ".......                                                                  [100%]\n7 passed in 0.28s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "a9889578f12996c26eefd278eea40c5e7693ec2d"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "a9889578f12996c26eefd278eea40c5e7693ec2d"
+      }
+    ]
+  },
+  "title": "the new region is registered in one of four registries"
+}

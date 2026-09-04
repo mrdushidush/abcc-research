@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_median_of_an_even_list (correct)",
+  "lang": "python",
+  "patch": "diff --git a/cohort/stats.py b/cohort/stats.py\nindex d341e40..84f7029 100644\n--- a/cohort/stats.py\n+++ b/cohort/stats.py\n@@ -7,4 +7,9 @@ def median(values):\n     n = len(ordered)\n     if n == 0:\n         return 0\n-    return ordered[n // 2]\n+    if n % 2:\n+        return ordered[n // 2]\n+    # Even-sized: the midpoint of the two middle values, rounded HALF UP\n+    # (docs/median.md). Truncating biases every even cohort downward.\n+    lower, upper = ordered[n // 2 - 1], ordered[n // 2]\n+    return (lower + upper + 1) // 2\n",
+  "prompt": "Finance rejected the August cohort report. The median for north came out 4400.\nThere are four orders in north — 3000, 4200, 4400 and 5000 — and the two middle\nones are 4200 and 4400, so the median is 4300.\n\n`docs/median.md` has the standard. Please make the report follow it.\n\n`python run.py` must complete and every median it prints has to be the one the\nstandard gives.\n\nDo not change `data/orders.json` and do not change the report's line shapes —\nthe finance reconciliation parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: cohort/stats.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "e9d96d15fd0a2fc22dca307988af6c575a5fe2b6"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "e9d96d15fd0a2fc22dca307988af6c575a5fe2b6"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "e9d96d15fd0a2fc22dca307988af6c575a5fe2b6"
+      }
+    ]
+  },
+  "title": "the median takes the upper middle, and the tempting fix truncates"
+}

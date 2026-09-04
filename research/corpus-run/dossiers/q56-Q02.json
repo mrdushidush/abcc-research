@@ -1,6 +1,6 @@
 {
   "headline": {
-    "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::insert_in_middle\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q02 v0.1.0 (D:\\ac\\q56-Q02\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q02-82a29f4c77d3efc0.exe)",
+    "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::insert_in_middle\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q02 v0.1.0 (D:\\ac\\q56-Q02\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.33s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q02-82a29f4c77d3efc0.exe)",
     "headline": "red",
     "rung": "acceptance"
   },
@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "7a0f8dcdd09c0a955ce0a2f8ff122d7da746ea35"
+        "sha": "258da48833f7a40685b4be30fc363696658ae1f5"
       },
       {
         "counts": {
@@ -25,11 +25,11 @@
           "passed": 0,
           "run": 1
         },
-        "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::insert_in_middle\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q02 v0.1.0 (D:\\ac\\q56-Q02\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q02-82a29f4c77d3efc0.exe)",
+        "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::insert_in_middle\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q02 v0.1.0 (D:\\ac\\q56-Q02\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.33s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q02-82a29f4c77d3efc0.exe)",
         "exit": 101,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "7a0f8dcdd09c0a955ce0a2f8ff122d7da746ea35"
+        "sha": "258da48833f7a40685b4be30fc363696658ae1f5"
       }
     ]
   },

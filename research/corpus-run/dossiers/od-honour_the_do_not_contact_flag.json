@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/honour_the_do_not_contact_flag",
+  "lang": "python",
+  "patch": "diff --git a/outbound/promo_sms.py b/outbound/promo_sms.py\nnew file mode 100644\nindex 0000000..ac04d57\n--- /dev/null\n+++ b/outbound/promo_sms.py\n@@ -0,0 +1,10 @@\n+\"\"\"The Tuesday promotional SMS.\"\"\"\n+\n+\n+def audience(contacts):\n+    out = []\n+    for contact in contacts:\n+        if not contact.phone:\n+            continue\n+        out.append(contact.id)\n+    return out\ndiff --git a/outbound/push.py b/outbound/push.py\nnew file mode 100644\nindex 0000000..6ade905\n--- /dev/null\n+++ b/outbound/push.py\n@@ -0,0 +1,10 @@\n+\"\"\"Promotional push notifications.\"\"\"\n+\n+\n+def audience(contacts):\n+    out = []\n+    for contact in contacts:\n+        if not contact.push_token:\n+            continue\n+        out.append(contact.id)\n+    return out\ndiff --git a/outbound/winback.py b/outbound/winback.py\nnew file mode 100644\nindex 0000000..aa5ff77\n--- /dev/null\n+++ b/outbound/winback.py\n@@ -0,0 +1,12 @@\n+\"\"\"The win-back campaign — lapsed contacts only.\"\"\"\n+\n+\n+def audience(contacts):\n+    out = []\n+    for contact in contacts:\n+        if contact.segment != \"lapsed\":\n+            continue\n+        if not contact.email:\n+            continue\n+        out.append(contact.id)\n+    return out\n",
+  "prompt": "Bo (c-02) set do-not-contact in June and got a win-back email from us last\nThursday. That is the second complaint this month and the policy in\n`docs/contact_policy.md` is not ambiguous about what the flag means.\n\nMake the outbound plan obey it. `python run.py` has to complete and every\naudience count in it must be the count the policy gives.\n\nDo not change `data/contacts.json`, and do not change the report's line shapes —\nthe send scheduler parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "3 file(s) changed: outbound/promo_sms.py, outbound/push.py, outbound/winback.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d492dfd9e887f8643f6e6937cb0b52589999ad0e"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.26s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d492dfd9e887f8643f6e6937cb0b52589999ad0e"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d492dfd9e887f8643f6e6937cb0b52589999ad0e"
+      }
+    ]
+  },
+  "title": "do-not-contact is checked on one marketing channel of four"
+}

@@ -24,7 +24,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "c49bacf24645d39ede56be18d4715ea511d32bff"
+        "sha": "7867f728f999b94bd0e996929908cfd4080339e0"
       },
       {
         "outcome": "unmeasured",
@@ -40,7 +40,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "veto",
-        "sha": "c49bacf24645d39ede56be18d4715ea511d32bff"
+        "sha": "7867f728f999b94bd0e996929908cfd4080339e0"
       }
     ]
   },

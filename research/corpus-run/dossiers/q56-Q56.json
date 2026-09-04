@@ -1,6 +1,6 @@
 {
   "headline": {
-    "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::newer_patch_is_greater\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q56 v0.1.0 (D:\\ac\\q56-Q56\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.27s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q56-793e22f3993ee7e5.exe)",
+    "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::newer_patch_is_greater\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q56 v0.1.0 (D:\\ac\\q56-Q56\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q56-793e22f3993ee7e5.exe)",
     "headline": "red",
     "rung": "acceptance"
   },
@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "b32e78d3b097a1ba403ecf9d2656b2ce15f7f090"
+        "sha": "a2126f5b14e37b82a2b1d62e73085e3c6827ed9d"
       },
       {
         "counts": {
@@ -25,11 +25,11 @@
           "passed": 0,
           "run": 1
         },
-        "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::newer_patch_is_greater\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q56 v0.1.0 (D:\\ac\\q56-Q56\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.27s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q56-793e22f3993ee7e5.exe)",
+        "detail": "error: test failed, to rerun pass `--lib`\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\ntests::newer_patch_is_greater\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q56 v0.1.0 (D:\\ac\\q56-Q56\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q56-793e22f3993ee7e5.exe)",
         "exit": 101,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "b32e78d3b097a1ba403ecf9d2656b2ce15f7f090"
+        "sha": "a2126f5b14e37b82a2b1d62e73085e3c6827ed9d"
       }
     ]
   },

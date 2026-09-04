@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_slug_collides_after_truncation (correct)",
+  "lang": "python",
+  "patch": "diff --git a/pubslug/slugs.py b/pubslug/slugs.py\nindex 8fcb4bf..334b4a4 100644\n--- a/pubslug/slugs.py\n+++ b/pubslug/slugs.py\n@@ -20,8 +20,23 @@ def make(title):\n \n \n def assign(articles):\n-    \"\"\"A slug for every article, in publication order.\"\"\"\n+    \"\"\"A slug for every article, in publication order.\n+\n+    Two titles that truncate to the same twenty characters get a numeric suffix\n+    on the later one (docs/slugs.md). Truncation makes collisions ordinary, not\n+    exceptional, so the suffix is part of assigning a slug rather than a repair.\n+    \"\"\"\n     out = []\n+    taken = set()\n     for article in articles:\n-        out.append({\"id\": article[\"id\"], \"slug\": make(article[\"title\"])})\n+        base = make(article[\"title\"])\n+        slug, n = base, 1\n+        while slug in taken:\n+            n += 1\n+            suffix = \"-{}\".format(n)\n+            # The suffix comes out of the twenty, not on top of it: MAX_LEN is\n+            # the catalogue's column and not ours to spend.\n+            slug = base[:MAX_LEN - len(suffix)].rstrip(\"-\") + suffix\n+        taken.add(slug)\n+        out.append({\"id\": article[\"id\"], \"slug\": slug})\n     return out\n",
+  "prompt": "Two of August's articles have the same URL. a1 and a2 — \"How to build a\nresilient ingest pipeline\" and \"How to build a resilient queue consumer\" —\nboth publish at /blog/how-to-build-a-resil, so the second one overwrote the\nfirst and the newsletter link goes to the wrong article.\n\n`docs/slugs.md` says what is supposed to happen. Please make it happen.\n\n`python run.py` must complete and the slugs it reports have to satisfy the\ndocument.\n\nDo not change `data/articles.json` and do not change the report's line shapes —\nthe catalogue build parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: pubslug/slugs.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "15e8e3d24ab68b06b23b8b33c1800483b812990b"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "15e8e3d24ab68b06b23b8b33c1800483b812990b"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "15e8e3d24ab68b06b23b8b33c1800483b812990b"
+      }
+    ]
+  },
+  "title": "truncated slugs collide, and the tempting fix is a longer truncation"
+}

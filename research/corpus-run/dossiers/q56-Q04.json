@@ -16,7 +16,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "1d4124e07da572e960cd18c0c3e196711f102692"
+        "sha": "bed32150828ae4f58d5cf394fea9ead1ba33bbab"
       },
       {
         "counts": {
@@ -24,11 +24,11 @@
           "passed": 1,
           "run": 1
         },
-        "detail": "test tests::parses_positive_list ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q04 v0.1.0 (D:\\ac\\q56-Q04\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.38s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q04-040d167fd450d1ba.exe)\nDoc-tests q04",
+        "detail": "test tests::parses_positive_list ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q04 v0.1.0 (D:\\ac\\q56-Q04\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.41s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q04-040d167fd450d1ba.exe)\nDoc-tests q04",
         "exit": 0,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "1d4124e07da572e960cd18c0c3e196711f102692"
+        "sha": "bed32150828ae4f58d5cf394fea9ead1ba33bbab"
       },
       {
         "counts": null,
@@ -36,7 +36,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "veto",
-        "sha": "1d4124e07da572e960cd18c0c3e196711f102692"
+        "sha": "bed32150828ae4f58d5cf394fea9ead1ba33bbab"
       }
     ]
   },

@@ -1,6 +1,6 @@
 {
   "headline": {
-    "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::simple_title\ntests::two_words\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q01 v0.1.0 (D:\\ac\\q56-Q01\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q01-601bc0322f0a2ab5.exe)",
+    "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::simple_title\ntests::two_words\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q01 v0.1.0 (D:\\ac\\q56-Q01\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.38s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q01-601bc0322f0a2ab5.exe)",
     "headline": "red",
     "rung": "acceptance"
   },
@@ -17,7 +17,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "834367d6645e5d6b8f3b22915d2942b3ee9cdff0"
+        "sha": "686845ce6f2adbb443ccd0d08fa9e1b45c8478c3"
       },
       {
         "counts": {
@@ -25,11 +25,11 @@
           "passed": 0,
           "run": 2
         },
-        "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::simple_title\ntests::two_words\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q01 v0.1.0 (D:\\ac\\q56-Q01\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.28s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q01-601bc0322f0a2ab5.exe)",
+        "detail": "error: test failed, to rerun pass `--lib`\nfailures:\ntests::simple_title\ntests::two_words\ntest result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q01 v0.1.0 (D:\\ac\\q56-Q01\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.38s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q01-601bc0322f0a2ab5.exe)",
         "exit": 101,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "834367d6645e5d6b8f3b22915d2942b3ee9cdff0"
+        "sha": "686845ce6f2adbb443ccd0d08fa9e1b45c8478c3"
       }
     ]
   },

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_backoff_is_linear",
+  "lang": "python",
+  "patch": "diff --git a/retrypolicy/backoff.py b/retrypolicy/backoff.py\nnew file mode 100644\nindex 0000000..6ff1e22\n--- /dev/null\n+++ b/retrypolicy/backoff.py\n@@ -0,0 +1,17 @@\n+\"\"\"The backoff schedule.\"\"\"\n+\n+BASE_S = 1\n+MAX_S = 60\n+\n+\n+def delay(attempt):\n+    \"\"\"Seconds to wait before attempt number `attempt`, counting from 1.\"\"\"\n+    return BASE_S * attempt\n+\n+\n+def schedule(attempts):\n+    return [delay(n) for n in range(1, attempts + 1)]\n+\n+\n+def total_wait(attempts):\n+    return sum(schedule(attempts))\n",
+  "prompt": "The runbook and the code disagree. When sync went down on Tuesday the fifth\nretry fired five seconds after the fourth; `docs/backoff.md` says attempt five\nwaits sixteen seconds, and on-call were watching a queue that hammered a dead\nupstream eight times in under a minute.\n\nMake the code match the document. `python run.py` must complete and the schedule\nit prints has to be the one in the runbook.\n\nDo not change `data/jobs.json`, do not change `BASE_S` or `MAX_S`, and do not\nchange the report's line shapes — the runbook generator parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: retrypolicy/backoff.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "7dd492a34beb088d6dffbaf93354723a82444d4b"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "7dd492a34beb088d6dffbaf93354723a82444d4b"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "7dd492a34beb088d6dffbaf93354723a82444d4b"
+      }
+    ]
+  },
+  "title": "the backoff is linear, and the tempting fix drops the ceiling"
+}

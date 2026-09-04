@@ -16,7 +16,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "05c341f61db0fd5bcb1dbe352c09b57412e095a9"
+        "sha": "1f28d6d22d954307487ccf3403d6a8197fb0f9b3"
       },
       {
         "counts": null,
@@ -24,7 +24,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "05c341f61db0fd5bcb1dbe352c09b57412e095a9"
+        "sha": "1f28d6d22d954307487ccf3403d6a8197fb0f9b3"
       },
       {
         "counts": null,
@@ -32,7 +32,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "veto",
-        "sha": "05c341f61db0fd5bcb1dbe352c09b57412e095a9"
+        "sha": "1f28d6d22d954307487ccf3403d6a8197fb0f9b3"
       }
     ]
   },

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/quote_the_new_tax_region (sham)",
+  "lang": "python",
+  "patch": "diff --git a/taxq/rates.py b/taxq/rates.py\nindex 0af5e45..03b3574 100644\n--- a/taxq/rates.py\n+++ b/taxq/rates.py\n@@ -5,6 +5,8 @@ RATES = {\n     \"US-NY\": 887,\n     \"EU-DE\": 1900,\n     \"UK\": 2000,\n+    # Ireland: 23% standard rate.\n+    \"EU-IE\": 2300,\n }\n \n \n",
+  "prompt": "Our first two Irish orders were quoted at zero tax. EU-IE opened last month and\ncheckout accepts it, so the orders went through at the wrong price and finance\nhas had to re-issue both.\n\n`docs/regions.md` says what opening a region actually takes. Please finish it.\n\n`python run.py` must complete and every number in the run has to be the one a\nlive region gives.\n\nDo not change `data/orders.json` and do not change the report's line shapes —\nthe finance close parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: taxq/rates.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "2c09f63f76bb626ab9195e1908a3527f7e7ede46"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 7,
+          "run": 7
+        },
+        "detail": ".......                                                                  [100%]\n7 passed in 0.34s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "2c09f63f76bb626ab9195e1908a3527f7e7ede46"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "2c09f63f76bb626ab9195e1908a3527f7e7ede46"
+      }
+    ]
+  },
+  "title": "the new region is registered in one of four registries"
+}

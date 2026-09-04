@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_sort_is_lexicographic",
+  "lang": "python",
+  "patch": "diff --git a/ledgerout/ordering.py b/ledgerout/ordering.py\nnew file mode 100644\nindex 0000000..fefc92c\n--- /dev/null\n+++ b/ledgerout/ordering.py\n@@ -0,0 +1,14 @@\n+\"\"\"The order records are written in.\n+\n+The downstream reader replays the file top to bottom and applies each record to\n+a running balance, so the file's order IS the ledger's order.\n+\"\"\"\n+\n+\n+def sort_key(record):\n+    \"\"\"The key records are ordered by.\"\"\"\n+    return str(record[\"seq\"])\n+\n+\n+def ordered(records):\n+    return sorted(records, key=sort_key)\n",
+  "prompt": "The ledger reader is refusing last night's file:\n\n    python run.py\n\n    ledgerout.sequence.OutOfOrder: sequence 1 is followed by 10 -- the file is\n    not replayable\n\nThe source system says it sent all twelve records and its own numbering is\ncontiguous, which the record file agrees with.\n\nFix it. `python run.py` must complete and the file it describes has to be one\nthe reader can replay.\n\nDo not change `data/records.json`, and do not change the report's line shapes —\nthe reader's pre-flight parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: ledgerout/ordering.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "f39968451194730cc124abfa8f5a2924a11cd2be"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "f39968451194730cc124abfa8f5a2924a11cd2be"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "f39968451194730cc124abfa8f5a2924a11cd2be"
+      }
+    ]
+  },
+  "title": "the sequence sorts as text and the pre-flight is what refuses the file"
+}

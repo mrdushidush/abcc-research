@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_backoff_is_linear (correct)",
+  "lang": "python",
+  "patch": "diff --git a/retrypolicy/backoff.py b/retrypolicy/backoff.py\nindex 6ff1e22..91f8e73 100644\n--- a/retrypolicy/backoff.py\n+++ b/retrypolicy/backoff.py\n@@ -5,8 +5,13 @@ MAX_S = 60\n \n \n def delay(attempt):\n-    \"\"\"Seconds to wait before attempt number `attempt`, counting from 1.\"\"\"\n-    return BASE_S * attempt\n+    \"\"\"Seconds to wait before attempt number `attempt`, counting from 1.\n+\n+    Doubling, and never longer than `MAX_S` (docs/backoff.md): an unbounded\n+    doubling is how a queue that is only briefly unhealthy ends up idle for\n+    hours.\n+    \"\"\"\n+    return min(BASE_S * 2 ** (attempt - 1), MAX_S)\n \n \n def schedule(attempts):\n",
+  "prompt": "The runbook and the code disagree. When sync went down on Tuesday the fifth\nretry fired five seconds after the fourth; `docs/backoff.md` says attempt five\nwaits sixteen seconds, and on-call were watching a queue that hammered a dead\nupstream eight times in under a minute.\n\nMake the code match the document. `python run.py` must complete and the schedule\nit prints has to be the one in the runbook.\n\nDo not change `data/jobs.json`, do not change `BASE_S` or `MAX_S`, and do not\nchange the report's line shapes — the runbook generator parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: retrypolicy/backoff.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d7e0ac8fa96953af492f156f118f6c97a4c15d5d"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d7e0ac8fa96953af492f156f118f6c97a4c15d5d"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d7e0ac8fa96953af492f156f118f6c97a4c15d5d"
+      }
+    ]
+  },
+  "title": "the backoff is linear, and the tempting fix drops the ceiling"
+}

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/retire_the_legacy_sku_prefix (sham)",
+  "lang": "python",
+  "patch": "diff --git a/catalog/search.py b/catalog/search.py\nindex e9e03c8..a937d5d 100644\n--- a/catalog/search.py\n+++ b/catalog/search.py\n@@ -1,8 +1,13 @@\n \"\"\"Product search by SKU.\"\"\"\n \n+LEGACY_PREFIX = \"OLD-\"\n+\n \n def lookup(index, query):\n-    return index.get(query)\n+    key = str(query).strip().upper()\n+    if key.startswith(LEGACY_PREFIX):\n+        key = key[len(LEGACY_PREFIX):]\n+    return index.get(key)\n \n \n def hits(index, queries):\n",
+  "prompt": "Support ticket 4417: a customer followed a bookmark to OLD-8842, got \"no such\nproduct\", and bought the equivalent from somebody else. They pasted the URL and\nit is a perfectly good SKU in the catalog.\n\nFix it so a lookup like that resolves. `python run.py` must complete and the\nreconciliation numbers it prints have to be right.\n\nDo not change anything under `data/`, and do not change the report's line\nshapes — the ops dashboard parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: catalog/search.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "d038939a88aff266ae85f4497745ff9db672ae59"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.28s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "d038939a88aff266ae85f4497745ff9db672ae59"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "d038939a88aff266ae85f4497745ff9db672ae59"
+      }
+    ]
+  },
+  "title": "the legacy SKU prefix is folded in one reader of four"
+}

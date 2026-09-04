@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/apply_the_seat_limit_to_every_invite_path (correct)",
+  "lang": "python",
+  "patch": "diff --git a/invites/api.py b/invites/api.py\nindex 96af636..865c1c2 100644\n--- a/invites/api.py\n+++ b/invites/api.py\n@@ -1,9 +1,13 @@\n \"\"\"POST /v1/teams/{id}/members.\"\"\"\n \n+from . import limits\n+\n \n def invite(team, emails):\n     accepted = []\n     for email in emails:\n+        if not limits.has_room(team):\n+            break\n         team.add_member(email)\n         accepted.append(email)\n     return accepted\ndiff --git a/invites/bulk_csv.py b/invites/bulk_csv.py\nindex 919bb1a..7957a55 100644\n--- a/invites/bulk_csv.py\n+++ b/invites/bulk_csv.py\n@@ -1,9 +1,13 @@\n \"\"\"Bulk invite from an uploaded CSV.\"\"\"\n \n+from . import limits\n+\n \n def invite(team, emails):\n     accepted = []\n     for email in emails:\n+        if not limits.has_room(team):\n+            break\n         team.add_member(email)\n         accepted.append(email)\n     return accepted\ndiff --git a/invites/sso.py b/invites/sso.py\nindex 812908b..6a24a9b 100644\n--- a/invites/sso.py\n+++ b/invites/sso.py\n@@ -1,9 +1,13 @@\n \"\"\"Just-in-time provisioning on first SSO login.\"\"\"\n \n+from . import limits\n+\n \n def invite(team, emails):\n     accepted = []\n     for email in emails:\n+        if not limits.has_room(team):\n+            break\n         team.add_member(email)\n         accepted.append(email)\n     return accepted\n",
+  "prompt": "Acme is on a ten-seat plan and their team page shows eighteen members. Finance\nfound it in the provisioning audit; nobody has been billed for the extra eight.\n\nThe invariant in `docs/seats.md` is that `seats_used` never exceeds\n`seat_limit`. Every path that can add a member to a team has to enforce it.\n\nFix it. `python run.py` must complete and the audit numbers it prints have to be\nthe ones the invariant gives.\n\nDo not change `data/pending.json` and do not change the report's line shapes —\nthe provisioning audit parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "3 file(s) changed: invites/api.py, invites/bulk_csv.py, invites/sso.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "12cc1b39d3a957644072aafc5853854ad3486b91"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.23s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "12cc1b39d3a957644072aafc5853854ad3486b91"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "12cc1b39d3a957644072aafc5853854ad3486b91"
+      }
+    ]
+  },
+  "title": "the seat limit is enforced on one invite path of four"
+}

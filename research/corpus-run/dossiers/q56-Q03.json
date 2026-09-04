@@ -16,7 +16,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "bfb515000fb8dc3bace3eb279e920065b06f0ce2"
+        "sha": "65948c508cac4380b799ecb45a118a6fdace3639"
       },
       {
         "counts": {
@@ -24,11 +24,11 @@
           "passed": 1,
           "run": 1
         },
-        "detail": "test tests::splits_evenly ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q03 v0.1.0 (D:\\ac\\q56-Q03\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.32s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q03-c3762ae023b0591e.exe)\nDoc-tests q03",
+        "detail": "test tests::splits_evenly ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q03 v0.1.0 (D:\\ac\\q56-Q03\\wrong)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.40s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q03-c3762ae023b0591e.exe)\nDoc-tests q03",
         "exit": 0,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "bfb515000fb8dc3bace3eb279e920065b06f0ce2"
+        "sha": "65948c508cac4380b799ecb45a118a6fdace3639"
       },
       {
         "counts": null,
@@ -36,7 +36,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "veto",
-        "sha": "bfb515000fb8dc3bace3eb279e920065b06f0ce2"
+        "sha": "65948c508cac4380b799ecb45a118a6fdace3639"
       }
     ]
   },

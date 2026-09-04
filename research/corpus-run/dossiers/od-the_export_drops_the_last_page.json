@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_export_drops_the_last_page",
+  "lang": "python",
+  "patch": "diff --git a/expo/paging.py b/expo/paging.py\nnew file mode 100644\nindex 0000000..f6efb0a\n--- /dev/null\n+++ b/expo/paging.py\n@@ -0,0 +1,16 @@\n+\"\"\"Cutting a result set into pages.\n+\n+The export is paged because the downstream loader takes a page at a time and\n+because a single un-paged body took it down in March.\n+\"\"\"\n+\n+PAGE_SIZE = 10\n+\n+\n+def pages(rows, size=PAGE_SIZE):\n+    \"\"\"The rows, in pages of at most `size`.\"\"\"\n+    out = []\n+    full = len(rows) // size\n+    for i in range(full):\n+        out.append(rows[i * size:(i + 1) * size])\n+    return out\n",
+  "prompt": "The nightly export is failing the audit:\n\n    python run.py\n\n    expo.audit.RowCountMismatch: 47 rows in, 40 rows out -- 7 missing\n\nThe loader team also mentioned last week that account totals in the warehouse\nhave been running slightly under what the source system reports, on and off,\nfor months.\n\nFix it. `python run.py` must complete and the export it audits has to contain\nevery row.\n\nDo not change anything under `data/`, do not change `PAGE_SIZE`, and do not\nchange the report's line shapes — the loader's pre-flight parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: expo/paging.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "ef76151eaa32b48f1f8bf00090f85819db98cdb6"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 5,
+          "run": 5
+        },
+        "detail": ".....                                                                    [100%]\n5 passed in 0.27s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "ef76151eaa32b48f1f8bf00090f85819db98cdb6"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "ef76151eaa32b48f1f8bf00090f85819db98cdb6"
+      }
+    ]
+  },
+  "title": "the paging drops the remainder and the alarm is in the audit"
+}

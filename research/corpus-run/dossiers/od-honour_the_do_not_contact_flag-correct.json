@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/honour_the_do_not_contact_flag (correct)",
+  "lang": "python",
+  "patch": "diff --git a/outbound/promo_sms.py b/outbound/promo_sms.py\nindex ac04d57..887a476 100644\n--- a/outbound/promo_sms.py\n+++ b/outbound/promo_sms.py\n@@ -1,9 +1,13 @@\n \"\"\"The Tuesday promotional SMS.\"\"\"\n \n+from . import suppression\n+\n \n def audience(contacts):\n     out = []\n     for contact in contacts:\n+        if suppression.is_suppressed(contact):\n+            continue\n         if not contact.phone:\n             continue\n         out.append(contact.id)\ndiff --git a/outbound/push.py b/outbound/push.py\nindex 6ade905..07ce734 100644\n--- a/outbound/push.py\n+++ b/outbound/push.py\n@@ -1,9 +1,13 @@\n \"\"\"Promotional push notifications.\"\"\"\n \n+from . import suppression\n+\n \n def audience(contacts):\n     out = []\n     for contact in contacts:\n+        if suppression.is_suppressed(contact):\n+            continue\n         if not contact.push_token:\n             continue\n         out.append(contact.id)\ndiff --git a/outbound/winback.py b/outbound/winback.py\nindex aa5ff77..ddb6a0a 100644\n--- a/outbound/winback.py\n+++ b/outbound/winback.py\n@@ -1,9 +1,13 @@\n \"\"\"The win-back campaign — lapsed contacts only.\"\"\"\n \n+from . import suppression\n+\n \n def audience(contacts):\n     out = []\n     for contact in contacts:\n+        if suppression.is_suppressed(contact):\n+            continue\n         if contact.segment != \"lapsed\":\n             continue\n         if not contact.email:\n",
+  "prompt": "Bo (c-02) set do-not-contact in June and got a win-back email from us last\nThursday. That is the second complaint this month and the policy in\n`docs/contact_policy.md` is not ambiguous about what the flag means.\n\nMake the outbound plan obey it. `python run.py` has to complete and every\naudience count in it must be the count the policy gives.\n\nDo not change `data/contacts.json`, and do not change the report's line shapes —\nthe send scheduler parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "3 file(s) changed: outbound/promo_sms.py, outbound/push.py, outbound/winback.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "17f428fb633af739022ba8d023f04d00ce2e6d50"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.26s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "17f428fb633af739022ba8d023f04d00ce2e6d50"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "17f428fb633af739022ba8d023f04d00ce2e6d50"
+      }
+    ]
+  },
+  "title": "do-not-contact is checked on one marketing channel of four"
+}

@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/count_the_partial_refund",
+  "lang": "python",
+  "patch": "diff --git a/statement/csv_out.py b/statement/csv_out.py\nnew file mode 100644\nindex 0000000..b9049d1\n--- /dev/null\n+++ b/statement/csv_out.py\n@@ -0,0 +1,23 @@\n+\"\"\"The CSV the accountant imports.\"\"\"\n+\n+from . import kinds\n+\n+\n+def total(transactions):\n+    running = 0\n+    for txn in transactions:\n+        if txn[\"kind\"] == kinds.REFUND:\n+            running -= txn[\"amount_cents\"]\n+        else:\n+            running += txn[\"amount_cents\"]\n+    return running\n+\n+\n+def render(transactions):\n+    lines = [\"id,date,kind,amount_cents\"]\n+    for txn in transactions:\n+        lines.append(\n+            \"{},{},{},{}\".format(txn[\"id\"], txn[\"date\"], txn[\"kind\"], txn[\"amount_cents\"])\n+        )\n+    lines.append(\"total,,,{}\".format(total(transactions)))\n+    return \"\\n\".join(lines)\ndiff --git a/statement/html_out.py b/statement/html_out.py\nnew file mode 100644\nindex 0000000..1d41f2d\n--- /dev/null\n+++ b/statement/html_out.py\n@@ -0,0 +1,21 @@\n+\"\"\"The HTML statement we email.\"\"\"\n+\n+from . import kinds\n+\n+\n+def total(transactions):\n+    running = 0\n+    for txn in transactions:\n+        if txn[\"kind\"] == kinds.REFUND:\n+            running -= txn[\"amount_cents\"]\n+        else:\n+            running += txn[\"amount_cents\"]\n+    return running\n+\n+\n+def render(transactions):\n+    rows = \"\".join(\n+        \"<tr><td>{}</td><td>{}</td></tr>\".format(txn[\"kind\"], txn[\"amount_cents\"])\n+        for txn in transactions\n+    )\n+    return \"<table>{}<tfoot>{}</tfoot></table>\".format(rows, total(transactions))\ndiff --git a/statement/json_out.py b/statement/json_out.py\nnew file mode 100644\nindex 0000000..9a4633e\n--- /dev/null\n+++ b/statement/json_out.py\n@@ -0,0 +1,21 @@\n+\"\"\"The JSON body the customer portal fetches.\"\"\"\n+\n+import json\n+\n+from . import kinds\n+\n+\n+def total(transactions):\n+    running = 0\n+    for txn in transactions:\n+        if txn[\"kind\"] == kinds.REFUND:\n+            running -= txn[\"amount_cents\"]\n+        else:\n+            running += txn[\"amount_cents\"]\n+    return running\n+\n+\n+def render(transactions):\n+    return json.dumps(\n+        {\"lines\": transactions, \"total_cents\": total(transactions)}, sort_keys=True\n+    )\ndiff --git a/statement/summary.py b/statement/summary.py\nnew file mode 100644\nindex 0000000..7dd1875\n--- /dev/null\n+++ b/statement/summary.py\n@@ -0,0 +1,17 @@\n+\"\"\"The one-line summary the support console shows.\"\"\"\n+\n+from . import kinds\n+\n+\n+def total(transactions):\n+    running = 0\n+    for txn in transactions:\n+        if txn[\"kind\"] == kinds.REFUND:\n+            running -= txn[\"amount_cents\"]\n+        else:\n+            running += txn[\"amount_cents\"]\n+    return running\n+\n+\n+def render(transactions):\n+    return \"{} transactions, {} cents\".format(len(transactions), total(transactions))\n",
+  "prompt": "Our accountant flagged Ana's August statement. The CSV totals her at 15000\ncents. She was charged 12000 and 4500, we refunded the 4500 in full on the 11th,\nand on the 14th we returned 3000 of the first charge as a partial refund. The\nnumber should be 9000.\n\nPlease fix it. `python run.py` must complete and the totals it prints have to be\nright.\n\nDo not change `data/ledger.json`, and do not change the report's line shapes —\nthe reconciliation job parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "4 file(s) changed: statement/csv_out.py, statement/html_out.py, statement/json_out.py, statement/summary.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "830aec57966351b7a6e15f623a63731b53f9c96b"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 8,
+          "run": 8
+        },
+        "detail": "........                                                                 [100%]\n8 passed in 0.29s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "830aec57966351b7a6e15f623a63731b53f9c96b"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "830aec57966351b7a6e15f623a63731b53f9c96b"
+      }
+    ]
+  },
+  "title": "the partial refund is subtracted in one renderer of four"
+}

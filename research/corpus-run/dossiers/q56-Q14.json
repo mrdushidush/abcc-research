@@ -16,7 +16,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "477e199086d5d357cdd510ad87eb4e54f79da225"
+        "sha": "c92ed8930292c416ad3d602a48b6446df75c9763"
       },
       {
         "counts": {
@@ -24,11 +24,11 @@
           "passed": 1,
           "run": 1
         },
-        "detail": ".                                                                        [100%]\n1 passed in 0.20s",
+        "detail": ".                                                                        [100%]\n1 passed in 0.25s",
         "exit": 0,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "477e199086d5d357cdd510ad87eb4e54f79da225"
+        "sha": "c92ed8930292c416ad3d602a48b6446df75c9763"
       },
       {
         "counts": null,
@@ -36,7 +36,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "veto",
-        "sha": "477e199086d5d357cdd510ad87eb4e54f79da225"
+        "sha": "c92ed8930292c416ad3d602a48b6446df75c9763"
       }
     ]
   },

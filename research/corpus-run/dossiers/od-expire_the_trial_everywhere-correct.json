@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/expire_the_trial_everywhere (correct)",
+  "lang": "python",
+  "patch": "diff --git a/entitlement/access.py b/entitlement/access.py\nindex 41b488b..7143ae2 100644\n--- a/entitlement/access.py\n+++ b/entitlement/access.py\n@@ -7,7 +7,7 @@ BASIC_FEATURES = (\"export\",)\n \n \n def features(account, as_of):\n-    if account.status in model.ENTITLED_STATUSES:\n+    if model.is_entitled(account, as_of):\n         return PREMIUM_FEATURES\n     return BASIC_FEATURES\n \ndiff --git a/entitlement/digest.py b/entitlement/digest.py\nindex 9b17c2d..7878cf1 100644\n--- a/entitlement/digest.py\n+++ b/entitlement/digest.py\n@@ -6,11 +6,11 @@ from . import model\n def recipients(accounts, as_of):\n     \"\"\"Accounts we are allowed to keep emailing.\n \n-    Suspended and cancelled accounts stop hearing from us; everyone else is on\n-    the list.\n+    Suspended, cancelled and lapsed-trial accounts stop hearing from us;\n+    everyone else is on the list.\n     \"\"\"\n     out = []\n     for account in accounts:\n-        if account.status in model.ENTITLED_STATUSES:\n+        if model.is_entitled(account, as_of):\n             out.append(account.id)\n     return out\ndiff --git a/entitlement/model.py b/entitlement/model.py\nindex 3e1eca9..3bf3c1d 100644\n--- a/entitlement/model.py\n+++ b/entitlement/model.py\n@@ -2,6 +2,8 @@\n \n import json\n \n+from . import calendar\n+\n STATUS_ACTIVE = \"active\"\n STATUS_TRIAL = \"trial\"\n STATUS_CANCELLED = \"cancelled\"\n@@ -9,9 +11,9 @@ STATUS_SUSPENDED = \"suspended\"\n \n ALL_STATUSES = (STATUS_ACTIVE, STATUS_TRIAL, STATUS_CANCELLED, STATUS_SUSPENDED)\n \n-# Written when `trial` was one thing: a status you were in or were not. The\n-# `trial_ends_on` column arrived later, in the migration that gave trials a\n-# fixed 14 days, and nothing that reads this tuple was revisited.\n+# Written when `trial` was one thing: a status you were in or were not. It still\n+# answers that question and only that question. ⚠ It is NOT the entitlement\n+# test — use `is_entitled()`, which is the one that knows about `trial_ends_on`.\n ENTITLED_STATUSES = (STATUS_ACTIVE, STATUS_TRIAL)\n \n \n@@ -27,6 +29,17 @@ class Account:\n         return \"Account({!r}, {!r})\".format(self.id, self.status)\n \n \n+def is_entitled(account, as_of):\n+    \"\"\"Is this account entitled *today* — docs/trials.md.\n+\n+    One place, because four consumers were each answering it themselves and a\n+    lapsed trial was entitled in all four.\n+    \"\"\"\n+    if account.status == STATUS_TRIAL:\n+        return not calendar.lapsed(account.trial_ends_on, as_of)\n+    return account.status == STATUS_ACTIVE\n+\n+\n def load(path):\n     with open(path, encoding=\"utf-8\") as handle:\n         return [Account(raw) for raw in json.load(handle)]\ndiff --git a/entitlement/seats.py b/entitlement/seats.py\nindex 96b3b6f..dd65b95 100644\n--- a/entitlement/seats.py\n+++ b/entitlement/seats.py\n@@ -6,6 +6,6 @@ from . import model\n def billable_seats(accounts, as_of):\n     total = 0\n     for account in accounts:\n-        if account.status in model.ENTITLED_STATUSES:\n+        if model.is_entitled(account, as_of):\n             total += account.seats\n     return total\ndiff --git a/entitlement/support.py b/entitlement/support.py\nindex 1b1cbd2..ed62b4c 100644\n--- a/entitlement/support.py\n+++ b/entitlement/support.py\n@@ -11,7 +11,7 @@ PRIORITY_MIN_SEATS = 5\n \n \n def queue(account, as_of):\n-    if account.status in model.ENTITLED_STATUSES and account.seats >= PRIORITY_MIN_SEATS:\n+    if model.is_entitled(account, as_of) and account.seats >= PRIORITY_MIN_SEATS:\n         return PRIORITY\n     return STANDARD\n \n",
+  "prompt": "Two accounts whose trials ended back in February still have the premium\nfeature set. Tailspin Toys (ac-104) and Proseware (ac-106) both ran out months\nago and they still have SSO and the audit log.\n\n`docs/trials.md` says what the rule is: once a trial's last day has passed the\naccount is not entitled to anything, exactly like a cancelled one, until it\nconverts. Trial expiry has to be honoured everywhere this service asks whether\nan account is entitled — not only where the feature set is decided.\n\nPlease fix it. `python run.py` must complete and every number in the report has\nto be the one the rule gives.\n\nDo not change `data/accounts.json`, do not move `AS_OF`, and do not change the\nreport's line shapes: they are parsed by the finance import and the support rota\ngenerator downstream.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "5 file(s) changed: entitlement/access.py, entitlement/digest.py, entitlement/model.py, entitlement/seats.py, entitlement/support.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "1172ab65db0af24ffabe72872b4cbf9b650cac53"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 7,
+          "run": 7
+        },
+        "detail": ".......                                                                  [100%]\n7 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "1172ab65db0af24ffabe72872b4cbf9b650cac53"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "1172ab65db0af24ffabe72872b4cbf9b650cac53"
+      }
+    ]
+  },
+  "title": "trial expiry is honoured in one consumer of four"
+}

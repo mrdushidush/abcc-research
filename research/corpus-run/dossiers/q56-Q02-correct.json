@@ -16,7 +16,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "structural",
-        "sha": "4c4d8f206802cf6623478f0af682c884159309a9"
+        "sha": "fd7a0e387a64084203a95a588611d6f8442e13fc"
       },
       {
         "counts": {
@@ -24,11 +24,11 @@
           "passed": 1,
           "run": 1
         },
-        "detail": "test tests::insert_in_middle ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q02 v0.1.0 (D:\\ac\\q56-Q02\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q02-82a29f4c77d3efc0.exe)\nDoc-tests q02",
+        "detail": "test tests::insert_in_middle ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nrunning 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCompiling q02 v0.1.0 (D:\\ac\\q56-Q02\\correct)\nFinished `test` profile [unoptimized + debuginfo] target(s) in 0.29s\nRunning unittests src\\lib.rs (target\\debug\\deps\\q02-82a29f4c77d3efc0.exe)\nDoc-tests q02",
         "exit": 0,
         "outcome": "measured",
         "rung": "acceptance",
-        "sha": "4c4d8f206802cf6623478f0af682c884159309a9"
+        "sha": "fd7a0e387a64084203a95a588611d6f8442e13fc"
       },
       {
         "counts": null,
@@ -36,7 +36,7 @@
         "exit": 0,
         "outcome": "measured",
         "rung": "veto",
-        "sha": "4c4d8f206802cf6623478f0af682c884159309a9"
+        "sha": "fd7a0e387a64084203a95a588611d6f8442e13fc"
       }
     ]
   },

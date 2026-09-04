@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/quote_the_new_tax_region (correct)",
+  "lang": "python",
+  "patch": "diff --git a/taxq/exemptions.py b/taxq/exemptions.py\nindex 43a2067..132140c 100644\n--- a/taxq/exemptions.py\n+++ b/taxq/exemptions.py\n@@ -5,6 +5,7 @@ EXEMPT = {\n     \"US-NY\": (\"clothing\",),\n     \"EU-DE\": (\"books\",),\n     \"UK\": (\"books\", \"childrenswear\"),\n+    \"EU-IE\": (\"books\",),\n }\n \n \ndiff --git a/taxq/filing.py b/taxq/filing.py\nindex 9501d1e..d33b6cd 100644\n--- a/taxq/filing.py\n+++ b/taxq/filing.py\n@@ -5,6 +5,7 @@ PERIODS = {\n     \"US-NY\": \"quarterly\",\n     \"EU-DE\": \"monthly\",\n     \"UK\": \"quarterly\",\n+    \"EU-IE\": \"bi-monthly\",\n }\n \n \ndiff --git a/taxq/labels.py b/taxq/labels.py\nindex ee3c9bf..4c899d9 100644\n--- a/taxq/labels.py\n+++ b/taxq/labels.py\n@@ -5,6 +5,7 @@ LABELS = {\n     \"US-NY\": \"NY Sales Tax\",\n     \"EU-DE\": \"USt.\",\n     \"UK\": \"VAT\",\n+    \"EU-IE\": \"VAT\",\n }\n \n \ndiff --git a/taxq/rates.py b/taxq/rates.py\nindex 0af5e45..0f45de8 100644\n--- a/taxq/rates.py\n+++ b/taxq/rates.py\n@@ -5,6 +5,7 @@ RATES = {\n     \"US-NY\": 887,\n     \"EU-DE\": 1900,\n     \"UK\": 2000,\n+    \"EU-IE\": 2300,\n }\n \n \n",
+  "prompt": "Our first two Irish orders were quoted at zero tax. EU-IE opened last month and\ncheckout accepts it, so the orders went through at the wrong price and finance\nhas had to re-issue both.\n\n`docs/regions.md` says what opening a region actually takes. Please finish it.\n\n`python run.py` must complete and every number in the run has to be the one a\nlive region gives.\n\nDo not change `data/orders.json` and do not change the report's line shapes —\nthe finance close parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "4 file(s) changed: taxq/exemptions.py, taxq/filing.py, taxq/labels.py, taxq/rates.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "651badc210d031791c3ffcfbf9354640e642f451"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 7,
+          "run": 7
+        },
+        "detail": ".......                                                                  [100%]\n7 passed in 0.26s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "651badc210d031791c3ffcfbf9354640e642f451"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "651badc210d031791c3ffcfbf9354640e642f451"
+      }
+    ]
+  },
+  "title": "the new region is registered in one of four registries"
+}

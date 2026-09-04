@@ -1,0 +1,44 @@
+{
+  "headline": {
+    "headline": "green",
+    "rungs": 3
+  },
+  "id": "od/the_pressure_alerts_never_stop",
+  "lang": "python",
+  "patch": "diff --git a/baro/calibrate.py b/baro/calibrate.py\nnew file mode 100644\nindex 0000000..50c4d4d\n--- /dev/null\n+++ b/baro/calibrate.py\n@@ -0,0 +1,16 @@\n+\"\"\"Per-sensor calibration.\n+\n+Each sensor has a bench offset measured at installation, quoted in hPa because\n+that is what the bench report gives.\n+\"\"\"\n+\n+from . import units\n+\n+\n+def apply(readings, offsets):\n+    out = []\n+    for reading in readings:\n+        offset_hpa = offsets.get(reading[\"sensor\"], 0)\n+        value = units.to_ckpa(reading[\"ckpa\"]) + units.to_ckpa(offset_hpa)\n+        out.append({\"id\": reading[\"id\"], \"sensor\": reading[\"sensor\"], \"ckpa\": value})\n+    return out\n",
+  "prompt": "The barometer batch job has been paging the on-call every run since the new\nsensors went in:\n\n    python run.py\n\n    baro.alerts.AlertStorm: 24 of 24 readings are outside 9000-11000 cKPa --\n    the batch is wrong, not the weather\n\nThe instruments are fine — someone walked the roof on Tuesday and the bench\nreadings match the ones in the file.\n\nFix it. `python run.py` must complete and the numbers it reports have to be the\npressures the sensors actually measured.\n\nDo not change anything under `data/`, and do not change the report's line\nshapes — the instrument dashboard parses them.\n",
+  "report": {
+    "claims": [],
+    "outcomes": [
+      {
+        "counts": null,
+        "detail": "1 file(s) changed: baro/calibrate.py",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "structural",
+        "sha": "a8a470047b72710ee33111ff5dfa3b9d3e13c1a8"
+      },
+      {
+        "counts": {
+          "failed": 0,
+          "passed": 6,
+          "run": 6
+        },
+        "detail": "......                                                                   [100%]\n6 passed in 0.24s",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "acceptance",
+        "sha": "a8a470047b72710ee33111ff5dfa3b9d3e13c1a8"
+      },
+      {
+        "counts": null,
+        "detail": "nothing vetoed",
+        "exit": 0,
+        "outcome": "measured",
+        "rung": "veto",
+        "sha": "a8a470047b72710ee33111ff5dfa3b9d3e13c1a8"
+      }
+    ]
+  },
+  "title": "the unit boundary is crossed twice and the alarm is in the breaker"
+}

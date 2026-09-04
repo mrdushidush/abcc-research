@@ -14,6 +14,14 @@
 #   ./scope-probe.sh off        the control arm alone
 #   ./scope-probe.sh on         the treatment arm alone
 #
+#   SUITE=od ./scope-probe.sh both            one tier only, 72 trees an arm
+#   SUITE=od SAMPLE=b ./scope-probe.sh off    that tier's noise floor arm
+#
+# 🚨 SUITE IS HOW THE NOISE FLOOR STAYS HONEST. "27 of 121 trees change when
+# nothing changes" is q56+k's number on q56+k's trees. A probe over a new tier
+# owes a floor MEASURED ON THAT TIER, which means the control has to be asked
+# twice over the same selection — `SUITE=od` on all three arms, or on none.
+#
 # 🚨 THE CONTROL RUNS FIRST AND IT IS NOT THE STORED 121-TREE RUN. Nothing here
 # samples at temperature zero -- the engine sends no temperature, no top_p and
 # no seed -- so `full+off` asked FRESH is the only thing `full+on` can be read
@@ -55,6 +63,10 @@
 # Budget: 121 trees x 2 arms = 242 calls. The 121-tree run's median was 60.5 s
 # under `Full`, worst 191.9 s, so ~2 h an arm and ~4 h the pair. That is an
 # estimate from another day's run and not a promise.
+#
+# ⚠ The corpus is 193 trees now — q56 112 (no shams), k 9, od 72 — so an arm is
+# ~3.2 h at that median and the three-arm design is most of a day. `SUITE=od` is
+# 72 trees: ~72 min an arm, ~3.6 h for control + treatment + control again.
 
 set -u
 
@@ -123,14 +135,17 @@ fi
 run_arm() {
   # $SAMPLE names the sample, so the SAME arm can be asked twice. That pair is
   # the noise floor, and without it a changed tree cannot be told from a re-ask.
-  local scope="$1" tag="scope-$1-${SAMPLE:-a}"
+  # The tag carries the suite, so a tier's arms cannot be mistaken for the whole
+  # corpus's — they are different populations and their tables must not share a
+  # filename.
+  local scope="$1" tag="scope${SUITE:+-$SUITE}-$1-${SAMPLE:-a}"
   local log="$LOGS/$tag-$(date +%Y%m%d-%H%M%S).log"
   echo
   echo "=== ARM $scope -> reviews-$tag/  (log: $log)"
   echo "=== started $(date -Is)"
   (
     cd "$ABCC_REPO" || exit 1
-    ABCC_JUDGE_SCOPE="$scope" ABCC_REVIEW_TAG="$tag" \
+    ABCC_JUDGE_SCOPE="$scope" ABCC_REVIEW_TAG="$tag" ABCC_REVIEW_SUITE="${SUITE:-}" \
       cargo test -p abcc-gate --test corpus_review -- --ignored --nocapture
   ) 2>&1 | tee "$log"
   local rc="${PIPESTATUS[0]}"
