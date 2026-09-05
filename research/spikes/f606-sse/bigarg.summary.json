@@ -1,0 +1,26 @@
+{
+  "arm": "bigarg",
+  "max_tokens": 24576,
+  "sse_lines": 1289,
+  "first_byte_ms": 362,
+  "total_ms": 226381,
+  "finish_reason": "tool_calls",
+  "usage": {
+    "prompt_tokens": 445,
+    "completion_tokens": 9743,
+    "total_tokens": 10188,
+    "completion_tokens_details": {
+      "reasoning_tokens": 1284
+    }
+  },
+  "tool_names": [
+    "apply_patch"
+  ],
+  "wire_argument_chars": 33962,
+  "wire_argument_deltas": 1,
+  "first_arg_delta_ms": 226377,
+  "last_arg_delta_ms": 226377,
+  "wire_text_chars": 0,
+  "wire_reasoning_chars": 5172,
+  "capture": "./bigarg.sse.jsonl"
+}

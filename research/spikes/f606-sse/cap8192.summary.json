@@ -1,0 +1,26 @@
+{
+  "arm": "cap8192",
+  "max_tokens": 8192,
+  "sse_lines": 4986,
+  "first_byte_ms": 827,
+  "total_ms": 83273,
+  "finish_reason": "length",
+  "usage": {
+    "prompt_tokens": 445,
+    "completion_tokens": 8192,
+    "total_tokens": 8637,
+    "completion_tokens_details": {
+      "reasoning_tokens": 4982
+    }
+  },
+  "tool_names": [
+    "apply_patch"
+  ],
+  "wire_argument_chars": 0,
+  "wire_argument_deltas": 0,
+  "first_arg_delta_ms": null,
+  "last_arg_delta_ms": null,
+  "wire_text_chars": 0,
+  "wire_reasoning_chars": 20049,
+  "capture": "./cap8192.sse.jsonl"
+}

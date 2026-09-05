@@ -1,0 +1,26 @@
+{
+  "arm": "complete_small",
+  "max_tokens": 16384,
+  "sse_lines": 463,
+  "first_byte_ms": 398,
+  "total_ms": 6244,
+  "finish_reason": "tool_calls",
+  "usage": {
+    "prompt_tokens": 356,
+    "completion_tokens": 559,
+    "total_tokens": 915,
+    "completion_tokens_details": {
+      "reasoning_tokens": 458
+    }
+  },
+  "tool_names": [
+    "apply_patch"
+  ],
+  "wire_argument_chars": 231,
+  "wire_argument_deltas": 1,
+  "first_arg_delta_ms": 6243,
+  "last_arg_delta_ms": 6243,
+  "wire_text_chars": 0,
+  "wire_reasoning_chars": 1535,
+  "capture": "./complete_small.sse.jsonl"
+}
