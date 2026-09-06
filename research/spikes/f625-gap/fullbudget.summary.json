@@ -1,0 +1,26 @@
+{
+  "arm": "fullbudget",
+  "max_tokens": 16384,
+  "sse_lines": 3647,
+  "first_byte_ms": 644,
+  "total_ms": 89257,
+  "finish_reason": "tool_calls",
+  "usage": {
+    "prompt_tokens": 445,
+    "completion_tokens": 9135,
+    "total_tokens": 9580,
+    "completion_tokens_details": {
+      "reasoning_tokens": 3642
+    }
+  },
+  "tool_names": [
+    "apply_patch"
+  ],
+  "wire_argument_chars": 21112,
+  "wire_argument_deltas": 1,
+  "first_arg_delta_ms": 89257,
+  "last_arg_delta_ms": 89257,
+  "wire_text_chars": 0,
+  "wire_reasoning_chars": 13847,
+  "capture": "../spikes/f625-gap/fullbudget.sse.jsonl"
+}
