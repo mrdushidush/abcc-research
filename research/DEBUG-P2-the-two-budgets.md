@@ -310,6 +310,62 @@ again: *a summary statistic over parsed data is a claim about the parser first a
 
 ---
 
-## 11. The re-baseline
+## 11. 🚨 The re-baseline: F625 removed a whole failure class and did not raise the success rate
 
-*(the sortie's own numbers — filled in when it lands)*
+Five prompts, run verbatim against the real log. **All five were the August population's own tasks
+and all five were still undone**, so this is like-for-like rather than a new experiment.
+
+| | August (2026-08-29/30) | tonight (2026-09-06) |
+|---|---|---|
+| attempts ended | 30 | 7 |
+| `success` | 2 (6.7%) | 2 (28.6%) |
+| `truncated_at_cap` | 8 | 2 |
+| `budget_exhausted` | 4 | 2 |
+| `said_nothing` | 6 | 0 |
+| `no_checker_for_artifact` | 4 | 0 |
+| `engine_error` (HTTP 500) | 2 | 0 |
+| **`timeout`** | **2** | **0** |
+| `context_overflow` | 1 | 0 |
+| `refused` | 1 | 1 |
+| p50 attempt wall clock | 175 s | **340 s** |
+| `rung_recorded` (the gate ran) | 12 | 12 |
+| marks naming a tool call (F625) | **0** | **58** |
+| marks reporting quiet (F592) | **0** | **46** |
+
+⚠ **The two success rates are not comparable and must not be quoted against each other.** The
+August population is **one task repeated 25 times** plus four others; tonight's is five distinct
+tasks with retries. The honest comparison is per task:
+
+| task | August | tonight |
+|---|---|---|
+| `Seq::back saturating` | 0/1 | **1/1** |
+| `Seq::is_origin` | 1/1 | 1/1 |
+| `abcc --version` | **0/25** | 0/2 |
+| `abcc breaker --depth` | 0/2 | 0/2 |
+| `budget::retries()` | **1/1** | 0/1 |
+
+### What actually moved
+
+* 🎉 **The timeout class is gone: 2 → 0**, and `said_nothing`, `engine_error` and `context_overflow`
+  did not recur. F625 and the raised budget did what they were built to do.
+* 🎉 **F592's marks exist for the first time: 0 → 58 and 0 → 46.** They could not have existed
+  before — the mark was written from inside a loop that blocked for the whole gap — so this is a
+  *by construction* zero turning into a measurement, not a rate improving.
+* 🚨 **The success rate did not clearly move**, and `budget::retries()` — which August passed —
+  failed tonight. **At n=1 per cell, that is variance, and F575's caution applies to every row of
+  that table.**
+
+### 🚨 And that is the finding, not a disappointment
+
+**Removing the timeout did not raise the success rate because the timeout was never the binding
+constraint.** The tool table in §7 says what is: three quarters of every attempt to land work is
+refused before it runs. The failures simply moved along the list — from `timeout` and
+`truncated_at_cap` to `budget_exhausted`, which is what *twenty-four rounds of a tool that refuses
+three times in four* looks like from the outside.
+
+⚠ **`abcc --version` has now failed 27 consecutive attempts across five weeks and two builds.** It
+is the smallest task in the set by any reading, and it is the one this system cannot do. Whatever is
+wrong is reproducible on demand, which makes it the cheapest possible subject for the next probe.
+
+⚠ **p50 wall clock doubled, 175 s → 340 s.** Two reasons and both are expected: the gate now
+actually runs, and nothing is killed early any more. It is the price of the attempt being real.
