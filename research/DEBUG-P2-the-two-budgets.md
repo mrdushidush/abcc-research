@@ -4,7 +4,7 @@
 third with it (`abcc` `9166537`); then the re-baseline found something larger and F637/F638 repaired
 that (`abcc` `95f466a`). The headline: with the timeout out of the way, the binding constraint on
 this system is one tool — `apply_patch`, refused 82% of the time in August and 47% by the end of
-the night, while every other tool runs at 0–6%.** Findings **F633–F640**; next free is **F641**. Built 2026-09-06 against `D:\dev\abcc` at `a03bdcd`. **513 tests
+the night, while every other tool runs at 0–6%.** Findings **F633–F641**; next free is **F642**. Built 2026-09-06 against `D:\dev\abcc` at `a03bdcd`. **513 tests
 passing (up from 504), 16 ignored, clippy clean under `-D warnings`, `cargo fmt --all --check`
 clean.** Nine tests are new and **seven mutations were run against them one at a time**.
 
@@ -442,7 +442,7 @@ coherent edit, so nothing correct was lost.
 
 ---
 
-## 13. ⚠ F640 — the probe that would have settled the cause came back negative
+## 13. ⚠ F640 — the synthetic probe came back negative, which is why §14 stopped staging anything
 
 `research/tools/multicall.py` asks the champion for three small edits across three files — the shape
 that invited more than one call in the field — and captures the raw SSE. **It did not reproduce.**
@@ -461,3 +461,90 @@ So the cause of the markup is still open, but four explanations are now eliminat
 transcript — a brief, twenty-odd `read_file` results, 6,700–20,600 prompt tokens — and the probe had
 none of that. **Replaying one failing turn's exact body through the same capture is the next step**,
 and the log has the body.
+
+---
+
+## 14. 🚨🚨 F641 — F637 is ANSWERED: the markup is the server's tool-call parser folding a second call into the first's argument
+
+`multicall.py` could not stage it (§13), so nothing was staged. `research/tools/wiretap.py` sits
+between `abcc` and LM Studio, forwards every request untouched and never buffers, and writes down
+both sides. One `abcc run` on `abcc --version` — the task that has failed 28 consecutive times —
+**reproduced it on the first attempt.**
+
+### The decisive capture
+
+`call-022`, kept in full at `research/spikes/f637-wiretap/`:
+
+| | |
+|---|---|
+| calls the **server** parsed | **one** — `apply_patch`, `index: 0` |
+| its `arguments` | **1,484 chars** |
+| `delta.content` in that turn | **0 chars** |
+| how the argument ends | ``…\n\n<tool_call>\n<function=apply_patch>"}`` |
+
+The argument holds a complete diff, then a *second* `--- a/… +++ b/…` block, and then the literal
+text `<tool_call>` and `<function=apply_patch>` — after which the server closed the JSON string.
+
+### Why this says *parser* and not *model*, with the controls to back it
+
+Three observations from the same run, and each rules something out:
+
+1. 🚨 **The server does emit prose when the model writes prose.** `delta.content` is non-empty in
+   **6 of 22 captures**, up to 4,851 chars. So an empty `content` in `call-022` is a fact about that
+   turn, not a property of the endpoint.
+2. 🚨 **The server does split simultaneous calls correctly.** `call-011` parsed **three** `read_file`
+   calls into `index` 0, 1 and 2; `call-012` parsed two. So *multiple calls per turn* is not by
+   itself what breaks.
+3. 🚨 **In the failing turn the model wrote no prose at all** (`content` 0) and the parser produced
+   exactly one call whose argument contains the *opening* of the next one.
+
+Taken together: the model emitted a second `<tool_call>`, and the parser — already inside the first
+call's `<parameter=diff>` — swallowed its opening into the argument string instead of starting a new
+call. **The fold happens server-side, before `abcc` sees anything.**
+
+⚠ **What this does NOT establish.** The model's raw text is never visible through this API — the
+parser has consumed it by the time any delta exists — so *why* the model started a second call, and
+whether it closed the first properly, cannot be read off this capture. What can be read off it is
+where the damage is done, and that is enough to place the repair.
+
+⚠ And the earlier field payloads carried **prose** inside the argument as well (§8's *"Wait, that
+last patch block is broken"*). Under this reading that prose was also swallowed rather than emitted
+as content — consistent, but a second capture showing it would be better than an inference.
+
+### ▶ What follows
+
+* ✅ **F637's client-side refusal is the right shape and stays.** `abcc` cannot make the server parse
+  correctly; it can refuse a payload that is not a diff and say so, which it now does.
+* ▶ **The other half is a server question**: whether a different chat template or a newer LM Studio
+  splits these. That is configuration, it is cheap to test, and it is **David's** — the roster and
+  the serving configuration are ADR-0011's.
+* ⚠ **Do not "fix" this by loosening the patcher.** The argument genuinely contains two file blocks
+  and a fragment of a third call; there is no coherent edit in it to recover.
+
+---
+
+## 15. 🎉 And the run that caught it got further than `abcc --version` ever has
+
+Twenty-eight consecutive failures, and this one reached the gate:
+
+```
+localize → change → judge
+structural  measured
+acceptance  unmeasured (failed_before_running)
+veto        measured  → REFUSED
+```
+
+`Refused { rung: "veto" }` — **the tree does not build**:
+
+```
+error[E0004]: non-exhaustive patterns: `Err(CliError::Version)` not covered
+289 ~             Err(CliError::Version) => todo!(),
+```
+
+**The model added the `CliError::Version` variant and did not handle it in one `match` in a test
+file, and rustc printed the fix.** That is a real, ordinary compile error one line from resolved —
+not a timeout, not a truncation, not a refused tool. `apply_patch` was called twice and refused once.
+
+▶ **This is the most encouraging result of the night and the clearest next subject.** The failure is
+now *ordinary programming*, which is the kind a retry can plausibly fix — and ADR-0022's budget is
+two attempts, so the second one had the compiler's own message in its transcript.

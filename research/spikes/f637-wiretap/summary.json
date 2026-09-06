@@ -1,0 +1,298 @@
+{
+ "note": "per-call summary of the whole wiretap run; the decisive capture call-022 is kept in full beside it",
+ "calls": [
+  {
+   "capture": "call-008.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 518,
+   "parsed": [
+    {
+     "name": "list_files",
+     "index": 0,
+     "arg_chars": 22,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-009.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 230,
+   "parsed": []
+  },
+  {
+   "capture": "call-010.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 437,
+   "parsed": [
+    {
+     "name": "list_files",
+     "index": 0,
+     "arg_chars": 26,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-011.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 80,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 33,
+     "arg_has_markup": false
+    },
+    {
+     "name": "read_file",
+     "index": 1,
+     "arg_chars": 34,
+     "arg_has_markup": false
+    },
+    {
+     "name": "read_file",
+     "index": 2,
+     "arg_chars": 33,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-012.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 3624,
+   "parsed": [
+    {
+     "name": "search",
+     "index": 0,
+     "arg_chars": 72,
+     "arg_has_markup": false
+    },
+    {
+     "name": "read_file",
+     "index": 1,
+     "arg_chars": 33,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-013.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 1600,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 63,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-014.sse.jsonl",
+   "content_chars": 85,
+   "reasoning_chars": 11642,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 63,
+     "arg_has_markup": false
+    },
+    {
+     "name": "read_file",
+     "index": 1,
+     "arg_chars": 63,
+     "arg_has_markup": false
+    },
+    {
+     "name": "read_file",
+     "index": 2,
+     "arg_chars": 62,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-015.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 201,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 61,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-016.sse.jsonl",
+   "content_chars": 40,
+   "reasoning_chars": 2865,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 21,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-017.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 22873,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 63,
+     "arg_has_markup": false
+    },
+    {
+     "name": "read_file",
+     "index": 1,
+     "arg_chars": 63,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-018.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 10424,
+   "parsed": []
+  },
+  {
+   "capture": "call-019.sse.jsonl",
+   "content_chars": 4851,
+   "reasoning_chars": 1623,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 63,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-020.sse.jsonl",
+   "content_chars": 2329,
+   "reasoning_chars": 54,
+   "parsed": []
+  },
+  {
+   "capture": "call-021.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 531,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 33,
+     "arg_has_markup": false
+    },
+    {
+     "name": "read_file",
+     "index": 1,
+     "arg_chars": 34,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-022.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 269,
+   "parsed": [
+    {
+     "name": "apply_patch",
+     "index": 0,
+     "arg_chars": 1484,
+     "arg_has_markup": true
+    }
+   ]
+  },
+  {
+   "capture": "call-023.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 345,
+   "parsed": [
+    {
+     "name": "read_file",
+     "index": 0,
+     "arg_chars": 33,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-024.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 196,
+   "parsed": [
+    {
+     "name": "apply_patch",
+     "index": 0,
+     "arg_chars": 1208,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-025.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 121,
+   "parsed": [
+    {
+     "name": "bash",
+     "index": 0,
+     "arg_chars": 80,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-026.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 66,
+   "parsed": [
+    {
+     "name": "bash",
+     "index": 0,
+     "arg_chars": 27,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-027.sse.jsonl",
+   "content_chars": 0,
+   "reasoning_chars": 127,
+   "parsed": [
+    {
+     "name": "bash",
+     "index": 0,
+     "arg_chars": 52,
+     "arg_has_markup": false
+    }
+   ]
+  },
+  {
+   "capture": "call-028.sse.jsonl",
+   "content_chars": 766,
+   "reasoning_chars": 664,
+   "parsed": []
+  },
+  {
+   "capture": "call-029.sse.jsonl",
+   "content_chars": 649,
+   "reasoning_chars": 20027,
+   "parsed": []
+  }
+ ]
+}
