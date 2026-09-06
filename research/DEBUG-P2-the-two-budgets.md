@@ -1,12 +1,12 @@
 # DEBUG P2 — the two budgets, and the tool that fails three times in four
 
-**Status: F625 is repaired and F592's streaming third with it — `abcc` `9166537`. The idle gap no
-longer caps how large a patch this system can write, and a stream that goes quiet is marked while it
-is quiet rather than after it stops. Then the re-baseline sortie found something larger: with the
-timeout out of the way, the binding constraint on this system is one tool.** Findings **F633–F639**;
-next free number is **F640**. Built 2026-09-06 against `D:\dev\abcc` at `a03bdcd`. **509 tests
+**Status: three fixes shipped and two sorties measured them. F625 is repaired and F592's streaming
+third with it (`abcc` `9166537`); then the re-baseline found something larger and F637/F638 repaired
+that (`abcc` `95f466a`). The headline: with the timeout out of the way, the binding constraint on
+this system is one tool — `apply_patch`, refused 82% of the time in August and 47% by the end of
+the night, while every other tool runs at 0–6%.** Findings **F633–F640**; next free is **F641**. Built 2026-09-06 against `D:\dev\abcc` at `a03bdcd`. **513 tests
 passing (up from 504), 16 ignored, clippy clean under `-D warnings`, `cargo fmt --all --check`
-clean.** Five tests are new and **four mutations were run against them one at a time**.
+clean.** Nine tests are new and **seven mutations were run against them one at a time**.
 
 ▶ Follow-on to `DEBUG-P1-the-buffered-argument.md`, which found the mechanism and left the repair to
 David as three shapes. **Shape 1 shipped** — the narrow one, which uses a signal already on the wire.
@@ -369,3 +369,95 @@ wrong is reproducible on demand, which makes it the cheapest possible subject fo
 
 ⚠ **p50 wall clock doubled, 175 s → 340 s.** Two reasons and both are expected: the gate now
 actually runs, and nothing is killed early any more. It is the price of the attempt being real.
+
+---
+
+## 12. Pass 2: the tool's refusal rate fell by half, and the task success rate did not follow
+
+Same five prompts again, with F637 and F638 in (`abcc` `95f466a`). 30 minutes, 10 attempts.
+
+### What moved, and it has an n worth quoting
+
+| population | `apply_patch` applied | refused | **fail rate** |
+|---|---|---|---|
+| August | 9 | 41 | **82%** (n=50) |
+| pass 1 — F625 only | 6 | 17 | **74%** (n=23) |
+| **pass 2 — + F637/F638** | **10** | **9** | **47%** (n=19) |
+
+Both new messages fired in the field: **3 markup refusals and 6 nearest-miss refusals.** One of the
+latter, verbatim, and it is the case for the whole change:
+
+```
+apply_patch: crates/abcc/src/cli.rs: hunk 1 does not match. The closest place is
+line 154, where 11 of its 12 context lines match. The first difference is line 9
+of the hunk:
+  you wrote:    "    #[error(\"{USAGE}\")]"
+  the file has: "    #[error(\"abcc {}\", env!(\"CARGO_PKG_VERSION\"))]"
+```
+
+🚨 **Eleven of twelve lines matched, and the one that differed is the model's own earlier edit,
+already in the file.** It was patching against a stale view of a file it had already changed. The old
+message — *"its context is nowhere in the file"* — could not have said that, and the observed
+response to the old message was to go hunting for a different line number.
+
+### What did not move
+
+| task | August | pass 1 | pass 2 |
+|---|---|---|---|
+| `Seq::back saturating` | 0/1 | **1/1** | 0/2 · budget_exhausted, **standard** |
+| `Seq::is_origin` | **1/1** | **1/1** | 0/2 · budget_exhausted, truncated_at_cap |
+| `abcc --version` | 0/25 | 0/2 | 0/2 · budget_exhausted ×2 |
+| `abcc breaker --depth` | 0/2 | 0/2 | 0/2 · said_nothing ×2 |
+| `budget::retries()` | **1/1** | 0/1 · **standard** | 0/2 · truncated_at_cap ×2 |
+| **total** | **2/30** | **2/7** | **0/10** |
+
+⚠ **I cannot claim the change helped or hurt the success rate, and neither should anyone reading
+this.** One arm per condition over five tasks is exactly the design F575 warns about — *the floor is
+as large as the effect* — and `Seq::is_origin` passing twice and then failing twice, with nothing
+between the runs that touches it, is that floor being visible.
+
+**What can be claimed** is the narrower thing, and it has the larger n: **the refusal rate of the
+one tool that lands work fell from 82% to 47% across three populations.**
+
+### 🚨 Where the failures went instead
+
+Pass 2's ten endings: **5 `budget_exhausted`, 3 `truncated_at_cap`, 2 `said_nothing`**, and one
+`refused` at the **`standard`** rung. The model is now landing patches and still not converging —
+which is the same shape as §11's result one level down. *Removing a constraint reveals the next one.*
+
+🎉 **And one attempt got further than anything else this project has recorded**: `Seq::back` reached
+the gate's `standard` rung and was refused for a **formatting diff** in `seq.rs`. Working code that
+`cargo fmt --check` would not pass. ▶ **That is a new failure mode and a cheap one** — the head has
+`bash` at the exec tier and used it 17 times this pass, so it *can* run `cargo fmt`; it simply does
+not. Whether telling it to helps is a prompt question, and W7's ruling applies: a sentence binds only
+as far as the model complies.
+
+### ⚠ The regression I checked for and did not find
+
+Refusing markup payloads outright could in principle throw away a patch that would have applied. It
+does not: **all three markup payloads pass 2 refused carry duplicated file headers** — the same file
+twice, from the repeated attempts, one of them literally headed
+`--- a/crates/abcc-core/src/seq.rs\t(rejected patch)`. Two blocks for one file cannot express one
+coherent edit, so nothing correct was lost.
+
+---
+
+## 13. ⚠ F640 — the probe that would have settled the cause came back negative
+
+`research/tools/multicall.py` asks the champion for three small edits across three files — the shape
+that invited more than one call in the field — and captures the raw SSE. **It did not reproduce.**
+One clean `apply_patch`, 292 argument characters, one `index`, no markup anywhere.
+
+So the cause of the markup is still open, but four explanations are now eliminated:
+
+| hypothesis | evidence against |
+|---|---|
+| the turn was truncated and left a mess | **all 60 payloads finished `tool_calls`**, none `length` |
+| the model degrades after being refused | markup is on the **first** call in 14 of 14 attempts |
+| Recon's brief carries an example it copies | **0 of 57 claims** contain any markup |
+| asking for several edits at once triggers it | the probe above, negative |
+
+▶ **What is left to try** is the thing the probe could not stage: the field cases all carry a real
+transcript — a brief, twenty-odd `read_file` results, 6,700–20,600 prompt tokens — and the probe had
+none of that. **Replaying one failing turn's exact body through the same capture is the next step**,
+and the log has the body.

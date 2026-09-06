@@ -1,0 +1,18 @@
+{
+  "sse_lines": 2169,
+  "total_ms": 27246,
+  "calls_parsed": 1,
+  "distinct_indices": [
+    0
+  ],
+  "content_chunks_carrying_tool_call_markup": 0,
+  "parsed_calls_whose_ARGUMENT_carries_markup": 0,
+  "call_names": [
+    "apply_patch"
+  ],
+  "argument_chars": [
+    292
+  ],
+  "capture": "../spikes/f637-multicall/multicall.sse.jsonl",
+  "verdict": "A or neither: no parsed argument carries markup in this turn"
+}
