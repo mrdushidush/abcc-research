@@ -4,7 +4,7 @@ import json, sqlite3, subprocess, os
 DB = r"C:\Users\david\AppData\Local\abcc\abcc-1ae35b6091a63e2c\log.sqlite"
 ABCC = r"D:\dev\abcc"
 c = sqlite3.connect("file:" + DB.replace("\\", "/") + "?mode=ro", uri=True)
-ARMS = [("1*", 4886), ("2", 5221), ("3", 5430), ("4", 5683), ("5", 5871)]
+ARMS = [("1*", 4886), ("2", 5221), ("3", 5430), ("4", 5683), ("5", 5871), ("6*", 6207), ("7*", 6530)]
 
 def stat(a, b):
     r = subprocess.run(["git", "diff", "--shortstat", a, b], cwd=ABCC,

@@ -5,7 +5,8 @@ DB = r"C:\Users\david\AppData\Local\abcc\abcc-1ae35b6091a63e2c\log.sqlite"
 c = sqlite3.connect("file:" + DB.replace("\\", "/") + "?mode=ro", uri=True)
 
 ARMS = [("arm 1 (pre-F649)", 4886), ("arm 2", 5221), ("arm 3", 5430),
-        ("arm 4", 5683), ("arm 5", 5871)]
+        ("arm 4", 5683), ("arm 5", 5871),
+        ("arm 6 (F655)", 6207)]
 
 def cls(d):
     d = d or ""

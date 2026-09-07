@@ -155,9 +155,13 @@ let mut gate = match (kept.as_ref(), last) {
 };
 ```
 
-`PhaseEnded::Answered` means *the model stopped talking of its own accord*. An attempt that runs out
-of rounds, or is cut at the 16,384-token cap, ends `Stopped` and gets `None` — **whatever is in the
-tree**. The console then prints `gate not asked — the attempt produced no artifact`.
+`PhaseEnded::Answered` means *the model stopped talking of its own accord*. ⚠ **The other two
+variants are not the same thing and the comment beside this `match` treats them as one.**
+`Stopped { stop, .. }` is the **operator's** halt — *not ours to judge* is a defensible rule for it.
+`Unmeasured { why, .. }` is everything else: `BudgetExhausted`, `TruncatedAtCap`, `SaidNothing`. **An
+attempt that runs out of rounds or is cut at the 16,384-token cap lands in `Unmeasured` and gets
+`None` — whatever is in the tree.** The console then prints `gate not asked — the attempt produced no
+artifact`. Every discarded attempt in this session is `Unmeasured`; not one is `Stopped`.
 
 That sentence is false five times in this session, and `gatetable.py` measures it:
 
@@ -252,7 +256,10 @@ widening rather than toward it.
 **F655** — 🚨🚨 **`abcc` asks the gate only when the model declares itself done, so five changed trees
 were discarded unmeasured.** `abcc-drive/src/lib.rs:487` matches `(Some(closing),
 PhaseEnded::Answered)`; every other ending yields `None`, and the console prints *the attempt
-produced no artifact*. **Six of ten attempts changed the tree; the gate was asked about one.** The
+produced no artifact*. ⚠ **The `_ => None` covers two different things and the comment beside it
+says so as though they were one**: `Stopped` is the operator's halt, where *not ours to judge* holds;
+`Unmeasured` is `BudgetExhausted` / `TruncatedAtCap` / `SaidNothing`, and **every discarded attempt
+in this session is `Unmeasured`.** The fix is that arm, not the operator's. **Six of ten attempts changed the tree; the gate was asked about one.** The
 rung that would have caught the rest is `Rung::Structural` — free, **0.024 s**, first on the ladder,
 *0 false positives on 609 correct trees*. ⚠ The code comment conflates *the model said nothing*
 (three attempts, correct) with *the model was still working when the budget ran out* (five attempts,
@@ -308,7 +315,7 @@ any kind*, *unconditional*, or *leave it*. ⚠ F657 and F654 argue for **leave i
 works more than half the time on this subject, and both wider rules would have fired inside attempts
 that went on to land patches.
 
-▶ **F655 is the one worth fixing, and it is not a prompt.** Asking the gate on a `Stopped` ending
+▶ **F655 is the one worth fixing, and it is not a prompt.** Asking the gate on an `Unmeasured` ending
 whose closing tree differs from its opening one costs 0.024 s for the structural rung and converts
 five discarded attempts in this session alone into five measured ones — one of which is
 `a5878`. It is a change to one `match` in `abcc-drive`, it wants tests, and it wants an arm of its
