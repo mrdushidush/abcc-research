@@ -1,7 +1,8 @@
 # CONSOLE opens — an encoder written from the format, the composite as a type, and a corpus that is smaller than it looks
 
 **Status: FLEET's two residual rulings are landed, and CONSOLE has its first three pieces.**
-Findings **F557–F562**; next free number is **F563**. Built 2026-08-30 against `D:\dev\abcc` at
+Findings **F557–F562**, plus **F563–F565** in §8, which was added on 2026-09-07 to close a debt
+this file had been carrying since the review it describes. Built 2026-08-30 against `D:\dev\abcc` at
 `6fbaf4f`, landed as `1a460c3` (the two rulings), `57de658` (the sixel encoder), `f372c4d` (the battlefield,
 the assets and `abcc paint`) and `576432a` (the frame-cost instrument). **399 tests passing, 13
 ignored, 61 targets, clippy clean under `-D warnings`, `cargo fmt --check` clean.**
@@ -273,11 +274,14 @@ None of this is blocked, and the order below is the order the exit criterion car
   problem.** What is still unmeasured is **display** — the terminal receiving and drawing the bytes,
   which is what the spike's end-to-end 25.6–28.6 FPS includes and this does not.
 * **The GIFs are undecoded.** Four animated assets, and the loader takes the first frame.
+  ✅ **Closed 2026-09-07** — `CONSOLE-P9`, F642: 676 frames, every one of them a different picture.
 * **The eight verbs and the six fun queries** (ADR-0012 §4, §5) — the control channel, the typed
   lifecycle and the paged read. ⚠ *Eight verbs that half-work are worse than three that work.*
 * **The 96 voice lines**, and the two lifecycle states that have none: `Holding`, `Commandeered`.
 * **`rust-embed`** for the 44 MB, when the asset set is settled. F560 says 12 of the 24 PNGs are
-  redundant, so the embedded set should be the 16 distinct images.
+  redundant, so the embedded set should be the 16 distinct images. ⚠ **F565 (§8) cuts that to
+  four**, and those four are 34.3 MB of the corpus's 35 — see `CONSOLE-P9` §8 for what embedding
+  them would actually cost.
 * ⏸ **Two spike-scale unknowns remain and neither blocks anything**: sixel over the *inline*
   viewport (the spike used the alternate screen throughout), and WT's canvas renderer versus
   Direct3D on other machines.
@@ -335,3 +339,103 @@ humanoid design instead of two is either something to live with or a reason to w
 🚨 **If what he dislikes is the sixels themselves rather than a colour or a size, that is
 `SUMMARY.md`'s fifth falsifier firing.** The honest response is the text ladder, which already
 exists — that is precisely why it shipped at Skeleton.
+
+---
+
+## 8. ✅ The review happened — F563, F564, F565
+
+**Added 2026-09-07, and late.** §7 said the next session was a review; it ran on **2026-08-31** and
+landed as `e6b19ab`, *"the review — the units were stacked, the tiles invisible, and most of the
+corpus is unusable"*. The three findings it produced have been carried in the code's own doc
+comments and in that commit message ever since, and quoted from memory in every session brief since,
+but they were never written **here** — which is where every other CONSOLE finding lives. This
+section closes that debt. Nothing in it is new work; it is the record catching up with the code.
+Next free number after this section is unchanged (**F566** onward went to `GATE-P4`).
+
+**David reviewed `abcc paint` at the keyboard and reported three things. All three were real, and
+the third is the one that mattered.**
+
+### 🚨 F563 — the tile came off the sprite's height, and a unit is drawn at its width
+
+The nine sprites read as one pile. The tile was `px * 9/10` — nine tenths of the sprite's *height* —
+but `--px` sets a height and this corpus is wider than it is tall: the `cto` poses are **292×181**,
+so **161 px across at `--px 100`**, standing on ground points **45 px apart**. **Two thirds of every
+unit was behind its neighbour.**
+
+The tile now comes off the **widest sprite**, three halves of it, which leaves about a quarter of an
+overlap — enough that the depth sort is visible, which is half of what the diagnostic is for, and
+little enough that each figure is too.
+
+⚠ **And widening it cut the heads off the back rank — 40 rows at `--px 100`.** Arithmetic caught
+that before the operator did, and the reason is worth keeping: **centring the origin is not centring
+the picture.** A unit is drawn a full sprite-height *above* its ground point, so the content reaches
+further up from the origin than down, and a grid centred on the canvas loses the back rank the
+moment the tiles are wide enough to separate the units. `Battlefield::set_origin` lets the caller
+say where cell (0, 0) goes; `geometry` centres the **block** and **clamps** the tile so a field too
+small for the art shrinks the tile rather than losing part of it — which is F144's *screen area
+binds before throughput does*, arriving from the layout side.
+
+### F564 — the tile marks were invisible, and were reported as absent
+
+The operator said the ground had no grid on it. **It did: 119 marks, one pixel each — 0.05% of a
+640×360 field.** A single pixel at a tile corner is not a mark, it is a speck, and the honest report
+from the other side of the screen is *there is nothing there*. They are now 2:1 lozenges sized off
+the tile, so they scale with the grid they are drawing.
+
+▶ The general shape, and it recurs: **a thing that is drawn and cannot be seen is indistinguishable
+from a thing that is not drawn**, and only the person looking can tell you which one you shipped.
+
+### 🚨🚨 F565 — twelve of the sixteen distinct images are not fit to draw
+
+F560 had already found that the corpus's 28 files are **16 distinct images**. F565 is the harder
+half: **twelve of those sixteen cannot be put on a battlefield at all.**
+
+* The `cto-*` / `qa-*` PNG poses are **shattered**. The largest connected piece of `cto-N-idle`
+  holds **36%** of its visible pixels.
+* All four `*-selected.png` carry a **caption burnt into the art** — `cto-E-selected` reads
+  *"Tyrant E Idle"* across the top of the picture.
+
+🚨 **They are not parts sheets being mis-assembled.** v1 loads these files whole
+(`IsometricTank.tsx:52`), so whatever they were meant to be, what they are is broken. **Only the
+four GIFs survive**, and that is what the roster draws.
+
+**Two traps in measuring it, and both produced a wrong answer first:**
+
+1. **ASK THE SOURCE, NOT THE SCALED COPY.** Downscaling spreads soft edges until neighbouring
+   fragments touch, and a shattered sprite silently becomes a coherent one — `cto-W-idle` reads
+   **30** at 292×221 and **62** at `--px 100`; `cto-N-idle` **36** and **64**. The first cut of the
+   filter measured after the resize and let four broken poses straight through. `abcc paint` now
+   decodes twice on purpose, and the doc comment says why.
+2. **ONE MEASURE WAS NOT ENOUGH**, and the clean split it seemed to give was a four-file sample
+   generalised to sixteen. `cto-E-selected` scores **94** on coherence — above either intact
+   building — because it really is a mostly-assembled machine; what disqualifies it is the caption.
+   `Sprite::top_edge_ink` asks the second question: **a unit anchored at its feet should never touch
+   its own ceiling.** Neither measure subsumes the other.
+
+**The threshold is documented as a judgement, not a discovered boundary.** The four GIFs read 92,
+92, 99, 99 and the twelve PNGs run **30 to 94 with no gap to put a line in**, so `INTACT = 90` is
+where a person drew it. And the filter is a **measurement rather than a list of four filenames**, so
+better art is admitted when it arrives instead of being excluded by name.
+
+🚨 **`CONSOLE-P9` §3 is the sequel to this one**: the same two questions, asked of every *frame*
+rather than every file, refuse **310 of the 676 frames** in the four survivors. The admission
+question is a frame-0 question, and F565's own instrument had to be told so.
+
+### And `--px` moved, because the art under it did
+
+`--px` now defaults to **150**. F143's 75–120 band was judged on the `cto` poses — **161 px across
+at `--px 100`** — and those turned out to be unusable art; the four that replaced them are **67 px
+across** at the same height, so the same number drew a huddle in an empty field. Re-judged by David
+against the corpus that actually ships: **200 too big, 100 too small, 150.** ▶ It moves again when
+the art does. 🚨 **Quoting F143's band at him is a mistake**: it is a real measurement of a corpus
+that is no longer drawn.
+
+### What the review settled, and what it did not
+
+✅ **Approved at the keyboard, 2026-08-31**: `--px 150`, the composite itself (he looked for the two
+serious defects — holes in the sprites, a dark rim from a non-premultiplied resize — and found
+neither), and the roster of four GIFs *for now*: *"lets just use the 4 good gifs for the time being.
+Anyway i will add much better art later on."*
+
+⏸ **Not judged**: the tile marks in their fixed form, the ground colour, and the reader. The marks
+became visible only in this fix, and he has not seen them since.
