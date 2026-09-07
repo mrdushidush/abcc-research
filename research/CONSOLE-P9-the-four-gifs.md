@@ -8,8 +8,9 @@ at `92c55d8`. **526 tests passing (up from 513), 19 ignored, clippy clean under 
 `cargo fmt --all --check` clean.** Sixteen of those tests are new — thirteen that run everywhere and
 three corpus instruments — and **eight mutations were run against eight of them, one at a time**.
 
-▶ This closes item 6 of CONSOLE's non-eyeballing queue: *decode the four GIFs*. What is left there
-is `rust-embed`, and §8 argues its stated precondition is not met.
+▶ This closes item 6 of CONSOLE's non-eyeballing queue: *decode the four GIFs*. §8 argued that the
+last item, `rust-embed`, has an unmet precondition; **David deferred it the same day, so the
+non-eyeballing queue is now empty** and everything remaining needs him.
 
 **The session's shape: the queue item read like a decoder change and turned out to be two other
 things. The first is that the animation was worth having — every frame differs, so nothing here was
@@ -230,7 +231,7 @@ an amount that changes with the size of the field.
 
 ---
 
-## 8. ⏸ What is left, and why `rust-embed` should wait
+## 8. ✅ What is left, and `rust-embed` — **asked and answered: wait**
 
 The queue's last non-eyeballing item is *`rust-embed` the 16 distinct images, not 28*. **Its own
 precondition — "when the asset set is settled" — is not met**, and two things have moved under it
@@ -246,10 +247,15 @@ since it was written:
   the bytes that would go into git are the ones expected to be replaced.
 
 ▶ **The friction it would remove is also small**: `abcc paint` with no `ABCC_SPRITES` already
-refuses with a sentence naming the flag, the variable and where the corpus lives. **This is
-David's call, not a defect to fix quietly** — the three answers are *embed the four anyway*,
-*embed nothing until the art settles*, and *embed a pre-scaled corpus*, which is a third thing
-again because it would fix `--px` at the size it was encoded for.
+refuses with a sentence naming the flag, the variable and where the corpus lives.
+
+✅ **Put to David on 2026-09-07 with those numbers — *embed the four anyway* / *wait until the
+art settles* / *embed a pre-scaled corpus* — and he chose WAIT.** 🚨 So the queue item is
+**deferred, not open**: it comes back when new art arrives, and until then nobody should re-ask it
+or start it. The third option is recorded because it is the one that is not obvious: pre-scaling
+would cost 2–4 MB instead of 34, and it would **fix `--px` at the height it was encoded for**,
+which is a real loss on a flag David has already re-judged once (150, from 100) and expects to
+re-judge when the art changes.
 
 Everything else on CONSOLE's list is unchanged: the eyeballing review, the three console
 instruments (F587), `redirect`/`resume` (F585), `--px`, sixel on the inline viewport, the 96 voice
