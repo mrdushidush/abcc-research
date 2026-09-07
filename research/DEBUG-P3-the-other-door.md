@@ -293,3 +293,75 @@ lost one edit to the fold, one to a stale context line, and a whole change phase
 before a single argument character arrived. **Three different failures, three different mechanisms,
 one shared outcome — no artifact, gate never asked.** The bottleneck memo's headline (*every tool
 works except the one by which work lands*) is still true, but the tail is longer than one tool.
+
+---
+
+## 8. The next arm, as a recipe — **run this, do not re-derive it**
+
+**The question:** does the model take the `write_file` door when it is actually offered? F650 says we
+still do not know, because the offer needs the server to fold **twice running** and it folded once.
+
+**The plan:** fly the same subject **three or four times**. The fold's per-call rate on this subject
+is 5 of 5 in one run and 1 of 2 in the next, so two consecutive folds is roughly a coin toss per
+run — one more sortie decides nothing, and four is about 32 minutes of GPU.
+
+⚠ **Do not change the message, the model, the context size or the prompt between runs.** The whole
+value of this subject is that `t4886` and `t5221` are already two comparable points on it.
+
+```bash
+# 1. The champion, at the size every prior arm used.
+lms load qwen3.6-35b-a3b-mtp@iq3_s -c 40960 --parallel 1
+
+# 2. From D:\dev\abcc — anywhere else is a different, empty log and no error.
+cd /d/dev/abcc
+ABCC_MODEL="qwen3.6-35b-a3b-mtp@iq3_s" ./target/release/abcc.exe check
+#    -> must say "matched exactly". A name check cannot see a context window,
+#       and justInTimeModelLoading will happily serve the right model at 32768.
+
+# 3. The prompt is NOT retyped — it is read back, so the arm stays comparable.
+./target/release/abcc.exe replay t4886        # the `| ` line is the 329-char prompt
+./target/release/abcc.exe task '<that exact text>' --title 'abcc --version (E0004 arm N)'
+
+# 4. Fly it. Two attempts per task, one slot at exec — the same shape as arms 1 and 2.
+ABCC_MODEL="qwen3.6-35b-a3b-mtp@iq3_s" ./target/release/abcc.exe fleet
+
+# 5. Read it back.
+python research/tools/sortieread.py t<new>    # in the DOCS repo
+```
+
+🚨 **Assert the prompt is byte-identical before flying, rather than eyeballing it** — one loose
+character and the arm is a different experiment:
+
+```python
+# both prompts come from `abcc replay`, the `| ` line
+assert prompt("t4886") == prompt("tNEW"), "not the same subject any more"
+```
+
+### What to record for each run
+
+| | what to look for |
+|---|---|
+| `apply_patch` calls that ran | the denominator |
+| refused for **markup** (F637's sentence) | the fold |
+| refused for **`NoMatch`** (F638's sentence) | *not* the fold — a real diff, near-miss |
+| **two markup refusals back to back** | 🚨 **the trigger firing. This is the whole experiment.** |
+| `write_file` called after one | 🚨 **the answer.** Did the model take the door? |
+| the ending | it has been different every single attempt so far |
+| tree changed | `git diff refs/abcc/checkpoints/m1/<deploy seq> refs/abcc/checkpoints/m1/<end seq>` |
+
+### Housekeeping before you start
+
+* `t4886` and `t5221` are both **`AwaitingOrders`** and are yours to `accept` or `reject`. They do
+  not block a new task — the fleet does not admit them — but the board is easier to read without
+  them.
+* The board has **0 `Queued`** tasks, so `abcc fleet` admits only what you add.
+* ⚠ **Do not raise `rounds`.** It has now been the binding stop twice and irrelevant twice; raising
+  it buys more refusals, not more work.
+
+### And the decision that is not a measurement
+
+If the trigger fires in none of the runs, that is itself the answer to **§7's question**: the
+condition is too narrow, and the choice between *two refusals of any kind* and *unconditional* has to
+be made on the argument rather than on data. **It should be made by David, once, and then flown —
+not iterated on quietly between sorties.**
+
