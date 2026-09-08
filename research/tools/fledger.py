@@ -41,7 +41,7 @@ except Exception:
 DEFAULT_MEM = os.path.expanduser(
     "~/.claude/projects/D--dev-ABCC-20-powerd-by-claudette/memory")
 DEFAULT_DB = "research/findings.sqlite"
-DEFAULT_EDGES = "research/findings-supersession.tsv"
+DEFAULT_EDGES = "research/findings-authored.tsv"
 # `answers` is not decoration: the corpus says "F606 IS ANSWERED", "F637 is
 # ANSWERED", "F38 IS ANSWERED" far more often than it says "superseded", and an
 # answered finding is resolved, not wrong. `not-an-edge` is the other half of
@@ -49,6 +49,11 @@ DEFAULT_EDGES = "research/findings-supersession.tsv"
 # F531"), and a negative has to be storable or the next heuristic re-asserts it.
 EDGE_KINDS = ("supersedes", "retracts", "refines", "answers")
 NON_EDGE = "not-an-edge"
+# The second authored fact, and the only other one: WHICH of a finding's several
+# definitions is the real one. Derived date-then-length gets 664 of 673 right on
+# its own; this pins the rest, so a contested row becomes a decision on the
+# record rather than a flag nobody ever clears.
+CANONICAL = "canonical"
 
 # A definition block may carry its own edge, which is the convention that makes
 # this cheap going forward: one exact line, on the finding that does the work.
@@ -59,15 +64,24 @@ INLINE = re.compile(r'(?:^|\s)(Supersedes|Retracts|Refines|Answers|Not-an-edge):
 
 # ------------------------------------------------------------------ classing
 def doc_class(doc):
-    """research < decisions < memory. The winner supplies the canonical text."""
+    """research < spike < decisions < memory. The winner supplies the text.
+
+    A spike README is working notes and the research document is the write-up,
+    so when the same W8 work is written up twice on the same day the research
+    doc is the home. Safe because **no finding is defined only in a spike** -
+    checked, 11 spike definitions, 0 exclusive. An ADR *consumes* findings and
+    cites them in passing, which is why decisions sit below both.
+    """
     if doc.startswith("memory/"):
         return "memory"
     if "/decisions/" in doc:
         return "decisions"
+    if "/spikes/" in doc:
+        return "spike"
     return "research"
 
 
-CLASS_RANK = {"research": 1, "decisions": 2, "memory": 3}
+CLASS_RANK = {"research": 1, "spike": 2, "decisions": 3, "memory": 4}
 
 
 def workstream(doc):
@@ -229,7 +243,7 @@ def scan(root, mem):
     return defs, cites, ranges, refs, mentioned, inline, directed
 
 
-def choose_canonical(group, dates):
+def choose_canonical(group, dates, pin=None):
     """Lowest class wins, then the EARLIEST statement, then the fullest.
 
     Date first, because a finding is defined when it is first written down and
@@ -243,16 +257,20 @@ def choose_canonical(group, dates):
     is 40 characters against `ACCEPTANCE-C`'s 497. `contested` marks the rows
     where neither separated cleanly, so a human can read them.
     """
-    best = min(CLASS_RANK[doc_class(r["doc"])] for r in group)
-    pool = [r for r in group if CLASS_RANK[doc_class(r["doc"])] == best]
-    for r in pool:
+    for r in group:
         r["date"] = (dates.get((r["doc"], r["line"])) or ("9999-99-99",))[0]
-    pool.sort(key=lambda r: (r["date"], -r["chars"], r["doc"], r["line"]))
+    if pin:                              # an authored pin ends the argument
+        for r in group:
+            if "%s:%d" % (r["doc"], r["line"]) == pin:
+                return r, False, True
+    best = min(CLASS_RANK[doc_class(r["doc"])] for r in group)
+    pool = sorted([r for r in group if CLASS_RANK[doc_class(r["doc"])] == best],
+                  key=lambda r: (r["date"], -r["chars"], r["doc"], r["line"]))
     rival = pool[1] if len(pool) > 1 else None
     contested = bool(rival and rival["doc"] != pool[0]["doc"]
                      and rival["date"] == pool[0]["date"]
                      and rival["chars"] >= 0.75 * pool[0]["chars"])
-    return pool[0], contested
+    return pool[0], contested, False
 
 
 # --------------------------------------------------------------------- edges
@@ -264,8 +282,8 @@ def load_edges(path):
     and pretending an author was a finding would be a fabricated fact.
     """
     if not os.path.exists(path):
-        return [], [], "absent (" + path + ")"
-    rows, nots, bad = [], [], []
+        return [], [], {}, "absent (" + path + ")"
+    rows, nots, pins, bad = [], [], {}, []
     with open(path, encoding="utf-8") as fh:
         reader = csv.DictReader((l for l in fh if not l.startswith("#")),
                                 delimiter="\t")
@@ -283,11 +301,16 @@ def load_edges(path):
                        evidence=(r.get("evidence") or "").strip())
             if kind == NON_EDGE:
                 nots.append(row)
+            elif kind == CANONICAL:
+                if not row["evidence"]:
+                    bad.append("line %d: canonical pin needs doc:line evidence" % i)
+                else:
+                    pins[dst] = row["evidence"]
             elif kind in EDGE_KINDS:
                 rows.append(row)
             else:
                 bad.append("line %d: unknown kind %r" % (i, kind))
-    return rows, nots, ("ok" if not bad else "; ".join(bad))
+    return rows, nots, pins, ("ok" if not bad else "; ".join(bad))
 
 
 SCHEMA = """
@@ -304,6 +327,7 @@ CREATE TABLE finding (
   state      TEXT NOT NULL,
   defs       INTEGER NOT NULL,
   contested  INTEGER NOT NULL,
+  pinned     INTEGER NOT NULL,
   evidence_sha  TEXT,
   evidence_nums TEXT,
   chars      INTEGER NOT NULL
@@ -350,7 +374,7 @@ def build(args):
     for d in defs:
         by[d["n"]].append(d)
 
-    edges, nots, edge_status = load_edges(args.edges)
+    edges, nots, pins, edge_status = load_edges(args.edges)
     for e in edges:
         e["authored_in"] = "tsv"
     for e in inline:                      # the `Supersedes: F649 (reason)` line
@@ -384,17 +408,21 @@ def build(args):
     con.executescript(SCHEMA)
 
     hi = max(by)
-    n_contested = 0
+    n_contested = n_pinned = 0
+    bad_pins = []
     for n, group in sorted(by.items()):
-        best, contested = choose_canonical(group, dates)
+        best, contested, pinned = choose_canonical(group, dates, pins.get(n))
+        if pins.get(n) and not pinned:
+            bad_pins.append("F%d -> %s" % (n, pins[n]))
         n_contested += contested
+        n_pinned += pinned
         date, sha = dates.get((best["doc"], best["line"]), (None, None))
         con.execute(
-            "INSERT INTO finding VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO finding VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (n, workstream(best["doc"]), best["title"], best["text"],
              best["doc"], best["line"], date, sha, best["marker"], state[n],
-             len(group), int(contested), best["sha"], best["measures"],
-             best["chars"]))
+             len(group), int(contested), int(pinned), best["sha"],
+             best["measures"], best["chars"]))
         for d in group:
             dd, ss = dates.get((d["doc"], d["line"]), (None, None))
             con.execute("INSERT INTO mention VALUES (?,?,?,?,?,?,?,?)",
@@ -424,7 +452,8 @@ def build(args):
         if (src, dst) in seen_cand:
             return
         seen_cand.add((src, dst))
-        ok = int((src, dst) in authored or dst in read_dst)
+        ok = int((src, dst) in authored or (dst, src) in authored
+                or dst in read_dst or src in read_dst)
         con.execute("INSERT INTO edge_candidate VALUES (?,?,?,?,?,?,?)",
                     (src, dst, doc, line, shape, ok,
                      int((src, dst) in refused)))
@@ -472,6 +501,7 @@ def build(args):
             ("highest", "F%d" % hi),
             ("authored_edges", str(len(edges))),
             ("authored_non_edges", str(len(nots))),
+            ("authored_canonical_pins", str(len(pins))),
             ("edge_file", args.edges),
             ("edge_file_status", edge_status),
             ("heuristic_candidates", str(sum(cand.values()))),
@@ -490,7 +520,9 @@ def build(args):
     print("docs scanned      %d" % len(md_files(root, args.memory)))
     print("definitions       %d parsed -> %d findings (F1..F%d)"
           % (len(defs), len(by), hi))
-    print("  contested pick  %d" % n_contested)
+    print("  contested pick  %d   (%d pinned by hand)" % (n_contested, n_pinned))
+    if bad_pins:
+        print("  !! pin matches no parsed definition: %s" % ", ".join(bad_pins))
     print("  dated by blame  %d   (memory files are not in git and get no date)"
           % dated)
     print("coverage          %d defined + %d range-only + %d cited-never-defined"

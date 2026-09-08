@@ -8,7 +8,7 @@ number nobody should quote as complete.
 
 Instruments: `research/tools/fparse.py` (the grammar), `research/tools/fledger.py` (the index and
 its queries), `research/tools/fread.py` (the coverage probe, unchanged in behaviour). The authored
-half is `research/findings-supersession.tsv`. The index itself, `research/findings.sqlite`, is
+half is `research/findings-authored.tsv`. The index itself, `research/findings.sqlite`, is
 gitignored — it is rebuilt in 3.9 s and committing it would make it a second copy of something.
 
 ---
@@ -79,6 +79,7 @@ Two detectors were run over the same prose:
 |---|---|---|---|
 | co-occurrence — a retraction word in the block × every finding it cites | 79 pairs | ~6 | **~8%** |
 | directed — the number must be the object of a correction verb, or the subject of a correction predicate, within one line | 34 hits | 18 | **~53%** |
+| directed, second pass — widened to the archive's *softer* vocabulary: sharpens, qualifies, restates more precisely, is already implemented | 15 hits | 8 | **~53%** |
 
 The co-occurrence rule is the one F669 measured at +76% over the truth, and the mechanism is
 visible in its worst row: `F290` cites nine other findings as its supporting evidence and the rule
@@ -90,13 +91,15 @@ reading prompts.
 
 ### F683 — the archive's dominant correction verb is *answers*, not *supersedes*
 
-Of the 18 authored edges: **8 refine, 6 answer, 4 supersede, 0 retract.** A ledger offering only
-supersede-and-retract would have mis-typed 14 of 18, and in the damaging direction — it would have
-marked as *dead* eleven findings that are alive and merely qualified. The corpus says it plainly
+Of the **26** authored edges: **13 refine, 9 answer, 4 supersede, 0 retract.** A ledger offering
+only supersede-and-retract would have mis-typed 22 of 26, and in the damaging direction — it would
+have marked as *dead* twenty-two findings that are alive and merely qualified. The corpus says it plainly
 and often: *"F606 is answered"*, *"F637 is ANSWERED"*, *"F38 IS ANSWERED"*, *"F625 IS REPAIRED"*.
 
-🚨 The most valuable rows in the authored file are the **12 non-edges** — corrections the prose
-considered and refused. *"This does not retract F531"*, *"`abcc take` DOES NOT CLOSE F585's gap"*,
+🚨 The most valuable rows in the authored file are the **33 non-edges** — corrections the prose
+considered and refused, or that a detector proposed and a read rejected. Nine of them are `F290`
+alone, the row F669 measured as *one row asserting ten*: every one of those ten is a finding F290
+cites **as its own supporting evidence**. *"This does not retract F531"*, *"`abcc take` DOES NOT CLOSE F585's gap"*,
 and the three `F83 →` rows that exist only because `DEBUG-P6` quoted a sentence and a reader
 recorded the quotation as a definition. Without somewhere to *store a refusal*, every future
 automated pass re-asserts all of it. That is why the file is authored and not merely cached.
@@ -130,17 +133,23 @@ describes it, because that document is the first thing it will read.
 
 ## 3. What is NOT claimed
 
-⚠ **The edge count is not the archive's total.** F669 counted **38** correction edges in the prose
-by hand. This file's first pass holds **18** — the ones a directed search surfaced *and* a human
-then read and evidenced with the sentence that proves them. The other twenty are not denied; they
-are **unread**. `research/findings-supersession.tsv` says so in its own header, `fledger.py build`
-prints it as `edge_recall: UNKNOWN`, and the worklist is `fledger.py candidates`.
+⚠ **The edge count is still not provably the archive's total.** F669 counted **38** correction
+edges in the prose by hand. Two passes have authored **26**, each with the sentence that proves it,
+and recorded **33** refusals so no later pass re-proposes them. **26 unread candidates remain**, all
+from the low-precision co-occurrence pile and all read only as far as their block's opening.
+`research/findings-authored.tsv` says so in its own header, `fledger.py build` prints
+`edge_recall: UNKNOWN`, and the worklist is `fledger.py candidates`.
+
+▶ The second pass is the finding here: **the softer vocabulary was where the edges were hiding.**
+*Sharpens*, *qualifies … in place*, *restates more precisely*, *is already implemented* — none of
+them matched a correction verb, and eight real edges were written that way.
 
 ⏸ Two things are David's, not the tool's:
 
-* the **nine contested canonical picks** — nine rows, one read each, seven of them the same
-  benign shape;
-* the **remaining ~20 edges** — the back-fill F669 already described as a human read done once.
+* ~~the nine contested canonical picks~~ — **done**: seven were the same benign shape and are now
+  handled structurally (a spike README ranks below a research doc, safe because no finding is
+  defined only in a spike), and `F498` and `F555` are pinned by hand. **Contested is 0.**
+* the **26 unread candidates** — `fledger.py candidates`, lowest-value pile last.
 
 ---
 

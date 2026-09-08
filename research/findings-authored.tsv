@@ -1,4 +1,4 @@
-# findings-supersession.tsv - THE ONE AUTHORED INPUT TO THE LEDGER.
+# findings-authored.tsv - THE AUTHORED INPUT TO THE LEDGER.
 #
 # Everything else in `research/findings.sqlite` is regenerated from the markdown
 # by `research/tools/fledger.py`. This file is not, because F669 measured the
@@ -21,6 +21,12 @@
 #   dst       the finding being corrected
 #   reason    why, in one line, in the archive's own words where possible
 #   evidence  doc:line of the sentence that proves it. Not optional.
+#
+# The file also carries the ONE other authored fact - `kind = canonical`, which
+# names WHICH of a finding's several definitions is the real one. Derived
+# date-then-length gets 664 of 673 right unaided; these pin the rest, so a
+# contested row becomes a decision on the record instead of a flag nobody
+# clears. `src` is unused there; `evidence` is the winning `doc:line`.
 #
 # STATUS OF THIS FILE, stated so nobody quotes it as complete:
 # first pass, 2026-09-08. F669 counted 38 correction edges in the prose by hand.
@@ -66,3 +72,56 @@ F669	not-an-edge	F531	F669 quotes F531 as an example of prose arguing in the neg
 F609	not-an-edge	F513	F609 says the code COMMENT justifying F513's field went stale; F513 itself is why both observations are durable	research/CONSOLE-P7-the-after-action-view.md:170
 F677	not-an-edge	F667	"F667's family, twice in one session" - F677 is an instance of F667's pattern, not a correction of it	research/DEBUG-P6-the-door-taken-unprompted.md:375
 F290	not-an-edge	F195	the row F669 measured as "one row asserting ten" - F290 cites nine other findings as its supporting evidence and corrects none of them	research/W11-stages.md:4171
+#
+# ------------------------------------- SECOND PASS 2026-09-08: the wider sweep
+# Found by widening the directed patterns past "correction verb + F-number" to
+# the archive's softer vocabulary - sharpens, qualifies, restates more
+# precisely, is already implemented - which is how most of these are actually
+# written. Each was then read in place.
+#
+F51	refines	F30	"Sharpens F30: the risk is not which edit tool gets picked, it is the fallback to bash when an edit is blocked"	memory/abcc-2-w8-state.md:484
+F224	refines	F161	"That sharpens F161's diagnosis" - the family's two defaults point in opposite policies a few files apart	research/W6-verification.md:731
+	answers	F161	F161 proposed a rule; it turns out already implemented in the family as Option<bool> with is_hard_fail() true only on Some(false) - "a port, not an aspiration"	memory/abcc-2-w3-w6-w11-block.md:382
+F379	refines	F362	"This qualifies F362 in place" - item 1 set the bar at rho = +0.219 and read the ordering as sound; the estimator closes OQ-W4-3 in the negative	research/W4-routing.md:1294
+F518	refines	F512	"F518 - 25 OF 25 REFUSED, AND IT RESTATES F512 MORE PRECISELY" - F512 predicted the situation, F518 executed it and gives it a population	memory/abcc-2-phase-3-skeleton.md:2410
+F366	refines	F221	F221 established the ratchet's shape, but with F360's real rule scores in it "the arithmetic is no longer a bias - it is the whole mechanism"	research/W4-routing.md:448
+F580	answers	F568	F568's instrument was dead and unvalidated - 0 hits in 363 reviews, no positive control. It has now fired 10 times in 216 reviews, once with the switch off	research/GATE-P6-the-scope-sentence-over-the-od-tier.md:112
+F679	refines	F673	"which is F673 stated as a loop rather than a list" - each fix reveals the next lint only when the tool is run, and the model is given no pass at that information	research/DEBUG-P6-the-door-taken-unprompted.md:378
+#
+# --------------------------------------------- SECOND-PASS NON-EDGES
+# F290 is the row F669 measured as "one row asserting ten". All ten are recorded
+# so no future pass can propose them again, and because the row is the single
+# best illustration of why the co-occurrence rule cannot be trusted: every one
+# of these is a finding F290 cites AS ITS OWN SUPPORTING EVIDENCE.
+#
+F290	not-an-edge	F223	cited as supporting evidence for the declining-score breaker, not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F286	cited as supporting evidence ("a good rung and a bad ladder"), not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F288	cited as supporting evidence (the same disease across fourteen constants), not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F289	cited as supporting evidence (the exchange rate moves 11.7x with the model), not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F291	cited as supporting evidence (raising one number turned four failures into eight passes), not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F292	cited as supporting evidence (the threshold has to clear 669 s), not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F293	cited as supporting evidence (these fire on a sweep), not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F294	cited as supporting evidence (at 12 the cap binds on 8 of 9 attempts), not corrected	research/W11-stages.md:4171
+F290	not-an-edge	F295	cited as supporting evidence (read-loop suppression changes the answer rather than refusing), not corrected	research/W11-stages.md:4171
+F674	not-an-edge	F650	"F650's question stays open" - stated in the negative, in the same sentence the co-occurrence rule reads as a correction	research/DEBUG-P6-the-door-taken-unprompted.md:353
+F674	not-an-edge	F657	"F657's do not credit F649 gets firmer" - F674 STRENGTHENS F657, it does not correct it	research/DEBUG-P6-the-door-taken-unprompted.md:353
+F670	not-an-edge	F83	F670 describes the false F83 edges; describing a bad edge is not asserting one	research/DEBUG-P6-the-door-taken-unprompted.md:330
+F111	not-an-edge	F103	"in exactly the place F103 predicted" - a confirmation, and a prediction that came true is the opposite of a correction	research/W5-command-center.md:862
+F635	not-an-edge	F625	"exactly as F625 predicted" - confirmation	research/DEBUG-P2-the-two-budgets.md:168
+F283	not-an-edge	F280	"F280's rule is stated in a way that predicts that" - confirmation	research/W11-stages.md:3295
+F380	not-an-edge	F360	F380 extends F360's defect to the model ("the model does the same thing with different machinery"); a parallel finding, not a correction	research/W4-routing.md:1304
+F133	not-an-edge	F101	"crush has already built F101's permission channel" - that is corroboration of F101, and the case W5 missed is new material rather than a correction	research/W5-command-center.md:1930
+F506	not-an-edge	F505	"Diagnosed only because F505 had started keeping a refused call's arguments" - F505 is the instrument that made the diagnosis possible	research/decisions/ADR-0016-a-phase-repairs-a-missing-answer.md:46
+F522	not-an-edge	F498	cited as the falsifier in flight: when the constant is wrong the call returns the window observed (F498). Corroboration	research/decisions/ADR-0018-the-judge-reports-and-cannot-refuse.md:122
+F522	not-an-edge	F511	"It is the same shape as F511 one level up" - an analogy, not a correction	research/decisions/ADR-0018-the-judge-reports-and-cannot-refuse.md:122
+F522	not-an-edge	F518	"on F518's population 16 of 25 would be skipped for an empty diff" - F518 supplies the population	research/decisions/ADR-0018-the-judge-reports-and-cannot-refuse.md:122
+#
+# ------------------------------------------------------- CANONICAL DEFINITION
+# Seven of the nine originally-contested rows were the same benign shape - W8
+# work written up twice on one day, once as a research doc and once as a spike
+# README - and that is now handled structurally: a spike ranks below a research
+# doc, checked safe because no finding is defined only in a spike. These two
+# needed a judgement.
+#
+	canonical	F498	the automatic pick is a CITATION LIST, not a definition: ADR-0018 opens by listing F498, F518, F521, F522 as inputs. ADR-0015 states the claim - the window is observable and the two token counts observe it	research/decisions/ADR-0015-what-the-first-real-runs-corrected.md:48
+	canonical	F555	the automatic pick was already right and this records that it was read: CONSOLE-P3 states the claim, FLEET-P3 restates it the same day, and ADR-0024 consumes it as "the hole that criterion still had"	research/CONSOLE-P3-the-encoder-the-composite-and-the-corpus.md:23
