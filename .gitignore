@@ -59,3 +59,9 @@ research/spikes/w4-logprobs/CONTAMINATED-*.quarantined
 research/spikes/w4-logprobs/cascade-rep*.jsonl
 research/spikes/w4-logprobs/probe*-rep*.jsonl
 research/spikes/w4-logprobs/smoke*-rep*.jsonl
+
+# The findings ledger is DERIVED from the markdown by research/tools/fledger.py.
+# Rebuild it with `python research/tools/fledger.py build`. The AUTHORED half -
+# research/findings-supersession.tsv - is committed; the index never is, because
+# an index that can be rebuilt can never be the thing that loses data.
+research/findings.sqlite

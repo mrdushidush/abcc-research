@@ -1,0 +1,68 @@
+# findings-supersession.tsv - THE ONE AUTHORED INPUT TO THE LEDGER.
+#
+# Everything else in `research/findings.sqlite` is regenerated from the markdown
+# by `research/tools/fledger.py`. This file is not, because F669 measured the
+# obvious derivation rule at +76% over the truth: it degenerates into (a
+# retraction word appears in this block) x (every finding the block cites), and
+# findings cite each other in 289 of 999 rows. So supersession is READ and
+# WRITTEN DOWN, once, with the sentence that proves it.
+#
+# COLUMNS
+#   src       the finding doing the correcting. MAY BE BLANK - not every
+#             correction in this archive was made by a numbered finding. Some
+#             are editorial ("Do not quote F488's raw 26.71 GiB"), and inventing
+#             a finding to be the author would be a fabricated fact.
+#   kind      supersedes  the earlier claim is replaced; do not quote it
+#             retracts    the earlier claim is withdrawn, nothing replaces it
+#             refines     the earlier finding STANDS; part of it is qualified
+#             answers     the earlier finding posed a question that is now shut
+#             not-an-edge the prose explicitly says this correction did NOT
+#                         happen. Stored so the next heuristic cannot assert it.
+#   dst       the finding being corrected
+#   reason    why, in one line, in the archive's own words where possible
+#   evidence  doc:line of the sentence that proves it. Not optional.
+#
+# STATUS OF THIS FILE, stated so nobody quotes it as complete:
+# first pass, 2026-09-08. F669 counted 38 correction edges in the prose by hand.
+# This file holds the ones a directed search surfaced AND a human then read and
+# evidenced: 17 edges and 10 non-edges. The remainder are not denied, they are
+# unread - `fledger.py candidates` is the worklist. DO NOT quote the edge count
+# here as the archive's total number of corrections.
+#
+src	kind	dst	reason	evidence
+F39	supersedes	F38	F38 said write_file requires WorkspaceWrite and so never gates; "The first half is wrong", and wrong in the flattering direction	research/W8-q56-import.md:110
+	answers	F38	the donor question F38 posed is settled - David chose front-load donor 2 in session 8, do not re-ask	memory/abcc-2-w8-next-steps.md:338
+F78	answers	F73	"F73 could not tell whether MTP was on. It is now settled from both ends" - the flag does engage MTP, and it buys nothing measurable here	research/W1-models.md:369
+F136	supersedes	F94	"F136 - CORRECTS F94. A terminal *can* show animated sprites" - Windows Terminal has sixel, though it dies under tmux and over SSH	memory/abcc-2-w5-state.md:121
+	refines	F113	"F113's requirement (exhaustive rendering) survives; its arithmetic fell" - STATUS_COLORS was exhaustive over the real seven all along	memory/abcc-2-w3-w6-w11-block.md:47
+F183	refines	F132	F132's requirement stands; its rule changes - "arrival is measured from *display*, per answer", not from send	research/W3-orchestration.md:1605
+F200	refines	F154	item 6 "corrects F154 and F172 in place"; F200 is the measurement that does it - cancellation lands in 3-14 ms on the blocking stack	research/W3-orchestration.md:37
+F198	refines	F172	"This corrects F172 for the Claudette half of the family, and sharpens it" - REQUEST_TIMEOUT_SECS is an inter-chunk gap, not one thing	research/W3-orchestration.md:2601
+F348	answers	F277	"It closes F277's gap - a generated criterion with no positive control - for free, because the pre-image *is* the control"	research/W6-verification.md:3662
+	refines	F488	F488 stands, but "Do not quote F488's raw 26.71 GiB - it inverts the ranking"; quote it only against its own session's baseline	memory/abcc-2-phase-1-audit.md:31
+F564	supersedes	F560	"This supersedes F560's framing: it is not one humanoid design instead of two, it is two"	memory/abcc-2-phase-3-skeleton.md:827
+F573	refines	F143	F143 stands as a spike result, but "do not quote F143's 75-120 band" - and do not re-ask --px 150, the composite, or the four GIFs	memory/abcc-2-phase-3-skeleton.md:686
+F623	answers	F606	"F606 is answered" - cut at the cap, the arguments never leave the server; 3,210 tokens went into the tool call and produced zero bytes	research/DEBUG-P1-the-buffered-argument.md:74
+F624	supersedes	F537	F537 built Delta::ToolCallProgress on the premise that a large tool call delivers bytes continuously; "The measurement above falsifies the premise"	research/DEBUG-P1-the-buffered-argument.md:96
+F641	answers	F637	"F641 - F637 is ANSWERED: the markup is the server's tool-call parser folding a second call into the first's argument"	research/DEBUG-P2-the-two-budgets.md:467
+	answers	F625	"F625 IS REPAIRED" in abcc 9166537, tightened to 400 s in 5f6ee08 - do not plan around it	memory/abcc-how-to-run-it.md:46
+F674	refines	F649	F649 is not retracted, but do not credit it for the write_file door: the refusal that preceded the door was NoMatch, which F649's sentence does not name	memory/abcc-2-apply-patch-is-the-bottleneck.md:29
+F678	answers	F655	"F655 no longer needs an arm" - a7484 gave it the prospective demonstration it was missing, so DEBUG P5's open item is closed by observation	research/DEBUG-P6-the-door-taken-unprompted.md:489
+#
+# ---------------------------------------------------------------- NON-EDGES
+# Every row below is a correction the prose considered and REFUSED, or one a
+# detector proposed and the prose contradicts. They are the reason this file is
+# authored: without them the next automated pass re-asserts all of it.
+#
+F536	not-an-edge	F531	"This does not retract F531" - under Full the reviewer still cited the rungs as proof in 7 of 9	research/ACCEPTANCE-C-corpora.md:333
+F632	not-an-edge	F585	"abcc take DOES NOT CLOSE F585's GAP, and the desk now says so when resume is typed" - wiring resume is still David's question	memory/abcc-2-phase-3-skeleton.md:300
+F83	not-an-edge	F74	a parse artifact, not a claim: DEBUG-P6 quoted "F83 is not retracted" as an example and the reader recorded the quotation as a definition	research/DEBUG-P6-the-door-taken-unprompted.md:330
+F83	not-an-edge	F75	same parse artifact as F83->F74; "Every one of those is wrong, and all of it came from a document about the ledger"	research/DEBUG-P6-the-door-taken-unprompted.md:103
+F83	not-an-edge	F550	same parse artifact as F83->F74	research/DEBUG-P6-the-door-taken-unprompted.md:103
+F674	not-an-edge	F641	the co-occurrence rule reads F674 as superseding F641, F648, F649 and F651 "when what it actually says is do not credit F649"	research/DEBUG-P6-the-door-taken-unprompted.md:75
+F674	not-an-edge	F648	as above - cited, not corrected	research/DEBUG-P6-the-door-taken-unprompted.md:75
+F674	not-an-edge	F651	as above - cited, not corrected	research/DEBUG-P6-the-door-taken-unprompted.md:75
+F669	not-an-edge	F531	F669 quotes F531 as an example of prose arguing in the negative; quoting a finding is not correcting it	research/DEBUG-P6-the-door-taken-unprompted.md:321
+F609	not-an-edge	F513	F609 says the code COMMENT justifying F513's field went stale; F513 itself is why both observations are durable	research/CONSOLE-P7-the-after-action-view.md:170
+F677	not-an-edge	F667	"F667's family, twice in one session" - F677 is an instance of F667's pattern, not a correction of it	research/DEBUG-P6-the-door-taken-unprompted.md:375
+F290	not-an-edge	F195	the row F669 measured as "one row asserting ten" - F290 cites nine other findings as its supporting evidence and corrects none of them	research/W11-stages.md:4171
