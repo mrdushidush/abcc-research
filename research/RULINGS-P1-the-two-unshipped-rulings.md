@@ -12,7 +12,7 @@ exposed a defect ruling 1 created**: the promoted attempt is the one path to `Ac
 review attached**, on a task going terminal — shipped the same day (`ad64194`). ⚠ **`Accomplished`
 is not *what was asked***: `a8327`'s diff put the flag in `main.rs` ahead of the parser and never
 touched `cli.rs`, which the task named, and 580 of 580 tests pass because no test covers a flag
-nobody had added yet. Findings **F693–F700**, next free **F701**. `abcc` `a6bb2ad` → **`ad64194`**,
+nobody had added yet. 🚨 **And the session's largest finding is not either ruling**: **a retry inherits nothing** — every attempt opens on a fresh snapshot of the operator's checkout, proved by seven attempts whose seven checkpoints all name **one tree** — and `brief::redirected` tells the model the opposite in its own context (F701, F702). Findings **F693–F702**, next free **F703**. `abcc` `a6bb2ad` → **`ad64194`**,
 three commits, **581 tests** (was 575), fmt and `clippy --all-targets -D warnings` clean. Flown
 against `qwen3.6-35b-a3b-mtp@iq3_s` at `-c 40960 --parallel 1`, prompt sha **`6917f0ccaf0f83c3`**
 (329 chars), asserted identical to all eleven prior arms.
@@ -287,6 +287,63 @@ which is a prompt-surface change and wants its own arm.
 
 ---
 
+## 3b. 🚨 F701 and F702 — a retry inherits nothing, and one brief says it does
+
+F700 sent me looking for where a refusal could reach a retry. There is nowhere, and the reason is
+larger than the question.
+
+### F701 — every attempt opens on a fresh snapshot of the operator's checkout
+
+`Driver::open_workspace` begins `let taken = self.checkpoint(row, "before")?`, `Driver::checkpoint`
+snapshots **`self.repo`** — the operator's checkout — and **`Cause` is never consulted**. There is
+no branch for `Cause::Retry` and none for `Cause::Edit`; `abcc-fleet` hands the cause to
+`driver.run` and builds the `Driver` over the same `self.repo` either way. There are exactly two
+places in the workspace that open a worktree (`abcc-drive` and `abcc/takeover.rs`), and only the
+operator's own `abcc take` opens at a task's last checkpoint.
+
+🎉 **The arm proves it as data rather than by reading.** Seven attempts, five tasks, seven distinct
+opening checkpoints — and every one of them points at the same tree object:
+
+```
+07f39772  b2bdeb44  3c0dbf24  8388862c  28005c0b  8798033a  5230dfbc
+            all → tree 9088b222dcbbb8e242c97dfe4aacf8232ebe650c
+```
+
+`a7830` is a **retry** of `a7654`, which left **3 changed files** in its tree; `a7830` opened on the
+same tree as the fresh attempt did. So a retry is a byte-identical re-run: same tree, same prompt,
+same brief — differing only in the sampler. That is **not** obviously wrong (ADR-0010's budget is
+*try again*, and F657 measured how much of this subject's outcome is sampling), but it has never been
+written down, and three separate designs in this session were reasoned about as though a retry
+continued the work.
+
+⚠ **It also means the same thing twice over for the arm's own validity**: identical trees and one
+prompt sha make these five sorties a controlled arm rather than five runs.
+
+### 🚨 F702 — and the redirect brief tells the model the opposite
+
+`brief::redirected` is appended to Recon's and Builders' opening bodies whenever a redirect is in
+force, and it ends:
+
+> The tree you are looking at is the one that attempt left behind, at its checkpoint — so work it
+> already did is there, and doing it again is not what was asked for.
+
+**That sentence is false as the code stands.** The forked attempt runs `Cause::Edit` through the same
+`open_workspace`, which takes a fresh snapshot of the operator's checkout; the stopped attempt's
+closing checkpoint is on a ref and is not what the worktree is cut at. So the paragraph asserts the
+presence of work that is not in the tree, in the model's context, on every redirect.
+
+⚠ It is the doc comment's own reasoning that gives it away — *"it opens on the checkpoint the
+stopped attempt reached rather than on a clean tree"* — which is a claim about behaviour sitting
+beside a function that does not implement it. **The comment and the prose agree with each other and
+neither agrees with `open_workspace`**, which is why nothing caught it: there is no third witness.
+
+▶ **Two repairs, and they are different sizes.** Either fork the worktree from the stopped attempt's
+checkpoint — which is what both sentences already promise and what `takeover.rs` already does — or
+delete the promise. The first is the one worth having and is the same change F700 wants, because a
+retry that inherits a tree is a retry that can be told what refused it.
+
+---
+
 ## 4. The eleven arms — closed
 
 David ruled on 2026-09-11 after three agents recommended it across two sessions: **reject all
@@ -300,8 +357,10 @@ checkpoints are still on refs**.
 
 ## 5. What is owed next
 
-1. 🚩 **F700 — tell a retry what refused it.** The largest lever found this session and the only one
-   still untouched. A prompt-surface change: it wants an arm.
+1. 🚩 **F701/F702 first, then F700 — a retry inherits nothing and one brief says it does.** The
+   largest thing found this session and entirely unshipped. `brief::redirected`'s closing sentence is
+   false against `open_workspace`; fix the code rather than the sentence, and a retry that inherits a
+   tree is then a retry that can be told what refused it (F700).
 2. ⏸ **The `summary` lever is unmeasured.** F697 says the model does not reach for `diagnostics`; one
    arm cannot say whether the new sentence moves that. A second arm on the same subject would.
 3. ⏸ **The four `paint` changes** — `--px` 150→120, `--cell` 20→a value that over-reserves, the
