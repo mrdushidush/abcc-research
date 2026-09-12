@@ -54,6 +54,7 @@ F641	answers	F637	"F641 - F637 is ANSWERED: the markup is the server's tool-call
 	answers	F625	"F625 IS REPAIRED" in abcc 9166537, tightened to 400 s in 5f6ee08 - do not plan around it	memory/abcc-how-to-run-it.md:46
 F674	refines	F649	F649 is not retracted, but do not credit it for the write_file door: the refusal that preceded the door was NoMatch, which F649's sentence does not name	memory/abcc-2-apply-patch-is-the-bottleneck.md:29
 F678	answers	F655	"F655 no longer needs an arm" - a7484 gave it the prospective demonstration it was missing, so DEBUG P5's open item is closed by observation	research/DEBUG-P6-the-door-taken-unprompted.md:489
+F728	refines	F716	F716's "a seed does not pin this stack" holds where the sampler is stochastic; at temperature 0 - which is all the K-series subject has ever sent - the argmax pins it, 20 of 20, and the seed is irrelevant rather than insufficient	research/W1-the-k-series-subject-is-greedy.md:47
 #
 # ---------------------------------------------------------------- NON-EDGES
 # Every row below is a correction the prose considered and REFUSED, or one a
