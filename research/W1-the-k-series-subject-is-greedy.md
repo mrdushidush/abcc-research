@@ -95,3 +95,46 @@ F718 and F724: a fact that governs the result, with nothing writing it down.
 and 6,615 s for nine cells each, so two arms at n ≥ 3 is a multi-hour GPU session. Valid only while
 subject `af3f804` / llama.cpp `2.27.1` / `-c 40960` hold, and the two traps in `W1-batch3-residency-probe.md`
 still bind: `justInTimeModelLoading` is TRUE and `confirm_model` compares **names**.
+
+## 5. What shipped for F729, and the control that caught a blind test
+
+`runmeta.json` gains **`warmup.tokens_out`** — the warmup turn's `out=`, which the harness had
+already matched out of the turn-end line and thrown away. The warmup prompt is held constant across
+every run this harness has ever made, so two manifests that disagree about that number disagree
+about something. ⚠ **A fingerprint, not a proof**: equal counts do not mean equal text. It
+falsifies, it does not certify.
+
+`server_uncaptured` grows from **one name to eight** — `kv_cache_type` joined by `temperature`,
+`top_p`, `top_k`, `min_p`, `repeat_penalty`, `seed` and `speculative_decoding`. That field's own
+doc says *"state that neither source reports, named rather than left silent"*, and the sampler is
+exactly that: **unrecordable here, not merely unrecorded.**
+
+The match that dropped the number is now `warmup_measurement`, its own function so a test can reach
+it, and it **refuses a marker reporting `out=0`**. The prompt is *"Reply with the single word:
+ready."*; a completed turn that decoded nothing is the harness failing to read the count, and the
+zero it would write is indistinguishable from the honest zero a dry run writes — F721's shape, in a
+new field, caught before it shipped rather than after.
+
+🚨 **The control that mattered.** The first version of the test asserted one `(tokens_in,
+tokens_out)` pair — and **replacing the field with the literal `71` passed it**. One expected value
+cannot distinguish *reads the field* from *happens to equal the fixture*; two markers with
+different counts can. That is item 161's lesson (*a test where the two quantities agree pins
+neither*) reappearing four days later in a different file, found by running the control instead of
+assuming it.
+
+| control | what it breaks | result |
+|---|---|---|
+| drop the `out=0` guard | the refusal | the test fails |
+| return the literal `71` instead of the field | reading the count at all | the test fails **only after the second marker was added** |
+
+**238 harness tests pass**, `w8-run` is `clippy --all-targets -D warnings` clean.
+
+⚠ **Two things deliberately left alone.** The harness workspace is **not** rustfmt-clean — a
+`cargo fmt --all` rewrites **35 files across six crates**, which is not this change — and
+`w8-import-u40` carries **5 pre-existing clippy errors**. Neither was touched, and neither is
+`w8-run`'s.
+
+⚠ **What is not covered: the wiring.** There is no end-to-end harness test that produces a
+`runmeta.json`, so nothing asserts that the number reaching the manifest is the one the subject
+printed. The `out=0` refusal is what stands in for it: it makes `"ran": true` with
+`"tokens_out": 0` impossible, which is the failure a silent wiring break would produce.

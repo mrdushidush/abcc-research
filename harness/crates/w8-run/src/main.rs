@@ -376,6 +376,7 @@ fn run(args: Args) -> Result<ExitCode, String> {
         warmup: false,
         warmup_prompt: WARMUP_PROMPT.to_string(),
         warmup_wall_ms: 0,
+        warmup_tokens_out: 0,
         preamble_tokens_in: 0,
         delivery_mode: args.delivery.to_string(),
         aggregate_rule: suite.aggregate.describe(),
@@ -384,13 +385,32 @@ fn run(args: Args) -> Result<ExitCode, String> {
         // Named, not silently omitted. `lms ps` reports PARALLEL and TTL; `/api/v0/models` reports
         // quantization and the loaded window; the KV cache type appears in neither, survives an
         // unload, and moves both memory use and output.
-        server_uncaptured: vec!["kv_cache_type".to_string()],
+        //
+        // 🚨 **F729: the sampler is the same class, and it was missing from this list.** The
+        // subject sends `temperature: 0.0` and `max_tokens` and nothing else (`claudette`
+        // `crates/claudette/src/api.rs:783`), so every other sampler input is whatever the server
+        // defaults to — and this box's server reports none of them. Measured 2026-09-12:
+        // `/api/v0/models/<id>` answers with `arch`, `capabilities`, `compatibility_type`, `id`,
+        // `loaded_context_length`, `max_context_length`, `publisher`, `quantization`, `state` and
+        // `type`, and `lms ps` adds only SIZE, CONTEXT, PARALLEL, DEVICE and TTL. ▶ So these are
+        // **unrecordable here**, not merely unrecorded, which is exactly what this field is for.
+        // `warmup.tokens_out` is the property they govern, measured instead of named.
+        server_uncaptured: vec![
+            "kv_cache_type".to_string(),
+            "temperature".to_string(),
+            "top_p".to_string(),
+            "top_k".to_string(),
+            "min_p".to_string(),
+            "repeat_penalty".to_string(),
+            "seed".to_string(),
+            "speculative_decoding".to_string(),
+        ],
         env_pinned: BTreeMap::new(),
         env_removed: Vec::new(),
     };
 
     if !args.dry_run {
-        let (preamble, wall, env_snapshot) = warmup(
+        let (preamble, decoded, wall, env_snapshot) = warmup(
             subject,
             &bin,
             &args.held,
@@ -401,6 +421,7 @@ fn run(args: Args) -> Result<ExitCode, String> {
         )?;
         meta.warmup = true;
         meta.preamble_tokens_in = preamble;
+        meta.warmup_tokens_out = decoded;
         meta.warmup_wall_ms = wall;
         // Run-scoped only. The warmup always runs in `allow` mode, so its raw snapshot would
         // claim CLAUDETTE_AUTO_APPROVE=1 for every cell in the run — including the gated ones,
@@ -408,8 +429,7 @@ fn run(args: Args) -> Result<ExitCode, String> {
         meta.env_pinned = env_snapshot.run_scoped();
         meta.env_removed = env_snapshot.run_scoped_removed();
         println!(
-            "warmup: {} ms, preamble_tokens_in = {preamble}",
-            wall
+            "warmup: {wall} ms, preamble_tokens_in = {preamble}, warmup_tokens_out = {decoded}"
         );
     }
 
@@ -500,7 +520,7 @@ fn warmup(
     memory_stub: &Path,
     gate_marker: &str,
     turn_end: regex::Regex,
-) -> Result<(u64, u64, held_env::ChildEnv), String> {
+) -> Result<(u64, u64, u64, held_env::ChildEnv), String> {
     let wd = out_run.join("warmup/wd");
     std::fs::create_dir_all(&wd).map_err(|e| e.to_string())?;
     let variant = synthetic_allow_variant();
@@ -572,8 +592,39 @@ fn warmup(
     session.finish();
     block_probe?;
 
+    let (tokens_in, tokens_out) = warmup_measurement(&end)?;
+    Ok((tokens_in, tokens_out, run.wall_ms, env))
+}
+
+/// What the warmup turn measured, or why the run stops.
+///
+/// 🚨 **Its own function so it can be tested**, because the two numbers leave here by different
+/// routes and only one of them used to leave at all. `tokens_out` was matched out of the turn-end
+/// line and dropped on the floor (F729); `tokens_in` is RUNMETA's `preamble_tokens_in`.
+///
+/// 🚨 **A completed warmup reporting `out=0` is refused.** The prompt is *"Reply with the single
+/// word: ready."* — a turn that ends with a marker and zero decoded tokens is not a fast warmup, it
+/// is this harness failing to read the count, and the zero it would write is indistinguishable from
+/// the honest zero a dry run writes. F721's shape: a `0` in a field with no vacant value reads as a
+/// measurement. Refusing is what keeps `"ran": true` and `"tokens_out": 0` impossible together.
+fn warmup_measurement(end: &TurnEnd) -> Result<(u64, u64), String> {
     match end {
-        TurnEnd::Marker { tokens_in, .. } => Ok((tokens_in, run.wall_ms, env)),
+        TurnEnd::Marker {
+            tokens_in,
+            tokens_out,
+            ..
+        } => {
+            if *tokens_out == 0 {
+                return Err(format!(
+                    "the warmup turn ended with a marker reporting out=0 against the prompt \
+                     {WARMUP_PROMPT:?}. A turn that decoded nothing is the harness failing to read \
+                     the count, and a zero written into RUNMETA is indistinguishable from the one a \
+                     dry run writes (F729) — so the run stops rather than recording a measurement \
+                     nobody took"
+                ));
+            }
+            Ok((*tokens_in, *tokens_out))
+        }
         other => Err(format!(
             "the warmup turn did not complete ({other:?}). RUNMETA requires a warmup — without it \
              the first task of the run is a model-load measurement wearing a task's name (F10) — \
@@ -1128,4 +1179,53 @@ fn git_state(root: &Path) -> (String, bool) {
         .map(|o| !String::from_utf8_lossy(&o.stdout).trim().is_empty())
         .unwrap_or(true);
     (head, dirty)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 🚨 The number this harness matched and threw away for the whole life of the K-series.
+    #[test]
+    fn the_warmup_carries_both_counts_out_and_refuses_a_decode_of_nothing() {
+        // 🚨 TWO markers with different counts, and the second is not padding: a first
+        // draft asserted one pair, and replacing the field with the literal `71` passed it. One
+        // expected value cannot distinguish *reads the field* from *happens to equal the fixture*
+        // — which is the trap F723 was, and it was the negative control that found it here.
+        let good = TurnEnd::Marker {
+            iterations: 1,
+            tokens_in: 4901,
+            tokens_out: 71,
+            ctx_est: None,
+        };
+        assert_eq!(warmup_measurement(&good), Ok((4901, 71)));
+
+        let other = TurnEnd::Marker {
+            iterations: 1,
+            tokens_in: 9826,
+            tokens_out: 116,
+            ctx_est: None,
+        };
+        assert_eq!(warmup_measurement(&other), Ok((9826, 116)));
+
+        // 🚨 The negative control for F729's own fix. A marker that decoded nothing would write
+        // `"ran": true, "tokens_out": 0`, which reads exactly like the dry run's honest zero — and
+        // a manifest cannot be asked afterwards which of the two it meant.
+        let silent = TurnEnd::Marker {
+            iterations: 1,
+            tokens_in: 4901,
+            tokens_out: 0,
+            ctx_est: None,
+        };
+        let Err(why) = warmup_measurement(&silent) else {
+            panic!("a warmup that decoded nothing has to stop the run");
+        };
+        assert!(why.contains("out=0"), "{why}");
+
+        // And the refusal that was already here still refuses, for its own reason (F10).
+        let Err(why) = warmup_measurement(&TurnEnd::Timeout) else {
+            panic!("a warmup that never completed has to stop the run");
+        };
+        assert!(why.contains("did not complete"), "{why}");
+    }
 }

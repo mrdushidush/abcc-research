@@ -240,6 +240,21 @@ pub struct RunMeta {
     /// directly, and because reporting `tokens_in` without separating it credits or blames the
     /// model for the harness's preamble.
     pub preamble_tokens_in: u64,
+    /// The warmup turn's `out=`, and the cheapest fingerprint of this stack's **decoding** that
+    /// exists.
+    ///
+    /// 🚨 **F729.** The sampler is not recordable here: the subject sends `temperature: 0.0` and
+    /// `max_tokens` and nothing else (`claudette` `crates/claudette/src/api.rs:783`), and every
+    /// other sampler input is a server default that neither `/api/v0/models` nor `lms ps` reports —
+    /// see `server_uncaptured`. What *can* be recorded is the property they govern. The warmup
+    /// prompt is held constant across every run this harness has ever made, so **two runs that
+    /// disagree about this number disagree about something**, and a reader holding only the
+    /// manifests can see it. It was already matched out of the turn-end line and thrown away, so it
+    /// costs no call and moves no timing.
+    ///
+    /// ⚠ A fingerprint, not a proof: equal counts do not mean equal text. It falsifies, it does
+    /// not certify — the same thing `corpus_dirty` does a few fields up.
+    pub warmup_tokens_out: u64,
     pub delivery_mode: String,
     pub aggregate_rule: String,
     /// **What the *server* says about the model, as opposed to what the runner asked for.**
@@ -299,11 +314,15 @@ impl RunMeta {
         );
         let _ = write!(
             s,
-            ",\"warmup\":{{\"ran\":{},\"prompt\":{},\"wall_ms\":{},\"preamble_tokens_in\":{}}}",
+            ",\"warmup\":{{\"ran\":{},\"prompt\":{},\"wall_ms\":{}",
             self.warmup,
             json_quote(&self.warmup_prompt),
-            self.warmup_wall_ms,
-            self.preamble_tokens_in
+            self.warmup_wall_ms
+        );
+        let _ = write!(
+            s,
+            ",\"preamble_tokens_in\":{},\"tokens_out\":{}}}",
+            self.preamble_tokens_in, self.warmup_tokens_out
         );
         let _ = write!(
             s,
@@ -493,6 +512,7 @@ mod tests {
             warmup_prompt: crate::env::WARMUP_PROMPT.into(),
             warmup_wall_ms: 169_700,
             preamble_tokens_in: 4885,
+            warmup_tokens_out: 71,
             delivery_mode: "verbatim".into(),
             aggregate_rule: "include_verifiable = [full, presence_only], exclude_quarantined = true"
                 .into(),
@@ -509,7 +529,7 @@ mod tests {
                 capabilities: vec!["tool_use".into()],
             }),
             lms_ps_file: Some("lms-ps.txt".into()),
-            server_uncaptured: vec!["kv_cache_type".into()],
+            server_uncaptured: vec!["kv_cache_type".into(), "temperature".into()],
             env_pinned: [("CLAUDETTE_FALLBACK_BRAIN_MODEL".to_string(), String::new())]
                 .into_iter()
                 .collect(),
@@ -524,7 +544,17 @@ mod tests {
         assert!(j.contains("\"num_ctx\":61440"), "{j}");
         assert!(j.contains("\"quantization\":\"IQ3_S\""), "{j}");
         // The gap is part of the record. A capture that lists only what it found reads as complete.
-        assert!(j.contains("\"server_uncaptured\":[\"kv_cache_type\"]"), "{j}");
+        assert!(
+            j.contains("\"server_uncaptured\":[\"kv_cache_type\",\"temperature\"]"),
+            "{j}"
+        );
+        // 🚨 F729: the sampler is unrecordable here, so the property it governs is recorded
+        // instead — and inside the `warmup` object, beside the `in=` it was matched with, rather
+        // than as a loose top-level number that would read as a total for the run.
+        assert!(
+            j.contains("\"preamble_tokens_in\":4885,\"tokens_out\":71}"),
+            "{j}"
+        );
         // The harness delta F57 introduced. Runs measured before it had no verifier bound at all,
         // and a pool that mixes the two must be able to see that from the rows.
         assert!(j.contains("\"verify_timeout_s\":300"), "{j}");
