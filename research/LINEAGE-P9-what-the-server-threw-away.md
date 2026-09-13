@@ -1,15 +1,18 @@
 # LINEAGE P9 — what the server was throwing away, and the malformation it left behind
 
-Session 10, 2026-09-13. `abcc` `6e1cbaa` → **`79d7b20`**, `abcc-research` at `4bbb099`, both trees
-clean. Findings **F748–F757**. ▶ The queue's first item was *F744's repair*, and the repair itself is
-a trade the operator rules on. What was buildable without that ruling is everything underneath it:
-**F744's own rate, re-counted against the right denominator; why nothing in the workspace could see
-the cut; a detector that can; what the server actually discards; and what that costs.**
+Session 10, 2026-09-13. `abcc` `6e1cbaa` → **`79d7b20`**, `abcc-research` `4bbb099` → this commit,
+both trees clean. Findings **F748–F758**. ▶ The queue's first item was *F744's repair*, and the repair
+itself is a trade the operator rules on. What was buildable without that ruling is everything
+underneath it: **F744's own rate, re-counted against the right denominator; why nothing in the
+workspace could see the cut; a detector that can; what the server actually discards; and what that
+costs.**
 
-🚨 **Three of this session's ten findings correct the session that produced them.** F744's rate was
-overstated fourteenfold, its headline example is not a truncation at all, and the thing that ends the
-attempt is not the cut — it is the **malformation the cut leaves behind**, which silences the model
-at a size that fits comfortably.
+🚨 **Three of these eleven findings correct the session that produced them, and §9 corrects an
+earlier version of itself.** F744's rate was overstated fourteenfold; its headline example is not a
+truncation at all; what the cut robustly costs is the middle of the transcript and a **two-to-eightfold
+reasoning trace**; and whether the model still *answers* over a cut context turned out to be an
+**interaction between the system prompt and the question** (F758) rather than a property of the cut —
+measured only because the arm was re-flown from the kept tool with different wording.
 
 ---
 
@@ -231,66 +234,103 @@ window it did not fit.
 
 ---
 
-## 9. 🚨🚨 F755 — the cut is not what costs the answer. The ORPHANED TOOL RESULT is
+## 9. 🚨🚨 F755/F758 — the cut removes the evidence and inflates the trace. **Whether the model still ANSWERS is decided by the brief, and this section was rewritten after it flew twice**
 
-The plain prose arm answered its question perfectly well **while truncated** (§6), which is the
-observation that makes the next one necessary: abcc does not send prose. It sends
-`assistant(tool_calls)` / `tool(result)` **pairs**, and `truncateMiddle` drops middle **messages**.
+⚠ **The first version of this section said the cut conversation produced no answer in 7 of 7 flights
+and attributed the silence to the truncation.** Re-flown from the kept tool with a differently worded
+system prompt and question — **the same 140 middle messages, byte for byte, and the same cut** — it
+answered **7 of 7**. Both arms are real and the conclusion that stood on one of them was not. The
+section is replaced; the measurements are all below.
 
-The same probe in abcc's own shape, seven flights over three seeds and two budgets:
+The plain prose arm answered its question perfectly well **while truncated** (§6), which is what made
+the next arm necessary: abcc does not send prose. It sends `assistant(tool_calls)` / `tool(result)`
+**pairs**, and `truncateMiddle` drops middle **messages** — so the surviving tail can begin on a
+`tool` result whose `assistant` turn is above the cut.
 
-| arm | prompt | reply text | finish |
+### 🚨 F758 — on a cut conversation, answering at all is an INTERACTION between the system prompt and the question
+
+Two texts, crossed, over the identical 70-pair conversation at ~19,700 reported tokens. `A` is the
+first arm's wording, `B` the second's; nothing else differs, and
+`research/tools/windowprobe.py cross` re-flies all four.
+
+| system prompt | question | answered | finish |
 |---|---|---|---|
-| **tool pairs, fits** — 8 pairs | 7,373 | **answered, 5 of 5** (65–131 chars) | `stop` |
-| **tool pairs, cut** — 70 pairs | 19,680 | **nothing, 7 of 7** | `length` ×6, `tool_calls` ×1 |
+| B | B | **9 of 9** | `stop` |
+| **A** | B | **5 of 5** | `stop` |
+| B | **A** | **5 of 5** | `stop` |
+| **A** | **A** | **0 of 13** | `length` ×7, `tool_calls` ×6 |
 
-▶ **Six of the seven spent their entire completion budget and returned zero characters of text** —
-4,975 to 18,981 characters of reasoning trace, and no answer. A budget of 6,000 bought 18,981
-characters of trace and still no reply.
+🚨 **Neither text silences it alone. Only the pair does** — **0 of 13 flights of `A`+`A` produced a
+single character of reply text**, against 9 of 9, 5 of 5 and 5 of 5 in the three cells that changed
+one string. ▶ **So the cut is NECESSARY and not SUFFICIENT**: the same conversations under the window
+answer in every arm, and over the window one wording of two stops answering entirely. ⚠ The four
+cells were flown at two and three seeds each and the cells are unanimous, which is what makes an
+interaction the honest reading rather than sampling.
 
-🚨 **So the malformation was built by hand, at a size that fits, with the cut out of the picture.**
-Take the intact 8-pair conversation and remove four `assistant(tool_calls)` turns, leaving their
-results behind; then the mirror image, removing four results and leaving their calls:
+⚠ **This is F503's shape and it is now measured on the window instead of the head.** *A phase whose
+answer never arrives* was read as a model quirk with a nudge as the repair; here it is a
+**prompt-by-context interaction**, invisible to any test that varies one of them.
 
-| arm | prompt | reply text | finish |
-|---|---|---|---|
-| intact pairs — the control | 7,373 | answered, 2 of 2 | `stop` |
-| **orphaned tool RESULTS** — a result whose call is gone | 7,221 | **nothing, 0 of 2** | `length` |
-| orphaned tool CALLS — a call whose result is gone | 3,980 | answered, 2 of 2 | `stop` |
+### 🚨 F755 — what the cut does in EVERY arm: it takes the middle, and it inflates the trace
 
-▶ **One of the two malformations is fatal and the other is harmless.** A result with no call makes
-the model reason to its cap and say nothing, at **7,221 tokens against a 40,960-token window** — the
-window is not involved. A call with no result costs nothing at all.
+The two effects that survive both wordings, measured on the same conversation at 8 pairs (fits) and
+70 pairs (cut):
 
-**And `truncateMiddle` on abcc's body produces the fatal one by construction**: it keeps the system
-prompt, the first user message and the tail, and the tail of an abcc body begins wherever the cut
-landed — mid-pair, on a `tool` result whose `assistant` turn is above the cut.
+| arm | prompt | canaries found | reasoning chars | completion |
+|---|---|---|---|---|
+| **pairs that FIT** — 8 | 7,414 | front, middle, late, system | **654**, all four flights | 278–281 |
+| **pairs CUT** — 70 | 19,721 | **front, late, system — middle gone** | **1,442–2,250** | 454–660 |
 
-🎉 **`turn.rs` had already guessed at this, and both of its guesses are wrong.** The comment above
+▶ **The middle canary is missing in every cut flight and present in every fitting one**, which is §6's
+result reproduced in abcc's own shape. And the trace is **2.2–3.4× longer** on the cut arm at the same
+question — the model spends more reasoning on a transcript with holes in it, and in arm `A` it spends
+all of it.
+
+### 🚨 And the malformation is measurable on its own, at a size that fits
+
+The cut does two things at once — it removes evidence *and* it orphans a pair — so the pair was
+orphaned **by hand** at 8 pairs, where nothing is cut and the window is not involved. Four
+`assistant(tool_calls)` turns removed, leaving their results; then the mirror image.
+
+| arm | prompt | answered | at the token cap | reasoning chars |
+|---|---|---|---|---|
+| intact pairs | 7,414 | **4 of 4** | 0 of 4 | **654** (identical, all four) |
+| **orphaned tool RESULTS** — a result whose call is gone | 7,262 | **4 of 8** | **6 of 8** | **4,244–5,395** |
+| orphaned tool CALLS — a call whose result is gone | 4,021 | **4 of 4** | 0 of 4 | **960** (identical, all four) |
+
+🚨 **An orphaned tool RESULT multiplies the reasoning trace by eight and puts six of eight flights at
+the token cap, with nothing cut and 7,262 tokens against a 40,960-token window.** The mirror image
+does nothing at all. ▶ **One of the two malformations is expensive and the other is free**, and
+`truncateMiddle` produces the expensive one by construction.
+
+⚠ **Two honest limits.** The orphan-call arm is also a **smaller** prompt — removing results removes
+most of the bytes — so it is not size-matched; the intact control at 7,414 is the comparison that
+matters. And *answered 4 of 8* is a **coin flip that was published as 0 of 2 first**: the durable
+readings are the trace size and the cap rate, where the arms do not overlap at all.
+
+🎉 **`turn.rs` had already guessed at this case, and both of its guesses are wrong.** The comment above
 `body.append(Message::assistant_calling(...))` says a tool result whose question is missing is *"a
 message the OpenAI dialect rejects and a lenient template renders as an answer from nowhere."* It is
-neither: this server returns **200 OK** and renders something the model cannot answer over at all.
-⚠ The two arms are not size-matched — removing results removes most of the bytes — but the intact
-control at 7,373 answers and the orphan-result arm at 7,221 does not, so size is not the variable.
+neither: this server returns **200 OK**, and the model pays for it in trace.
 
 ---
 
 ## 10. F756 — so the ending abcc records for this names the wrong resource, again
 
-Take the fatal arm through this workspace's own classification. `finish: length` with
-`completion_tokens == budget` fails F498's first branch (`completion < budget`) and lands on
-`Why::TruncatedAtCap { budget }` → `Uncertain` → a retry.
+Take arm `A`'s flights through this workspace's own classification. Seven of the eleven ended
+`finish: length` with `completion_tokens == budget`, which fails F498's first branch
+(`completion < budget`) and lands on `Why::TruncatedAtCap { budget }` → `Uncertain` → a retry. The
+other four ended `tool_calls` with no text, which in the loop is simply **another round spent**.
 
-▶ **The record therefore says *stopped at the 1500-token cap*, and the cause is a prompt the server
-cut and a conversation the truncation malformed.** That is F746's shape — *`BudgetExhausted { 24
-rounds }` names the wrong resource* — one level down, and now measured on the shape rather than
-argued from the archive. 🚨 **Neither reading is available from the ending alone**, which is the whole
-case for `PromptCut` being on the log beside it (§5).
+▶ **So the record says *stopped at the 1500-token cap*, and the cause is a prompt the server cut.**
+That is F746's shape — *`BudgetExhausted { 24 rounds }` names the wrong resource* — one level down.
+🚨 **Neither reading is available from the ending alone**, which is the whole case for `PromptCut`
+being on the log beside it (§5).
 
 ⏸ **A hypothesis this raises and does not settle:** F503's empty answers — *the closing answer missing
-from 8 of 10 phases*, repaired by a nudge — were read as a model quirk. A cut prompt produces the
-same signature. Whether any of those ten phases was over the window is answerable from the archive
-and was not asked here.
+from 8 of 10 phases*, repaired by a nudge — were read as a model quirk. F758 says the same signature
+is produced by a wording interaction over a cut context. Whether any of those ten phases was over the
+window is answerable from the archive and was not asked here.
 
 ---
 
@@ -300,11 +340,14 @@ Every option on F744's repair list involves abcc deciding what its body may cont
 enters it, an eviction of what has aged, a summary in place of a file. **All of them trim.** So the
 constraint is worth writing down before the feature exists:
 
-1. 🚨 **Never leave a `tool` result without its `assistant(tool_calls)` turn.** 0 of 2 answered.
-2. **A call without its result is safe** — 2 of 2 — so a pair may be dropped whole, and if only one
-   half can go, it is the *call* that must keep its result rather than the other way round.
-3. ▶ **Trimming in pairs is strictly better than any byte budget**, because the failure it avoids is
-   not gradual: the model does not answer worse, it stops answering.
+1. 🚨 **Never leave a `tool` result without its `assistant(tool_calls)` turn.** It costs an **8×
+   reasoning trace and six of eight flights at the token cap**, at a size that fits.
+2. **A call without its result is free** — 4 of 4, and a trace within 300 characters of the intact
+   control — so a pair may be dropped whole, and if only one half can go it is the **call** that
+   must keep its result rather than the other way round.
+3. ▶ **Trimming in pairs is strictly better than any byte budget**, because what it avoids is not a
+   gradual loss of quality: the cost lands on the completion budget, which is the resource the phase
+   needs to produce its artifact.
 4. ⚠ **And abcc itself has never built one.** `tool_round` appends the assistant turn *before* its
    results, unconditionally, so the orphan is made downstream — by the server, inside the window it
    never told us about.
