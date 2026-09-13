@@ -1,7 +1,7 @@
 # LINEAGE P8 — the lever that had already been pulled, and the denominator that flattered it
 
 Session 9, 2026-09-13. `abcc` at `6e1cbaa`, `abcc-research` at `67fa204`, both trees clean.
-Findings **F736–F746**. ▶ The queue's first open item was *a second arm for the `summary` lever*,
+Findings **F736–F747**. ▶ The queue's first open item was *a second arm for the `summary` lever*,
 budgeted as a GPU session. **It did not need one: the arm had already flown, twice, and nobody had
 counted it.** The counting cost nothing and the answer is not the one the queue expected.
 
@@ -117,8 +117,8 @@ Two causes, both of them a column that exists and is empty rather than a column 
    sequence numbers. Read as Unix milliseconds they render as the epoch, which is exactly what a
    date column looks like when it was never populated.
 
-▶ **F734 said *key a log query on `kind`, never on the body*. This is its other half: key it on the
-column the event actually carries.** The schema comment says the discriminant is in a column *"so
+▶ **This is the other half of what F734 established** — *key a log query on `kind`, never on the
+body* — and the half is: **key it on the column the event actually carries.** The schema comment says the discriminant is in a column *"so
 the common filters are index scans rather than JSON extraction"* — `task` and `attempt` are there
 for the same reason, and neither is on every row.
 
@@ -237,24 +237,59 @@ before F673: **57 of 68** · after F673: **29 of 30**. ▶ **This has been happe
 long attempt this project has ever flown**, and the context is `-c 40960`, which is the number the
 drops sit against.
 
-### F745 — the control that makes it a finding and not an accounting artifact
+### F745 — the control, replaced: the server was asked directly, and it answers
 
-**There is an innocent explanation and it had to be killed first.** If this server reported only
-*newly processed* tokens — cache misses, with the prefix cache doing the rest (W1/W2 measured it
-saving 79.7% of TTFT) — then a falling `prompt_tokens` would mean a cache **hit** and nothing would
-be wrong at all.
+⚠ **The first version of this control argued from a ratio of reported tokens to estimated body
+bytes, and that argument was too weak to carry the finding** — it rests on a chars-per-token
+constant that was never calibrated on source code. It is replaced here by two direct measurements
+of the server, which is what should have been done first. The conclusion is unchanged; the evidence
+for it is not.
 
-▶ **Ruled out by the ratio of reported tokens to the body abcc had actually sent:**
+**1. `prompt_tokens` is the whole prompt, not the newly-processed part.** The innocent explanation
+was that this server reports cache misses, so a falling count would mean a prefix-cache *hit*
+(W1/W2 measured the cache saving 79.7% of TTFT, so it is certainly working). Asked directly:
 
-| call | 2 | 3 | 4 | 5 | 6 | 7 | **8** | 13 | 24 |
-|---|---|---|---|---|---|---|---|---|---|
-| reported ÷ body | 2.27 | 2.22 | 1.24 | 1.13 | 1.11 | **1.10** | **0.37** | **0.17** | **0.16** |
+| request | reported |
+|---|---|
+| a ~14k-token prompt | **14,010** |
+| the **byte-identical** prompt again — a total cache hit | **14,010** — no discount |
+| the same prefix **+ ~2.8k new tokens** | **16,821** — the whole prompt, not the new part |
 
-**Calls 4–7 converge on ~1.10 and hold there** — the server is reporting the *whole* prompt, the
-residual being JSON scaffolding and the head prefix that the byte estimate does not count. Cache-miss
-accounting cannot produce four stable consecutive readings at ~1.1 and then collapse to 0.37 in one
-step. ⚠ The early ratios (2.27, 2.22) are high because the head prefix dominates a small body; they
-are the estimate warming up, not evidence either way.
+▶ **A cache hit changes the number not at all.** So a fall cannot be a cache hit, and the archive's
+117 falls are not an accounting artifact.
+
+**2. The server truncates a conversation silently, and says so for a single message.** Sent
+conversations of the same shape and growing size against the 40,960 window:
+
+| blocks | messages | reported `prompt_tokens` |
+|---|---|---|
+| 12 | 25 | **33,022** — fits, reported in full |
+| 24 | 49 | **20,151** |
+| 60 | 121 | **20,151** — 2.5× the input, *the identical number* |
+| 140 | 281 | **18,160** — more input, **fewer** tokens |
+
+🚨 **Past the window the reported figure stops tracking the input and starts falling.** All of it
+returns **200 OK**, with no field, header or warning saying anything was dropped. ▶ **The retained
+window is roughly 18,000–20,000 tokens, about half of the 40,960 loaded** — and that is exactly
+where `a11598`'s post-drop calls sit: 19,181 · 19,261 · 19,310 · 19,719 · 19,957. The number
+measured from outside and the number measured from the log are the same number.
+
+### 🚨 F747 — the same limit is loud for one request shape and silent for the other
+
+**The first probe of this was a single user message of ~420,000 tokens, and it was refused** —
+`HTTP 400`, `exceed_context_size_error`, *"request (420010 tokens) exceeds the available context
+size (40960 tokens), try increasing it"*. That is a good error: it names the number, the limit and
+the fix.
+
+⚠ **And it is the reason the truncation is easy to miss.** A rolling window has nothing to drop
+when the conversation is one message, so that shape takes the error path; a conversation of many
+messages takes the drop path and returns 200. **Same server, same limit, same total size, opposite
+behaviour** — and the shape a naive probe reaches for first is the loud one, which is how you come
+away certain there is no silent truncation.
+
+▶ **This very session went that way**: the 400 was read as *the server does not truncate*, and the
+finding was nearly withdrawn on it. What settled it was sending the shape abcc actually sends.
+**Probe with the shape under test, not the shape that is easy to build.**
 
 ### F746 — what it costs, and which earlier numbers it touches
 
