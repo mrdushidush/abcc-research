@@ -1,9 +1,10 @@
 # LINEAGE P7 — the default that failed invisibly, and the edge nobody has ever taken
 
-**Status: queue item 3's first two entries are closed.** `abcc` `1f2d5ff` → **`6e1cbaa`**, two
-commits, **629 tests** (was 627), 19 ignored, `cargo fmt --all --check` clean and `clippy
---workspace --all-targets -D warnings` at **0 diagnostics**. Findings **F730–F734, next free
-F735** — ask `fledger.py next`, never this line.
+**Status: queue item 3's first two entries are closed, and a short probe flew.** `abcc`
+`1f2d5ff` → **`6e1cbaa`**, two commits, **629 tests** (was 627), 19 ignored, `cargo fmt --all
+--check` clean and `clippy --workspace --all-targets -D warnings` at **0 diagnostics**. Findings
+**F730–F735, next free F736** — ask `fledger.py next`, never this line. ▶ **The funnel moved to
+5 of 97 = 5.15%.**
 
 🚨 **Both halves of this session are the same shape: a thing that was written down, never read
 back, and wrong in the direction nobody would notice.** `paint`'s comment named two failure modes
@@ -183,7 +184,58 @@ of query less reliable in the same commit.
 
 ---
 
-## 6. What shipped
+## 6. F735 — the probe: an attempt that wrote the test and not the feature, and passed the structural rung
+
+▶ **A short GPU probe, David's call, one attempt.** The task was deliberately the change this
+session would otherwise have made by hand: *`abcc replay` bare says nothing about the transition
+table — add one line reporting how many arms have ever been taken and how many transitions there
+were, and a unit test for it.* Champion loaded in 15.5 s, `abcc check` matched exactly, pulse
+1 token in 503 ms.
+
+`a11400` ended **`Uncertain { BudgetExhausted { 24 rounds } }`** in the Change phase, after
+**37 model calls, 528,163 in / 23,630 out**, 13 turns of Localize and 24 of Change,
+**0 denials**, 2 nudges, worst TTFB 10.9 s.
+
+🚨 **It wrote 106 lines and none of them were the feature.** The whole diff is a new
+`#[cfg(test)] mod tests` appended to `crates/abcc/src/replay.rs`, testing a line that was never
+added. **The structural rung passed it — `exit 0`, *1 file(s) changed*** — because structural
+measures that the tree changed, not that it changed *toward the task*. The veto rung then refused:
+the tree does not build.
+
+⚠ **The three build errors are worth keeping, because two of them are about this codebase and
+only one is about the model.**
+
+* `E0433: cannot find module or crate atomics`, three times — the model wrote
+  `UnitId(atomics::AtomicU64::new(1))`. A slot id is a `u8`. That one is a hallucination.
+* `E0603: tuple struct constructor UnitId is private` — it reached for
+  `abcc_core::task::UnitId`, which is a private `use` inside `task.rs`; the public path is
+  `abcc_core::seq::UnitId`, whose field is `pub u8`. **A re-export that is private is a name that
+  resolves and then refuses**, which reads as a visibility bug rather than a wrong path.
+* `(TaskState, Command)` does not implement `Ord`, so the `BTreeSet` it reached for cannot hold
+  one. Neither type derives `Ord` **or `Hash`**, so no standard set will. ▶ **And that is the
+  finding, not the error.** An arm's identity is a pair of *discriminants*, and both types already
+  carry `name() -> &'static str` for exactly that; the census in §3 was keyed on those names.
+  The model keyed on the **values**, which are the one thing here that does not compare.
+
+⚠ **What the run says about itself, printed on its own last line:**
+`next Attempt { cause: Retry { of: a11400 } }  (a recommendation; nothing acted on it)`. That is
+§3's finding stated by the program during a live run — the parenthetical is honest and the prose
+in `FLEET-P2` was not.
+
+🎉 **And two readers were confirmed live on a real log for the first time since they
+shipped.** `sampler 37 of 37 call(s) seeded, 37 distinct` (F715/F719's seed, read back off the
+archive) and a per-tool byte tally on every tool — `read_file 16 call(s) [116,600 bytes back]`,
+`bash 12 call(s) at exec [2 non-zero, 5,516 bytes back]` (F713/F718). ⚠ **12 `bash` calls at the
+exec tier, where the previous sortie had zero**, and the one `apply_patch` call was **not** refused
+— n = 1 against a 77% refusal rate, so it is an observation and not a rate.
+
+▶ **The funnel: 5 of 97 = 5.15%** (was 5 of 96 = 5.2%). The row was closed with
+`abcc reject t11392 --note` naming the agent as the closer, because the veto's verdict is measured
+rather than judged and the note keeps a human's words off the log. **0 worktrees standing.**
+
+---
+
+## 7. What shipped
 
 **`fix(paint,cli)` `9767688`** — `paint::CELL` = 16 owning the number and the argument, `rows_for`
 carrying the three real modes where the inverted comment was, `--px` 150 → 120, the usage text and
@@ -201,10 +253,10 @@ refusing and not the wrong-attempt guard, then take-and-release walked. Control:
 
 ---
 
-## 7. ⏸ Still owed
+## 8. ⏸ Still owed
 
 1. 🚨 **The five unreviewed merges are now seven**, and `review_recorded` is still 0 and still
-   honest. `abcc review` records what a *person* spent. Sizes for the first five are in LINEAGE-P6
+   honest — confirmed on the live fold at 11,586 events. `abcc review` records what a *person* spent. Sizes for the first five are in LINEAGE-P6
    §6; this session adds `9767688` and `6e1cbaa`.
 2. ▶ **K-series arms B and C** — `n ≥ 3` repeats, **no seed** (F728: the subject is greedy and a
    seed is inert). Hours of GPU; ask first.
