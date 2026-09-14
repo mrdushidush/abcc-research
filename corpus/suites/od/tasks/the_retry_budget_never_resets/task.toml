@@ -95,7 +95,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES. Nothing in the sham's diff mentions \
+  🚨 THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES. Nothing in the sham's diff mentions \
   `budget.py`. What is left in view is the prompt's second paragraph -- *retries seem to stop \
   after the first hour and never start again* -- and `windows_used: 1` in a report the patch \
   does not change\

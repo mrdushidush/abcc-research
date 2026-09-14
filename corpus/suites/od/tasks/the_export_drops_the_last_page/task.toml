@@ -94,7 +94,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES. Nothing in the sham's diff mentions \
+  🚨 THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES. Nothing in the sham's diff mentions \
   `paging.py`. What is left in view is the prompt's second paragraph -- warehouse account \
   totals running slightly under, on and off, for months -- which is the same defect seen from \
   the other end\
@@ -103,7 +103,7 @@ caveats = [
   """
   THE VISIBLE TESTS PASS ON THE UNFIXED CODE AND ON THE SHAM, with two absences that are the \
   same absence twice: every result set in the suite is an exact multiple of the page size, and \
-  `audit.check` is only ever run on an export where nothing is missing. ðŸš¨ The second one is \
+  `audit.check` is only ever run on an export where nothing is missing. 🚨 The second one is \
   structural rather than lucky -- see the suite README: a sham has to be GREEN, so the \
   behaviour it changes cannot be pinned by a visible test\
   """,

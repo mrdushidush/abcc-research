@@ -92,7 +92,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ IT DISABLES THE ONLY THING THAT COULD SEE THE DEFECT while touching neither the defect \
+  🚨 IT DISABLES THE ONLY THING THAT COULD SEE THE DEFECT while touching neither the defect \
   nor its file. `docs/ledger_file.md` says the pre-flight validates what we are about to hand \
   over rather than the source data, and the sham inverts exactly that\
   """,

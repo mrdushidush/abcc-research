@@ -96,7 +96,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE SHAM'S NUMBER IS ALMOST RIGHT, AND THAT IS THE POINT. Dividing the calibrated value \
+  🚨 THE SHAM'S NUMBER IS ALMOST RIGHT, AND THAT IS THE POINT. Dividing the calibrated value \
   by ten also divides the bench offset by ten, so the only thing left wrong is the calibration \
   -- 18 cKPa on the one sensor that has an offset. A reviewer reading the diff sees a \
   defensible-looking guard; the tell is in a file the patch never mentions\

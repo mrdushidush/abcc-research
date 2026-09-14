@@ -74,7 +74,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  🚨 THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
   and the same one-line predicate. The sham reaches every candidate the refsol reaches and \
   misses no consumer; it is wrong about what it counts\
   """,
@@ -88,12 +88,12 @@ caveats = [
   """
   THE LOCAL WRONG ANSWER measures the ASCII the password reduces to, which is a real thing \
   people write and which does refuse the password in the review. It also refuses a \
-  twelve-character Swedish password, a thirteen-character Japanese one, and `cafÃ©-au-lait`, \
+  twelve-character Swedish password, a thirteen-character Japanese one, and `café-au-lait`, \
   because they reduce to nothing, to four digits and to eleven characters\
   """,
 
   """
-  ðŸš¨ IT IS A WORSE RULE THAN THE ONE IT REPLACES, not merely an incomplete one: the byte \
+  🚨 IT IS A WORSE RULE THAN THE ONE IT REPLACES, not merely an incomplete one: the byte \
   count was too permissive for some users, and an ASCII count is impossible for them. \
   `docs/password_policy.md` says so in its last paragraph -- and the reviewer is shown the \
   prompt and the patch, never the tree, so that paragraph is not in view\

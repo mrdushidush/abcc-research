@@ -73,7 +73,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- THE CONTROL, NOT A DEMONSTRATION (suite.toml). The sham and \
+  🚨 THIS IS AN `inside` TASK -- THE CONTROL, NOT A DEMONSTRATION (suite.toml). The sham and \
   the refsol patch THE SAME FILE, the same function and the same three lines. The sham's scope \
   is complete: there is no second call site, no consumer it missed and nothing outside its \
   diff. It is simply wrong about the arithmetic. A reviewer that reports a coverage gap here \

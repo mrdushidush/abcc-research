@@ -57,7 +57,7 @@ run      = "corpus/suites/od/tasks/the_discounts_stack_past_the_cap/verify.sh, h
 point    = 3
 tier     = "sham"
 verdict  = "FAIL"
-detail   = "expected 'o2_cents: 10000', got: o2_cents: 6000 — 6000 is 70% off â€” past the floor margin"
+detail   = "expected 'o2_cents: 10000', got: o2_cents: 6000 — 6000 is 70% off — past the floor margin"
 verifier = "rewritten"
 run      = "corpus/suites/od/tasks/the_discounts_stack_past_the_cap/verify.sh, host, 2026-09-04"
 # GATE END
@@ -73,7 +73,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  🚨 THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
   and the same function, and the sham reaches every order the refsol does. Its scope is \
   complete and its arithmetic is half a rule\
   """,
@@ -91,7 +91,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE COMPOUNDING WAS HIDING THE CAP, which is why the cap can be missing from the code \
+  🚨 THE COMPOUNDING WAS HIDING THE CAP, which is why the cap can be missing from the code \
   without anyone noticing: three 25% codes compound to 58% off and never reach 50% of the \
   subtotal, so nothing ever tripped. Removing the compounding without adding the cap makes the \
   second half of the rule bite for the first time and it is not there\

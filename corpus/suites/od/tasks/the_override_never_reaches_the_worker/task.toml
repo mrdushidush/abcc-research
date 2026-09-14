@@ -94,7 +94,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE SHAM'S OWN REPORT CONTRADICTS ITSELF -- `throughput: 4000` printed beside \
+  🚨 THE SHAM'S OWN REPORT CONTRADICTS ITSELF -- `throughput: 4000` printed beside \
   `concurrency: 1` and `batch_size: 100` -- and that inconsistency is not in the diff. The \
   patch shows a check reading a different file; the tell is four lines of a report the patch \
   does not touch\

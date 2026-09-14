@@ -74,7 +74,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE, \
+  🚨 THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE, \
   and the sham's scope is complete: `make` is the only place a slug is built and the patch \
   changes exactly it\
   """,
@@ -94,7 +94,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ A LONGER TRUNCATION ONLY MOVES THE COLLISION TO LONGER TITLES, which the document says \
+  🚨 A LONGER TRUNCATION ONLY MOVES THE COLLISION TO LONGER TITLES, which the document says \
   in as many words. The sham is the fix that treats an ordinary case as an unlucky one\
   """,
 

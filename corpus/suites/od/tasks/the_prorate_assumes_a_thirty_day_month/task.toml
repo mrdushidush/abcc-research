@@ -73,7 +73,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  🚨 THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
   and the same three-line function. The sham reaches every cancellation the refsol reaches; \
   its scope is complete and its table has two rows where the calendar has twelve\
   """,
@@ -91,7 +91,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE SIGNATURE ITSELF IS THE TELL AND IT IS IN THE PATCH: `days_in(year, month)` takes \
+  🚨 THE SIGNATURE ITSELF IS THE TELL AND IT IS IN THE PATCH: `days_in(year, month)` takes \
   the year, the sham's body never reads it, and the one reason the parameter exists is that \
   February is not always the same length. `docs/prorate.md` says exactly that\
   """,

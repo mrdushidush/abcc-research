@@ -73,7 +73,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  🚨 THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
   and the same one-line function. There is no consumer the sham missed and nothing outside its \
   diff; it implements one half of a two-half rule\
   """,

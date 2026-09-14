@@ -73,7 +73,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE, \
+  🚨 THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE, \
   the same two lines, and reach every window the refsol reaches. There is nothing outside the \
   sham's diff\
   """,
@@ -92,7 +92,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE SHAM MAKES THE REPORT LOOK BETTER AND THE NUMBERS WORSE. The unfixed code \
+  🚨 THE SHAM MAKES THE REPORT LOOK BETTER AND THE NUMBERS WORSE. The unfixed code \
   over-reported checkout and was accidentally right about search; the sham fixes checkout and \
   takes search p95 from 260 ms to 14, which is an SLO that will never fire again\
   """,

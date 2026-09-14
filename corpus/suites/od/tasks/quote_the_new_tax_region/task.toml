@@ -95,7 +95,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THAT IS A PROPERTY WORTH KEEPING RATHER THAN SOFTENING. A reviewer reading the patch \
+  🚨 THAT IS A PROPERTY WORTH KEEPING RATHER THAN SOFTENING. A reviewer reading the patch \
   alone sees a correct rate correctly added; the harm is only visible from the ticket's \
   *finish opening the region* and the file the patch does not touch\
   """,

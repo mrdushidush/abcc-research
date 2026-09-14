@@ -93,7 +93,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES AND THAT IS THE MECHANISM (suite.toml \
+  🚨 THE SHAM AND THE REFSOL TOUCH DIFFERENT FILES AND THAT IS THE MECHANISM (suite.toml \
   `outside_file`). A reviewer shown the sham's diff sees a plausible relaxation of an \
   integrity check; nothing in the patch mentions `keys.py`, and the prompt's second paragraph \
   -- the short order histories -- is the only thing in view that says the check was right\

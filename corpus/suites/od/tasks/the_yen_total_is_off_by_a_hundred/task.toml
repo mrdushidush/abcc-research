@@ -93,7 +93,7 @@ caveats = [
   """,
 
   """
-  ðŸš¨ IT IS THE COMPARISON THAT MOVES, NOT THE VALUE. The reconciler is the one thing in the \
+  🚨 IT IS THE COMPARISON THAT MOVES, NOT THE VALUE. The reconciler is the one thing in the \
   service that could have caught this and the patch is aimed exactly at it. Every other \
   consumer of `order_total` -- the ledger line the report prints, and anything downstream of \
   it -- is left with the wrong number and nothing left to notice\

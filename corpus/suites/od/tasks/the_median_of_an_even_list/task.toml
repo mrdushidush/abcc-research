@@ -57,7 +57,7 @@ run      = "corpus/suites/od/tasks/the_median_of_an_even_list/verify.sh, host, 2
 point    = 3
 tier     = "sham"
 verdict  = "FAIL"
-detail   = "expected 'median_south_cents: 1001', got: median_south_cents: 1000 — 1000 is a truncated midpoint â€” the standard rounds half up"
+detail   = "expected 'median_south_cents: 1001', got: median_south_cents: 1000 — 1000 is a truncated midpoint — the standard rounds half up"
 verifier = "rewritten"
 run      = "corpus/suites/od/tasks/the_median_of_an_even_list/verify.sh, host, 2026-09-04"
 # GATE END
@@ -73,7 +73,7 @@ synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt",
 
 caveats = [
   """
-  ðŸš¨ THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
+  🚨 THIS IS AN `inside` TASK -- the control. The sham and the refsol patch THE SAME FILE \
   and the same four lines. There is no second call site and nothing outside the sham's diff; \
   it implements the first half of a two-half rule\
   """,
