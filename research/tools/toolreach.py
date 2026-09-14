@@ -34,7 +34,29 @@ import sys
 # `4687405` shipped F673's fix; `t8319` at seq 8319 is the first task created
 # after it. Attempts at or above this seq saw the tool that measures the
 # standard; attempts below it saw `cargo check` and the old summary.
+#
+#   🚨 THE SECOND CLAUSE ABOVE IS FALSE AND THIS CONSTANT IS OFF BY THREE TASKS
+# (F767). `4687405` landed 15:26:19 on 2026-09-11; `t8319` was created 16:13:02.
+# Created in between, each after the commit and each its own `abcc run`: t7655
+# 15:45:14, t7999 15:55:49, t8149 16:05:09. The first task created after the fix
+# is t7655, not t8319, and reading the `checkpoint_taken` trees back agrees --
+# a7663 is the first attempt handed a tree carrying the new summary.
+#
+# So four Change attempts that had the new tool are counted here as 'before', and
+# a8007 -- one of the four -- CALLED `run_tests`. Corrected, F765's class result
+# survives and weakens: any checker 24.5% -> 0.0% p = 0.0139 becomes
+# 24.4% -> 4.2% p = 0.0457, and the twenty consecutive zeros are twenty-four
+# attempts with one hit in them. See `subjectfold.py`, which folds both.
+#
+#   THIS CONSTANT IS LEFT WHERE IT IS ON PURPOSE. `PUBLISHED` below was measured
+# with it, `--check` reproduces all seven, and the figures are correctly COMPUTED
+# -- what was wrong is what the boundary means. F764's rule applies unchanged:
+# repair by adding what is missing, never by quietly moving a published number
+# under a reader who will quote it. Restating F765 is David's call, not a sed.
 F673_PIVOT = 8319
+
+# Where the boundary actually falls, read from the subject trees (F767).
+SUBJECT_PIVOT = 7663
 
 # The seq the published numbers were measured AT. Everything at or above it is a
 # later sortie, so `--check` bounds the cohorts here.
