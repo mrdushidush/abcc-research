@@ -101,6 +101,21 @@ subject boundary moves it to *after*. It is the single worst direction a misfili
 inflates the before-rate and empties the after-rate at once — and it is why the corrected p is 3.3×
 the published one.
 
+**The FULL cohort moves too, and this is the one that matters to F673.** The anchored cohort is not
+the only thing split at 8319 — `toolreach.py`'s headline pair is, and it is the pair the archive
+quotes about `diagnostics`:
+
+| `diagnostics`, whole log | before | after | p |
+|---|---|---|---|
+| **as published**, pivot 8319 | 6/63 9.5% | 0/33 0.0% | **0.091** |
+| **corrected**, pivot 7663 | 6/59 10.2% | 0/37 0.0% | **0.079** |
+
+None of the four misfiled attempts called `diagnostics`, so both numerators are untouched and only
+the denominators move — four attempts cross from *before* to *after*. ✅ **The conclusion is
+unchanged and should be restated with the same force: p = 0.079 is not significant either, and the
+zero still may not be quoted against F673.** The plan projected ≈ 0.03; the corrected figure is
+closer to the published one than either is to the projection.
+
 ▶ **Retire the phrase "twenty consecutive zeros."** The corrected after-cohort is twenty-four
 attempts with one checker call in it. The zero was a property of where the line was drawn.
 
