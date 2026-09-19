@@ -1,0 +1,271 @@
+diff --git a/crates/abcc/src/ops.rs b/crates/abcc/src/ops.rs
+index 1249156..84b37d2 100644
+--- a/crates/abcc/src/ops.rs
++++ b/crates/abcc/src/ops.rs
+@@ -6,6 +6,7 @@ use std::path::PathBuf;
+ 
+ use abcc_core::event::Event;
+ use abcc_core::redact::Secrets;
++use abcc_core::replay::Replay;
+ use abcc_core::seq::{MissionId, Seq, TaskId};
+ use abcc_core::task::{AbortReason, Command, TaskState};
+ use abcc_engine::openai::{API_KEY_ENV, BASE_URL_ENV, DEFAULT_BASE_URL};
+@@ -345,9 +346,10 @@ pub fn review(
+ ) -> Result<(), AppError> {
+     let ground = ground(invocation)?;
+     let mut store = open_log(&ground.home)?;
++    let change = landed(&store, change)?;
+     let by = by.map_or_else(operator, str::to_owned);
+     store.append(Event::ReviewRecorded {
+-        change: change.to_owned(),
++        change: change.clone(),
+         seconds,
+         by: by.clone(),
+         crossed_boundary,
+@@ -365,6 +367,63 @@ pub fn review(
+     Ok(())
+ }
+ 
++/// What the operator typed, resolved to the sha a landing actually made.
++///
++/// 🚨 **F796: the ladder's two halves join by exact string, and until this
++/// nothing enforced it.** [`Event::ChangeLanded`] writes the full forty-character
++/// sha; `review` wrote whatever it was handed. Four landings and four reviews
++/// produced **zero** joinable pairs -- three of the reviews named an *attempt*
++/// and one an abbreviation -- so both counters read four while the intersection
++/// was empty. [`abcc_core::replay::Landed::change`] already carried the warning
++/// that the two are compared as strings and that whoever reviews a landing must
++/// name it the way the landing printed it. **A comment is not a guard.**
++///
++/// ⚠ **A review may not name a change `abcc land` did not make**, and that is
++/// a ruling rather than an omission. F727: the ladder is *of the changes abcc
++/// landed* and never *of the repository*, so a commit merged by hand is outside
++/// it by construction. This refusal is how that stays true.
++///
++/// # Errors
++///
++/// [`AppError::Refused`] if nothing the log landed answers to `named`.
++fn landed(store: &Store, named: &str) -> Result<String, AppError> {
++    let log = crate::fun::read_all(store)?;
++    let landings = Replay::over(&log).ladder.landings;
++    let named = named.trim();
++
++    if let Some(hit) = landings.iter().find(|l| l.change == named) {
++        return Ok(hit.change.clone());
++    }
++    if let Some(hit) = task_named(named).and_then(|task| landings.iter().find(|l| l.task == task)) {
++        return Ok(hit.change.clone());
++    }
++    //   An abbreviation, but only an unambiguous one. Two landings sharing a
++    // prefix is a question this cannot answer, and guessing at it is the whole
++    // of what F796 is about. Four is git's own floor for a short sha.
++    if named.len() >= 4 {
++        let mut hits = landings.iter().filter(|l| l.change.starts_with(named));
++        if let (Some(hit), None) = (hits.next(), hits.next()) {
++            return Ok(hit.change.clone());
++        }
++    }
++    Err(AppError::Refused(format!(
++        "no change `abcc land` made here is called {named}. A review names the \
++         commit: its full sha, an unambiguous abbreviation of it, or the task it \
++         came from. The log holds {} landing(s).",
++        landings.len()
++    )))
++}
++
++/// `t42` or `42`, which is how every other operator verb spells a task.
++fn task_named(named: &str) -> Option<TaskId> {
++    named
++        .strip_prefix('t')
++        .unwrap_or(named)
++        .parse::<i64>()
++        .ok()
++        .map(|n| TaskId::at(Seq::new(n)))
++}
++
+ // ---------------------------------------------------------------------------
+ // accept / reject
+ // ---------------------------------------------------------------------------
+diff --git a/crates/abcc/tests/operator.rs b/crates/abcc/tests/operator.rs
+index a245127..75cf29b 100644
+--- a/crates/abcc/tests/operator.rs
++++ b/crates/abcc/tests/operator.rs
+@@ -384,12 +384,37 @@ fn a_terminal_task_cannot_be_ended_twice() {
+ // review — the measurement W13's ladder is defined in
+ // ---------------------------------------------------------------------------
+ 
++/// A sha no `git` here ever made, long enough to be one.
++const LANDED: &str = "a2c0ca3f1e2d3c4b5a69788796a5b4c3d2e1f009";
++
++/// Put one `ChangeLanded` on the log, because after F796 a review needs one.
++fn land_one(subject: &Subject, task: i64) {
++    subject
++        .store()
++        .append(Event::ChangeLanded {
++            task: TaskId::at(Seq::new(task)),
++            attempt: AttemptId::at(Seq::new(task + 1)),
++            change: LANDED.to_owned(),
++            from: "1".repeat(40),
++            to: "2".repeat(40),
++            rungs: 4,
++        })
++        .expect("land");
++}
++
+ #[test]
+ fn a_review_is_recorded_in_seconds_and_says_whether_it_crossed_a_boundary() {
+     // 🚨 `PLAN.md` §5 wants this from Skeleton onward. Until this subcommand
+     // there was nothing in the workspace that wrote one, and a ladder with no
+     // baseline is unfalsifiable.
++    //
++    // 🚨 **And F796 is why it lands something first, and why it reviews the
++    // ABBREVIATION and asserts the full sha.** The ladder joins its two halves by
++    // exact string; this test used to name a change nothing had landed, which is
++    // precisely the shape that produced four reviews joining none of four
++    // landings on the live log.
+     let subject = subject();
++    land_one(&subject, 1);
+     subject
+         .run(Command::Review {
+             change: "a2c0ca3".to_owned(),
+@@ -414,12 +439,53 @@ fn a_review_is_recorded_in_seconds_and_says_whether_it_crossed_a_boundary() {
+             _ => None,
+         })
+         .expect("a review");
+-    assert_eq!(
+-        recorded,
+-        ("a2c0ca3".to_owned(), 510, "david".to_owned(), true)
++    //   The FULL sha, not the seven characters that were typed: an abbreviation
++    // in this column is a row that joins nothing.
++    assert_eq!(recorded, (LANDED.to_owned(), 510, "david".to_owned(), true));
++}
++
++#[test]
++fn a_review_that_names_no_landed_change_is_refused_and_writes_nothing() {
++    //   The guard F796 asked for. A refusal that still wrote the row would be
++    // worse than no guard, so this asserts the log as well as the error.
++    let subject = subject();
++    land_one(&subject, 1);
++    let refused = subject
++        .run(Command::Review {
++            change: "a14025".to_owned(),
++            seconds: 60,
++            by: None,
++            crossed_boundary: false,
++        })
++        .expect_err("an attempt id is not a change");
++    assert!(refused.to_string().contains("no change"), "{refused}");
++    assert!(
++        !subject.kinds().contains(&"review_recorded"),
++        "a refused review still wrote a row"
+     );
+ }
+ 
++#[test]
++fn a_review_may_name_the_task_the_change_came_from() {
++    //   A fresh log per spelling, so neither can pass on the other's row.
++    for named in ["t7", "7"] {
++        let subject = subject();
++        land_one(&subject, 7);
++        subject
++            .run(Command::Review {
++                change: named.to_owned(),
++                seconds: 60,
++                by: None,
++                crossed_boundary: false,
++            })
++            .expect("review by task");
++        assert!(
++            subject.kinds().contains(&"review_recorded"),
++            "{named} did not record"
++        );
++    }
++}
++
+ // ---------------------------------------------------------------------------
+ // where
+ // ---------------------------------------------------------------------------
+diff --git a/crates/abcc/tests/replay.rs b/crates/abcc/tests/replay.rs
+index ea3928e..8c78e24 100644
+--- a/crates/abcc/tests/replay.rs
++++ b/crates/abcc/tests/replay.rs
+@@ -423,21 +423,51 @@ fn the_board_says_the_ladder_is_empty_rather_than_reporting_zero_minutes() {
+ /// 🚨 **The ladder on the page: per change, with the passes beside it and the
+ /// denominator it does not have said out loud.**
+ ///
++/// Land `change` so that a review of it is admissible, and answer the sha.
++///
++/// 🚨 **F796.** `review` now resolves its argument against the log's own
++/// landings and refuses anything else, because four landings and four reviews on
++/// the live log produced zero joinable pairs. The ladder tests below are about
++/// the ARITHMETIC of the ladder, so this puts the landing there and keeps them
++/// about that. The short name is padded to sha width rather than replaced, so
++/// each test still reads with the change names it was written with.
++fn land(subject: &Subject, n: i64, change: &str) -> String {
++    //   ⚠ Padded with `a` and NOT with `0`, and the ladder caught the
++    // difference: zero-padding makes `sha1` and `sha10` the SAME forty
++    // characters, so ten changes folded into nine and one grew a second pass.
++    // Any non-digit filler keeps the short names distinct.
++    let sha = format!("{change:a<40}");
++    subject
++        .store()
++        .append(Event::ChangeLanded {
++            task: TaskId::at(Seq::new(n)),
++            attempt: AttemptId::at(Seq::new(n + 1)),
++            change: sha.clone(),
++            from: "1".repeat(40),
++            to: "2".repeat(40),
++            rungs: 4,
++        })
++        .expect("land");
++    sha
++}
++
+ /// Three recordings over two changes. The page has to report **two**, because
+ /// the ladder is minutes per *merged change* — counting the events would show
+ /// the burden falling as a reward for reviewing more.
+ #[test]
+ fn the_board_prints_the_ladder_per_change_and_admits_it_has_no_denominator() {
+     let subject = subject();
++    let first = land(&subject, 1, "223ae3a");
++    let second = land(&subject, 3, "d6c60e0");
+     for (change, seconds, by, boundary) in [
+-        ("223ae3a", 600, Some("david"), true),
++        (&first, 600, Some("david"), true),
+         // The same change, read again by somebody else, with the flag left off.
+-        ("223ae3a", 300, None, false),
+-        ("d6c60e0", 120, Some("david"), false),
++        (&first, 300, None, false),
++        (&second, 120, Some("david"), false),
+     ] {
+         subject
+             .run(Command::Review {
+-                change: change.to_owned(),
++                change: change.clone(),
+                 seconds,
+                 by: by.map(str::to_owned),
+                 crossed_boundary: boundary,
+@@ -579,9 +609,10 @@ fn an_empty_ladder_still_names_what_the_rung_would_take() {
+ fn the_countable_half_is_printed_with_the_half_it_is_not() {
+     let subject = subject();
+     for (i, seconds) in (1..=10).map(|i| (i, 1100 - i * 100)) {
++        let sha = land(&subject, i64::from(i) * 2, &format!("sha{i}"));
+         subject
+             .run(Command::Review {
+-                change: format!("sha{i}"),
++                change: sha,
+                 seconds,
+                 by: Some("david".to_owned()),
+                 crossed_boundary: true,
+@@ -627,9 +658,10 @@ fn the_page_reports_what_the_stricter_reading_of_consecutive_would_refuse() {
+         (3, 300, true),
+         (4, 100, true),
+     ] {
++        let sha = land(&subject, i64::from(i) * 2, &format!("sha{i}"));
+         subject
+             .run(Command::Review {
+-                change: format!("sha{i}"),
++                change: sha,
+                 seconds,
+                 by: Some("david".to_owned()),
+                 crossed_boundary: crossed,
