@@ -31,7 +31,30 @@ import sys
 
 DB = r"C:\Users\david\AppData\Local\abcc\abcc-1ae35b6091a63e2c\log.sqlite"
 
+# The seq the published numbers were measured AT. Everything at or above it is a
+# later sortie, so `--check` bounds the cohorts below it (F764).
+#   WITHOUT THIS THE CONTROL EATS ITSELF, and this file is the second instrument
+# to need the lesson: unbounded, `--check` reports DRIFT on three figures the
+# moment anybody flies -- correctly, because the A4 arm really did add attempts
+# on 09-14. A control that fails whenever somebody uses the system gets switched
+# off within a week, and the drift it was built to catch goes with it. The
+# published figures describe a population as of a moment; the bound is part of
+# the figure, not a convenience.
+#   11726 is the first `task_created` of the SELFHOST batch and is the SAME
+# boundary `toolreach.py:69` carries, deliberately: two controls over one log
+# that disagree about when "now" was are two answers waiting to be quoted
+# against each other. Verified 2026-09-18 -- all nine figures reproduce at every
+# bound from 11726 up to 11800, and drift first at 11910.
+AS_OF = 11726
+
 # LINEAGE-P9 1 and 3, published 2026-09-13. The control.
+#   🚨 NOT MOVED, and the reason is visible in how the unbounded reading keeps
+# moving: the first three read 123 / 90 / 109 when F764 was written and
+# 128 / 95 / 114 on 2026-09-18, against a published 117 / 86 / 103. Neither is a
+# correction -- both are the same figures over a bigger population, which is
+# what AS_OF exists to stop happening silently. F764's rule is repair by ADDING
+# what is missing (here, the bound), never by restating a number under a reader
+# who will quote it.
 PUBLISHED = {
     "attempt_keyed_falls": 117,
     "attempt_keyed_attempts": 86,
@@ -45,13 +68,18 @@ PUBLISHED = {
 }
 
 
-def timeline(db=DB):
-    """Per attempt, the phases entered and the prompt_tokens of each call, in seq."""
+def timeline(db=DB, below=None):
+    """Per attempt, the phases entered and the prompt_tokens of each call, in seq.
+
+    `below` bounds the read to events under that seq -- see AS_OF. None reads the
+    whole log, which is what the report wants and what `--check` must not have.
+    """
     con = sqlite3.connect("file:" + db.replace("\\", "/") + "?mode=ro", uri=True)
     out = collections.defaultdict(list)
+    bound = "" if below is None else f" and seq < {int(below)}"
     for _seq, kind, attempt, body in con.execute(
         "select seq, kind, attempt, body from event where kind in "
-        "('attempt_phase_entered','model_call_ended') order by seq"
+        f"('attempt_phase_entered','model_call_ended'){bound} order by seq"
     ):
         b = json.loads(body)
         # `event.attempt` is populated for these kinds; the JSON is the fallback and
@@ -115,15 +143,19 @@ def measure(tl, threshold=1000):
 
 
 def main():
-    m = measure(timeline())
-    if "--check" in sys.argv:
+    checking = "--check" in sys.argv
+    # The control reads the population the figures were measured over; the report
+    # reads everything there is. They are different questions on purpose.
+    m = measure(timeline(below=AS_OF if checking else None))
+    if checking:
         bad = 0
         for k, want in PUBLISHED.items():
             got = m[k]
             ok = "ok  " if got == want else "DRIFT"
             bad += got != want
             print(f"{ok} {k:<24} published {want:<6} measured {got}")
-        print("\nCONTROL HELD" if not bad else f"\n{bad} FIGURE(S) DRIFTED")
+        print(f"\n(over events below seq {AS_OF})")
+        print("CONTROL HELD" if not bad else f"{bad} FIGURE(S) DRIFTED")
         return 1 if bad else 0
     print(f"attempts {m['attempts']}  phases {m['phases']}  model calls {m['calls']}\n")
     print(f"keyed on the ATTEMPT (the wrong denominator, F748)")
