@@ -1,0 +1,97 @@
+diff --git a/crates/abcc/src/cli.rs b/crates/abcc/src/cli.rs
+index a7aab81..cf04720 100644
+--- a/crates/abcc/src/cli.rs
++++ b/crates/abcc/src/cli.rs
+@@ -203,6 +203,9 @@ pub enum CliError {
+     Help,
+     #[error("{0}\n\n{USAGE}")]
+     Usage(String),
++    /// `--version`. Not a failure.
++    #[error("{0}")]
++    Version(String),
+ }
+ 
+ pub const USAGE: &str = "\
+@@ -232,6 +235,7 @@ abcc — the command center. One attempt at a time, over one repository.
+   abcc paint [--sprites DIR]          the fleet on the battlefield, as a sixel
+ 
+ Everywhere:
++  --version         the version of this binary
+   --repo <path>     the checkout to work on (default: the working directory)
+   --home <path>     where the log and worktrees live (default: outside the repo)
+ 
+@@ -311,6 +315,9 @@ pub fn parse<I: IntoIterator<Item = String>>(args: I) -> Result<Invocation, CliE
+     if args.is_empty() {
+         return Err(CliError::Help);
+     }
++    if args.iter().any(|a| a == "--version") {
++        return Err(CliError::Version(env!("CARGO_PKG_VERSION").to_owned()));
++    }
+ 
+     // The two global flags are pulled out first so they can appear anywhere,
+     // which is what an operator expects of `--repo`.
+diff --git a/crates/abcc/src/lib.rs b/crates/abcc/src/lib.rs
+index ab618fc..b6f0b64 100644
+--- a/crates/abcc/src/lib.rs
++++ b/crates/abcc/src/lib.rs
+@@ -99,7 +99,10 @@ impl AppError {
+     #[must_use]
+     pub fn exit_code(&self) -> i32 {
+         match self {
+-            AppError::Cli(cli::CliError::Help) => 0,
++            // Neither of these is a failure, and `main` prints both and
++            // exits zero. Merged because `clippy::match_same_arms` refuses
++            // two arms with one body -- the second seam the variant forces.
++            AppError::Cli(cli::CliError::Help | cli::CliError::Version(_)) => 0,
+             AppError::Cli(cli::CliError::Usage(_)) => 2,
+             _ => 1,
+         }
+diff --git a/crates/abcc/src/main.rs b/crates/abcc/src/main.rs
+index c91e52a..0948a35 100644
+--- a/crates/abcc/src/main.rs
++++ b/crates/abcc/src/main.rs
+@@ -20,6 +20,12 @@ fn main() -> ExitCode {
+             let _ = write!(out, "{}", cli::USAGE);
+             ExitCode::SUCCESS
+         }
++        // `--version` is not a failure either, and it prints the
++        // `abcc <version>` shape the usage text opens with.
++        Err(AppError::Cli(cli::CliError::Version(version))) => {
++            let _ = writeln!(out, "abcc {version}");
++            ExitCode::SUCCESS
++        }
+         Err(e) => {
+             let _ = out.flush();
+             eprintln!("abcc: {e}");
+diff --git a/crates/abcc/tests/cli.rs b/crates/abcc/tests/cli.rs
+index 97d43d7..16a5c44 100644
+--- a/crates/abcc/tests/cli.rs
++++ b/crates/abcc/tests/cli.rs
+@@ -32,6 +32,18 @@ fn nothing_at_all_is_help_and_help_is_not_a_failure() {
+     assert_eq!(abcc::AppError::Cli(CliError::Help).exit_code(), 0);
+ }
+ 
++#[test]
++fn the_version_flag_prints_and_exits_zero() {
++    let version = env!("CARGO_PKG_VERSION").to_owned();
++    assert_eq!(parse("--version"), Err(CliError::Version(version.clone())));
++    assert_eq!(parse("board --version"), Err(CliError::Version(version)));
++    let v = abcc::AppError::Cli(CliError::Version("0.0.0".to_owned()));
++    //   🚨 THE SEAM THE GATE CANNOT SEE. `exit_code` ends in `_ => 1`, so a
++    // variant nobody adds an arm for compiles, passes every other test and
++    // reports a failing status for something `main` exits 0 on.
++    assert_eq!(v.exit_code(), 0);
++}
++
+ #[test]
+ fn a_usage_error_exits_two_and_a_refusal_exits_one() {
+     let usage = abcc::AppError::Cli(CliError::Usage("nope".to_owned()));
+@@ -284,7 +296,7 @@ fn every_verb_the_parser_accepts_is_in_the_usage_text() {
+         // The verb is known to the parser: whatever else it complains about, it
+         // never complains that this is not a command.
+         let complaint = match parse(verb) {
+-            Ok(_) | Err(CliError::Help) => String::new(),
++            Ok(_) | Err(CliError::Help | CliError::Version(_)) => String::new(),
+             Err(CliError::Usage(said)) => said,
+         };
+         assert!(
