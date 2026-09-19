@@ -1,0 +1,180 @@
+diff --git a/crates/abcc-core/src/attempt.rs b/crates/abcc-core/src/attempt.rs
+index f2ff826..7d9f95c 100644
+--- a/crates/abcc-core/src/attempt.rs
++++ b/crates/abcc-core/src/attempt.rs
+@@ -125,6 +125,20 @@ impl AttemptOutcome {
+             AttemptOutcome::Refused { .. } => "Refused",
+         }
+     }
++
++    /// The absence this ending carries, when it carries one.
++    ///
++    /// `None` for the two *definite* endings: `Success` measured something and
++    /// `Refused` measured something, so neither has a [`Why`] to give.
++    #[must_use]
++    pub fn why(&self) -> Option<&Why> {
++        match self {
++            AttemptOutcome::Success | AttemptOutcome::Refused { .. } => None,
++            AttemptOutcome::SoftFailure { why }
++            | AttemptOutcome::HardFailure { why }
++            | AttemptOutcome::Uncertain { why } => Some(why),
++        }
++    }
+ }
+ 
+ /// An attempt as the store holds it. Every field except `ended` and `outcome` is
+@@ -172,6 +186,34 @@ pub enum NextAction {
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn attempt_outcome_why_only_for_absences() {
++        let why = Why::Cancelled {
++            by: "operator".to_owned(),
++        };
++        assert_eq!(None, AttemptOutcome::Success.why());
++        assert_eq!(
++            None,
++            AttemptOutcome::Refused {
++                rung: String::new(),
++                detail: String::new(),
++            }
++            .why()
++        );
++        assert_eq!(
++            Some(&why),
++            AttemptOutcome::SoftFailure { why: why.clone() }.why()
++        );
++        assert_eq!(
++            Some(&why),
++            AttemptOutcome::HardFailure { why: why.clone() }.why()
++        );
++        assert_eq!(
++            Some(&why),
++            AttemptOutcome::Uncertain { why: why.clone() }.why()
++        );
++    }
++
+     #[test]
+     fn cause_name_all_variants() {
+         assert_eq!("Fresh", Cause::Fresh.name());
+diff --git a/crates/abcc-core/src/outcome.rs b/crates/abcc-core/src/outcome.rs
+index 4a31c1d..51545d1 100644
+--- a/crates/abcc-core/src/outcome.rs
++++ b/crates/abcc-core/src/outcome.rs
+@@ -78,6 +78,17 @@ pub struct Counts {
+     pub failed: u32,
+ }
+ 
++impl Counts {
++    /// True when the runner ran something and nothing in it failed.
++    ///
++    /// 🚨 **`run == 0` is not a pass**, for this module's own reason: *"tests: 0
++    /// passed"* is the sentence F357 caught a donor reporting as success.
++    #[must_use]
++    pub const fn all_passed(self) -> bool {
++        self.run > 0 && self.failed == 0
++    }
++}
++
+ /// Why a rung produced no measurement. Every variant is a sentence an operator
+ /// can act on, and none of them is `false`.
+ ///
+@@ -265,6 +276,19 @@ impl Outcome {
+             Outcome::Unmeasured { rung, .. } => rung,
+         }
+     }
++
++    /// The reason there is no measurement, when there is none.
++    ///
++    /// The partner of [`Outcome::rung`]: every outcome has a rung, and only an
++    /// unmeasured one has a [`Why`]. `None` means *this rung was measured*,
++    /// never *the reason is unknown*.
++    #[must_use]
++    pub fn why(&self) -> Option<&Why> {
++        match self {
++            Outcome::Measured(_) => None,
++            Outcome::Unmeasured { why, .. } => Some(why),
++        }
++    }
+ }
+ 
+ /// Something the model said. It is shown to the operator and it is never
+@@ -795,4 +819,46 @@ mod tests {
+         assert!(!measured.is_unmeasured());
+         assert!(measured.is_green());
+     }
++
++    #[test]
++    fn counts_zero_run_is_not_a_pass() {
++        let nothing_ran = Counts {
++            run: 0,
++            passed: 0,
++            failed: 0,
++        };
++        let all_green = Counts {
++            run: 3,
++            passed: 3,
++            failed: 0,
++        };
++        let one_red = Counts {
++            run: 3,
++            passed: 2,
++            failed: 1,
++        };
++        assert!(!nothing_ran.all_passed());
++        assert!(all_green.all_passed());
++        assert!(!one_red.all_passed());
++    }
++
++    #[test]
++    fn outcome_why_only_for_unmeasured() {
++        let why = Why::Cancelled {
++            by: "operator".to_owned(),
++        };
++        let unmeasured = Outcome::Unmeasured {
++            rung: "standard".to_owned(),
++            why: why.clone(),
++        };
++        assert_eq!(Some(&why), unmeasured.why());
++        let measured = Outcome::Measured(Measurement {
++            rung: "standard".to_owned(),
++            sha: String::new(),
++            exit: 0,
++            counts: None,
++            detail: String::new(),
++        });
++        assert_eq!(None, measured.why());
++    }
+ }
+diff --git a/crates/abcc-core/src/seq.rs b/crates/abcc-core/src/seq.rs
+index 1b8f1b1..6e68946 100644
+--- a/crates/abcc-core/src/seq.rs
++++ b/crates/abcc-core/src/seq.rs
+@@ -67,6 +67,12 @@ impl Seq {
+             None => Seq(i64::MAX),
+         }
+     }
++
++    /// How many positions lie between this cursor and `other`, in either order.
++    #[must_use]
++    pub const fn distance(self, other: Seq) -> u64 {
++        self.0.abs_diff(other.0)
++    }
+ }
+ 
+ impl fmt::Display for Seq {
+@@ -108,6 +114,13 @@ mod tests {
+         assert_eq!(Seq::new(10).back(10), Seq::ORIGIN);
+     }
+ 
++    #[test]
++    fn distance_is_symmetric() {
++        assert_eq!(Seq::new(3).distance(Seq::new(10)), 7);
++        assert_eq!(Seq::new(10).distance(Seq::new(3)), 7);
++        assert_eq!(Seq::ORIGIN.distance(Seq::ORIGIN), 0);
++    }
++
+     #[test]
+     fn forward_moves_forwards() {
+         assert_eq!(Seq::new(5).forward(3), Seq::new(8));
