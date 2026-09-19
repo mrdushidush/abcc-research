@@ -59,10 +59,18 @@ CHECKERS = {"diagnostics", "run_tests"}
 # `4687405` landed 2026-09-11 15:26:19 +0300.
 DIAG_FIX_MS = int(datetime.datetime(2026, 9, 11, 15, 26, 19).timestamp() * 1000)
 
-# Measured 2026-09-18 on both logs, unbounded -- and unbounded is right here
-# because the claim is about the LAST call, which a bound would hide. If one of
-# these moves, the log moved. F764: the bound is part of the figure, so this
-# tool states that it has none and says which moment it was measured at.
+#   AS_OF, AND WHY THIS TOOL NOW HAS ONE. The first version was deliberately
+# unbounded, on the grounds that the claim is about the LAST call and a bound
+# would hide it. Eleven sorties later nine of these figures had moved, and every
+# one of them moved because of F792: told to call `diagnostics`, the model called
+# it, so the "last call" is no longer seq 7210 and the zero is no longer zero.
+#   F764'S RULE IS WHAT MATTERS HERE: PUBLISHED IS NOT EDITED. The figures
+# describe the population as it stood at the first landing, and the bound is part
+# of the figure. `--since` reads the sorties above it instead.
+AS_OF = 13049          # `change_landed` -- the first landing. Waves 1-3 are above it.
+
+# Measured 2026-09-18 on both logs, over events BELOW AS_OF. If one of these
+# moves now, the log's own past moved and every rate quoted from it is stale.
 PUBLISHED = {
     "primary_diagnostics_calls": 13,
     "primary_last_diagnostics_seq": 7210,
@@ -112,10 +120,15 @@ PUBLISHED = {
 }
 
 
-def rows(db):
+def rows(db, below=None, above=None):
     con = sqlite3.connect("file:" + db.replace("\\", "/") + "?mode=ro", uri=True)
-    return [(s, json.loads(b), ms) for s, b, ms in
-            con.execute("select seq, body, at_ms from event order by seq")]
+    out = [(s, json.loads(b), ms) for s, b, ms in
+           con.execute("select seq, body, at_ms from event order by seq")]
+    if below is not None:
+        out = [r for r in out if r[0] < below]
+    if above is not None:
+        out = [r for r in out if r[0] >= above]
+    return out
 
 
 def when(ms):
@@ -128,9 +141,9 @@ def tool_of(e):
     return e.get("tool") or e.get("name")
 
 
-def scan(db):
+def scan(db, below=None, above=None):
     """Per-attempt tools, notes attributed to the call in progress, and briefs."""
-    rs = rows(db)
+    rs = rows(db, below, above)
     att = {}
     for seq, e, _ in rs:
         if e["kind"] == "attempt_started":
@@ -338,6 +351,8 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--calls", action="store_true")
     p.add_argument("--power", action="store_true")
+    p.add_argument("--since", action="store_true",
+                   help=f"read the sorties at or above AS_OF ({AS_OF}) instead")
     p.add_argument("--check", action="store_true")
     args = p.parse_args()
 
@@ -346,8 +361,10 @@ def main():
     print()
     control()
 
-    att, notes, briefs, rs = scan(DB)
+    lo, hi = (AS_OF, None) if args.since else (None, AS_OF)
+    att, notes, briefs, rs = scan(DB, below=hi, above=lo)
     arm_att, arm_notes, arm_briefs, arm_rs = scan(ARM_DB)
+    print(f"  primary log bounded: {'seq >= ' + str(AS_OF) if args.since else 'seq < ' + str(AS_OF)}")
 
     table(att, cells(att),
           f"PRIMARY LOG - all {len(att)} attempts by the tree they were handed")

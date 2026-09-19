@@ -12,9 +12,14 @@ result to mangle. 🚨 **The same log kills two more of P5's claims:** the buggy
 touched an exec-tier tool result *once* (20 notes: 17 `read_file`, 2 `search`, **1 a brief**), the
 arm's cell recorded **zero** redactions in 18 attempts so **its treatment was never administered**,
 and F784's interaction **dissolves on decomposition** — `diagnostics` is 0.0% in *both* NEW cells,
-so the tool the two commits actually changed shows no interaction at all.** Findings **F786–F790**;
-next free is **F791**. Instrument `research/tools/diagreach.py`, **32 figures under `--check`**,
-the boundary control and the decomposition among them.
+so the tool the two commits actually changed shows no interaction at all.**
+🎉🎉 **AND §7 CLOSES THE QUESTION THE REST OF THIS FILE LEFT OPEN, for the price of eleven sorties
+rather than the 120–160-attempt arm §6 priced: F792 — the zero was never unreachability. The tool had
+never been ASKED for.** Told to call it, 5 of 6 attempts did (83%) against **0 of 44** untold,
+p = 0.0152 — and the first call in the project's history to F673's repaired tool returned a **usage
+error** (F791). Findings **F786–F790** and **F792**; next free is **F793**. Instrument
+`research/tools/diagreach.py`, **34 figures under `--check`**, bounded at `AS_OF = 13049` with
+`--since` for the sorties above it.
 
 ---
 
@@ -290,3 +295,48 @@ pack, not a flight.** 🚨 And it is *measure and propose*: nothing here ships w
 retractions and the control that could have killed the headline all came off a log and a git history
 that were already on disk** — which is P2's lesson landing for the fourth time: *the control was one
 directory away.*
+
+---
+
+## 🎉🎉 F792 — the zero was not unreachability. The tool had never been ASKED for.
+
+**This file's §1 reported `diagnostics` at 0 of 39 NEW-summary attempts and called the residual
+question *"does the NEW summary's sentence stop the model reaching for the tool?"*, priced an arm to
+answer it at 120–160 attempts, and recommended NOT flying it — make tool reach an ordinary observable
+instead and let the next sorties answer it for free.** Eleven sorties answered it, and the answer is
+neither of the two hypotheses on the table.
+
+| cohort | attempts | reached `diagnostics` | calls |
+|---|---|---|---|
+| every NEW-summary attempt before 2026-09-18 (F786) | 39 | **0** | 0 |
+| **wave 1** — prompts do not mention the tool | **5** | **0** | **0** |
+| **waves 2 + 3** — prompts say to call it | **6** | **5 — 83%** | **10** |
+
+**Fisher exact, two-sided: 0/5 against 5/6 is p = 0.0152.** Against the pooled untold population
+(0 of 44) it is p = 0.000003. ✅ **And the control is mechanical rather than remembered:** the string
+`diagnostics` appears in **0 of 5** wave-1 task prompts and **6 of 6** wave-2/3 prompts, checked
+against the `task` table rather than against my memory of what I wrote.
+
+▶ **So the instrument was never unreachable and the summary was never the binding constraint. Nobody
+had asked for it.** A tool that a model is told to use gets used; ADR-0009's own doctrine is that a
+tool result is a fact and a prompt is a request, and this is the cheap case where the request suffices.
+
+⚠ **What may NOT be claimed.** Waves 2 and 3 pulled a second lever — the surrounding source is in the
+prompt — so this is **not an isolated manipulation**, even though carrying source is not a plausible
+cause of *which tool* gets called. **n = 11.** And the grouping was **not pre-registered**: the
+instruction was added after wave 1 lost, so the only thing protecting this from being a post-hoc cut
+is that wave 1 ran *before the decision existed*, which makes it a genuine before-and-after rather
+than a slice of one population. 🚨 **It says nothing about the summary text**, which remains the
+open question §6 named — it says that the summary does not have to be fixed for the tool to be used.
+
+🚨 **And F791 is what reaching it found.** The first call in the project's history to the repaired tool
+returned a usage error, because the selector its schema invites is appended raw to a command that
+takes no positionals. ▶ **The two findings are one sentence: the tool is reachable by asking, and
+asking exposed a defect that had been sitting in the tree unexercised since 2026-09-11.**
+
+⚠ **`diagreach.py --check` reports nine figures moved, and that is this finding, not a fault.** The
+tool was written unbounded and said so in its header — *"unbounded is right here because the claim is
+about the LAST call, which a bound would hide"* — and eleven sorties then moved the population it
+described. F764's rule applies: **`PUBLISHED` is not edited.** `AS_OF = 13049` bounds `--check` to the
+population the figures were measured over, the seq of the first landing, and `--since` reads the
+sorties after it.
