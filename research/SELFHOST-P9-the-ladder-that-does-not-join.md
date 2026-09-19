@@ -72,6 +72,16 @@ population and the gap between them is readable."* **Neither sentence is true to
 is not a sha and not a task id, so the three new rows are outside even the permissive reading; and
 the abbreviation is the *right kind* of thing that still fails to join.
 
+🚨🚨 **AND THE HAZARD WAS FORESEEN AT THE DATA LAYER AND LEFT TO THE OPERATOR.**
+`Landed::change` (`replay.rs:526`) carries its own warning:
+
+> ⚠ Compared with [`Reviewed::change`] **as a string**, so an operator who reviews a landing
+> **must name it the way the landing printed it**.
+
+▶ So the fold knew the join was fragile and put the burden on the person typing — while `land`
+prints the sha **two different ways on two consecutive lines**, and nothing between the warning and
+the keyboard enforces it. **A comment is not a guard.**
+
 🚨 **`ops::review` (`ops.rs:338`) is eleven lines and does not read the log.** It opens the store,
 appends `change: change.to_owned()`, and prints. There is no place in the function where a wrong
 value could be noticed.
