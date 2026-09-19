@@ -141,7 +141,45 @@ surfaced it. Padded with a non-digit now.
 
 ---
 
-## 5. ▶ What is waiting for David
+## 5. ✅ CARRIED OUT THE SAME EVENING — and F796 bit once more on the way
+
+**`t14581` landed as `c741d1f`** (David's hand), and **the guard was applied and committed as
+`498b963`** (mine, at his instruction). The gate was re-run on the real tree rather than trusted
+from the worktree, because `HEAD` had moved: **all four commands exit 0, 693 tests.**
+
+🚨🚨 **And the fifth review named `a14698` — the attempt id again.** F796
+caught a fifth victim between being written up and being fixed, which is the strongest argument
+the finding could have made for itself. The shipped binary now refuses that exact string:
+
+```
+a14698    REFUSED: no change `abcc land` made here is called a14698 ... 5 landing(s).
+t14581    recorded  c741d1fcd52ca8cb6a636b0e5f1327d818b66a5d  2.0 min
+c741d1f   recorded  c741d1fcd52ca8cb6a636b0e5f1327d818b66a5d  2.0 min
+```
+
+🚨🚨 **THE LADDER IS STILL 0 OF 5, AND THE GUARD DOES NOT REPAIR IT.** It stops
+the next mistake; it cannot rewrite an append-only log. **Five landings, five reviews, zero
+joins**, and until the five are re-recorded M1 has no computable rate — only counts.
+
+✅ **Re-recording is now one word per change, because the guard resolves a task id.** The
+minutes below are the ones already measured, re-filed rather than re-taken; each review row is
+paired to its landing **by attempt id**, not by order:
+
+| type | it re-files | orphan row |
+|---|---|---|
+| `abcc review t2131 2` | `a0054e7db2b…` | `a0054e7`, 120 s |
+| `abcc review t14016 2` | `e86221c1f55…` | `a14025`, 120 s |
+| `abcc review t13604 1` | `61012cf5de6…` | `a13805`, 60 s |
+| `abcc review t13606 1` | `fb15aa107ea…` | `a13921`, 60 s |
+| `abcc review t14581 2` | `c741d1fcd52…` | `a14698`, 120 s |
+
+⚠ **Afterwards the ladder holds 10 recordings over 5 changes**, five of them orphans.
+`Ladder::recordings` is documented as *passes, not changes*, so that is legible rather than
+corrupt — **but it will read 10 and mean 5.**
+
+---
+
+## 6. ▶ What is still waiting for David
 
 ```
 .\target\release\abcc.exe land 14581
