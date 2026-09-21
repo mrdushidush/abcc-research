@@ -209,3 +209,83 @@ interface — an operator who has lost a run has no command that says *sweep thi
   distinct endings, one of them the operator's own kill.
 * The cheapest next control, unchanged from F774/F775: **carry Recon's reads into Change under a
   cap**, and see whether the Change phase stops spending its rounds re-reading one file.
+
+---
+
+# Part 2 — the same session, two more attempts, and the mechanism reproduced
+
+## 9. 🚨🚨 F798 reproduced 2 of 2: every `length` in this log is an `apply_patch` runaway
+
+After Part 1 was written I queued a task chosen to be as easy as this corpus gets, and **verified it
+solvable before queueing it**: roast card `RUNTIME-11`, one file
+(`crates/claudette/src/runtime/usage.rs`, **112 lines**), two tiny functions, an existing
+`#[cfg(test)] mod tests` to put the test in. Reference solution: all three gate commands exit 0,
+**1162 passed / 0 failed**, and the new test panics `attempt to add with overflow` on the unfixed
+source. ✅ That 1162/0 is also independent confirmation that **the gate fix holds and the tree is
+genuinely green** — the 58 failures charged to `a209` really were manufactured.
+
+`t649` ran on that task and died exactly as `a577` had:
+
+| | `a577` (`t201`, json.rs, 358 lines) | `a657` (`t649`, usage.rs, **112 lines**) |
+|---|---|---|
+| `completion_tokens` | **16,384** | **16,384** |
+| `reasoning_tokens` | 184 | **99** |
+| trace chars | 731 | 342 |
+| trace state | `Closed` | `Closed` |
+| composition `calls` | `[(apply_patch, 0)]` | `[(apply_patch, 0)]` |
+| tool_call events for it | **none** | **none** |
+| rung | `structural exit 1 — changed no file` | `structural exit 1 — changed no file` |
+
+🚨 **Those are the only two `length` finishes in the entire log, and they are the same event twice.**
+Exactly the cap; reasoning under 200 tokens; the trace closed; one `apply_patch` whose arguments
+arrive with **zero characters**; no `tool_call_started` at all, because a call cut mid-argument never
+becomes a call (F515); and the attempt scored `Uncertain` having changed nothing.
+
+▶ **The 112-line file is what makes this sharp.** A correct patch to `usage.rs` is about 40 lines and
+~1,500 characters. The model spent **16,285 answer tokens** on it — an order of magnitude more than
+the whole file. This is not a large patch hitting a small ceiling; it is the model **failing to
+terminate inside the argument**, and the ceiling is merely where it stops.
+
+⚠ **And the argument is unrecoverable by design.** F622: the server buffers a tool call's arguments
+whole, so nothing partial reaches abcc and there is nothing to log, diff or retry from. Seeing what
+the model actually emitted needs a raw SSE probe (`research/tools/ssecapture.py`), not the log.
+
+## 10. Three levers, none of them a bigger ceiling — ▶ DAVID'S CALL
+
+Stated as proposals, not changes. Nothing in abcc was edited this session.
+
+**(a) Say which editor to use, in the tool summary.** `apply_patch`'s summary is
+*"Apply a unified diff to the workspace."* and `write_file`'s is *"Write a file in the workspace,
+creating it if it does not exist."* — neither says **when** to prefer which, so the model picks the
+diff and, twice, failed to terminate inside it. ▶ There is precedent in this repository and it is
+F673's: the `diagnostics` summary was rewritten because *"this sentence is the fix as much as the
+code is"*. The same move is available here, and it costs one const.
+
+**(b) On `TruncatedAtCap` with a cut `apply_patch`, retry the phase with a different TOOL, not a
+bigger budget.** This is where PR #225's instinct is right and its remedy is wrong. Doubling 16,384
+to 32,768 against a 40,960 window leaves the prompt 8,192 tokens and buys one more oversized diff.
+Re-asking the same turn with *"send `write_file` with the whole file"* addresses what actually
+happened. ⚠ abcc already knows enough to do this: it has the `Finish::Length`, the composition
+showing `apply_patch` with `argument_chars: 0`, and `Why::TruncatedAtCap`.
+
+**(c) Carry Recon's reads into Change under a cap** — F774 + F775, unchanged, now with the evidence
+of §4 behind it and a second repository's worth of it.
+
+⚠ **What NOT to do:** raise `max_tokens`. The overrun is not a patch that is slightly too big; on a
+112-line file the model produced ten times the file in answer tokens. A bigger ceiling moves where it
+stops, not whether it terminates.
+
+## 11. Housekeeping done this session
+
+* ✅ **`t201`'s orphan cleared** — and the prescribed `take` → `release` recipe does not work; see §7.
+* ✅ **`MEMORY.md` was 26,811 bytes against a 24,985 limit, and 3 index rows were being silently
+  truncated — so 3 memories were not loading at all.** Four index lines were carrying 4,089 / 2,746 /
+  2,599 / 1,821 bytes against a ~200-character guideline. Compressed to **17,730 bytes**, all 43 rows
+  and all 42 files still indexed, every link resolving.
+* 🚨 **While doing it, the rule-5 heredoc hazard bit again and wrote a BEL into `MEMORY.md`.** A
+  *quoted* heredoc still ate one of a doubled backslash, so Python saw an escape and produced 0x07.
+  🎉 **The tell was free:** Python printed `SyntaxWarning: "\L" is an invalid escape sequence` on the
+  same run — proof the source had been mangled, since a doubled backslash should never reach Python
+  as a lone one. Caught by the post-write scan, at offset 7199. Written up as rules 7 and 8 in
+  `back-up-memory-every-session.md`, with the second being: **never split frontmatter on `---`,
+  because a description can contain one** — that mis-parse makes a healthy file look corrupt.
