@@ -36,7 +36,7 @@ tool was silently broken here — the WSL relay has a second home as a **zero-le
 `the_operators_environment_does_not_reach_the_child` was charging `PROMPT` to `ENV_ALLOWLIST` when
 cmd.exe invents it — pre-existing on `605fd7d`, proven by `git stash`.
 
-Findings **F798-F804**; next free is **F805**.
+Findings **F798-F805**; next free is **F806**.
 
 ---
 
@@ -377,3 +377,73 @@ than assume*, so a future interpreter that invents a fourth name needs no table 
 `USERPROFILE`, `USER` without `USERNAME`, the system relay without the Store alias — and a test that
 could not tell its instrument's output from its subject's. ⚠ **Every one of them reported a defect
 that was not there**, which is the failure mode this project can least afford.
+
+---
+
+# Part 4 — how to stop the model reaching for `apply_patch`, and why it is not simply "remove it"
+
+## 15. F805 — `write_file` has never been observed cut, and that is NOT the same as safer
+
+Every `apply_patch` and `write_file` call in **both** logs, all history, classified by whether the
+arguments arrived at all (a cut call delivers `argument_chars: 0` at `finish = length`, F515):
+
+| tool | calls | delivered 0 chars at the cap | max delivered intact | median |
+|---|---|---|---|---|
+| `write_file` | 35 | **0** | **33,020 chars** | 5,487 |
+| `apply_patch` | 300 | **23** | 51,401 chars | 1,129 |
+
+🚨🚨 **This must NOT be quoted as a significant difference.** Fisher two-sided **p = 0.1497**. A zero
+over 35 has a rule-of-three 95% upper bound of **8.2%**, which overlaps `apply_patch`'s 7.7%. The
+defensible sentence is ***`write_file` has never been observed cut in 35 calls and has carried
+33,020 characters intact*** — not *`write_file` is safer*.
+
+▶ **What IS an exact count, and matters: 21 of the 23 cuts are in abcc's OWN log**, only 2 in
+claudette. So this is a long-standing problem of this stack, not an artifact of the new corpus.
+
+## 16. 🚨 The size rule — the lever does not scale, and that is the binding constraint
+
+`write_file` sends the **whole file**, so it spends the same ceiling `apply_patch` overran.
+
+Measured median across 252 sizeable calls: **2.54 argument characters per completion token.** So the
+16,384-token ceiling is roughly **41,600 characters** — call it **1,000–1,100 lines of Rust**.
+
+⚠ **Above that, `write_file` is cut exactly the way `apply_patch` was**, and nothing in this finding
+helps. The largest `write_file` ever delivered here is 33,020 chars, comfortably under; the corpus's
+big files are not.
+
+Sized against the roast corpus (non-`SEC`, target file located), **17 of 41 cards fit**:
+
+* ✅ under 1,100 lines: `SHELL-04`/`SHELL-10` (180), `BENCH-05` (217), `UX-04` (326), `RUNTIME-10`
+  (358, = `t201`), `RUNTIME-05` (362), `SHELL-06` (427), `RUNTIME-08` (542), `CHECK-01` (660),
+  `EDIT-10` (691), `RUNTIME-07` (789), `EDIT-01` (902), `UX-05`/`UX-10` (927), `TRASH-01` (1019),
+  `UX-06` (1045)
+* 🚨 out of reach: **all eleven `API-*` cards** (`api.rs`, **3,548 lines**), `RUNTIME-04/09/12`
+  (`conversation.rs`, **3,899**), `RESEARCH-01` (= `t2`, 2,864), every `main.rs` card (1,486),
+  `SHELL-01` (1,361), `SHELL-05` (1,567), `FORGE-02` (1,803), `UX-03` (2,492)
+
+## 17. The four ways to say it, and what each costs — ▶ DAVID'S CALL
+
+**(a) A paragraph in the task prompt.** What was actually tested; 1 of 1. Costs nothing and changes
+no code, but must be repeated every time and is silently forgotten.
+
+**(b) Edit `apply_patch`'s `summary` in `tools.rs`.** The summaries are rendered verbatim into the
+system prefix (`head.rs::tool_section` writes `name — summary` plus the schema) *and* into the wire
+tool array, so one const reaches every Builders posting at `write` or above. **This is exactly F673's
+move** — its `diagnostics` summary was rewritten because *"this sentence is the fix as much as the
+code is"*, and F792 then measured that as the landing lever. ⚠ It changes the prefix, therefore
+`head_digest`, so arms flown before and after are not prefix-comparable — the log records which,
+which is the point of F708.
+
+**(c) Remove `apply_patch` from `TOOLS`.** 🚨 **This would be wrong.** It applies 20 of 61 in abcc's
+own measurable window and has delivered 51,401 characters intact; and for anything over ~1,100 lines
+it is the *only* editor that can work, because `write_file` cannot fit the file. Deleting it trades a
+7.7% cut rate for a hard ceiling on file size.
+
+**(d) A per-tool deny orthogonal to `Tier`.** The real missing mechanism (F801), and the only one
+that could express *may measure, may not edit outside the structured editors*. Biggest change; needs
+a decision, not a cleanup.
+
+▶ **Recommendation: (b), worded as a size rule rather than a prohibition** — something like *"Apply a
+unified diff. Prefer `write_file` when the whole file is under about a thousand lines; a diff that
+runs past the output ceiling is discarded entirely and changes nothing."* That keeps (c)'s capability
+while moving the default, and it is one const.
