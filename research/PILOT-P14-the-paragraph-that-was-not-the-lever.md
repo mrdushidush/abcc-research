@@ -172,6 +172,14 @@ least 100 tasks."*
 * The two arms and the four baseline replicas ran on a temporary `pilot-arms` branch in
   `D:/dev/claudette` at `3fdfefe`, **nothing was landed**, and the branch is deleted — `007b84f`
   already carries this fix on `main`.
+* 🚨 **F810 — a green attempt cannot be marked "measured, do not land", and the board now shows six
+  that must never be landed.** `abcc reject` refuses every one of them: *"Accomplished is terminal;
+  Abort would resurrect a finished task"* — which is the right guard on the wrong question. The
+  state machine has one word for *this work is good* and no word for *this run was an instrument*.
+  Six rows now read `MISSION ACCOMPLISHED … abcc land t1070`, and landing any of them would re-apply
+  a fix `main` already carries. Same shape as F802: **the log is honest about what happened and has
+  no verb for what the operator knows.** ⚠ Until it has one, the warning lives here and in memory,
+  which is exactly the fragility F802 described.
 * `abcc` unchanged at `b09bcdf` throughout; model `qwen3.6-35b-a3b-mtp@iq3_s`, `-c 40960`,
   `max_tokens 16384`, default `--rounds 24`. All eight cells share one prefix except the substituted
   paragraph.
@@ -183,4 +191,4 @@ least 100 tasks."*
   `is_dir()` walker), `UX-04` (`status.rs`, 326), `RUNTIME-08` (`runtime/context_evict.rs`, 542 —
   `messages.to_vec()` still unconditional at line 141).
 
-Findings **F806–F809**; next free is **F810**.
+Findings **F806–F810**; next free is **F811**.
