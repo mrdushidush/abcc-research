@@ -1,0 +1,99 @@
+SHELL-06 -- semantic_grep's directory walker follows symlinks and recurses without a depth limit.
+
+THE FILE, and the only one you may change: `crates/claudette/src/tools/semantic.rs`. It is 427
+lines, and it already has a `#[cfg(test)] mod tests` at the bottom to put your tests in.
+
+THE DEFECT. `fn walk` at lines 172-194 is a hand-rolled recursion over `std::fs::read_dir`. It
+tests `path.is_dir()`, which FOLLOWS symlinks, then calls itself -- with no depth limit and no
+visited set. One self-referential directory link (a pnpm store, a Windows junction, a `latest ->
+.` in a build tree) recurses until the stack overflows, and this crate is built with
+`panic = "abort"`, so that is the whole process, not a recoverable error.
+
+The same 23 lines carry a second bug. `collect_chunks` returns `false` from its callback once
+`files_scanned` reaches `MAX_FILES` (1500), but `walk` only `return`s from the CURRENT directory
+frame -- every parent frame keeps right on iterating, so the cap never ends the walk. And the
+walker has no notion of `.gitignore` at all, so it indexes build output and vendored trees that
+every other search tool in this crate already skips.
+
+THE FIX -- ONE change: rewrite the body of `fn walk` on `ignore::WalkBuilder`. That single rewrite
+fixes all of it at once, because the `ignore` walker does not follow links, is a flat iterator
+rather than a recursion (so one `return` ends the whole walk), and reads `.gitignore` itself.
+
+`ignore = "0.4"` IS ALREADY A DEPENDENCY of this crate. You are not adding one.
+
+THREE SIBLINGS IN THIS CRATE ALREADY DO EXACTLY THIS -- `repomap.rs:151`, `repomap.rs:314` and
+`search.rs:328`. Copy their shape. This is `repomap.rs:151-167` verbatim:
+
+    let walker = ignore::WalkBuilder::new(&root)
+        .hidden(true)
+        .git_ignore(true)
+        .git_global(true)
+        .git_exclude(true)
+        .parents(true)
+        .follow_links(false)
+        .filter_entry(|entry| {
+            if entry.file_type().is_some_and(|ft| ft.is_dir()) {
+                let name = entry.file_name().to_string_lossy();
+                if super::SEARCH_SKIP_DIRS.contains(&name.as_ref()) {
+                    return false;
+                }
+            }
+            true
+        })
+        .build();
+
+DO NOT OPEN `repomap.rs` OR `search.rs`. Everything you need from them is the block above, and
+it is complete. Both files are over 1500 lines; reading either one whole costs more of this
+conversation's room than the whole task is worth. `crates/claudette/src/tools/semantic.rs` is the
+ONLY file you need to read, and `read_file` takes `from_line` and `to_line` if you want part of
+one.
+
+Keep `walk`'s signature and its callers exactly as they are: `fn walk<F: FnMut(&Path) -> bool>
+(root: &Path, callback: &mut F)`. Iterate the walker, skip anything that is not a file, call the
+callback for each file, and `return` the moment it answers `false`. Filter directories against
+this file's OWN `SKIP_DIRS` const, not `SEARCH_SKIP_DIRS` -- do not edit another file. Let
+`.hidden(true)` skip hidden entries the way the siblings do.
+
+TESTS, in the `mod tests` that is already there, which FAIL on the code as it stands now. Write
+two, each asserting one property the rewrite delivers:
+
+1. `.gitignore` is respected. Build a temp tree containing a `.git` directory, a `.gitignore`
+   listing one file, that ignored file, and one ordinary kept file. Call `walk` on it, collect the
+   file names it hands the callback, and assert the kept file is there and the ignored one is not.
+2. The first `false` ends the walk. Build a temp tree with three sibling subdirectories, one text
+   file in each and none at the root. Call `walk` with a callback that counts and returns `false`
+   immediately, and assert the count is exactly 1. On the current code it is 3 -- one per sibling
+   directory -- which is the `MAX_FILES` bug above.
+
+DO NOT write a test that creates a symlink. A Windows symlink needs a privilege this box and CI do
+not have, so such a test fails everywhere regardless of your fix. The two properties above need no
+privilege.
+
+For temp directories use the pattern this crate already uses in its tests: `std::env::temp_dir()`
+joined with a label plus `std::process::id()` and a `SystemTime` nanos suffix, then
+`std::fs::create_dir_all`. There is no `tempfile` dev-dependency.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`. `ignore` is already there.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+USE write_file, NOT apply_patch. This file is only 427 lines. Read it once, then send ONE
+write_file call whose content is the COMPLETE new file from the first line to the last. Do not send
+a unified diff for this task. An apply_patch diff here has twice run past the output ceiling and
+been discarded whole, changing nothing; a single write_file of a 427-line file is well inside it.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes. `end_to_end_finds_a_self_referential_token` in this same
+  module runs against the real workspace; it must still pass.
+* `cargo fmt --check -- --color=never` -- must exit 0. Watch line lengths; one over-long line
+  fails this rung.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new tests too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for you
+to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

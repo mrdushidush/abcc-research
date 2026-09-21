@@ -1,0 +1,142 @@
+diff --git a/crates/claudette/src/tools/semantic.rs b/crates/claudette/src/tools/semantic.rs
+index cdf2ff1..378aae0 100644
+--- a/crates/claudette/src/tools/semantic.rs
++++ b/crates/claudette/src/tools/semantic.rs
+@@ -169,30 +169,48 @@ fn collect_chunks(root: &Path) -> Vec<Chunk> {
+     chunks
+ }
+ 
++/// Walk `root` the way this crate's other search tools do — on `ignore`'s
++/// walker (`repomap.rs`, `search.rs`), which skips hidden entries and
++/// `.gitignore`d paths and, critically, does **not** follow symlinks.
++///
++/// The hand-rolled `read_dir` recursion this replaces used `path.is_dir()`,
++/// which follows links, and recursed with no depth limit and no visited
++/// set: one self-referential directory link (a pnpm store, a Windows
++/// junction) walked forever and overflowed the stack — which under
++/// `panic = "abort"` takes the process down rather than returning an error.
++/// It also returned from the *current directory frame only* when the
++/// callback asked it to stop, so every parent frame kept iterating and
++/// `collect_chunks`'s `MAX_FILES` cap never actually ended the walk. The
++/// `ignore` walker is a flat iterator, so `return` here ends it for good.
+ fn walk<F: FnMut(&Path) -> bool>(root: &Path, callback: &mut F) {
+-    let Ok(entries) = std::fs::read_dir(root) else {
+-        return;
+-    };
+-    for entry in entries.flatten() {
+-        let path = entry.path();
+-        let name = path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+-        if name.starts_with('.') && name != "." {
+-            // Skip dotfiles + dot-dirs except the current dir itself.
+-            if name != ".env" {
+-                continue;
++    let walker = ignore::WalkBuilder::new(root)
++        .hidden(true)
++        .git_ignore(true)
++        .git_global(true)
++        .git_exclude(true)
++        .parents(true)
++        .follow_links(false)
++        .filter_entry(|entry| {
++            if entry.file_type().is_some_and(|ft| ft.is_dir()) {
++                let name = entry.file_name().to_string_lossy();
++                if SKIP_DIRS.contains(&name.as_ref()) {
++                    return false;
++                }
+             }
++            true
++        })
++        .build();
++
++    for result in walker {
++        let Ok(entry) = result else { continue };
++        if !entry.file_type().is_some_and(|ft| ft.is_file()) {
++            continue;
+         }
+-        if path.is_dir() {
+-            if SKIP_DIRS.contains(&name) {
+-                continue;
+-            }
+-            walk(&path, callback);
+-        } else if path.is_file() && !callback(&path) {
++        if !callback(entry.path()) {
+             return;
+         }
+     }
+ }
+-
+ fn is_text_file(path: &Path) -> bool {
+     path.extension()
+         .and_then(|s| s.to_str())
+@@ -287,6 +305,71 @@ fn truncate(s: &str, max: usize) -> String {
+ mod tests {
+     use super::*;
+ 
++    /// A unique, empty directory under the OS temp root for one walk test.
++    fn walk_scratch(label: &str) -> PathBuf {
++        let dir = std::env::temp_dir()
++            .join("claudette-semantic-walk-test")
++            .join(format!(
++                "{label}-{}-{}",
++                std::process::id(),
++                std::time::SystemTime::now()
++                    .duration_since(std::time::UNIX_EPOCH)
++                    .map_or(0, |d| d.as_nanos())
++            ));
++        std::fs::create_dir_all(&dir).unwrap();
++        dir
++    }
++
++    #[test]
++    fn walk_respects_gitignore() {
++        // The old read_dir walker had no notion of .gitignore at all, so
++        // semantic_grep indexed build output and vendored trees that every
++        // other search tool in the crate already skips.
++        let dir = walk_scratch("gitignore");
++        std::fs::create_dir_all(dir.join(".git")).unwrap();
++        std::fs::write(dir.join(".gitignore"), "ignored.rs\n").unwrap();
++        std::fs::write(dir.join("kept.rs"), "fn kept() {}\n").unwrap();
++        std::fs::write(dir.join("ignored.rs"), "fn ignored() {}\n").unwrap();
++
++        let mut seen: Vec<String> = Vec::new();
++        walk(&dir, &mut |path: &Path| {
++            seen.push(path.file_name().unwrap().to_string_lossy().into_owned());
++            true
++        });
++
++        assert!(seen.contains(&"kept.rs".to_string()), "got: {seen:?}");
++        assert!(
++            !seen.contains(&"ignored.rs".to_string()),
++            "a .gitignore'd file was scanned: {seen:?}"
++        );
++    }
++
++    #[test]
++    fn walk_stops_the_whole_walk_when_the_callback_returns_false() {
++        // This is collect_chunks' MAX_FILES cap. The old walker returned
++        // from the current directory frame only, so a `false` raised inside
++        // a subdirectory left every parent frame iterating and the cap
++        // never ended the walk: one extra callback per sibling directory.
++        let dir = walk_scratch("stop");
++        for sub in ["a", "b", "c"] {
++            let child = dir.join(sub);
++            std::fs::create_dir_all(&child).unwrap();
++            std::fs::write(child.join("f.rs"), "fn f() {}\n").unwrap();
++        }
++
++        let mut count = 0usize;
++        walk(&dir, &mut |_path: &Path| {
++            count += 1;
++            false
++        });
++
++        assert_eq!(
++            count, 1,
++            "the first `false` must end the walk, not just the directory it \
++             was raised in; got {count} callbacks"
++        );
++    }
++
+     #[test]
+     fn schemas_lists_one_tool() {
+         let s = schemas();
