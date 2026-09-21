@@ -24,7 +24,19 @@ a call. The attempt changed **no file** and was scored `Uncertain`. Finding **F7
 model was already shown in the same attempt, and every attempt read exactly **one** distinct path.
 Finding **F800**, which extends F774 to a second repository.
 
-Findings **F798-F802**; next free is **F803**.
+🎉🎉 **AND THE PILOT HAS ITS FIRST GREEN LANDING — `007b84f`.** The same task that died at the cap
+was re-run with **one paragraph changed**, ordering `write_file` instead of a diff: the editing call
+went from 16,384 tokens delivering **0** argument characters to **1,185** delivering 4,297, and the
+attempt went **4 of 4 rungs green** — 1203 tests, `fmt --check` and `clippy -D warnings` both clean,
+Judge reported no findings. ⏸ The review minutes are David's and are deliberately NOT recorded.
+
+🚨 **Two more manufactured reds found on the way, both fixed at `b09bcdf`.** **F803**: abcc's `bash`
+tool was silently broken here — the WSL relay has a second home as a **zero-length** Store alias that
+`Path::is_file` accepts, and it was being chosen over the working Git for Windows shell. **F804**:
+`the_operators_environment_does_not_reach_the_child` was charging `PROMPT` to `ENV_ALLOWLIST` when
+cmd.exe invents it — pre-existing on `605fd7d`, proven by `git stash`.
+
+Findings **F798-F804**; next free is **F805**.
 
 ---
 
@@ -289,3 +301,79 @@ stops, not whether it terminates.
   as a lone one. Caught by the post-write scan, at offset 7199. Written up as rules 7 and 8 in
   `back-up-memory-every-session.md`, with the second being: **never split frontmatter on `---`,
   because a description can contain one** — that mis-parse makes a healthy file look corrupt.
+
+---
+
+# Part 3 — the intervention worked, and it found two more manufactured reds
+
+## 12. 🎉🎉 THE FIRST GREEN LANDING OF THE CLAUDETTE PILOT — `007b84f`
+
+`t720` is `t649`'s prompt with **one paragraph added** and every other byte identical: *use
+`write_file`, not `apply_patch`; this file is only 112 lines; send ONE call with the complete new
+file.* Same model, same task, same file, same seed discipline.
+
+| | `t649` — `apply_patch` | `t720` — `write_file` ordered |
+|---|---|---|
+| the editing call | 16,384 tokens, `length` | **1,185 tokens**, `tool_calls` |
+| argument chars delivered | **0** | **4,297** |
+| files changed | **none** | 1 |
+| gate | `structural exit 1` | ✅ **4 of 4 rungs green** |
+| acceptance | not reached | **1203 run, 1203 passed, 0 failed** |
+| standard | not reached | passed `fmt --check` **and** `clippy -D warnings` |
+| Judge | not asked | *"Reviewed the change and reported no findings."* |
+| ending | `Uncertain / TruncatedAtCap` | 🎉 **`Success` — MISSION ACCOMPLISHED** |
+
+**Landed as `007b84f`** by `abcc land t720`, per David's 2026-09-20 ruling that an agent may land.
+⏸ **The review minutes are NOT recorded and must not be** — `abcc review` measures a person's
+minutes and an agent typing it fabricates the one number self-host is judged on.
+
+▶ **The diff is right on its merits**, and was derived independently of the reference solution:
+`saturating_add` through both sites including `self.turns`, one new test in the `mod tests` already
+there, one file touched, nothing widened to `u64`, `Cargo.toml` untouched.
+
+⚠ **What this is and is not.** It is **one** attempt, so it is not a landing rate. What it does
+establish is directional and cheap: **the editor is a controllable variable**, and on the failure
+this log actually produces, choosing it is worth more than any amount of extra ceiling.
+
+⚠ **And the effect is confounded with the instruction's mere presence.** The paragraph both names
+`write_file` *and* tells the model the file is small. Separating those needs a third cell.
+
+## 13. 🚨 F803 — a third guard that knew one Windows case and not the other
+
+Mid-run the model tried `cargo fmt` through `bash` and got
+`execvpe(/bin/bash) failed: No such file or directory`. **abcc's `bash` tool was broken on this
+machine, silently, and its own test suite said so.**
+
+`shell()` (F492) skips *"a bash on PATH inside the system directory — which is the WSL relay's only
+home."* Measured, that clause is false:
+
+| candidate on PATH | size | what it is | the filter |
+|---|---|---|---|
+| `C:/WINDOWS/system32/bash.exe` | 86,016 b | the WSL relay | excluded ✓ |
+| `%LOCALAPPDATA%/Microsoft/WindowsApps/bash.exe` | **0 b** | Store app-execution alias → the same relay | **admitted** ✗ |
+| `C:/Program Files/Git/bin/bash.exe` | works | the real shell | never reached |
+
+`Path::is_file` is **true** for a zero-length reparse point, so the existence check admitted it.
+🚨 **abcc's own `bash_runs_a_command_in_the_workspace` FAILS from a shell whose PATH carries the
+alias and passes from one that does not** — which is why it survived: the suite is green from Git
+Bash and red from PowerShell. Fixed at `b09bcdf` by making length the discriminator.
+
+## 14. 🚨 F804 — and a test that manufactured its own red, pre-existing on `605fd7d`
+
+Found by running abcc's full suite as a control for F803, and **confirmed by `git stash` to fail on
+the unmodified tree**: `the_operators_environment_does_not_reach_the_child` reported `PROMPT` as
+having escaped `ENV_ALLOWLIST`. It had not.
+
+`dump_env` runs `set`, so the child is **cmd.exe** — and cmd synthesizes variables into its own
+block. **Measured directly: a cmd child handed a completely empty environment still returns
+`COMSPEC`, `PATHEXT` and `PROMPT`.** The first two are on the allowlist and so never tripped the
+check; `PROMPT` is not. So whenever the *test process* also had `PROMPT` set — any run launched from
+cmd — the test blamed the allowlist for a name the child had invented.
+
+The baseline is now **probed and subtracted** rather than listed, per ADR's standing *probe rather
+than assume*, so a future interpreter that invents a fourth name needs no table edit.
+
+▶ **The tally is now three guards of one shape plus one self-inflicted test red:** `HOME` without
+`USERPROFILE`, `USER` without `USERNAME`, the system relay without the Store alias — and a test that
+could not tell its instrument's output from its subject's. ⚠ **Every one of them reported a defect
+that was not there**, which is the failure mode this project can least afford.
