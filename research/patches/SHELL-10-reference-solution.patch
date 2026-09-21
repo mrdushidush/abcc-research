@@ -1,0 +1,50 @@
+diff --git a/crates/claudette/src/test_runner.rs b/crates/claudette/src/test_runner.rs
+index e8e8bef..18a874f 100644
+--- a/crates/claudette/src/test_runner.rs
++++ b/crates/claudette/src/test_runner.rs
+@@ -43,7 +43,15 @@ pub fn run_command_with_timeout(
+     cwd: Option<&Path>,
+ ) -> CommandResult {
+     let mut cmd = Command::new(program);
+-    cmd.args(args).stdout(Stdio::piped()).stderr(Stdio::piped());
++    // ⚠ stdin is NULL, not inherited. Without this the child gets the
++    // parent's stdin - the REPL's own terminal - and a command that reads it
++    // (cat, ssh, a git credential prompt) steals the operator's keystrokes or
++    // blocks the whole budget waiting for input nobody will type. shell.rs has
++    // always done this; this path never did.
++    cmd.args(args)
++        .stdin(Stdio::null())
++        .stdout(Stdio::piped())
++        .stderr(Stdio::piped());
+     if let Some(dir) = cwd {
+         cmd.current_dir(dir);
+     }
+@@ -177,4 +185,28 @@ fn run_command_drains_large_output_without_timeout() {
+         assert!(result.success, "child should exit 0: {result:?}");
+         assert_eq!(result.stdout.len(), 200_000);
+     }
++    #[test]
++    fn a_child_that_reads_stdin_sees_eof_rather_than_the_operators_keystrokes() {
++        // SHELL-10. This function pipes stdout and stderr and says nothing
++        // about stdin, so the child inherits the parent's - the REPL's own
++        // terminal. A command that reads stdin (cat, ssh, a git credential
++        // prompt) then steals the operator's keystrokes, or blocks the whole
++        // budget waiting for input nobody is going to type. shell.rs has
++        // always had this right; this path never did.
++        let body = "import sys; sys.stdout.write(str(len(sys.stdin.read())))";
++        let result = run_command_with_timeout("python", &["-c", body], 10, None);
++        if !result.success
++            && result.exit_code.is_none()
++            && result.stderr.starts_with("failed to spawn")
++        {
++            eprintln!("skipping: python not on PATH");
++            return;
++        }
++        assert!(!result.timed_out, "must see EOF at once: {result:?}");
++        assert!(result.success, "child should exit 0: {result:?}");
++        assert_eq!(
++            result.stdout, "0",
++            "must read nothing from stdin: {result:?}"
++        );
++    }
+ }

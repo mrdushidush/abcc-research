@@ -6,7 +6,10 @@ attempt died the way the last two did, and the two deaths were different from ea
 first filled the server's context window with tool output; the second, after a one-line control
 removed that, reasoned itself to the output cap. Diagnosing them found that abcc receives the
 context window on every single run and discards it, that 41.7% of every `read_file` byte it has
-ever served was a byte-identical repeat, and that the barren-turn rule P15 proposed is now 4 for 4.**
+ever served was a byte-identical repeat, and that the barren-turn rule P15 proposed is now 4 for 4.
+▶ **Then `SHELL-10` — one line, in the same 180-line file `SHELL-04` died in twice — landed
+on the first attempt, 4 of 4 rungs green, as `a450e00`.** Every landing this pilot has had is a
+one-change card; no multi-part card has landed in four attempts (Fisher p = 0.0476, n = 10).**
 
 Every number below is read from `claudette-92490a1b1de94eca/log.sqlite` and
 `abcc-1ae35b6091a63e2c/log.sqlite`, from the source at `b09bcdf`, or from a live probe of the
@@ -289,4 +292,115 @@ be betting the correctness of every re-read on it.
 
 ---
 
-Findings **F818–F822**; next free is **F823**.
+## 8. F823 — PowerShell 5.1 splits a task prompt on its own double quotes, and abcc caught it
+
+F817 recorded that `Get-Content -Raw` reads a BOM-less UTF-8 file as the ANSI codepage and
+mangled nine em dashes with **nothing in abcc noticing**. This is its sibling one step later in the
+same pipeline, and it has the opposite ending.
+
+`SHELL-10`'s prompt is the first in this series to carry embedded double quotes — a Rust string
+literal and a `starts_with("failed to spawn")` guard. Handing it to `abcc task` from PowerShell 5.1
+produced:
+
+    abcc: task takes a prompt and nothing else — quote it if it has spaces in it
+
+Probed directly, the same 4,037-byte file against a program that prints its own `argv`:
+
+    source chars: 4037
+    argc = 5
+    arg0 len = 1772
+     extra arg: 'sys;'
+     extra arg: 'sys.stdout.write(str(len(sys.stdin.read())));...'
+     extra arg: 'to'
+     extra arg: 'spawn)` and returns early...'
+
+**The split points are exactly the embedded quoted segments.** PowerShell 5.1 passes an embedded
+`"` to a native command's raw command line **without escaping it**, so it re-opens quoting and the
+argument breaks at whitespace inside the quoted run. `arg0` stops at 1,772 characters — precisely
+where `let body = "import sys; ...` begins.
+
+⚠ **A small control does NOT reproduce it, and that is the trap inside the trap.** One balanced
+pair with nothing structural after it is silently **stripped** instead of splitting: `"alpha
+\"beta\" gamma"` arrives as a single argument reading `alpha beta gamma`. **Quote loss and
+argument splitting are the same defect at two doses**, and testing the small one concludes it is
+safe.
+
+✅ **abcc caught this, and that is the half worth keeping.** `task`'s arity check refused rather
+than filing a truncated prompt, and the message named the cause. F817's mojibake reached the model
+because nothing checked it; this reached nothing because something did. That is the same shape as
+the `apply_patch` guard in P14 §2 — a check that found a real defect and said how to recover.
+
+▶ **The working recipe is Git Bash**, and it was verified rather than assumed:
+
+    cd /d/dev/abcc && abcc task "$(cat prompt.txt)" --title "..." --repo D:/dev/claudette
+
+The stored prompt was then read back out of `task_created` and compared to the source:
+**4,036 chars stored against the 4,037-byte file whose trailing newline `$(cat)` drops, identical
+otherwise.** ⚠ Check the stored prompt, not the command's exit code — F817's whole lesson is that
+the corrupted version filed successfully.
+
+---
+
+## 9. F824 — a one-line card landed first try, and the ladder now has a control
+
+`SHELL-06` was abandoned after two attempts rather than a third, per the standing rule that the n
+which matters is **different cards**, not more attempts on one. The fallback named in the brief was
+`UX-04`, and it was **rejected on reading the code rather than the card**: its headline is Ctrl+C
+leaving the cursor hidden, which needs a **signal handler** — `ctrlc` and `signal-hook` are not
+dependencies of this crate and *no new dependencies* is a hard gate constraint. A panic hook, the
+`tui.rs:699` pattern the card points at, does not catch `SIGINT`. The card's own fix says *install
+it once in `main`*, and `main.rs` is 1,486 lines. It fails the rig twice over.
+
+▶ **`SHELL-10` was driven instead, and it landed on the first attempt** — `a1612`, **4 of 4 rungs
+green**, landed as **`a450e00`** on `claudette`.
+
+    localize  10 turn(s), 8 tool call(s), 81379 in / 10014 out (8262 reasoning), 138459 ms
+    change     5 turn(s), 4 tool call(s), 43302 in /  2829 out (591 reasoning), 133341 ms
+    gate      structural ok · acceptance ok · veto ok · standard ok
+
+**What it wrote is the reference solution, independently derived** — `.stdin(Stdio::null())` on the
+builder chain and a `stdin_is_null` test in the `mod tests` that was already there, reusing the
+existing skip-if-absent guard verbatim. It asserted `stdout.trim() == "0"` where the reference
+asserted `"0"`, which is marginally more robust. ✅ Re-verified by hand off the checkpoint: the
+patch applies clean, passes the probe that caught the defect (**24 bytes → 0**), and the whole tree
+is `fmt` 0, `clippy` 0, **1204 tests, 0 failures**.
+
+🚨 **The comparison that carries the most weight is the same-file one.** `SHELL-04` and `SHELL-10`
+are both `crates/claudette/src/test_runner.rs`, both 180 lines, both reached through the same
+module and the same `python` test idiom. They differ in one thing — **how many parts the card
+asks for**:
+
+| card | file | parts asked | attempts | landed |
+|---|---|---|---|---|
+| `SHELL-04` | `test_runner.rs`, 180 | 3 (tree-kill, reader deadline, test) | 2 | **0** |
+| `SHELL-10` | `test_runner.rs`, 180 | **1** (one line, one test) | 1 | **1** |
+
+Across every card this pilot has driven, sorted the same way:
+
+| shape | cards | attempts | landed |
+|---|---|---|---|
+| one change | `RUNTIME-11` (P14), `SHELL-10` | 6 | **5** |
+| multi-part | `SHELL-04`, `SHELL-06` | 4 | **0** |
+
+**Fisher exact, two-tailed: p = 0.0476** (one-tailed 0.0238).
+
+⚠ **And here is what that number is NOT.** These cards were **chosen, not randomised**, and they
+differ in more than part-count: the files run 112, 180 and 427 lines, and `SHELL-06`'s first death
+was a context overflow this operator's own prompt invited (F820). n is **10 attempts across 4
+cards**. The honest sentence is *every landing in this pilot has been a one-change card, and no
+multi-part card has landed in four attempts* — a real pattern at p = 0.0476, on a sample small
+enough that one more multi-part landing would take it past 0.05. ▶ **The cheap way to strengthen
+it is another one-change card on a different file**, not another attempt on `SHELL-06`.
+
+⚠ **A caveat the prompt carried on purpose, and it is a limit on the card, not on the model.**
+Under `cargo test` the harness's own stdin is already at end-of-file, so the child inherits a
+closed handle and reads zero bytes **whether or not the fix is applied**. `stdin_is_null` is a
+regression guard, not a red-to-green proof, and the prompt said so explicitly so the model would
+not spiral trying to make it fail. The defect was proved the only way it can be — by putting real
+input on the parent's stdin, where the unfixed code read all 24 bytes of it. **So the gate's
+`acceptance` rung green here means *nothing regressed*, not *the fix is proved*.** The proof is in
+this document, not in the suite.
+
+---
+
+Findings **F818–F824**; next free is **F825**.
