@@ -374,3 +374,214 @@ are both clean. 🧹 `$D` deleted.
   substituting pays only when the note is smaller than the result, which drops exactly one repeat,
   a 78-byte `search`. ⚠ And the escape valve — every 4th occurrence served whole — costs **16 of
   131** substitutions and **233,283 of 1,785,975** bytes, 13%.
+
+---
+
+## 9. THE GPU SESSION — the falsifier ran, and it found more than it was pointed at
+
+**Session of 2026-09-22/23.** Both stops were driven live: six attempts on the speed tier and two
+on the quality tier. The falsifier passed. Two of the things it turned up were not what it was
+looking for.
+
+### 9.1 ✅ Item ① — the falsifier, on its second sample
+
+▶ **The first re-run was a null result and is recorded as one.** `a2009` ran the v1 prompt
+unmodified on the new engine and died `Uncertain { SaidNothing }` after **7 turns and 4 tool
+calls** — F503's shape, both nudges spent. It never repeated a read, so the guard never fired:
+0 back-references, 0 `prompt_cut`, largest reasoning turn 7,510 chars. ⚠ **Neither new stop is
+implicated and that was checked rather than assumed.** `seed_for` hashes the attempt, so a new
+attempt is a new sample on a byte-identical prompt.
+
+`a2065` is the measurement:
+
+| | `a1711` | `a1866` | **`a2065`** |
+|---|---:|---:|---:|
+| `read_file` calls | 19 | 21 | 22 |
+| **bytes served to the model** | 187,187 | 175,339 | **41,291** — **−78%** |
+| duplicate-content share | 89.9% | 87.9% | **38.9%** |
+| back-references sent | 0 | 0 | **7** |
+| bytes withheld | 0 | 0 | **58,573** |
+| **`prompt_cut`** | **8** | **5** | **0** |
+| ending | `TruncatedAtCap` | `BudgetExhausted` | `BudgetExhausted` |
+
+🚨 **The residual 38.9% is not a miss — it is the escape valve, to the byte.** Per fingerprint:
+
+    130146e5…  the 14,017-byte whole-file read   occ 1 FULL · 2 ref · 3 ref · 4 FULL · 5 ref · 6 ref
+    5ab3f68a…  an 826-byte read                  occ 1 FULL · 2 ref · 3 ref · 4 FULL
+    ac755f80…  a 789-byte read                   occ 1 FULL · 2 ref
+
+14,017 + 826 = **14,843**, which is the measured duplicate total exactly. With the valve removed it
+would be 0. ▶ **Do not revert**: `prompt_cut` stopped firing outright, which was the second
+condition, and the first collapsed as far as the valve permits.
+
+⚠ **It did not make the card land, and that is the more useful half.** 22 `read_file` calls,
+**zero editing calls**, dead at the round budget. The model still re-read the whole file **six
+times** — it just paid for two of them. ▶ **F827 one layer down: the tool layer can remove the
+*cost* of a read the model believes it needs; it cannot remove the read.**
+
+### 9.2 🚨 F831 — the ceiling fired twice in the wild, and its own field data corrects it
+
+✅ **Both live firings are true positives.** `a2229` (speed tier) and `a2468` (quality tier) each
+ended `ReasoningRunaway { chars: 50003, ceiling: 50000 }`. The witness for the first is the
+liveness mark at the cut — *`recon streaming: 0 chars of answer, 49622 of trace, 0 of tool-call
+arguments`*. The second is true **by construction**: `produced_nothing()` is a precondition of the
+cut, so a turn that had produced anything could not have reached it.
+
+🚨 **But `a2065` breaks the plateau's premise.** It contains, **in one attempt**:
+
+| turn | reasoning chars | produced |
+|---|---:|---|
+| seq 2163 | **26,275** | nothing — 0 text, 0 calls, `stop` |
+| seq 2207 | 17,008 | nothing |
+| seq 2151 | **34,760** | 1,037 chars of text **and** a `read_file` |
+
+▶ **The two populations F829 fitted the plateau against are not separable by a threshold.** No
+ceiling catches the 26,275-char barren turn without discarding the 34,760-char productive one.
+F829's *5 catches, 0 false positives* was a property of that 3,048-turn sample, not of the
+quantity. **The rule is 5 of 6 on turns, not 5 of 5.**
+
+✅ **The engine answers the half that can be answered.** The stop now also requires
+`Accumulator::produced_nothing()` — no text, no assembled call, no argument bytes, no
+`ToolCallOpened`. This can only *prevent* firings, so catches stay 5 and false positives can only
+fall. ⚠ **It does not make the rule complete**: LM Studio buffers a tool call's arguments to the
+end (F624), so a turn whose only output is a large call looks barren for almost all of its trace.
+**The threshold is still doing the real work.**
+
+✅ **Two more live productive turns above 30,000 chars** — 30,660 in `a2229` and 34,760 in `a2065`
+— independently confirm that F829's 30,000 row (4 false positives) was rightly rejected. ⚠ And with
+the ceiling **off**, `a2603` produced a turn at **64,572** reasoning chars, a new maximum above the
+historical 60,760.
+
+🚨 **`--reasoning-ceiling <n>`, where `0` is OFF, and it exists because of `a2468`.** The ceiling
+ended the first Change phase the quality tier ever reached, correctly by every signal the loop had
+— and *whether that turn would have produced anything* then became **unobservable, because the
+observation is the thing the stop prevents**. ▶ **A stop that cannot be taken out of the path
+cannot be measured.** `0` maps to `usize::MAX` rather than to a ceiling of zero, which would end
+every turn before its first delta.
+
+### 9.3 🚨🚨 F832 — TWO OF THREE LANDED CARDS CARRY A TEST THAT PASSES UNFIXED
+
+`RUNTIME-10b` landed — MISSION ACCOMPLISHED, four green rungs — and **the Judge reported that its
+test does not exercise the change**. The Judge was right. Each landed test was then extracted
+**verbatim** and injected into the tree it was written against:
+
+| landed card | its own test, run on the pre-fix tree | verdict |
+|---|---|---|
+| `RUNTIME-11b` (`a728`) | `test result: FAILED` | ✅ **real** |
+| **`SHELL-10`** (`a1612`) | `test result: ok` | 🚨 **SHAM** |
+| **`RUNTIME-10b`** (`a2322`) | `test result: ok` | 🚨 **SHAM** |
+
+* `RUNTIME-10b` wrote `format!("{}{}", "[", "]").repeat(300)` — that is `"[][][]…"`, **flat**. It
+  errors on *unexpected trailing content* and never reaches the depth check.
+* `SHELL-10` asserts a child reads **0 bytes** of stdin. Under `cargo test` the parent's stdin is
+  already at EOF, so an **inherited** stdin reads 0 too. Verified: the pre-fix tree has
+  `cmd.args(args).stdout(Stdio::piped()).stderr(Stdio::piped())` and **no `.stdin(...)` at all**,
+  and the test still passes there.
+
+⚠ **Both production fixes are correct.** The defect is in the tests. Three consequences:
+
+1. 🚨 **The gate cannot see this.** It runs `cargo test` and gets green either way. A red test is
+   the one thing the card design rests on and the one thing nothing verifies.
+2. 🚨 **The same-file control is gone.** §4 called it *"the strongest half of the ladder —
+   `SHELL-04` and `SHELL-10`, both `test_runner.rs` at 180 lines, 3 parts vs 1, 0 of 2 against
+   1 of 1."* **That 1 of 1 is a sham-test landing.**
+3. 🎉 **The Judge caught what the deterministic rungs could not, and decided nothing** — which is
+   ADR-0009's ruling working exactly as written. This is the first time in the project's history
+   the judge has produced a finding the gate could not, and it argues the report is worth more
+   than the ladder has credited.
+
+▶ **`abcc land t2018` was NOT run.** The change is fine; its test should be replaced first.
+
+### 9.4 F833 — item ④: the QUALITY tier does not land the multi-part card either
+
+`unsloth/qwen3.8-27b`, 4.9× cost, `-c 40960 --parallel 1` — **the same window as the speed tier, so
+the window is not a confound.** The card is `SHELL-04b` (`t1409`), the ASCII multi-part prompt that
+already failed on the speed tier.
+
+| | `a1417` speed tier | `a2468` 27B, ceiling on | **`a2603` 27B, ceiling off** |
+|---|---|---|---|
+| Localize | 4 turns / 3 calls | 7 / 11 | **8 / 10, artifact produced** |
+| Change | **never ran** | 1 / 1 | **12 turns / 13 calls** |
+| **editing calls** | — | — | **0** |
+| ending | `TruncatedAtCap` | `ReasoningRunaway` (**void**) | `TruncatedAtCap` |
+| wall clock | — | — | **38.3 min** |
+
+▶ **The bigger model gets much further and still never calls an editor.** On the speed tier Change
+never ran at all; on the 27B it ran twelve turns and spent them on **11 `bash` calls and 2
+`read_file`**. ⚠ `a2468` is **void for this question** — abcc's own stop ended it, which is what
+§9.2's flag exists to prevent.
+
+▶ **So the one-change law is not refuted by a bigger model**, and that is the weaker of the two
+readings available: *this quant cannot hold multi-part instructions* is no longer the explanation,
+but n = 1 attempt on one card at the quality tier is not a rate.
+
+### 9.5 ✅ F834 — `Body` scoping, confirmed in the wild on the first attempt that could test it
+
+`a2603` served **two byte-identical `read_file` results whole** — 7,914 B and 6,165 B — with the
+guard silent. That is correct, and it is the design decision being exercised:
+
+    occ 1 seq 2612 in LOCALIZE  ->  occ 2 seq 2721 in CHANGE   (7,914 B)
+    occ 1 seq 2637 in LOCALIZE  ->  occ 2 seq 2749 in CHANGE   (6,165 B)
+
+🚨 **Both crossed the phase boundary.** Had the dedup state been on `Workspace` — one instance
+shared across both phases — the Change phase would have been handed *you already have this,
+earlier in this conversation* pointing at a message its own `Body` never contained: **a
+back-reference to nothing**. The work order predicted this failure; it occurred on the first
+attempt that read substantially in both phases, and the guard was silent exactly as designed.
+
+⚠ Also confirmed live: the `Reach::Inspects` filter. `a2603`'s Change phase made **11 `bash`
+calls** and none was considered for substitution.
+
+### 9.6 ⚠ The ladder, recomputed from the log — and it does not match §4
+
+🚨 **Every attempt in the claudette log, counted by `outcome = success`:**
+
+| card | shape | landed / attempts |
+|---|---|---:|
+| `RUNTIME-11` | one change | 7 / 8 |
+| `SHELL-10` | one change | 1 / 1 |
+| `SEC-06` | one change | 0 / 4 |
+| `RUNTIME-10b` | one change | 1 / 2 |
+| `SHELL-04` | multi-part | 0 / 4 |
+| `SHELL-06` | multi-part | 0 / 2 |
+| **one change** | | **9 / 15** |
+| **multi-part** | | **0 / 6** |
+
+**Fisher two-tailed p = 0.0186.** ⚠ **With the two sham-tested landings not counted as landings
+(§9.3), it is 7 / 15 and p = 0.0609.**
+
+🚨 **This table does not match §4's**, which published *one change 5 of 8, multi-part 0 of 4,
+p = 0.0808*. The log says 15 and 6 attempts where §4 says 8 and 4. ▶ **Which accounting is the
+intended one is David's to settle** — §4 may have been counting cards, or excluding the
+`RUNTIME-11e` control re-runs, and inventing a reconciliation here would be exactly the kind of
+after-the-fact adjustment this project's standing rule exists to prevent. **Both numbers are on the
+record; neither is quietly replaced.**
+
+### 9.7 Findings
+
+* **F831** — the reasoning ceiling's two populations are **not separable by a threshold**. `a2065`
+  holds a barren turn at **26,275** reasoning chars and a productive one at **34,760** in the same
+  attempt, so F829's *5 catches, 0 false positives over 41,000–60,000 chars* is a property of that
+  sample and not of the quantity; the rule is **5 of 6 on turns**. The stop therefore also requires
+  the turn to have produced nothing — no text, no assembled call, no argument bytes, no
+  `ToolCallOpened` — which can only prevent firings, and **does not make the rule complete**
+  because F624 buffers a tool call's arguments to the end. ✅ Two live firings, `a2229` and
+  `a2468`, both true positives. ▶ And a stop that cannot be taken out of the path cannot be
+  measured: `--reasoning-ceiling 0` exists because the ceiling ended `a2468`, making the very
+  observation that would validate it impossible.
+* **F832** — **two of three landed cards carry a test that passes on the unfixed tree.** Verified
+  by extracting each landed test verbatim and injecting it into the tree it was written against:
+  `RUNTIME-11b` goes RED (real), **`SHELL-10` passes (sham)**, **`RUNTIME-10b` passes (sham)**. The
+  gate cannot detect this — it runs `cargo test` and sees green either way — and the judge can, did,
+  and correctly decided nothing. 🚨 §4's *strongest half of the ladder*, the same-file
+  `test_runner.rs` control at 1 of 1, **is a sham-test landing**.
+* **F833** — the QUALITY tier does not land the multi-part card either. `unsloth/qwen3.8-27b` at
+  the same 40,960 window reached Change and spent **12 turns and 13 tool calls** there — 11 of them
+  `bash` — with **zero editing calls**, ending `TruncatedAtCap` after 38.3 minutes, where the speed
+  tier's Change phase never ran at all. ▶ *This quant cannot hold multi-part instructions* is no
+  longer the explanation. ⚠ n = 1 attempt; a first run was voided by abcc's own ceiling.
+* **F834** — the re-read guard's `Body` scoping is confirmed in the wild. `a2603` served two
+  byte-identical `read_file` results whole, 7,914 B and 6,165 B, **both crossing the
+  Localize→Change boundary**; dedup state on the shared `Workspace` would have answered the Change
+  phase with a back-reference to a message its own `Body` never held. ✅ The `Reach::Inspects`
+  filter is confirmed too: the same phase made 11 `bash` calls and none was considered.
