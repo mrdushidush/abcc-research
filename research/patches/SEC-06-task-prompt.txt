@@ -1,0 +1,76 @@
+SEC-06 -- semantic_grep deliberately re-admits .env, so credentials reach model context.
+
+THE FILE, and the only one you may change: `crates/claudette/src/tools/semantic.rs`. It is 427
+lines, and it already has a `#[cfg(test)] mod tests` at the bottom, opening with `use super::*;`,
+to put your test in.
+
+THE DEFECT, measured on this repo. The private `walk` helper skips dotfiles and dot-directories,
+and then carves out one exception:
+
+    if name.starts_with('.') && name != "." {
+        // Skip dotfiles + dot-dirs except the current dir itself.
+        if name != ".env" {
+            continue;
+        }
+    }
+
+So every dotfile is skipped EXCEPT `.env`, which is walked, read and returned to the model. A
+`.env` file is where a project keeps API keys, tokens and database passwords. Nothing else in the
+tool wants this; the inner `if` is the whole of the defect.
+
+Measured: a directory holding `.env` and `ok.rs` walks to `[".env", "ok.rs"]`. It should walk to
+`["ok.rs"]`.
+
+THE FIX -- ONE line, by deletion. The inner `if name != ".env"` guard goes away, so the dotfile
+branch becomes an unconditional `continue`:
+
+    if name.starts_with('.') && name != "." {
+        // Skip dotfiles + dot-dirs except the current dir itself.
+        continue;
+    }
+
+Nothing else changes. No import moves, no signature moves, no caller moves.
+
+DO NOT OPEN ANY OTHER FILE. `crates/claudette/src/tools/semantic.rs` is the only file you need to
+read, and `read_file` takes `from_line` and `to_line` if you want part of one.
+
+A TEST, in the `mod tests` that is already there. `walk` is private but the test module says
+`use super::*;`, so you can call it directly. Build a temp directory, put a `.env` and one
+ordinary file in it, collect what `walk` visits, and assert `.env` is not among them:
+
+    let dir = std::env::temp_dir().join("claudette-sec06");
+
+Create it, write both files, call `walk(&dir, &mut |p| { ...record the file name...; true })`,
+remove the directory, then assert the ordinary file WAS seen and `.env` was NOT. Do not add a
+dependency for the temp directory -- `std::env::temp_dir()` is what this crate already uses for
+exactly this, in `src/forge/models_toml.rs` and `src/forge/personas.rs`. Do not open those files;
+the line above is all they have to teach.
+
+THIS TEST GOES RED ON THE UNFIXED CODE, and that is the point. Before the fix it fails with
+`.env` present in the walked list; after the fix it passes. If you write the test first and it
+fails, that is correct and expected -- apply the fix and it will pass. Do not weaken the
+assertion to make it green.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+USE write_file, NOT apply_patch. Read the file once, then send ONE write_file call whose content
+is the COMPLETE new file from the first line to the last. Do not send a unified diff for this
+task. An apply_patch diff has twice run past the output ceiling on this repo and been discarded
+whole, changing nothing.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes.
+* `cargo fmt --check -- --color=never` -- must exit 0. Watch line lengths; one over-long line
+  fails this rung, and an `assert!` with a message is the usual way to trip it.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

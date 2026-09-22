@@ -1,0 +1,99 @@
+diff --git a/crates/claudette/src/runtime/json.rs b/crates/claudette/src/runtime/json.rs
+index d829a15..b7ec2df 100644
+--- a/crates/claudette/src/runtime/json.rs
++++ b/crates/claudette/src/runtime/json.rs
+@@ -1,6 +1,14 @@
+ use std::collections::BTreeMap;
+ use std::fmt::{Display, Formatter};
+ 
++/// How deeply arrays and objects may nest before the parser refuses.
++///
++/// `parse_value` recurses through `parse_array` and `parse_object`, so the
++/// nesting in the input is the depth of the native stack. Session and config
++/// files are read from disk by `Session::load_from_path` and
++/// `config::load`, so the input is not necessarily one this process wrote.
++const MAX_DEPTH: usize = 128;
++
+ #[derive(Debug, Clone, PartialEq, Eq)]
+ pub enum JsonValue {
+     Null,
+@@ -146,6 +154,7 @@ fn push_unicode_escape(rendered: &mut String, control: char) {
+ struct Parser<'a> {
+     chars: Vec<char>,
+     index: usize,
++    depth: usize,
+     _source: &'a str,
+ }
+ 
+@@ -154,6 +163,7 @@ fn new(source: &'a str) -> Self {
+         Self {
+             chars: source.chars().collect(),
+             index: 0,
++            depth: 0,
+             _source: source,
+         }
+     }
+@@ -226,7 +236,19 @@ fn parse_unicode_escape(&mut self) -> Result<char, JsonError> {
+         char::from_u32(value).ok_or_else(|| JsonError::new("invalid unicode scalar value"))
+     }
+ 
++    /// Enter one level of nesting, or refuse.
++    fn descend(&mut self) -> Result<(), JsonError> {
++        if self.depth >= MAX_DEPTH {
++            return Err(JsonError::new(format!(
++                "nesting deeper than {MAX_DEPTH} levels"
++            )));
++        }
++        self.depth += 1;
++        Ok(())
++    }
++
+     fn parse_array(&mut self) -> Result<JsonValue, JsonError> {
++        self.descend()?;
+         self.expect('[')?;
+         let mut values = Vec::new();
+         loop {
+@@ -241,10 +263,12 @@ fn parse_array(&mut self) -> Result<JsonValue, JsonError> {
+             }
+             self.expect(',')?;
+         }
++        self.depth -= 1;
+         Ok(JsonValue::Array(values))
+     }
+ 
+     fn parse_object(&mut self) -> Result<JsonValue, JsonError> {
++        self.descend()?;
+         self.expect('{')?;
+         let mut entries = BTreeMap::new();
+         loop {
+@@ -263,6 +287,7 @@ fn parse_object(&mut self) -> Result<JsonValue, JsonError> {
+             }
+             self.expect(',')?;
+         }
++        self.depth -= 1;
+         Ok(JsonValue::Object(entries))
+     }
+ 
+@@ -351,6 +376,22 @@ fn renders_and_parses_json_values() {
+         assert_eq!(parsed.as_object().expect("object").len(), 2);
+     }
+ 
++    #[test]
++    fn rejects_deeply_nested_input_instead_of_recursing() {
++        // 300 is well under any real stack limit for this parser, so an unfixed
++        // tree returns Ok here rather than crashing: the test measures the
++        // missing limit, not a segfault.
++        let depth = 300;
++        let source = format!("{}{}", "[".repeat(depth), "]".repeat(depth));
++
++        let parsed = JsonValue::parse(&source);
++
++        assert!(
++            parsed.is_err(),
++            "a {depth}-deep value parsed without hitting any nesting limit"
++        );
++    }
++
+     #[test]
+     fn escapes_control_characters() {
+         assert_eq!(render_string("a\n\t\"b"), "\"a\\n\\t\\\"b\"");
