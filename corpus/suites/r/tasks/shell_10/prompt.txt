@@ -1,0 +1,65 @@
+SHELL-10 -- the synchronous runner hands its child the parent's stdin.
+
+THE FILE, and the only one you may change: `crates/claudette/src/test_runner.rs`. It is 180
+lines, and it already has a `#[cfg(test)] mod tests` at the bottom to put your test in.
+
+THE DEFECT, measured on this repo. `run_command_with_timeout` builds its child like this:
+
+    cmd.args(args).stdout(Stdio::piped()).stderr(Stdio::piped());
+
+It pipes stdout and stderr and says NOTHING about stdin, so the child inherits the parent's --
+the REPL's own terminal. A command that reads stdin (`cat`, `ssh`, a git credential prompt) then
+either steals the operator's keystrokes or blocks the whole timeout budget waiting for input
+nobody is going to type. This affects every `run_git`, `git_in`, `run_tests` and `diagnostics`
+call in the crate.
+
+Measured: with 24 bytes sitting on the parent's stdin, a child that reads stdin got all 24 of
+them. It should have got zero.
+
+THE FIX -- ONE line. Add `.stdin(Stdio::null())` to that builder chain. `Stdio` is ALREADY
+imported at the top of the file (`use std::process::{Command, Stdio};`), so nothing else changes.
+
+`crates/claudette/src/tools/shell.rs` has always had this right, and this is its line verbatim:
+
+    .stdin(std::process::Stdio::null());
+
+DO NOT OPEN `shell.rs` OR ANY OTHER FILE. The line above is the whole of what it has to teach,
+and `shell.rs` is over 1300 lines -- reading it costs more of this conversation's room than the
+task is worth. `crates/claudette/src/test_runner.rs` is the ONLY file you need to read, and
+`read_file` can return a range of lines if you want part of one.
+
+A TEST, in the `mod tests` that is already there. Have the child report how many bytes it read
+from stdin and assert it read none:
+
+    let body = "import sys; sys.stdout.write(str(len(sys.stdin.read())))";
+
+Run that through `run_command_with_timeout` with a short budget, then assert `!timed_out`,
+`success`, and that stdout is `"0"`. The existing test in that module shows the portable pattern
+for reaching a subprocess here -- `python`, with a skip-if-absent guard that checks
+`stderr.starts_with("failed to spawn")` and returns early. Reuse it exactly.
+
+ONE THING TO KNOW ABOUT THAT TEST, so you do not chase it. Under `cargo test` the harness's own
+stdin is already at end-of-file, so the child inherits a closed handle and reads zero bytes
+whether or not you apply the fix. The assertion is a regression guard, not a red-to-green proof:
+it pins the contract, and it goes red the moment anyone runs the suite with real input on stdin,
+which is how the 24 bytes above were measured. Do NOT try to make it fail on the unfixed code,
+and do NOT add a test that writes to the parent's stdin.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes.
+* `cargo fmt --check -- --color=never` -- must exit 0. Watch line lengths; one over-long line
+  fails this rung, and an `assert_eq!` with a message is the usual way to trip it.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

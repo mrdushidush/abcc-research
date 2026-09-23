@@ -1,0 +1,78 @@
+schema    = 1
+id        = "shell_04"
+title     = "a timeout kills the child but a grandchild holding the pipes blocks the join"
+lang      = "rust"
+kind      = "bugfix"
+# The H1 attempts on SEC-06 took 191-286 s; the budget is the whole `abcc run` or REPL session,
+# including the subject's own builds of claudette.
+timeout_s = 1800
+
+[fixture]
+kind = "git_archive"
+repo = "D:/dev/claudette"
+rev  = "3fdfefe12289b63b42e0502f516d41a1f8c59eed"   # the parent of RUNTIME-11b's landing; every R card is open here
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+the card author's red test runs as a hidden module the subject never sees, beside the whole claudette \
+lib suite, fmt and clippy -D warnings; a PASS is the defect fixed, nothing regressed, and the tree \
+landable\
+"""
+
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "not_run"   # no sham authored yet
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "the pinned base, untouched: hidden test red: timeout_returns_promptly_when_a_grandchild_holds_the_pipes; others, fmt, clippy pass (1 of 4 runs: bash_rejects_whitespace_only_command red in the parallel run, the pre-retry verifier)"
+verifier = "rewritten"
+run      = "corpus/suites/r/lib/gate.sh, Windows host, 2026-09-23"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "base + refsol/fix.patch: behaviour, fmt, clippy pass; others=flaky 2 of 2 with the retry: list_dir_classifies_file_and_subdir_correctly red in the parallel run (another test's temporary $HOME) and green alone"
+verifier = "rewritten"
+run      = "corpus/suites/r/lib/gate.sh, Windows host, 2026-09-23"
+
+[provenance]
+donor       = "claudette-cards"
+imported_at = "2026-09-23"
+verbatim    = ["refsol", "prompt"]
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "fixture", "verify", "sham", "variants", "disposition", "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE PROMPT comes from research/patches/SHELL-04-task-prompt.txt. Verbatim.\
+  """,
+
+  """
+  THE REFSOL is research/patches/SHELL-04-reference-solution.patch. It carries the card author's own test in `mod tests`; the verifier's hidden module is separate and does not depend on it.\
+  """,
+
+  """
+  THE HIDDEN TEST is the card author's red test (hidden.rs), appended by the verifier as its own `#[cfg(test)] mod w8_hidden` at the end of the target file. The subject never sees it and its own test never decides the verdict (F832).\
+  """,
+  """
+  A CLAUDETTE TEST RACES ON THIS TASK. With the refsol applied, `tools::tests::list_dir_classifies_file_and_subdir_correctly`   failed 4 of 4 parallel runs on "path is outside $HOME (…claudette-temphome-…)": another test's temporary $HOME   leaking into it. It passes alone. The verifier re-runs a failing OTHER test once, serially, and reports   `others=flaky` by name; the hidden test is never retried. A subject's tree can trip the same race, so read   `others=flaky` as this, not as a regression  """,
+
+]
+
+[donor_tags]
+card   = "SHELL-04"
+target = "crates/claudette/src/test_runner.rs"

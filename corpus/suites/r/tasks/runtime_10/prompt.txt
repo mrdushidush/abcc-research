@@ -1,0 +1,92 @@
+RUNTIME-10 -- the JSON parser recurses on nesting with no depth limit.
+
+THE FILE, and the only one you may change: `crates/claudette/src/runtime/json.rs`. It is 358
+lines, and it already has a `#[cfg(test)] mod tests` at the bottom, opening with
+`use super::{render_string, JsonValue};`, to put your test in.
+
+THE DEFECT, measured on this repo. `Parser::parse_value` at line 161 dispatches on the next
+character:
+
+    fn parse_value(&mut self) -> Result<JsonValue, JsonError> {
+        self.skip_whitespace();
+        match self.peek() {
+            ...
+            Some('[') => self.parse_array(),
+            Some('{') => self.parse_object(),
+            ...
+        }
+    }
+
+`parse_array` (line 229) and `parse_object` (line 247) each call `parse_value` again for every
+element. So the three functions mutually recurse, and the nesting depth of the input IS the depth
+of the native stack. Nothing counts it: `grep -n depth crates/claudette/src/runtime/json.rs`
+returns nothing at all.
+
+The public entry point is `JsonValue::parse` at line 63, and it is fed file contents from disk by
+`Session::load_from_path` in `crates/claudette/src/runtime/session.rs` and by `config::load` in
+`crates/claudette/src/runtime/config.rs`. So the input is not always one this process wrote.
+
+Measured: a 300-deep value -- the string `[` repeated 300 times followed by `]` repeated 300
+times -- parses to `Ok` today. There is no limit for it to hit.
+
+THE FIX -- a depth counter on the parser and one cap. Exactly this and nothing else:
+
+1. Add a module-level constant, near the top of the file:
+
+       const MAX_DEPTH: usize = 128;
+
+2. Add a `depth: usize` field to `struct Parser` (line 146), and initialise it to `0` in
+   `Parser::new` (line 153).
+
+3. In BOTH `parse_array` and `parse_object`, before anything else in the function body, refuse
+   when `self.depth` has reached `MAX_DEPTH` and otherwise increment it; decrement it again just
+   before the final `Ok(...)` of each. A shared little helper that both call is fine and is
+   probably tidier than writing the check twice. The refusal is an ordinary
+   `Err(JsonError::new(...))` with a message naming the limit -- the same error type the rest of
+   the file already returns.
+
+That is the whole change. Do not change the cursor, do not change `chars: Vec<char>`, do not
+change any other function, do not touch performance. ONE behaviour changes: input nested deeper
+than 128 levels now returns `Err` instead of recursing.
+
+DO NOT OPEN ANY OTHER FILE. `crates/claudette/src/runtime/json.rs` is the only file you need to
+read, and `read_file` can return a range of lines if you want part of one.
+
+A TEST, in the `mod tests` that is already there. `JsonValue` is already imported there, and
+`JsonValue::parse` is public, so you need no new imports. Build a 300-deep array as a string,
+parse it, and assert the result is an error:
+
+    let depth = 300;
+    let source = format!("{}{}", "[".repeat(depth), "]".repeat(depth));
+    assert!(JsonValue::parse(&source).is_err());
+
+300 is deliberately well under any real stack limit for this parser, so the unfixed code returns
+`Ok` here rather than crashing. The test measures the missing limit, not a crash.
+
+THIS TEST GOES RED ON THE UNFIXED CODE, and that is the point. Before the fix it fails because
+`parse` returns `Ok`; after the fix it passes. If you write the test first and it fails, that is
+correct and expected -- apply the fix and it will pass. Do not weaken the assertion to make it
+green.
+
+Leave the two existing tests, `renders_and_parses_json_values` and `escapes_control_characters`,
+exactly as they are. They must still pass: ordinary JSON, nested a handful of levels, must keep
+parsing.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes.
+* `cargo fmt --check -- --color=never` -- must exit 0. Watch line lengths; one over-long line
+  fails this rung, and an `assert!` with a message is the usual way to trip it.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

@@ -1,0 +1,54 @@
+In crates/claudette/src/runtime/usage.rs, make the token counters saturate instead of overflowing.
+
+THE DEFECT. Both accumulation sites use unchecked u32 arithmetic on values that come from the model
+provider's usage report, and Cargo.toml has no overflow-checks in [profile.release]. So a release
+build wraps silently and a debug or test build panics. This is roast card RUNTIME-11.
+
+There are exactly two sites, both in this one file.
+
+Site 1 -- UsageTracker::record, which uses += four times:
+
+    pub fn record(&mut self, usage: TokenUsage) {
+        self.cumulative.input_tokens += usage.input_tokens;
+        self.cumulative.output_tokens += usage.output_tokens;
+        self.cumulative.cache_creation_input_tokens += usage.cache_creation_input_tokens;
+        self.cumulative.cache_read_input_tokens += usage.cache_read_input_tokens;
+        self.turns += 1;
+    }
+
+Site 2 -- TokenUsage::total_tokens, which sums the four fields with +:
+
+    impl TokenUsage {
+        #[must_use]
+        pub fn total_tokens(self) -> u32 {
+            self.input_tokens
+                + self.output_tokens
+                + self.cache_creation_input_tokens
+                + self.cache_read_input_tokens
+        }
+    }
+
+WHAT TO DO. Replace every + and += in those two functions with saturating_add, including the
+self.turns += 1 counter. Change nothing else: do not widen any field to u64, do not touch
+Cargo.toml, and do not edit any other file.
+
+THE TEST. crates/claudette/src/runtime/usage.rs already ends with a #[cfg(test)] mod tests block
+containing tracks_true_cumulative_usage and reconstructs_usage_from_session_messages. Add ONE new
+#[test] function inside that existing block -- do not create a second mod tests and do not add a
+file under tests/. The new test must record a TokenUsage whose fields are u32::MAX, record a second
+one with small non-zero fields, and assert that cumulative_usage() still reports u32::MAX rather
+than wrapping, and that total_tokens() also reports u32::MAX. Both of those assertions fail on the
+current code by panicking in a debug build, which is what makes the test a real one.
+
+HOW THIS IS GRADED, so you can check it yourself before you finish. The gate runs:
+  cargo test
+  cargo fmt --check -- --color=never
+  cargo clippy --all-targets -- -D warnings
+clippy -D warnings is a merge requirement in this repository and it is where changes like this
+usually fail -- a manual checked_add(..).unwrap_or(u32::MAX) will draw clippy's manual_saturating_arithmetic
+lint, so use saturating_add directly.
+
+BEFORE YOU FINISH, call the diagnostics tool WITH NO ARGUMENTS. It runs the compiler and this
+repository's own declared standard -- the same commands the gate grades with -- and it is the only
+way to see the clippy and rustfmt results before the gate does. Call it, read what it says, and fix
+anything it reports.

@@ -1,0 +1,57 @@
+SHELL-04 -- the timeout does not kill the process tree, so a 30 s budget can take minutes.
+
+THE FILE, and the only one you may change: `crates/claudette/src/test_runner.rs`. It is 180 lines,
+and it already has a `#[cfg(test)] mod tests` at the bottom to put your test in.
+
+THE DEFECT, measured on this repo. `child.kill()` is `TerminateProcess`/`SIGKILL` on the direct
+child ALONE. When that child is a launcher -- `powershell`, `cmd`, `npm`, `cargo`, one of git's
+helpers -- its own children survive and keep holding the stdout/stderr write ends they inherited.
+The pipe therefore never reaches EOF, `read_to_string` inside `spawn_pipe_reader` never returns,
+and `join_reader`'s `handle.join()` blocks for the surviving grandchild's ENTIRE lifetime. A 3
+second budget was measured returning after 60.1 seconds. This affects every `run_git`, `git_in`,
+`run_tests` and `diagnostics` call in the crate.
+
+Two sites: the timeout branch in `run_command_with_timeout` (`let _ = child.kill();
+let _ = child.wait();`), and `join_reader`.
+
+THE FIX -- three parts, in this shape:
+
+1. Kill the TREE, not just the child. On Windows run `taskkill /T /F /PID <pid>` through an
+   ordinary `std::process::Command`. On Unix give the child its own process group at spawn with
+   `std::os::unix::process::CommandExt::process_group(0)` behind `#[cfg(unix)]`, then signal the
+   whole group with `kill -KILL -<pid>`. Keep `child.kill()` and `child.wait()` underneath as the
+   fallback.
+
+2. Put a DEADLINE on `join_reader`, so a reader that will never see EOF cannot block forever.
+   `JoinHandle::join()` has no timeout, so restructure it: have the reader thread drain into an
+   `Arc<Mutex<Vec<u8>>>` and signal completion over an `std::sync::mpsc` channel, then
+   `recv_timeout` on that channel. A reader abandoned at the deadline then still hands back
+   everything it captured, instead of losing the partial output.
+
+3. A TEST, in the `mod tests` that is already there, which FAILS on the code as it stands now.
+   Spawn a child that spawns a grandchild which inherits the pipes and outlives it, give the call a
+   short budget, and assert it returns well inside a generous margin. Assert a BOUND, never an
+   exact duration -- this runs on loaded CI runners. The existing test in that module already shows
+   the portable pattern for reaching a subprocess here (`python`, with a skip-if-absent guard);
+   reuse it.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`. The Windows Job Object that the obvious fix
+  would reach for is NOT available to you: this crate has no `windows`, `winapi` or `libc`
+  dependency. Standard library only.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so raw FFI will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes.
+* `cargo fmt --check -- --color=never` -- must exit 0. Watch line lengths; one over-long line
+  fails this rung.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for you
+to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

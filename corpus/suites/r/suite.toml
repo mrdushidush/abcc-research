@@ -1,0 +1,66 @@
+schema = 1
+id     = "r"
+title  = "R — real claudette cards, graded by the card author's hidden test"
+
+# ---------------------------------------------------------------------------
+# Why this suite exists (PLAN-TOOL.md, Phase A2)
+#
+# K and Q56 are small authored fixtures. What abcc must become good at is the work it was
+# pointed at for six weeks: roast cards against claudette itself, a ~40k-line Rust workspace
+# graded by fmt + clippy -D warnings. Each task here is one such card, at one pinned commit,
+# with the reference patch that fixed it and the red test that proves the fix.
+#
+# THE DESIGN RULES, both of them measured failures first:
+#
+#   1. The fixture is `git archive`-shaped (SPEC amendment 9): the tracked files of one commit,
+#      never a clone. A clone carries the refs of the later fix to the very defect under test.
+#   2. The verdict is the CARD AUTHOR'S test, appended as a hidden module the subject never sees
+#      — never the subject's own. F832: the gate checks whatever test the model wrote, and a
+#      model-written test that passes on the unfixed tree landed MISSION ACCOMPLISHED.
+#
+# Run it with `--verify-timeout-s 1200`: the verifier builds claudette twice (clippy, then the lib
+# tests) in its own scratch tree, and the first cell of a run does it cold.
+# ---------------------------------------------------------------------------
+
+expected_tasks = 6
+
+[provenance]
+donor       = "claudette-cards"
+imported_at = "2026-09-23"
+
+caveats = [
+  """
+  SIX CARDS, AND THEY WERE NOT CHOSEN AT RANDOM. They are the cards that already had a reference \
+  patch and a red test on 2026-09-23, most of them written during the pilot because the pilot's \
+  subject had failed them. Every one of them has been attempted by abcc before, some many times, \
+  and SEC-06's prompt was the H1 test's. A number on this suite is a baseline for THIS set; it is \
+  not a sample of claudette's open cards. ~10 more grep-verified open cards are the next step\
+  """,
+
+  """
+  THE PROMPTS ARE SPOON-FED. Most name the file, the lines, and the fix. They measure whether a \
+  subject can carry out a stated change in a large real repository and leave it landable, not \
+  whether it can find the defect. That is the question PLAN-TOOL asks of the tool; a card-finding \
+  suite would be a different one\
+  """,
+
+  """
+  THE SOURCE IS A LOCAL PATH. Every task's `[fixture]` names D:/dev/claudette. On another host, \
+  point it at a claudette checkout that holds commit 3fdfefe; the commit id is what is pinned\
+  """,
+
+  """
+  THE VERIFIER NEEDS cargo, the toolchain claudette pins, and a real `python` on PATH (SHELL-04 \
+  and SHELL-10's tests spawn it). A missing python is reported by the hidden test's own assertion \
+  message, never read as a skip\
+  """,
+]
+
+[aggregate]
+include_verifiable  = ["full"]
+exclude_quarantined = true
+
+[[variant]]
+id          = "control"
+permissions = { mode = "allow" }
+operator    = []

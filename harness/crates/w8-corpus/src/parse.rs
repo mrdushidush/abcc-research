@@ -620,12 +620,17 @@ pub(crate) fn parse_task(
 
     // SPEC §2's isolation guarantee. A fixture the loader cannot plan is a corpus it must refuse
     // to run, not a task to run with a best-effort copy.
-    let workdir = match workdir::plan(dir) {
-        Ok(p) => p,
-        Err(e) => {
+    let planned = match table(&t, "fixture") {
+        Some(f) => parse_archive(f, &where_, rej).map(|a| workdir::plan_archive(dir, a)),
+        None => Some(workdir::plan(dir)),
+    };
+    let workdir = match planned {
+        Some(Ok(p)) => p,
+        Some(Err(e)) => {
             rej.add(RuleId::Isolation, &where_, e.to_string());
             workdir::WorkdirPlan::default()
         }
+        None => workdir::WorkdirPlan::default(),
     };
 
     if rej.len() != before {
@@ -649,6 +654,29 @@ pub(crate) fn parse_task(
         gate_dirs: GateDirs::probe(dir),
         dir: dir.to_path_buf(),
     })
+}
+
+/// SPEC §3's `[fixture]` (amendment 9): `kind = "git_archive"`, `repo`, and a full commit id.
+fn parse_archive(f: &Table, at: &str, rej: &mut Rejections) -> Option<workdir::Archive> {
+    let at = format!("{at} [fixture]");
+    let kind = req_str(f, "kind", &at, rej);
+    let repo = req_str(f, "repo", &at, rej);
+    let rev = req_str(f, "rev", &at, rej);
+    if let Some(k) = kind.filter(|k| *k != "git_archive") {
+        rej.add(RuleId::Field, &at, format!("`kind` = {k:?} is not one of [git_archive]"));
+        return None;
+    }
+    let rev = rev?;
+    if rev.len() != 40 || !rev.bytes().all(|b| b.is_ascii_hexdigit()) {
+        rej.add(
+            RuleId::Field,
+            &at,
+            format!("`rev` = {rev:?} must be a full 40-hex commit id; a branch moves when a fix lands"),
+        );
+        return None;
+    }
+    kind?;
+    Some(workdir::Archive { repo: repo?.into(), rev: rev.to_ascii_lowercase() })
 }
 
 fn scalar(v: &Value) -> String {

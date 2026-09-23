@@ -1,0 +1,75 @@
+schema    = 1
+id        = "shell_06"
+title     = "semantic_grep's hand-rolled walker ignores .gitignore and cannot stop"
+lang      = "rust"
+kind      = "bugfix"
+# The H1 attempts on SEC-06 took 191-286 s; the budget is the whole `abcc run` or REPL session,
+# including the subject's own builds of claudette.
+timeout_s = 1800
+
+[fixture]
+kind = "git_archive"
+repo = "D:/dev/claudette"
+rev  = "3fdfefe12289b63b42e0502f516d41a1f8c59eed"   # the parent of RUNTIME-11b's landing; every R card is open here
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+the card author's red test runs as a hidden module the subject never sees, beside the whole claudette \
+lib suite, fmt and clippy -D warnings; a PASS is the defect fixed, nothing regressed, and the tree \
+landable\
+"""
+
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "not_run"   # no sham authored yet
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "the pinned base, untouched: hidden test red: walk_respects_gitignore and walk_stops_the_whole_walk_when_the_callback_returns_false; others, fmt, clippy pass"
+verifier = "rewritten"
+run      = "corpus/suites/r/lib/gate.sh, Windows host, 2026-09-23"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "base + refsol/fix.patch: behaviour, others, fmt, clippy all pass"
+verifier = "rewritten"
+run      = "corpus/suites/r/lib/gate.sh, Windows host, 2026-09-23"
+
+[provenance]
+donor       = "claudette-cards"
+imported_at = "2026-09-23"
+verbatim    = ["refsol"]
+rewritten   = ["prompt"]
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "fixture", "verify", "sham", "variants", "disposition", "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  THE PROMPT comes from research/patches/SHELL-06-task-prompt.txt. Two subject-neutral edits, nothing else: the `USE write_file, NOT apply_patch` paragraph is deleted, as David ruled for the H1 prompt: it names one subject's tools and tests obedience, not the editor.\
+  """,
+
+  """
+  THE REFSOL is research/patches/SHELL-06-reference-solution.patch. It carries the card author's own test in `mod tests`; the verifier's hidden module is separate and does not depend on it.\
+  """,
+
+  """
+  THE HIDDEN TEST is the card author's red test (hidden.rs), appended by the verifier as its own `#[cfg(test)] mod w8_hidden` at the end of the target file. The subject never sees it and its own test never decides the verdict (F832).\
+  """,
+]
+
+[donor_tags]
+card   = "SHELL-06"
+target = "crates/claudette/src/tools/semantic.rs"

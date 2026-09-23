@@ -148,6 +148,7 @@ adding a name to it is a `schema` bump.
 | `[gate]` | table | yes | §9; `not_run` is a legal value, silence is not |
 | `[provenance]` | table | yes | authored tasks use `donor = "k-series"` and `verbatim = []` |
 | `[donor_tags]` | table | no | arbitrary keys, never read by the aggregate |
+| `[fixture]` | table | no | amendment 9: `kind = "git_archive"`, `repo` (a local path), `rev` (a full 40-hex commit). Stands in for `fixture/`, which must then be absent |
 
 `send_file` / `send_text` replaces R3's single `send` key, which could not be read unambiguously
 (amendment 5).
@@ -566,6 +567,7 @@ The delta from the prose David read, so the change is visible rather than smuggl
 | 6 | §5 | `expect` gains `gate_fires_after_deny = { min, max }` | F36 — `gate_fires = { min = 2 }` was satisfied by four exploratory `bash` gates while the denial was the session's last gate, so the bound passed and the question went unanswered |
 | 7 | §7 | Subject descriptor gains an optional `[delivery]` with `open` / `close` | 69 of 90 prompts are multi-line and no subject path delivered one as a turn; David's call (2026-08-08) was to fix the subject, so the format has to carry how each subject receives a block |
 | 8 | §3 | `lang` gains `shell` | F47 — 8 of Q56's 56 tasks are shell, the vocabulary is closed, and a rejected task rejects the whole corpus, so those eight could not import at all. David's word, 2026-08-08 |
+| 9 | §2, §3 | Optional `[fixture]` table: the work dir is the tracked files of one pinned commit of a local repository, written through a throwaway index — never a clone, never a branch | PLAN-TOOL A2: the R suite's fixture is claudette itself (~40k lines). Copying it into `fixture/` would put a second copy of claudette in this repo, and a clone would carry the refs of every later fix to the defect under test. `rev` must be a full commit id because a branch moves when a card's fix lands. It adds an optional field, so `schema` stays `1` |
 
 **All three are additive and `schema` stays `1`.** Every existing file remains valid: a descriptor
 with no `[delivery]` and a variant with no `gate_fires_after_deny` load exactly as before, and no

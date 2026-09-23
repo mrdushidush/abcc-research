@@ -12,14 +12,72 @@
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// Directory names that must never reach the subject's work dir.
 pub const GATE_ONLY: &[&str] = &["refsol", "sham", "stub"];
 
-/// The exact file list to copy for one task, resolved at load time.
+/// The exact file list to copy for one task, resolved at load time — or, for a `[fixture]` task
+/// (SPEC §2, amendment 9), the one pinned tree of a real repository that stands in for it.
 #[derive(Debug, Clone, Default)]
 pub struct WorkdirPlan {
     files: Vec<PlannedFile>,
+    archive: Option<Archive>,
+}
+
+/// A fixture that is a commit of a repository on this machine, exported without its history.
+///
+/// Exported, never cloned: a clone carries every ref the source has — later fixes to the very
+/// defect under test, and abcc's own checkpoint refs from earlier attempts at it. What reaches
+/// the work dir here is the tracked files of `rev` and nothing else; no `.git`, no refs, and no
+/// untracked file (`FINDINGS.md` lives untracked in the source and must never be copied).
+#[derive(Debug, Clone)]
+pub struct Archive {
+    pub repo: PathBuf,
+    /// A full 40-hex commit id. Never a branch: a branch moves when a card's fix lands.
+    pub rev: String,
+}
+
+impl Archive {
+    /// Write `rev`'s tracked files under `dest` through a throwaway index, so neither the
+    /// source's index nor its refs are touched.
+    fn materialize(&self, dest: &Path) -> io::Result<()> {
+        static N: AtomicUsize = AtomicUsize::new(0);
+        let dest = std::path::absolute(dest)?;
+        let index = std::env::temp_dir().join(format!(
+            "w8-archive-{}-{}.index",
+            std::process::id(),
+            N.fetch_add(1, Ordering::Relaxed)
+        ));
+        let prefix = format!("--prefix={}/", dest.display().to_string().replace('\\', "/"));
+        let result = self
+            .git(&index, &["read-tree", &self.rev])
+            .and_then(|()| self.git(&index, &["checkout-index", "-a", "-f", &prefix]));
+        let _ = fs::remove_file(&index);
+        result
+    }
+
+    fn git(&self, index: &Path, args: &[&str]) -> io::Result<()> {
+        let out = Command::new("git")
+            .arg("-C")
+            .arg(&self.repo)
+            .args(args)
+            .env("GIT_INDEX_FILE", index)
+            .stdin(Stdio::null())
+            .output()?;
+        if out.status.success() {
+            Ok(())
+        } else {
+            Err(io::Error::other(format!(
+                "git -C {} {} exited {:?}: {}",
+                self.repo.display(),
+                args.join(" "),
+                out.status.code(),
+                String::from_utf8_lossy(&out.stderr).trim()
+            )))
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -36,11 +94,18 @@ impl WorkdirPlan {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.files.is_empty()
+        self.files.is_empty() && self.archive.is_none()
+    }
+
+    pub fn archive(&self) -> Option<&Archive> {
+        self.archive.as_ref()
     }
 
     /// Copy the fixture into `dest`, which must already exist and should be empty.
     pub fn materialize(&self, dest: &Path) -> io::Result<()> {
+        if let Some(a) = &self.archive {
+            a.materialize(dest)?;
+        }
         for f in &self.files {
             let target = dest.join(&f.dest);
             if let Some(parent) = target.parent() {
@@ -64,6 +129,8 @@ pub enum PlanError {
     Symlink(PathBuf),
     /// A directory named `refsol`/`sham`/`stub` nested inside the fixture.
     GateOnlyNested(PathBuf),
+    /// A `[fixture]` task that also ships `fixture/`: two sources for one work dir.
+    ArchiveAndFixture,
     Io(PathBuf, io::Error),
 }
 
@@ -83,9 +150,24 @@ impl std::fmt::Display for PlanError {
                  gate-time only and must never be copied into the subject's work dir",
                 p.display()
             ),
+            PlanError::ArchiveAndFixture => write!(
+                f,
+                "the task has both a [fixture] table and a fixture/ directory; the work dir is \
+                 one or the other"
+            ),
             PlanError::Io(p, e) => write!(f, "cannot read {}: {e}", p.display()),
         }
     }
+}
+
+/// The plan for a `[fixture]` task (SPEC §2, amendment 9). Nothing is read from the source
+/// repository here: a missing repository or commit is a fact about this machine, reported by the
+/// cell that tried to materialize it, not a malformed corpus.
+pub fn plan_archive(task_dir: &Path, archive: Archive) -> Result<WorkdirPlan, PlanError> {
+    if task_dir.join("fixture").exists() {
+        return Err(PlanError::ArchiveAndFixture);
+    }
+    Ok(WorkdirPlan { files: Vec::new(), archive: Some(archive) })
 }
 
 /// Build the plan for one task directory.
@@ -102,7 +184,7 @@ pub fn plan(task_dir: &Path) -> Result<WorkdirPlan, PlanError> {
     let mut files = Vec::new();
     walk(&fixture, &fixture, &mut files)?;
     files.sort_by(|a, b| a.dest.cmp(&b.dest));
-    Ok(WorkdirPlan { files })
+    Ok(WorkdirPlan { files, archive: None })
 }
 
 fn walk(root: &Path, dir: &Path, out: &mut Vec<PlannedFile>) -> Result<(), PlanError> {
@@ -205,5 +287,67 @@ mod tests {
         plan(&d).unwrap().materialize(&work).unwrap();
         assert_eq!(fs::read_to_string(work.join("a.py")).unwrap(), "body");
         assert!(!work.join(".gitkeep").exists());
+    }
+
+    #[test]
+    fn an_archive_task_may_not_also_ship_a_fixture_directory() {
+        let d = tmp("archive-and-fixture");
+        let a = Archive { repo: d.clone(), rev: "0".repeat(40) };
+        assert!(matches!(plan_archive(&d, a), Err(PlanError::ArchiveAndFixture)));
+    }
+
+    fn git(repo: &Path, args: &[&str]) -> String {
+        let out = Command::new("git")
+            .arg("-C")
+            .arg(repo)
+            .args(["-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false"])
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(out.status.success(), "git {args:?}: {}", String::from_utf8_lossy(&out.stderr));
+        String::from_utf8_lossy(&out.stdout).trim().to_owned()
+    }
+
+    #[test]
+    fn an_archive_exports_the_pinned_commit_and_nothing_else() {
+        let d = std::env::temp_dir().join("w8-corpus-workdir-archive");
+        let _ = fs::remove_dir_all(&d);
+        let src = d.join("src");
+        fs::create_dir_all(src.join("pkg")).unwrap();
+        git(&src, &["init", "-q"]);
+        fs::write(src.join("pkg/lib.rs"), "old").unwrap();
+        git(&src, &["add", "-A"]);
+        git(&src, &["commit", "-q", "-m", "base"]);
+        let rev = git(&src, &["rev-parse", "HEAD"]);
+        // A later fix, and an untracked file: neither may reach the work dir.
+        fs::write(src.join("pkg/lib.rs"), "fixed").unwrap();
+        git(&src, &["commit", "-q", "-am", "fix"]);
+        fs::write(src.join("FINDINGS.md"), "secret").unwrap();
+
+        let task = d.join("task");
+        fs::create_dir_all(&task).unwrap();
+        let p = plan_archive(&task, Archive { repo: src.clone(), rev }).unwrap();
+        assert!(!p.is_empty());
+        let work = d.join("work");
+        fs::create_dir_all(&work).unwrap();
+        p.materialize(&work).unwrap();
+
+        assert_eq!(fs::read_to_string(work.join("pkg/lib.rs")).unwrap(), "old");
+        assert!(!work.join("FINDINGS.md").exists());
+        assert!(!work.join(".git").exists());
+        assert_eq!(git(&src, &["status", "--porcelain"]), "?? FINDINGS.md");
+    }
+
+    #[test]
+    fn an_archive_at_an_unknown_commit_fails_to_materialize() {
+        let d = std::env::temp_dir().join("w8-corpus-workdir-archive-missing");
+        let _ = fs::remove_dir_all(&d);
+        fs::create_dir_all(&d).unwrap();
+        git(&d, &["init", "-q"]);
+        let p = plan_archive(&d.join("task"), Archive { repo: d.clone(), rev: "1".repeat(40) })
+            .unwrap();
+        let work = d.join("work");
+        fs::create_dir_all(&work).unwrap();
+        assert!(p.materialize(&work).is_err());
     }
 }
