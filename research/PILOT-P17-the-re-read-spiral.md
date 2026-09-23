@@ -459,17 +459,29 @@ observation is the thing the stop prevents**. ▶ **A stop that cannot be taken 
 cannot be measured.** `0` maps to `usize::MAX` rather than to a ceiling of zero, which would end
 every turn before its first delta.
 
-### 9.3 🚨🚨 F832 — TWO OF THREE LANDED CARDS CARRY A TEST THAT PASSES UNFIXED
+### 9.3 🚨🚨 F832 — NOTHING CHECKS THE TEST **THE MODEL** WROTE
 
-`RUNTIME-10b` landed — MISSION ACCOMPLISHED, four green rungs — and **the Judge reported that its
-test does not exercise the change**. The Judge was right. Each landed test was then extracted
-**verbatim** and injected into the tree it was written against:
+⚠ **CORRECTION, made before this section was quoted anywhere.** The first draft of this
+section claimed *two of three landed cards carry a test that passes unfixed* as if both were
+discoveries. **`SHELL-10`'s was already known and already written down** — the pilot record of
+**2026-09-21** says it in as many words: *"`SHELL-10`'s test passes on the UNFIXED tree… the
+defect is real and was proved the only way it can be — `echo x | cargo test`, where the unfixed
+code read all 24 bytes of the parent's stdin"*, and the card was queued deliberately as a
+**regression guard, not a proof**. Claiming it as a new finding would have been this project's
+own failure mode. ▶ **The real finding is narrower and sharper**, and it is below.
+
+🚨 **The standing pre-queue rule checks the CARD AUTHOR's test. Nothing checks the test the
+MODEL actually writes.** Those are different artifacts, and `RUNTIME-10b` is the proof: the
+card's test was verified RED on the unfixed tree before queueing, the model wrote **a different
+test**, and that one passes unfixed. It landed MISSION ACCOMPLISHED with four green rungs.
+
+Each landed test was extracted **verbatim** and injected into the tree it was written against:
 
 | landed card | its own test, run on the pre-fix tree | verdict |
 |---|---|---|
 | `RUNTIME-11b` (`a728`) | `test result: FAILED` | ✅ **real** |
-| **`SHELL-10`** (`a1612`) | `test result: ok` | 🚨 **SHAM** |
-| **`RUNTIME-10b`** (`a2322`) | `test result: ok` | 🚨 **SHAM** |
+| `SHELL-10` (`a1612`) | `test result: ok` | ⚠ **known at queue time** (2026-09-21) |
+| **`RUNTIME-10b`** (`a2322`) | `test result: ok` | 🚨 **NOT known — the new one** |
 
 * `RUNTIME-10b` wrote `format!("{}{}", "[", "]").repeat(300)` — that is `"[][][]…"`, **flat**. It
   errors on *unexpected trailing content* and never reaches the depth check.
@@ -478,13 +490,19 @@ test does not exercise the change**. The Judge was right. Each landed test was t
   `cmd.args(args).stdout(Stdio::piped()).stderr(Stdio::piped())` and **no `.stdin(...)` at all**,
   and the test still passes there.
 
-⚠ **Both production fixes are correct.** The defect is in the tests. Three consequences:
+⚠ **Both production fixes are correct.** The defect is in the tests, and the two cases are not
+the same kind of thing: `SHELL-10` was an **informed** decision to queue a regression guard, and
+`RUNTIME-10b` is an **uninformed** one that nobody made. Three consequences:
 
 1. 🚨 **The gate cannot see this.** It runs `cargo test` and gets green either way. A red test is
    the one thing the card design rests on and the one thing nothing verifies.
-2. 🚨 **The same-file control is gone.** §4 called it *"the strongest half of the ladder —
-   `SHELL-04` and `SHELL-10`, both `test_runner.rs` at 180 lines, 3 parts vs 1, 0 of 2 against
-   1 of 1."* **That 1 of 1 is a sham-test landing.**
+2. 🚨 **The same-file control was already weaker than §4 said, by the pilot record's own
+   reckoning.** §4 called it *"the strongest half of the ladder — `SHELL-04` and `SHELL-10`,
+   both `test_runner.rs` at 180 lines, 3 parts vs 1, 0 of 2 against 1 of 1."* The 2026-09-21
+   entry that queued `SHELL-10` had **already ruled** that a green rung there says *nothing
+   regressed*, never *the fix works*. ▶ **The ladder counted as evidence-of-landing a landing
+   its own author had recorded as not proving the fix.** That is a bookkeeping failure rather
+   than a discovery, and it is the one that actually bites.
 3. 🎉 **The Judge caught what the deterministic rungs could not, and decided nothing** — which is
    ADR-0009's ruling working exactly as written. This is the first time in the project's history
    the judge has produced a finding the gate could not, and it argues the report is worth more
@@ -547,8 +565,9 @@ calls** and none was considered for substitution.
 | **one change** | | **9 / 15** |
 | **multi-part** | | **0 / 6** |
 
-**Fisher two-tailed p = 0.0186.** ⚠ **With the two sham-tested landings not counted as landings
-(§9.3), it is 7 / 15 and p = 0.0609.**
+**Fisher two-tailed p = 0.0186.** ⚠ **With the two landings whose tests pass unfixed (§9.3) not
+counted as landings, it is 7 / 15 and p = 0.0609** — and `SHELL-10`'s exclusion is the pilot
+record's own 2026-09-21 ruling applied, not a new judgement.
 
 🚨 **This table does not match §4's**, which published *one change 5 of 8, multi-part 0 of 4,
 p = 0.0808*. The log says 15 and 6 attempts where §4 says 8 and 4. ▶ **Which accounting is the
@@ -569,12 +588,19 @@ record; neither is quietly replaced.**
   `a2468`, both true positives. ▶ And a stop that cannot be taken out of the path cannot be
   measured: `--reasoning-ceiling 0` exists because the ceiling ended `a2468`, making the very
   observation that would validate it impossible.
-* **F832** — **two of three landed cards carry a test that passes on the unfixed tree.** Verified
-  by extracting each landed test verbatim and injecting it into the tree it was written against:
-  `RUNTIME-11b` goes RED (real), **`SHELL-10` passes (sham)**, **`RUNTIME-10b` passes (sham)**. The
-  gate cannot detect this — it runs `cargo test` and sees green either way — and the judge can, did,
-  and correctly decided nothing. 🚨 §4's *strongest half of the ladder*, the same-file
-  `test_runner.rs` control at 1 of 1, **is a sham-test landing**.
+* **F832** — **the pre-queue rule checks the card author's test; nothing checks the test the
+  MODEL writes**, and they are different artifacts. `RUNTIME-10b`'s card test was verified RED
+  on the unfixed tree before queueing; the model wrote a different one, built as `"[]"` repeated
+  rather than nested, which passes unfixed — and it landed MISSION ACCOMPLISHED with four green
+  rungs. Verified by extracting each landed test verbatim onto the tree it was written against:
+  `RUNTIME-11b` goes RED (real), `RUNTIME-10b` passes. ⚠ **`SHELL-10` also passes unfixed and
+  that was ALREADY KNOWN** — recorded 2026-09-21, proved by `echo x | cargo test` reading 24
+  bytes on the unfixed tree, and queued deliberately as a regression guard; it is not a new
+  finding and is not claimed as one. 🚨 What is new is that **the ladder counted that landing as
+  evidence anyway**, against its own author's ruling that a green rung there says *nothing
+  regressed* and never *the fix works*. The gate cannot detect either case — `cargo test` is
+  green regardless — and **the judge caught the unknown one and decided nothing**, which is the
+  first finding in this project's history the deterministic rungs could not produce.
 * **F833** — the QUALITY tier does not land the multi-part card either. `unsloth/qwen3.8-27b` at
   the same 40,960 window reached Change and spent **12 turns and 13 tool calls** there — 11 of them
   `bash` — with **zero editing calls**, ending `TruncatedAtCap` after 38.3 minutes, where the speed
