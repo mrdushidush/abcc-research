@@ -182,9 +182,12 @@ fn run(args: Args) -> Result<ExitCode, String> {
     let subject = corpus
         .subject(subject_id)
         .ok_or_else(|| format!("no subject {subject_id:?} in {}", args.root.display()))?;
-    if subject.drive != "repl-pipe" {
+    // `abcc` is PLAN-TOOL Phase A1: `abcc task` + `abcc run` per cell, graded by the same
+    // verifier (`w8_run::abcc`). It has no REPL, so no warmup, no gate marker and no turn marker.
+    let is_abcc = subject.drive == "abcc";
+    if subject.drive != "repl-pipe" && !is_abcc {
         return Err(format!(
-            "subject {subject_id} declares drive = {:?}; this runner only implements repl-pipe, \
+            "subject {subject_id} declares drive = {:?}; this runner implements repl-pipe and abcc, \
              because one-shot passes None for its prompter (run.rs:186) and can never show a gate",
             subject.drive
         ));
@@ -221,6 +224,10 @@ fn run(args: Args) -> Result<ExitCode, String> {
             };
             let deliverable = match turn_texts(c.task) {
                 Err(e) => format!("unreadable: {e}"),
+                Ok(ts) if is_abcc => match ts.len() {
+                    1 => "ok (one abcc task)".to_string(),
+                    n => format!("UNDELIVERABLE ({n} turns; abcc takes one prompt)"),
+                },
                 Ok(ts) => match plan_turns(&ts, args.delivery, sentinel_of(subject)) {
                     Ok(p) => match p.first().map(|p| p.transport) {
                         Some(delivery::Transport::Sentinel) => "ok (block)".to_string(),
@@ -256,8 +263,12 @@ fn run(args: Args) -> Result<ExitCode, String> {
         interp.node.as_deref().unwrap_or("(none found)")
     );
 
-    let turn_end = compile_turn_end(&subject.markers.turn_end).map_err(|e| e.to_string())?;
-    if subject.markers.gate.is_empty() {
+    let turn_end = if is_abcc {
+        None
+    } else {
+        Some(compile_turn_end(&subject.markers.turn_end).map_err(|e| e.to_string())?)
+    };
+    if !is_abcc && subject.markers.gate.is_empty() {
         return Err("subject markers.gate is empty; every gate would go unnoticed".to_string());
     }
 
@@ -409,7 +420,7 @@ fn run(args: Args) -> Result<ExitCode, String> {
         env_removed: Vec::new(),
     };
 
-    if !args.dry_run {
+    if let (false, Some(turn_end)) = (args.dry_run, &turn_end) {
         let (preamble, decoded, wall, env_snapshot) = warmup(
             subject,
             &bin,
@@ -462,6 +473,18 @@ fn run(args: Args) -> Result<ExitCode, String> {
                 cell.reason = Some("--dry-run: nothing was executed".into());
                 cell
             }
+            Support::Runnable if is_abcc => run_abcc_cell(
+                suite,
+                c.task,
+                c.variant,
+                subject,
+                &bin,
+                &args.held,
+                args.delivery,
+                &cells_dir,
+                &interp,
+                args.verify_timeout,
+            ),
             Support::Runnable => run_cell(
                 suite,
                 c.task,
@@ -473,7 +496,7 @@ fn run(args: Args) -> Result<ExitCode, String> {
                 &cells_dir,
                 &memory_stub,
                 &interp,
-                turn_end.clone(),
+                turn_end.clone().expect("compiled for every repl-pipe subject"),
                 meta.preamble_tokens_in,
                 args.verify_timeout,
             ),
@@ -760,6 +783,60 @@ const METRIC_NAMES: &[&str] = &[
     "unscripted_gates",
     "verify_ms",
 ];
+
+/// One cell under the `abcc` drive: the fixture materialized exactly as for the REPL drive, then
+/// handed to `w8_run::abcc`, which queues, runs, checks out what the attempt left and verifies it.
+#[allow(clippy::too_many_arguments)]
+fn run_abcc_cell(
+    suite: &Suite,
+    task: &Task,
+    variant: &Variant,
+    subject: &Subject,
+    bin: &str,
+    held: &Held,
+    mode: delivery::Mode,
+    cells_dir: &Path,
+    interp: &verify::Interpreters,
+    verify_timeout: Duration,
+) -> Cell {
+    let mut cell = base_cell(suite, task, variant, subject, mode, 0);
+    let prompt = match turn_texts(task) {
+        Ok(t) if t.len() == 1 => t.into_iter().next().unwrap_or_default(),
+        Ok(t) => {
+            cell.status = Status::Invalid;
+            cell.reason = Some(format!(
+                "the abcc drive delivers one prompt as one task, and this task has {} turns",
+                t.len()
+            ));
+            return cell;
+        }
+        Err(e) => {
+            cell.status = Status::Error;
+            cell.reason = Some(e);
+            return cell;
+        }
+    };
+    cell.prompt_lines = prompt.lines().count();
+    let dir = cells_dir.join(format!("{}__{}", task.id, variant.id));
+    let wd = dir.join("wd");
+    if let Err(e) = std::fs::create_dir_all(&wd) {
+        cell.status = Status::Error;
+        cell.reason = Some(format!("cannot create the work dir: {e}"));
+        return cell;
+    }
+    if let Err(e) = task.workdir.materialize(&wd) {
+        cell.status = Status::Error;
+        cell.reason = Some(format!("cannot materialize the fixture: {e}"));
+        return cell;
+    }
+    let spec = w8_run::abcc::Spec {
+        bin,
+        model: &held.model,
+        timeout: Duration::from_secs(u64::from(task.timeout_s)),
+        verify_timeout,
+    };
+    w8_run::abcc::run_cell(cell, &spec, &prompt, &task.id, &dir, &wd, interp, task.verify_script())
+}
 
 #[allow(clippy::too_many_arguments)]
 fn run_cell(

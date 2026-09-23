@@ -1,0 +1,20 @@
+schema  = 1
+id      = "abcc-e5eef90"
+title   = "abcc with edit_file and a windowed read_file (PLAN-TOOL B1)"
+version = "0.1.0"
+commit  = "e5eef90"
+bin     = "abcc"
+drive   = "abcc"
+
+# PLAN-TOOL Phase A1. One `abcc task` + one `abcc run` per cell, in a git repository made from the
+# fixture; the attempt's closing checkpoint is checked out and the suite's own verifier grades it.
+# abcc's gate verdict is recorded (abcc-replay.txt in the cell dir) and never used as the grade.
+#
+# `abcc` on PATH must be built from `commit` — `cargo install --path crates/abcc --force` in
+# D:/dev/abcc. `abcc --version` does not name a commit, so this pin is the operator's promise.
+#
+# No capabilities: abcc takes no permission prompts from a pipe, so the `gated` variant of every
+# suite is n/a by the loader, and only `control` runs. No markers and no [delivery]: there is no
+# REPL. The prompt is handed to `abcc task` as one argument, newlines intact.
+
+capabilities = []

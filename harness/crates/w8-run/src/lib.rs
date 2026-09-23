@@ -23,6 +23,7 @@
 //! It is a library as well as a binary so the driver can be exercised against
 //! `src/bin/fake_subject.rs` from `tests/`, with no model in the loop.
 
+pub mod abcc;
 pub mod delivery;
 pub mod driver;
 pub mod endpoint;
