@@ -1,0 +1,110 @@
+diff --git a/crates/claudette/src/tools/patch.rs b/crates/claudette/src/tools/patch.rs
+index a552f4d..00ddb1d 100644
+--- a/crates/claudette/src/tools/patch.rs
++++ b/crates/claudette/src/tools/patch.rs
+@@ -287,7 +287,10 @@ fn parse_diff(diff: &str) -> Result<Vec<FileDiff>, String> {
+ /// summary. Bails on the first hunk that doesn't apply (caller treats
+ /// this as "no changes were written").
+ fn apply_hunks(original: &str, hunks: &[Hunk]) -> Result<(String, Vec<Value>), String> {
+-    let mut lines: Vec<String> = original.lines().map(str::to_string).collect();
++    // Every line keeps its OWN terminator (roast EDIT-06). Re-joining with one
++    // EOL rewrote every line of a mixed-EOL file, including lines no hunk
++    // touched. Only the lines a hunk inserts get a terminator chosen here.
++    let mut lines: Vec<(String, &'static str)> = split_terminated(original);
+     let mut summary: Vec<Value> = Vec::new();
+ 
+     // Apply hunks in order. Track a `drift` (delta between hunk header
+@@ -318,7 +321,7 @@ fn apply_hunks(original: &str, hunks: &[Hunk]) -> Result<(String, Vec<Value>), S
+             ));
+         }
+         for (offset, expected) in hunk.old_lines.iter().enumerate() {
+-            let actual = &lines[start_idx + offset];
++            let actual = &lines[start_idx + offset].0;
+             if actual != expected {
+                 return Err(format!(
+                     "hunk {} context mismatch at line {} (expected {:?}, got {:?})",
+@@ -329,8 +332,38 @@ fn apply_hunks(original: &str, hunks: &[Hunk]) -> Result<(String, Vec<Value>), S
+                 ));
+             }
+         }
+-        // Splice: replace old_lines.len() lines with new_lines.
+-        lines.splice(start_idx..end_idx, hunk.new_lines.iter().cloned());
++        // Splice: replace old_lines.len() lines with new_lines. The i-th new
++        // line takes the terminator of the i-th line it replaces; lines past
++        // the end of the window take the window's (or the file's) EOL.
++        let fallback = lines[start_idx..end_idx]
++            .iter()
++            .chain(lines.iter())
++            .map(|(_, eol)| *eol)
++            .find(|eol| !eol.is_empty())
++            .unwrap_or("\n");
++        let last_unterminated =
++            end_idx == lines.len() && lines.last().is_some_and(|(_, eol)| eol.is_empty());
++        if start_idx == lines.len() && start_idx > 0 && lines[start_idx - 1].1.is_empty() {
++            // Appending after a final line with no newline: it needs one now.
++            lines[start_idx - 1].1 = fallback;
++        }
++        let mut replacement: Vec<(String, &'static str)> = hunk
++            .new_lines
++            .iter()
++            .enumerate()
++            .map(|(i, text)| {
++                let eol = lines[start_idx..end_idx]
++                    .get(i)
++                    .map_or(fallback, |(_, eol)| *eol);
++                (text.clone(), if eol.is_empty() { fallback } else { eol })
++            })
++            .collect();
++        if last_unterminated || (start_idx == lines.len() && !original.ends_with('\n')) {
++            if let Some(last) = replacement.last_mut() {
++                last.1 = "";
++            }
++        }
++        lines.splice(start_idx..end_idx, replacement);
+         drift += ilen(hunk.new_lines.len()) - ilen(hunk.old_lines.len());
+         summary.push(json!({
+             "hunk": idx + 1,
+@@ -340,23 +373,29 @@ fn apply_hunks(original: &str, hunks: &[Hunk]) -> Result<(String, Vec<Value>), S
+         }));
+     }
+ 
+-    // Preserve the file's dominant line ending. `original.lines()` above
+-    // stripped every '\r', so re-joining with bare "\n" silently rewrote a
+-    // CRLF file (Windows default) to LF — one tiny patch produced a whole-file
+-    // diff. Re-encode with the EOL the file actually uses. (roast 2026-06-02)
+-    let eol = if original.contains("\r\n") {
+-        "\r\n"
+-    } else {
+-        "\n"
+-    };
+-    let trailing_newline = original.ends_with('\n');
+-    let mut out = lines.join(eol);
+-    if trailing_newline {
+-        out.push_str(eol);
+-    }
++    let out: String = lines
++        .iter()
++        .flat_map(|(text, eol)| [text.as_str(), eol])
++        .collect();
+     Ok((out, summary))
+ }
+ 
++/// Split `text` into lines, each paired with the terminator it actually had:
++/// `"\r\n"`, `"\n"`, or `""` for a final line with no newline.
++fn split_terminated(text: &str) -> Vec<(String, &'static str)> {
++    text.split_inclusive('\n')
++        .map(|line| {
++            if let Some(body) = line.strip_suffix("\r\n") {
++                (body.to_string(), "\r\n")
++            } else if let Some(body) = line.strip_suffix('\n') {
++                (body.to_string(), "\n")
++            } else {
++                (line.to_string(), "")
++            }
++        })
++        .collect()
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;

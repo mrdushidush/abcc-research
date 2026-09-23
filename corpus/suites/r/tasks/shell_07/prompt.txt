@@ -1,0 +1,49 @@
+SHELL-07 -- `grep_search` context mode has no cap on the total output.
+
+THE FILE, and the only one you may change: `crates/claudette/src/tools/search.rs` (1513 lines --
+use line ranges; you need two places). It already has a `#[cfg(test)] mod tests`, opening with
+`use super::*;`, with two context-mode tests to model yours on:
+`grep_search_context_includes_flagged_surrounding_lines` (line 1445) shows how to make a
+directory the tool is allowed to read (`user_home().join(".claudette").join("files")...`, under
+`crate::test_env_lock()`) and how to call `run_grep_search` with JSON input.
+
+THE DEFECT, measured on this repo. `MAX_GREP_MATCHES = 100` (line 21) counts MATCHES. With
+`context: N` (capped at 10 per side, line 27) every match also emits up to 2N surrounding lines
+into the same `matches` array (the loop at lines 427-461), and none of those count. At
+`context: 10`, 100 matches emit 100 x 21 = 2,100 entries of up to 200 characters each -- ~420 KB
+in one tool result, against 20 KB at `context: 0`.
+
+Measured: a file with 100 `needle` lines 25 lines apart, `grep_search` with `context: 10`,
+returns 2,100 entries and `"truncated": false`.
+
+THE FIX -- a separate budget for emitted lines.
+
+1. Add a constant beside the others: `const MAX_GREP_EMITTED_LINES: usize = 600;`
+2. In the context branch, before pushing each context/match line, stop the whole walk (the loop
+   is labelled `'walk`) and set `truncated = true` once `matches` already holds
+   `MAX_GREP_EMITTED_LINES` entries.
+
+So a capped result holds at most 600 entries and says `"truncated": true`. A small result is
+unchanged and says `"truncated": false`. Keep `run_grep_search`'s signature and its JSON field
+names exactly as they are.
+
+A TEST, in the existing `mod tests`: the 100-match file above with `context: 10` returns at most
+600 entries in `matches` and `"truncated": true`. It fails on the current code.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes, including the existing context-mode tests.
+* `cargo fmt --check -- --color=never` -- must exit 0.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

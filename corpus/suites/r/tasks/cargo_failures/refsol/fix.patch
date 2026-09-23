@@ -1,0 +1,23 @@
+diff --git a/crates/claudette/src/tools/quality.rs b/crates/claudette/src/tools/quality.rs
+index d070917..160ad37 100644
+--- a/crates/claudette/src/tools/quality.rs
++++ b/crates/claudette/src/tools/quality.rs
+@@ -915,9 +915,16 @@ fn parse_cargo_counts(s: &str) -> (u32, u32) {
+ fn parse_cargo_failures(s: &str) -> Vec<Value> {
+     // Failures are listed as: `---- some::path::test_name stdout ----` blocks
+     // followed by `thread 'some::path::test_name' panicked at <file:line>: <msg>`.
++    //
++    // Every line is a candidate header, and the look-ahead is up to 7 lines
++    // AFTER it — clipped at the end of the output, never required. The old
++    // `windows(8)` produced no window at all for output shorter than 8 lines
++    // and never started one in the last 7, so exactly the failures at the
++    // tail of `cargo test`'s output went unreported.
+     let mut out: Vec<Value> = Vec::new();
+-    for window in s.lines().collect::<Vec<_>>().windows(8) {
+-        let header = window[0];
++    let lines: Vec<&str> = s.lines().collect();
++    for (i, header) in lines.iter().copied().enumerate() {
++        let window = &lines[i..lines.len().min(i + 8)];
+         if let Some(rest) = header.strip_prefix("---- ") {
+             let name = rest.trim_end_matches(" stdout ----").trim().to_string();
+             // Find a "panicked at" line in the next few entries.

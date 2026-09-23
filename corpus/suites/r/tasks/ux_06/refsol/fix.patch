@@ -1,0 +1,25 @@
+diff --git a/crates/claudette/src/doctor.rs b/crates/claudette/src/doctor.rs
+index d116d08..4cbac0f 100644
+--- a/crates/claudette/src/doctor.rs
++++ b/crates/claudette/src/doctor.rs
+@@ -603,10 +603,18 @@ fn probe_toolchains() -> Status {
+ }
+ 
+ /// Run `<bin> <arg>` and return its first non-empty output line, or `None` when
+-/// the binary isn't on PATH / couldn't be executed. Version banners land on
+-/// stdout for most tools but stderr for a few, so both streams are considered.
++/// the binary isn't on PATH / couldn't be executed / exited non-zero. Version
++/// banners land on stdout for most tools but stderr for a few, so both streams
++/// are considered.
+ fn command_first_line(bin: &str, arg: &str) -> Option<String> {
+     let out = Command::new(bin).arg(arg).output().ok()?;
++    // A tool that is on PATH but cannot run (a rustup shim with no default
++    // toolchain) exits non-zero and prints its error where a version would
++    // be. That line is not a version, and the row must not be green (roast
++    // UX-06).
++    if !out.status.success() {
++        return None;
++    }
+     let stdout = String::from_utf8_lossy(&out.stdout);
+     let pick = if stdout.trim().is_empty() {
+         String::from_utf8_lossy(&out.stderr).into_owned()

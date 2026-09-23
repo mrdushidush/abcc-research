@@ -1,0 +1,28 @@
+diff --git a/crates/claudette/src/tools/search.rs b/crates/claudette/src/tools/search.rs
+index 9e9d70d..f8942f2 100644
+--- a/crates/claudette/src/tools/search.rs
++++ b/crates/claudette/src/tools/search.rs
+@@ -26,6 +26,12 @@
+ /// bounded even if a model passes a silly value.
+ const MAX_GREP_CONTEXT: usize = 10;
+ 
++/// `grep_search` with `context`: cap on the total entries (match lines plus
++/// context lines) one call returns. `MAX_GREP_MATCHES` counts matches only,
++/// so at `context: 10` it allowed 100 × 21 lines — ~420 KB into a small
++/// context window (roast SHELL-07). Hitting this cap sets `truncated`.
++const MAX_GREP_EMITTED_LINES: usize = 600;
++
+ /// Directories grep_search never descends into (build output, dep caches, VCS
+ /// metadata). Shared with repo_map via the parent module so the two code-search
+ /// tools stay in lockstep. Without it, a single grep on a Rust/Node project
+@@ -445,6 +451,10 @@ fn run_grep_search(input: &str) -> Result<String, String> {
+                     // exactly indices from..=end, and is empty when from > end
+                     // (the whole window was already emitted by an earlier match).
+                     for (j, ctx_line) in ctx_lines.iter().enumerate().take(end + 1).skip(from) {
++                        if matches.len() >= MAX_GREP_EMITTED_LINES {
++                            truncated = true;
++                            break 'walk;
++                        }
+                         let snippet: String = ctx_line.chars().take(MAX_GREP_LINE_CHARS).collect();
+                         matches.push(json!({
+                             "file": p.display().to_string(),

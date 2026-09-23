@@ -90,7 +90,7 @@ fi
 HIDDEN_OK="$(grep -cE '^test (.*::)?w8_hidden::[A-Za-z0-9_]+ \.\.\. ok$' "$LOGS/test.lf")"
 HIDDEN_BAD="$(grep -E '^test (.*::)?w8_hidden::[A-Za-z0-9_]+ \.\.\. FAILED$' "$LOGS/test.lf" | sed -E 's/^test (.*) \.\.\. FAILED$/\1/' | tr '\n' ' ')"
 OTHERS_BAD="$(grep -E '^test .* \.\.\. FAILED$' "$LOGS/test.lf" | grep -v 'w8_hidden::' | sed -E 's/^test (.*) \.\.\. FAILED$/\1/' | tr '\n' ' ')"
-EXPECTED="$(grep -cE '^ *fn [a-z0-9_]+\(\)' "$HIDDEN")"
+EXPECTED="$(grep -cE '^ *#\[test\]' "$HIDDEN")"
 
 if [ "$HIDDEN_OK" -eq 0 ] && [ -z "$HIDDEN_BAD" ]; then
   echo "RESULT: INVALID the hidden module ran no tests — was it appended inside another item?"

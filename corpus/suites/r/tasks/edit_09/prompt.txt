@@ -1,0 +1,65 @@
+EDIT-09 -- a diff body line whose content begins with `--- ` or `+++ ` is silently discarded.
+
+THE FILE, and the only one you may change: `crates/claudette/src/tools/patch.rs` (635 lines). It
+already has a `#[cfg(test)] mod tests` at the bottom, opening with `use super::*;`, to put your
+test in.
+
+THE DEFECT, measured on this repo. `parse_diff` (line 164) walks the diff line by line (line 185)
+and checks `line.starts_with("+++ ")` (line 186) and `line.starts_with("--- ")` (line 200) BEFORE
+it looks at whether it is inside a hunk. So:
+
+* an ADDED line whose text is `++ added` arrives as `+++ added` and is taken for a new-file
+  header: the line vanishes from the hunk, and the patch still applies, `ok:true`;
+* a DELETED line whose text is `-- ` (an email signature delimiter) arrives as `--- ` and is
+  taken for an old-file header.
+
+Measured: this diff against `"a\nb\n"`
+
+    --- a/f.txt
+    +++ b/f.txt
+    @@ -1,2 +1,3 @@
+     a
+    +++ added
+     b
+
+should produce `"a\n++ added\nb\n"`. Today the added line is lost.
+
+THE FIX -- the hunk header already says how long the body is. `@@ -L,N +L,M @@` promises N
+old-side lines (context + deletions) and M new-side lines (context + additions); a missing count
+means 1. While the current hunk still owes body lines on either side, every line is body -- a
+`+`-line is an addition and a `-`-line a deletion whatever follows the marker. Only once the counts
+are used up (or outside any hunk) are `--- ` / `+++ ` / `@@ ` headers.
+
+1. Parse N and M from the header along with L (today only L is read, lines 216-230).
+2. Keep a running count of the body lines each side still owes; decrement it as context (both
+   sides), deletions (old side) and additions (new side) arrive.
+3. Test for the three headers only when the current hunk owes nothing. Remove the two
+   "defensive" `continue`s inside the body match (lines 245-249 and 253-255) that drop such lines.
+
+A multi-file diff must still split into its files: after `@@ -1 +1 @@`, `-old`, `+new`, the next
+`--- a/y.txt` / `+++ b/y.txt` IS a header.
+
+Keep the signatures of `parse_diff` and `apply_hunks`, and the fields of `Hunk` and `FileDiff`,
+exactly as they are -- other code and tests call them.
+
+A TEST, in the `mod tests` that is already there: parse the diff above, apply its hunks to
+`"a\nb\n"` with `apply_hunks`, and assert `"a\n++ added\nb\n"`. It fails on the current code.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes, including the 20 already in this file.
+* `cargo fmt --check -- --color=never` -- must exit 0.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict: `parse_diff` is already long, and `too_many_lines` fires
+  at 100 lines -- a small helper function for the header counts keeps it under.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

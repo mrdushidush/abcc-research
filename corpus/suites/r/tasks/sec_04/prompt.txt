@@ -1,0 +1,62 @@
+SEC-04 -- `redact.rs` misses the exact secrets claudette itself stores.
+
+THE FILE, and the only one you may change: `crates/claudette/src/redact.rs` (263 lines). It
+already has a `#[cfg(test)] mod tests` (from line 122), opening with `use super::*;`, to put your
+tests in.
+
+THE DEFECT, measured on this repo. `redact` (line 110) masks credential-shaped substrings with a
+table of `(regex, replacement)` rules built in `rules()` (lines 24-104). The table is
+deliberately HIGH-PRECISION -- named provider shapes, not an entropy scan -- and it has no rule
+for six secrets claudette itself keeps or reads. Each of these comes out of `redact` unchanged
+today:
+
+| input                                                              | why it survives                      |
+|--------------------------------------------------------------------|--------------------------------------|
+| `123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw0` (Telegram bot token) | no Telegram rule at all              |
+| `1//0gWXYZabcdefghijklmnopqrstuvwxyz0123456789` (Google refresh)   | only `ya29.` access tokens are covered |
+| `GOCSPX-AbCdEfGhIjKlMnOpQrStUvWxYz12` (Google client secret)       | no client-secret rule                |
+| `BRAVE_API_KEY=BSAabcdefghijklmnopqrstuvwxyz12345`                 | see below                            |
+| `GITHUB_TOKEN=opaque0123456789abcdefOPAQUE`                        | see below                            |
+| `aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` | only `AKIA` key IDs are matched; the secret has no prefix |
+
+The backstop rule at line 99, `(?i)\b(x-api-key|x-auth-token|private-token|api[_-]?key)...`,
+looks as if it covers `BRAVE_API_KEY=`, and does not: `\b` needs a word boundary before `api`,
+and `_` is a word character, so there is none inside `BRAVE_API_KEY`.
+
+THE FIX -- add rules to the table, each with a `<redacted:KIND>` replacement like the others:
+
+1. Telegram bot token: 8-10 digits, `:`, 35 characters of `[A-Za-z0-9_-]`.
+2. Google refresh token: `1//` followed by 20+ characters of `[A-Za-z0-9_-]`.
+3. Google client secret: `GOCSPX-` followed by 20+ characters of `[A-Za-z0-9_-]`.
+4. An environment-variable assignment whose UPPER-CASE name ends in `_API_KEY`, `_KEY`,
+   `_TOKEN`, `_SECRET` or `_PASSWORD`: keep the name and `=`, redact the value. Upper-case names
+   only, so ordinary prose is not touched.
+5. `aws_secret_access_key` (any case) followed by `=` or `:`: keep the field, redact the value.
+
+Keep the value classes starting with `[^\s<]` where a value follows a name (as line 99 does), so a
+second pass never re-matches an already-substituted `<redacted:...>` marker. Clean text must still
+come back unchanged and borrowed: a git sha, a time like `12:30:45`, and a sentence such as
+`the token: is refreshed daily` all pass through untouched. Keep `redact`'s signature exactly as it
+is.
+
+TESTS, in the existing `mod tests`: each of the six inputs above loses its secret and gains a
+`<redacted` marker; the three clean strings come back equal to their input. The six fail on the
+current code.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`. `regex` is already a dependency.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes, including the ones already in this file.
+* `cargo fmt --check -- --color=never` -- must exit 0.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new tests too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

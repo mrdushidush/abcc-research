@@ -1,0 +1,44 @@
+UX-06 -- `--doctor` paints a broken toolchain green, using the error as the version.
+
+THE FILE, and the only one you may change: `crates/claudette/src/doctor.rs` (1045 lines). It
+already has a `#[cfg(test)] mod tests` at the bottom, opening with `use super::*;`, with two tests
+of the function below (`command_first_line_finds_present_binary`,
+`command_first_line_none_for_missing_binary`) to put yours beside.
+
+THE DEFECT, measured on this repo. `command_first_line` (lines 605-620) runs `<bin> <arg>` and
+returns the first non-empty line of stdout, or of stderr when stdout is empty. It never looks at
+the exit status. So a tool that is on PATH but cannot run -- a rustup shim with no default
+toolchain -- exits non-zero, prints `error: rustup could not choose a version of cargo to run...`,
+and `probe_toolchains` (line 578) prints that error as the version on a GREEN `OK` row:
+
+    ✓ cargo (Rust)  error: rustup could not choose a version of cargo to run, because ...
+
+Measured the same way on any machine: `command_first_line("cargo", "--no-such-flag")` returns
+`Some("error: unexpected argument '--no-such-flag' found")`.
+
+THE FIX -- ONE check. After `output()` succeeds, if `out.status.success()` is false, return
+`None`. The caller already turns `None` into a red (required) or yellow (optional) row with an
+install hint, which is the correct answer for a tool that cannot run. Update the doc comment to
+say so. Keep the function's name and signature exactly as they are.
+
+A TEST, in the existing `mod tests`: `command_first_line("cargo", "--no-such-flag-xyz")` is `None`
+(cargo is always on PATH when tests run; an unknown flag makes it print an error and exit
+non-zero). It fails on the current code. The two existing tests must still pass.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes.
+* `cargo fmt --check -- --color=never` -- must exit 0.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

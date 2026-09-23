@@ -1,0 +1,51 @@
+EDIT-06 -- apply_patch rewrites every line ending in a mixed-EOL file.
+
+THE FILE, and the only one you may change: `crates/claudette/src/tools/patch.rs` (635 lines). It
+already has a `#[cfg(test)] mod tests` at the bottom, opening with `use super::*;`, to put your
+test in.
+
+THE DEFECT, measured on this repo. `apply_hunks` (line 289) splits the original with
+`original.lines()`, which throws every line terminator away, and at the end (lines 343-355)
+re-joins ALL the lines with ONE ending: `"\r\n"` if the file contains a single `\r\n` anywhere,
+else `"\n"`. So in a file with mixed endings, lines no hunk touched change too.
+
+Measured: original `"a\r\nb\nc\n"`, one hunk replacing line 2 `b` with `B`. Result today:
+`"a\r\nB\r\nc\r\n"` -- line `c` was not in the hunk and was rewritten to CRLF.
+
+THE FIX. Every line keeps its OWN terminator; only the lines a hunk inserts get one chosen for
+them.
+
+1. Split the original into (text, terminator) pairs -- `str::split_inclusive('\n')` then strip
+   `"\r\n"`, else `"\n"`, else nothing (a final line with no newline has an empty terminator).
+2. Compare hunk context against the TEXT half, exactly as today.
+3. When a hunk replaces lines, the i-th new line takes the terminator of the i-th line it
+   replaces; new lines beyond the replaced ones take the window's (or the file's) line ending.
+   Keep a final line that had no newline without one.
+4. Build the output by concatenating each line's text and its own terminator. Delete the
+   "dominant line ending" block.
+
+Keep the signatures of `apply_hunks` and `parse_diff`, and the `Hunk` struct's fields, exactly as
+they are -- other code and tests call them.
+
+A TEST, in the `mod tests` that is already there: call `apply_hunks("a\r\nb\nc\n", &[hunk])`
+with a `Hunk { old_start: 2, old_lines: vec!["b".into()], new_lines: vec!["B".into()] }` and
+assert the output still starts with `"a\r\n"` and ends with `"\nc\n"` (not `"c\r\n"`). It fails
+on the current code. Also assert a pure-LF file stays LF and a pure-CRLF file stays CRLF.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes, including the 20 already in this file.
+* `cargo fmt --check -- --color=never` -- must exit 0.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

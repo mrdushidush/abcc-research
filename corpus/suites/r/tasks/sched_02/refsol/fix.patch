@@ -1,0 +1,25 @@
+diff --git a/crates/claudette/src/scheduler.rs b/crates/claudette/src/scheduler.rs
+index 94fd853..8971ab0 100644
+--- a/crates/claudette/src/scheduler.rs
++++ b/crates/claudette/src/scheduler.rs
+@@ -843,11 +843,17 @@ pub fn global() -> &'static Mutex<Scheduler> {
+     })
+ }
+ 
+-/// Generate a new entry id `sch_<base36 nanos>` — collision-free for any
+-/// sane per-user call rate.
++/// Generate a new entry id `sch_<base36 nanos>_<base36 sequence>`.
++///
++/// The instant alone is not unique: two entries created within one clock
++/// tick (or under a `MockClock`) got the same id, and `cancel` — which
++/// removes by id — then deleted both (roast SCHED-02). A process-wide
++/// sequence number makes every id this process hands out distinct.
+ fn new_id(now: DateTime<Utc>) -> String {
++    static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+     let nanos = now.timestamp_nanos_opt().unwrap_or(0).max(0) as u64;
+-    format!("sch_{}", base36(nanos))
++    let seq = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
++    format!("sch_{}_{}", base36(nanos), base36(seq))
+ }
+ 
+ fn base36(mut n: u64) -> String {

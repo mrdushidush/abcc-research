@@ -1,0 +1,52 @@
+run_tests misses every cargo test failure reported in the last 7 lines of output.
+
+THE FILE, and the only one you may change: `crates/claudette/src/tools/quality.rs` (1567 lines --
+use line ranges; you need one function). It already has a `#[cfg(test)] mod tests`, opening with
+`use super::*;`, to put your test in.
+
+THE DEFECT, measured on this repo. `parse_cargo_failures` (line 915) finds failed tests in
+`cargo test` output. A failure is reported as a `---- <test name> stdout ----` header followed,
+within a few lines, by `thread '<name>' panicked at <file:line:col>:`. The function iterates
+
+    for window in s.lines().collect::<Vec<_>>().windows(8) {
+        let header = window[0];
+
+`windows(8)` yields NO window at all for output shorter than 8 lines, and never starts one at
+any of the last 7 lines. So a failure whose header sits in the final 7 lines of the output --
+which is where `cargo test` prints the last failure -- is never reported, and short output
+reports none. `run_tests` (line 275) and the forge build gate (line 507) both use it.
+
+Measured: `parse_cargo_failures("---- a::b stdout ----\nthread 'a::b' panicked at
+src/x.rs:3:5:\nboom\n")` returns an empty list. It should return one failure named `a::b`.
+
+THE FIX. Treat EVERY line as a candidate header, and give each header a look-ahead window of up
+to 7 following lines, clipped at the end of the output rather than required:
+
+    let lines: Vec<&str> = s.lines().collect();
+    for (i, header) in lines.iter().copied().enumerate() {
+        let window = &lines[i..lines.len().min(i + 8)];
+
+The body of the loop (the `panicked at` search and the JSON it pushes) stays as it is. Each
+failure must still be reported exactly once, in order. Keep the function's name and signature.
+
+A TEST, in the existing `mod tests`: the three-line output above yields exactly one failure named
+`a::b`; and 40 `test tN ... ok` lines followed by one failure block at the very end yields that
+one failure. Both fail on the current code.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes.
+* `cargo fmt --check -- --color=never` -- must exit 0.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

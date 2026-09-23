@@ -1,0 +1,117 @@
+diff --git a/crates/claudette/src/tools/patch.rs b/crates/claudette/src/tools/patch.rs
+index a552f4d..d1bcb7c 100644
+--- a/crates/claudette/src/tools/patch.rs
++++ b/crates/claudette/src/tools/patch.rs
+@@ -182,8 +182,16 @@ fn parse_diff(diff: &str) -> Result<Vec<FileDiff>, String> {
+         }
+     };
+ 
++    // Body lines the current hunk's header still promises, old side and new
++    // side. While either is non-zero, a line is hunk body whatever it starts
++    // with: an added line whose text is `++ x` arrives as `+++ x`, and a
++    // deleted `-- ` signature arrives as `--- `, and neither is a file
++    // header (roast EDIT-09).
++    let mut left: (usize, usize) = (0, 0);
++
+     for line in diff.lines() {
+-        if line.starts_with("+++ ") {
++        let in_body = current_hunk.is_some() && (left.0 > 0 || left.1 > 0);
++        if !in_body && line.starts_with("+++ ") {
+             // New file. Flush any pending hunks under the previous path.
+             flush_file(
+                 &mut files,
+@@ -197,14 +205,14 @@ fn parse_diff(diff: &str) -> Result<Vec<FileDiff>, String> {
+                 return Err(format!("file deletion not supported: {line}"));
+             }
+             current_path = Some(path);
+-        } else if line.starts_with("--- ") {
++        } else if !in_body && line.starts_with("--- ") {
+             // Old-file header. We don't need the path (we pull it from
+             // `+++ b/...`) but skipping it cleanly closes any hunk we
+             // were accumulating, so flush.
+             if let Some(h) = current_hunk.take() {
+                 current_hunks.push(h);
+             }
+-        } else if let Some(rest) = line.strip_prefix("@@ ") {
++        } else if let Some(rest) = line.strip_prefix("@@ ").filter(|_| !in_body) {
+             if current_path.is_none() {
+                 return Err(format!(
+                     "found '@@' hunk header before any '+++ b/path' header: {line}"
+@@ -213,21 +221,16 @@ fn parse_diff(diff: &str) -> Result<Vec<FileDiff>, String> {
+             if let Some(h) = current_hunk.take() {
+                 current_hunks.push(h);
+             }
+-            // rest looks like `-L[,N] +L[,N] @@ optional_context`. We only
+-            // need `-L`; `N` is recoverable from the body and we trust
+-            // the body, not the header.
++            // rest looks like `-L[,N] +L[,M] @@ optional_context`. `N` and
++            // `M` say how many body lines follow (1 when omitted); they are
++            // what tells a body line from the next file's header.
+             let mut tokens = rest.split_whitespace();
+-            let old = tokens
+-                .next()
++            let old = tokens.next().unwrap_or("");
++            let new = tokens.next().unwrap_or("+1");
++            let ((old_start, old_count), (_, new_count)) = hunk_range(old, '-')
++                .zip(hunk_range(new, '+'))
+                 .ok_or_else(|| format!("malformed hunk header: {line}"))?;
+-            // `-L,N` — strip the leading `-`, take the part before `,`.
+-            let old_loc = old.strip_prefix('-').unwrap_or(old);
+-            let old_start: usize = old_loc
+-                .split(',')
+-                .next()
+-                .unwrap_or("0")
+-                .parse()
+-                .map_err(|_| format!("malformed hunk header: {line}"))?;
++            left = (old_count, new_count);
+             current_hunk = Some(Hunk {
+                 old_start: old_start.max(1),
+                 old_lines: Vec::new(),
+@@ -240,20 +243,15 @@ fn parse_diff(diff: &str) -> Result<Vec<FileDiff>, String> {
+                     let body = &line[1..];
+                     hunk.old_lines.push(body.to_string());
+                     hunk.new_lines.push(body.to_string());
++                    left = (left.0.saturating_sub(1), left.1.saturating_sub(1));
+                 }
+                 Some('-') => {
+-                    if line.starts_with("--- ") {
+-                        // Another file header inside an active hunk — shouldn't
+-                        // happen, but be defensive.
+-                        continue;
+-                    }
+                     hunk.old_lines.push(line[1..].to_string());
++                    left.0 = left.0.saturating_sub(1);
+                 }
+                 Some('+') => {
+-                    if line.starts_with("+++ ") {
+-                        continue;
+-                    }
+                     hunk.new_lines.push(line[1..].to_string());
++                    left.1 = left.1.saturating_sub(1);
+                 }
+                 Some('\\') => {
+                     // `\ No newline at end of file` marker — ignore. We treat
+@@ -265,6 +263,7 @@ fn parse_diff(diff: &str) -> Result<Vec<FileDiff>, String> {
+                     // as a blank context line.
+                     hunk.old_lines.push(String::new());
+                     hunk.new_lines.push(String::new());
++                    left = (left.0.saturating_sub(1), left.1.saturating_sub(1));
+                 }
+             }
+         }
+@@ -283,6 +282,15 @@ fn parse_diff(diff: &str) -> Result<Vec<FileDiff>, String> {
+     Ok(files)
+ }
+ 
++/// One side of a hunk header, `-L[,N]` or `+L[,M]`: the start line and the
++/// body line count (1 when the count is omitted, as diff does).
++fn hunk_range(loc: &str, sign: char) -> Option<(usize, usize)> {
++    let mut parts = loc.strip_prefix(sign).unwrap_or(loc).split(',');
++    let start = parts.next()?.parse().ok()?;
++    let count = parts.next().map_or(Some(1), |c| c.parse().ok())?;
++    Some((start, count))
++}
++
+ /// Apply every hunk to `original`. Returns the new content plus a per-hunk
+ /// summary. Bails on the first hunk that doesn't apply (caller treats
+ /// this as "no changes were written").

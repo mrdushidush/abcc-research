@@ -1,0 +1,69 @@
+schema    = 1
+id        = "sched_02"
+title     = "schedule entries made in one clock tick share an id; cancelling one deletes both"
+lang      = "rust"
+kind      = "bugfix"
+timeout_s = 1800
+
+[fixture]
+kind = "git_archive"
+repo = "D:/dev/claudette"
+rev  = "3fdfefe12289b63b42e0502f516d41a1f8c59eed"
+
+[[turn]]
+send_file = "prompt.txt"
+
+[verify]
+kind   = "script"
+script = "verify.sh"
+
+[disposition]
+verifiable = "full"
+quarantine = "none"
+reason = """
+the card author's red test runs as a hidden module the subject never sees, beside the whole claudette \
+lib suite, fmt and clippy -D warnings; a PASS is the defect fixed, nothing regressed, and the tree \
+landable\
+"""
+
+[gate]
+point1 = "sound"
+point2 = "sound"
+point3 = "not_run"   # no sham authored yet
+
+[[gate.evidence]]
+point    = 1
+tier     = "donor_fixture"
+verdict  = "FAIL"
+detail   = "the pinned base, untouched: hidden test red: both (same-instant ids, and cancel-one-keeps-the-other); others, fmt, clippy pass"
+verifier = "rewritten"
+run      = "corpus/suites/r/lib/gate.sh, Windows host, 2026-09-23"
+
+[[gate.evidence]]
+point    = 2
+tier     = "refsol"
+verdict  = "PASS"
+detail   = "base + refsol/fix.patch: behaviour 2 of 2, others, fmt, clippy all pass"
+verifier = "rewritten"
+run      = "corpus/suites/r/lib/gate.sh, Windows host, 2026-09-23"
+
+[provenance]
+donor       = "claudette-cards"
+imported_at = "2026-09-23"
+verbatim    = []
+rewritten   = []
+synthesized = ["id", "title", "lang", "kind", "timeout_s", "turn", "prompt", "fixture", "verify", "refsol", "sham", "variants", "disposition", "selection", "gate", "donor_tags"]
+
+caveats = [
+  """
+  AUTHORED 2026-09-23 FROM THE ROAST CARD, not from a pilot prompt: the card is SCHED-02 in claudette's plans/roast-2026-08-02/FINDINGS.md (local, never copied here). The defect was re-verified live in the code at 3fdfefe before anything was written — the card list is stale against the tree (EDIT-01/02/03/05 and CHECK-01 are already fixed there).\
+  """,
+
+  """
+  THE PROMPT, THE REFSOL AND THE HIDDEN TEST ARE ONE AUTHOR'S, written together in one session. The prompt names every function and signature the hidden test calls, so the test grades the behaviour and not a guess at an API. The refsol went through `cargo fmt` and `cargo clippy --all-targets -D warnings` before it was saved.\
+  """,
+]
+
+[donor_tags]
+card   = "SCHED-02"
+target = "crates/claudette/src/scheduler.rs"

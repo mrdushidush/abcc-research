@@ -1,0 +1,52 @@
+EDIT-10 -- `PermissionMode::Prompt` as the active mode auto-approves everything.
+
+THE FILE, and the only one you may change: `crates/claudette/src/runtime/permissions.rs` (691
+lines). It already has a `#[cfg(test)] mod tests` at the bottom, with a `RecordingPrompter` that
+records every request it is asked about, to put your tests in.
+
+THE DEFECT, measured on this repo. `PermissionMode` (lines 5-11) derives `Ord` in declaration
+order: `ReadOnly < WorkspaceWrite < DangerFullAccess < Prompt < Allow`. `authorize` (line 255)
+returns `Allow` at line 283 whenever `current_mode >= required_mode`. With the active mode set to
+`Prompt`, that is true for EVERY tool -- `Prompt` sorts above `DangerFullAccess` -- so `authorize`
+allows `bash` without ever reaching the prompter branch at line 294 that exists for exactly this
+mode. Nothing sets `Prompt` in production today; the day something does, every edit tool is
+silently auto-approved.
+
+Measured: `PermissionPolicy::new(PermissionMode::Prompt).with_tool_requirement("bash",
+PermissionMode::DangerFullAccess).authorize("bash", "rm -rf build", Some(&mut prompter))`
+returns `Allow`, and the prompter was never asked.
+
+THE FIX -- `Prompt` is a session-control mode, not a privilege tier. Special-case it BEFORE the
+`>=` comparison, the way `Allow` already is:
+
+* active mode `Prompt` + a tool that requires `ReadOnly` -> `Allow`, without asking;
+* active mode `Prompt` + any other tool -> go to the prompter: its `Allow` allows, its `Deny`
+  denies, and with no prompter at all the answer is `Deny` (the existing branch at line 294 already
+  does all three once it is reached).
+
+Every other mode behaves exactly as today. Do not reorder the enum and do not change any public
+signature.
+
+TESTS, in the existing `mod tests`: in `Prompt` mode, `bash` with a prompter that says no is
+`Deny` and the prompter saw one request; `write_file` with a prompter that says yes is `Allow`;
+`bash` with no prompter is `Deny`; `read_file` (`ReadOnly`) is `Allow` and the prompter was not
+asked. The first three fail on the current code.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes, including the ones already in this file.
+* `cargo fmt --check -- --color=never` -- must exit 0. Watch line lengths: a long `if` condition
+  over 100 columns fails this rung.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new tests too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

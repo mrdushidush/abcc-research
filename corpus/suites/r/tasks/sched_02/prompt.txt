@@ -1,0 +1,51 @@
+SCHED-02 -- two schedule entries created in one clock tick share an id, and cancelling one
+deletes both.
+
+THE FILE, and the only one you may change: `crates/claudette/src/scheduler.rs` (1271 lines --
+use line ranges; you do not need most of it). It already has a `#[cfg(test)] mod tests` at the
+bottom (from line 871), opening with `use super::*;` and `use crate::clock::MockClock;`, to put
+your test in.
+
+THE DEFECT, measured on this repo. `new_id` (lines 846-851) is a pure function of the instant:
+
+    fn new_id(now: DateTime<Utc>) -> String {
+        let nanos = now.timestamp_nanos_opt().unwrap_or(0).max(0) as u64;
+        format!("sch_{}", base36(nanos))
+    }
+
+`Scheduler::add` (line 604) mints each entry's id with `new_id(now)` from the scheduler's clock
+(line 628). Two entries added within one clock tick -- or under a `MockClock`, which never moves
+by itself -- get the SAME id, and `Scheduler::cancel` (line 649) removes by id with `retain`, so
+cancelling one of them deletes both. The existing test `new_id_shape_is_stable` (line 1265) only
+checks the prefix.
+
+THE FIX -- make every id this process hands out distinct. Keep the `sch_` prefix and the
+nanosecond part, and append a process-wide sequence number from a `static`
+`std::sync::atomic::AtomicU64` (`fetch_add(1, Ordering::Relaxed)`), separated by `_` so two
+different (nanos, sequence) pairs can never spell the same id: `sch_<base36 nanos>_<base36 seq>`.
+Keep `new_id`'s name and signature (`fn new_id(now: DateTime<Utc>) -> String`) and the
+`Scheduler::new` / `add` / `cancel` / `list` signatures exactly as they are. Nothing parses an id;
+it is an opaque string.
+
+A TEST, in the existing `mod tests`: `new_id(now)` called twice with the same `now` returns two
+different ids, both starting with `sch_`. And through the scheduler: with a `MockClock`, `add`
+two entries, assert their ids differ, `cancel` the first, and assert `list()` still holds the
+second. Both fail on the current code.
+
+HARD CONSTRAINTS -- a change that breaks either of these cannot land:
+
+* NO NEW DEPENDENCIES. Do not touch `Cargo.toml`.
+* NO `unsafe`. The crate sets `unsafe_code = "forbid"`, so it will not even compile.
+
+THE GATE grades the tree, not your description of it. All three must pass:
+
+* `cargo test` -- every test passes.
+* `cargo fmt --check -- --color=never` -- must exit 0.
+* `cargo clippy --all-targets -- -D warnings` -- must exit 0. This crate enables
+  `clippy::pedantic`, so it is strict, and `--all-targets` lints your new test too.
+
+After you edit and BEFORE you finish, call `diagnostics` WITH NO ARGUMENTS. It runs
+`cargo check --all-targets` plus those same fmt and clippy commands, and it is the only way for
+you to see the standard rung before the gate does.
+
+Keep the whole change inside that one file.

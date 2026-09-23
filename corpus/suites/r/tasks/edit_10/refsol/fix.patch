@@ -1,0 +1,20 @@
+diff --git a/crates/claudette/src/runtime/permissions.rs b/crates/claudette/src/runtime/permissions.rs
+index 28505e8..1275ad1 100644
+--- a/crates/claudette/src/runtime/permissions.rs
++++ b/crates/claudette/src/runtime/permissions.rs
+@@ -280,7 +280,14 @@ pub fn authorize(
+             };
+         }
+ 
+-        if current_mode == PermissionMode::Allow || current_mode >= required_mode {
++        // `Prompt` is a session-control mode, not a privilege tier above
++        // `DangerFullAccess`: the derived `Ord` puts it there, so `>=` alone
++        // would allow every tool without ever asking (roast EDIT-10). It
++        // allows read-only tools and asks about everything else.
++        if current_mode == PermissionMode::Allow
++            || (current_mode == PermissionMode::Prompt && required_mode == PermissionMode::ReadOnly)
++            || (current_mode != PermissionMode::Prompt && current_mode >= required_mode)
++        {
+             return PermissionOutcome::Allow;
+         }
+ 
