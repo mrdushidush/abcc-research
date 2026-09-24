@@ -384,3 +384,37 @@ test's semantics — inside one reasoning turn before acting, and the reasoning 
 without it, F838) arrives first. The phase is not the lever (F843), nor the recipe (F842).
 Untested directions: an edit that does not need the exact old text of a 70-line function (a
 line-range replace), or a brief that asks for the change in small edits.
+
+## F846 — recover the call AND keep the push: K 3 / 3 and `edit_10` back, at the server's default temperature (n = 1)
+
+**2026-09-25 00:44 → 01:58.** F841's addendum found probe (a) cost `edit_10`: the `NO_ANSWER`
+nudge at an empty stop was what ended its Recon. Probe (a') = abcc branch
+`probe/reasoning-calls-nudge` `97ac45d` (probe (a) + one commit), NOT merged: the recovered call
+is still run, and then one user line — *"Your last turn wrote its tool call inside the reasoning
+and said nothing in the reply, so the call was never sent; it has been run for you and the result
+is above. Only the reply is visible to anyone. If you already know enough, say the answer now, in
+the reply itself."* Subject `abcc-97ac45d-probe-a2`, server default, no tap. Runs
+`w8-1790286272215` (K), `w8-1790286919581` (R).
+
+| | A3 (3 passes) | T = 0 (F840, 3 passes) | probe (a) | **probe (a')** |
+|---|---|---|---|---|
+| K | 0, 0, 0 of 3 | 3, 2, 2 | 2, 2 (3 in substance, F844) | **3 of 3** |
+| R, the 11 valid cells | — | — | — | **7 of 11** |
+
+* **`edit_10` passes** (success, 298 s). Its first six calls are again byte-identical to A3's; after
+  the recovered read and the line, Recon answered on turn 7 and Builders landed it. The push is
+  what (a) had removed.
+* **Every A3 `PPP` card that ran passes** (`runtime_10 runtime_11 sched_02 sec_06`), and so do
+  `cargo_failures` (A3 `bP.`) and `shell_06` (A3 `...`).
+* `edit_06 edit_09 sec_04 shell_04` fail at the Recon ceiling as always (nothing recovered there).
+* **24 turns recovered across 11 cells, and ZERO nudges** — no empty stop that the recovery could
+  not read remained.
+* ⚠ **Three cells are INVALID, not failures:** `shell_07` (verifier printed nothing), `shell_10` and
+  `ux_06` (`git read-tree` exited `0xC0000142` — a process could not start). At ~01:57 Claude
+  Code's low-memory reaper stopped the queue shells; these three ran into the same shortage. The
+  queued second pass of (a') was stopped before it produced a cell and is not counted.
+
+What n = 1 supports: (a') keeps (a)'s K and `shell_06` gains and gives back `edit_10`, with no
+regression on the cards that ran. It does NOT support a rate — the stack is nondeterministic under
+a fixed seed (F841 addendum, `shell_06`), and `shell_07 shell_10 ux_06` are unmeasured. ▶ A second
+pass (K + R, ~90 min) is the next step before a merge is argued; the merge itself is David's.

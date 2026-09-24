@@ -1,0 +1,16 @@
+schema  = 1
+id      = "abcc-97ac45d-probe-a2"
+title   = "abcc probe (a'): recovered tool calls, followed by the push to answer (F841 addendum)"
+version = "0.1.0"
+commit  = "97ac45d"
+bin     = "D:/dev/abcc-probes/abcc-a2-97ac45d.exe"
+drive   = "abcc"
+args    = []
+
+# abcc branch `probe/reasoning-calls-nudge` = probe (a) `412d2d8` + ONE commit. Probe (a) recovers
+# the `<tool_call>` blocks an empty stop turn wrote inside its reasoning; F841's addendum found that
+# on `edit_10` this removed the NO_ANSWER nudge that had been ending Recon. Here the recovered call
+# is still run, and then a user line names what happened and asks for the answer now if enough is
+# known. Server default temperature, no tap, like `abcc-e5eef90`.
+
+capabilities = []
