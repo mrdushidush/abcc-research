@@ -260,6 +260,37 @@ changing the sampler — the ruling that abcc sends no temperature is untouched.
 ⚠ n = 1 per cell. A second K pass and a full R run (the regression check on the 13 other cards)
 were queued behind it; see the addendum below when they land.
 
+### F841 addendum — the second K pass and the full R run (2026-09-24 23:00 → 2026-09-25 00:20)
+
+**K, pass 2** (`w8-1790280002291`): `finish_the_cancelled_status` **pass** (`cancelled is handled at
+all four sites`), `round_at_the_line_not_the_total` **pass**, `trace_dropped_samples` graded fail
+because **abcc crashed** on a file named `nul` — the work itself passes the verifier (F844). So K
+under probe (a): 2 / 3 then 2 / 3 as graded (3 / 3 in substance), against A3's 0 / 9.
+
+**R, all 14 cards** (`w8-1790280696232`): **8 / 14** — the same total as A3 (8, 8, 7). **All seven
+A3 `PPP` cards pass again — no regression there.** 14 turns recovered across 8 cards, 1 nudge.
+What moved, per card against A3:
+
+* `cargo_failures` **pass** (A3 `bP.`).
+* **`edit_10` fail — CAUSED by the probe.** Its first six calls are byte-identical to A3's (same
+  seeds, same completion tokens 254 87 887 535 1566 1343). Call 6 is an empty `stop` with a
+  `read_file` inside the reasoning. A3 nudged it (*"Say the answer now"*) and Recon **answered two
+  calls later**, 3 of 3; the probe ran the read instead, Recon kept reading and ended at the
+  50,000-character ceiling (359 s, no edit). **The nudge was doing work: on this card it is what
+  ended Recon.** Recovering the call removes the push to stop.
+* **`shell_06` fail this time, pass earlier tonight — NOT the probe.** The two probe-(a) runs of
+  `shell_06` are identical for 15 calls (same seeds, same tokens); on call 16 one produced a
+  3,880-token turn and went on to pass, the other ran Builders to the ceiling. Same binary, seed
+  and input: this stack is not deterministic (the standing rule — say *attributable*, never
+  *reproducible*). `shell_06` under (a) is 1 / 2.
+* `edit_06 edit_09 sec_04 shell_04` fail as always (Recon ceiling; (a) recovers nothing there).
+
+**What (a) is, on this evidence:** it turns the `said_nothing` population into attempts that reach
+Builders (K 0 / 9 → 4 / 6 graded, `shell_06` 0 / 3 → 1 / 2) at the server's default temperature,
+without touching the sampler — and it costs a card whose Recon only finished *because* of the
+nudge. A version worth shipping would need to keep that push: e.g. recover the call AND append
+the nudge's "you are nearly done — answer when you have the place" once per phase. Untested.
+
 ## F842 — Recon briefed WITHOUT the card's THE FIX recipe still drafts the fix: 0 / 4, unchanged
 
 **2026-09-24 20:59 → 21:17.** F839 option (b) as a PROBE: abcc branch `probe/recon-no-recipe`
