@@ -1,0 +1,17 @@
+schema  = 1
+id      = "abcc-0d54e08-probe-b"
+title   = "abcc probe (b): Recon briefed without the card's THE FIX recipe (F839)"
+version = "0.1.0"
+commit  = "0d54e08"
+bin     = "D:/dev/abcc-probes/abcc-b-0d54e08.exe"
+drive   = "abcc"
+args    = []
+
+# abcc branch `probe/recon-no-recipe` = e5eef90 + ONE commit. F839: on edit_06 edit_09 sec_04
+# shell_04 Recon drafts the fix inside a read-only phase until the reasoning ceiling, from a brief
+# that carries the card's full THE FIX section. `brief::localize` now drops that section (to the
+# next all-capitals heading); Builders still gets the whole prompt. The brief actually sent is on
+# the log as BriefRecorded. Sampled at the server default (no tap, no temperature), like
+# `abcc-e5eef90`, so the one difference from A3 is this commit.
+
+capabilities = []

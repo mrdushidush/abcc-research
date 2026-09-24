@@ -1,0 +1,18 @@
+schema  = 1
+id      = "abcc-132edd3-probe-d-tap"
+title   = "abcc probe (d) behind the logging tap, to read what Builders reasons (F839)"
+version = "0.1.0"
+commit  = "132edd3"
+bin     = "D:/dev/abcc-probes/abcc-d-132edd3.exe"
+drive   = "abcc"
+args    = ["--url", "http://127.0.0.1:1235"]
+
+# The same binary as `abcc-132edd3-probe-d`, pointed at `llm_tap.py` on :1235 with NO key set,
+# so the bodies go to LM Studio unchanged (server-default temperature, abcc's seed) and the text of
+# the reasoning is kept. abcc logs reasoning lengths only. Start the tap first:
+#
+#     python research/tools/llm_tap.py 1235 127.0.0.1:1234 <out-dir>
+#
+# If the tap is not running every cell fails to connect, loudly.
+
+capabilities = []

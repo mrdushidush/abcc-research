@@ -234,3 +234,72 @@ both are the `said_nothing` population; the R total moves by exactly those cells
 `cargo_failures` / `edit_10`. The drafting four are 0 / 12 at both temperatures. Temperature 0 is
 still NOT deterministic here (three cards changed between passes) — say *repeatable*, not
 *reproducible*.
+
+## F841 — tool calls recovered from the reasoning: K 0 / 9 → 2 / 3 and `shell_06` passes, at the server's default temperature
+
+**2026-09-24 21:17 → 21:41.** F839 option (a), built as a PROBE while David was away ("keep pushing
+- and use the GPU as needed"): abcc branch `probe/reasoning-calls` `412d2d8` = `e5eef90` + one
+commit, NOT merged. On a `stop` turn with no text and no wire call, the OpenAI adapter reads the
+trailing run of `<tool_call>` blocks (Qwen XML or JSON form) off the end of the reasoning and runs
+them as calls (`from_reasoning_N`); each such turn writes a `Note` ("F841 probe: …") on the log.
+Subject `abcc-412d2d8-probe-a` — straight to LM Studio, **no tap, no temperature**: the one
+difference from A3 is the commit. Runs `w8-1790273844694` (K), `w8-1790274855539` (R `shell_06`); every probe cell of F841–F843 is in `research/a3/probe-cells.tsv`.
+
+| cell | A3 (3 passes) | probe (a) | turns recovered (calls) | nudges |
+|---|---|---|---|---|
+| K `finish_the_cancelled_status` | `...` Recon, said_nothing | **fail — after Builders edited** (`RETRY candidates 3`, want 7) | 6 (11) | 1 |
+| K `round_at_the_line_not_the_total` | `...` Recon, said_nothing | **pass** | 4 (7) | 1 |
+| K `trace_dropped_samples` | `...` Recon, cap | **pass** | 3 (5) | 0 |
+| R `shell_06` | `...` Recon, said_nothing | **pass** (all four parts) | 4 | 0 |
+
+Every cell now leaves Recon, and the one failure is a wrong change (`should_retry` rewritten to
+`status != FAILED`), not an absence. Recovery happened in Builders too (3 of the 6 turns on
+`finish_the_cancelled_status`). This matches temperature 0 (F840: K 7 / 9, `shell_06` 3 / 3) without
+changing the sampler — the ruling that abcc sends no temperature is untouched.
+
+⚠ n = 1 per cell. A second K pass and a full R run (the regression check on the 13 other cards)
+were queued behind it; see the addendum below when they land.
+
+## F842 — Recon briefed WITHOUT the card's THE FIX recipe still drafts the fix: 0 / 4, unchanged
+
+**2026-09-24 20:59 → 21:17.** F839 option (b) as a PROBE: abcc branch `probe/recon-no-recipe`
+`0d54e08`, NOT merged. `brief::localize` drops the card's `THE FIX` section (to the next
+all-capitals heading — a dry run over all 14 R prompts cut only that section; `runtime_11` has
+none); Builders still gets the whole prompt. Subject `abcc-0d54e08-probe-b`, server default, no
+tap. Run `w8-1790272786560`, the four drafting cards only.
+
+**All four end exactly as in A3: Recon, `reasoning_runaway` at the 50,000-character ceiling, no
+edit** (`edit_06` 266 s, `edit_09` 228 s, `sec_04` 227 s, `shell_04` 194 s). The brief really was
+cut: `BriefRecorded` on `edit_06` has no `THE FIX` and still has `A TEST`, and `sec_04`'s Recon prompt
+is 2,061 tokens against A3's 2,377. **The recipe in the brief is not what makes Recon design the
+fix.** The prompts still name the file, the lines and the defect, which may be enough to start it.
+
+## F843 — letting Builders run after a Recon that never answered: K 2 / 3, but the drafting cards run away in Builders too
+
+**2026-09-24 21:42 → 22:59.** A third PROBE, (d), after F842 came back null: abcc branch
+`probe/recon-fallthrough` `132edd3`, NOT merged. A Recon that ends `Unmeasured` (ceiling, cap,
+said_nothing) no longer ends the attempt: Builders runs with the report *"Recon did not report:
+{why}. … find the place yourself from the task above"*. Recon's own ending stays on the log. Four
+abcc-drive tests pin the old rule and fail on the branch (named in its commit). Subject
+`abcc-132edd3-probe-d`, server default, no tap. Runs `w8-1790275322427` (R, 5 cards),
+`w8-1790278485510` (K).
+
+| cell | Recon | Builders | result |
+|---|---|---|---|
+| R `edit_06` | ceiling | **ceiling, no edit** (6 m 30 s) | fail |
+| R `edit_09` | ceiling | **ceiling, no edit** | fail |
+| R `shell_04` | ceiling | **ceiling, no edit** (1 read) | fail |
+| R `sec_04` | ceiling | 5 `edit_file`, 24-round budget exhausted | fail — **hidden test PASSES**; one existing test red (`session::tests::save_redacts_secrets_and_writes_owner_only`) |
+| R `shell_06` | said_nothing | said_nothing again (4 nudges in all) | fail |
+| K `finish_the_cancelled_status` | said_nothing | said_nothing | fail |
+| K `round_at_the_line_not_the_total` | said_nothing | edits | **pass** |
+| K `trace_dropped_samples` | never answered | edits, round budget exhausted | **pass** (the verifier grades the tree) |
+
+**The drafting failure follows the model, not the phase.** Three of the four cards hit the ceiling
+again in Builders — a phase that can write — without making an edit. What it reasons about there
+is not on the log (lengths only); a tapped replay of `edit_06` and `shell_04` was queued to read it.
+`sec_04` is the one drafting card that reached an edit, and its behaviour test passed.
+
+For the said_nothing population the fall-through helps on K (2 / 3, both passes after a silent
+Recon) and not on `shell_06`, where Builders went silent too — the same tool call inside the
+reasoning, which (d) does nothing about and (a) recovers.

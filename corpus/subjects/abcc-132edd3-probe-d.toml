@@ -1,0 +1,17 @@
+schema  = 1
+id      = "abcc-132edd3-probe-d"
+title   = "abcc probe (d): an unmeasured Recon hands Builders the task anyway (F839)"
+version = "0.1.0"
+commit  = "132edd3"
+bin     = "D:/dev/abcc-probes/abcc-d-132edd3.exe"
+drive   = "abcc"
+args    = []
+
+
+capabilities = []
+
+# abcc branch `probe/recon-fallthrough` = e5eef90 + ONE commit. F837/F839: most R+K failures end
+# in Recon with no edit, on cards whose prompt already names the file and lines. A Recon that ends
+# Unmeasured (reasoning ceiling, said_nothing, cap) no longer ends the attempt: Builders runs with
+# a report saying Recon did not report and why. Sampled at the server default (no tap), like
+# `abcc-e5eef90`, so the one difference from A3 is this commit.

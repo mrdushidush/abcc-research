@@ -1,0 +1,23 @@
+suite	task	status	behaviour	others	fmt	clippy	abcc_ending	attempts	model_calls	length_finishes	tool_calls	editing_calls	read_file_calls	read_bytes	peak_prompt_tokens	prompt_tokens	completion_tokens	wall_s	run
+r	edit_06	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	4	0	3	0	2	24938	8870	25496	3820	266	w8-1790272786560
+r	edit_09	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	2	0	2	0	2	21636	6066	7959	707	228	w8-1790272786560
+r	sec_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	0	1	11063	2061	2061	132	227	w8-1790272786560
+r	shell_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	0	1	7544	1821	1821	129	194	w8-1790272786560
+k	finish_the_cancelled_status	fail					uncertain/no_checker_for_artifact	1	33	0	41	edit_file 6 (6 ok)	28	53604	16146	327325	17269	275	w8-1790273844694
+k	finish_the_cancelled_status	not_supported					no abcc.json												w8-1790273844694
+k	round_at_the_line_not_the_total	pass					uncertain/no_checker_for_artifact	1	24	0	26	edit_file 1 (1 ok)	12	26442	11513	140766	8798	314	w8-1790273844694
+k	round_at_the_line_not_the_total	not_supported					no abcc.json												w8-1790273844694
+k	trace_dropped_samples	pass					uncertain/no_checker_for_artifact	1	19	0	26	edit_file 2 (2 ok)	17	38183	9998	116469	25905	412	w8-1790273844694
+k	trace_dropped_samples	not_supported					no abcc.json												w8-1790273844694
+r	shell_06	pass	pass	pass	pass	pass	success	1	31	0	29	edit_file 2 (2 ok)	10	34091	24558	390290	19273	414	w8-1790274855539
+r	edit_06	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	6	0	5	0	5	52970	10060	38953	11813	619	w8-1790275322427
+r	edit_09	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	5	0	5	0	5	55789	10157	29623	814	434	w8-1790275322427
+r	sec_04	fail	pass	fail	pass	pass	uncertain/budget_exhausted	1	25	0	23	edit_file 5 (3 ok)	12	49266	20114	309373	50473	1287	w8-1790275322427
+r	shell_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	4	0	5	0	3	21271	5049	13763	690	378	w8-1790275322427
+r	shell_06	fail	fail	pass	pass	pass	uncertain/said_nothing	1	21	0	15	0	12	42179	11773	167321	16895	261	w8-1790275322427
+k	finish_the_cancelled_status	fail					uncertain/said_nothing	1	18	0	20	0	17	34787	11545	81183	6002	100	w8-1790278485510
+k	finish_the_cancelled_status	not_supported					no abcc.json												w8-1790278485510
+k	round_at_the_line_not_the_total	pass					uncertain/no_checker_for_artifact	1	22	0	19	edit_file 1 (1 ok)	12	24085	13832	118732	10652	171	w8-1790278485510
+k	round_at_the_line_not_the_total	not_supported					no abcc.json												w8-1790278485510
+k	trace_dropped_samples	pass					uncertain/budget_exhausted	1	40	1	42	edit_file 2 (2 ok)	34	60427	16907	360436	89262	1232	w8-1790278485510
+k	trace_dropped_samples	not_supported					no abcc.json												w8-1790278485510

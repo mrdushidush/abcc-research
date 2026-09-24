@@ -1,0 +1,17 @@
+schema  = 1
+id      = "abcc-412d2d8-probe-a"
+title   = "abcc probe (a): tool calls recovered from the reasoning of an empty stop turn (F839)"
+version = "0.1.0"
+commit  = "412d2d8"
+bin     = "D:/dev/abcc-probes/abcc-a-412d2d8.exe"
+drive   = "abcc"
+args    = []
+
+# abcc branch `probe/reasoning-calls` = e5eef90 + ONE commit. F839: 10 of 11 empty `stop` turns
+# end in a `<tool_call>` block written INSIDE the reasoning, so abcc read SaidNothing. On a `stop`
+# turn with no text and no wire calls, the adapter now reads the trailing run of `<tool_call>`
+# blocks off the trace and runs them; each such turn leaves a `Note` ("F841 probe: ...") on the
+# log. Sampled at the server default (no tap, no temperature), like `abcc-e5eef90`, so the one
+# difference from A3 is this commit. The binary is a copy of that build, kept outside the repo.
+
+capabilities = []
