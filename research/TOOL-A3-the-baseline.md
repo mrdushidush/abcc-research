@@ -303,3 +303,26 @@ is not on the log (lengths only); a tapped replay of `edit_06` and `shell_04` wa
 For the said_nothing population the fall-through helps on K (2 / 3, both passes after a silent
 Recon) and not on `shell_06`, where Builders went silent too — the same tool call inside the
 reasoning, which (d) does nothing about and (a) recovers.
+
+## F844 — a model's `2>nul` kills abcc's checkpoint: the work is lost and the attempt has no ending
+
+**2026-09-24 23:05, probe (a)'s second K pass** (run `w8-1790280002291`, `trace_dropped_samples`).
+Builders ran, through abcc's `bash` tool, `… dir C:\…\python* 2>nul`. Under Git Bash `2>nul` is not
+the Windows null device: it created a **file named `nul`** in the worktree. At the next checkpoint
+abcc's `Repo::checkpoint` (`abcc-vcs/src/lib.rs:249`) runs `git add -A` into a scratch index, and
+git cannot index a Windows reserved name — `error: short read while indexing nul … fatal: adding
+files failed` (exit 128). **abcc exited 1**: no checkpoint, no `AttemptEnded`, replay says *"it has
+no ending on the log — in flight, or a crash took it"*, and the harness graded the untouched tree
+(`run.py exited 1`).
+
+**The work was right.** The abcc worktree still holds it (`pipeline/ingest.py`, `pipeline/stats.py`
+modified, plus `nul`); the K verifier run over a copy of it without `nul` says `RESULT: PASS all four
+channels report both firmware revisions (54 samples, 12 windows)`. So this K pass is 2 / 3 as graded
+and 3 / 3 in substance.
+
+First occurrence: it is the only `abcc_exit: 1` and the only `unable to index file 'nul'` in every
+harness run on disk. It is not caused by the probe — any attempt whose `bash` redirects to `nul`
+reaches it. ▶ Not fixed (an engine change is David's). The smallest repair is an exclude pathspec
+on that one `git add` for Windows device names (`nul con prn aux com1-9 lpt1-9`, any depth), or
+deleting such a file before the snapshot; either way the checkpoint must not be able to crash the
+attempt it is recording.
