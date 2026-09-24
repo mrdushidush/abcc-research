@@ -124,3 +124,43 @@ four R tasks it passes the hidden test only on `edit_06`, in 2 of 3 passes (`bTP
 
 ⚠ The runs are deterministic per task (abcc seeds every call, F715), so n = 3 here is one
 observation three times, not three samples. A different seed or prompt is what would vary it.
+
+## F839 — what Recon is doing when it never answers: working the fix, and calling tools from inside its reasoning
+
+**2026-09-24 13:55 → 14:25.** abcc stores reasoning LENGTHS, never text, so the eight tasks behind
+F837's 24 Recon failures were replayed once each (`abcc-e5eef90-ceil0`) through a logging
+pass-through in front of LM Studio (`research/tools/llm_tap.py`, read with `llm_tapread.py`;
+abcc pointed at it by `ABCC_MODEL_BASE_URL`). The replay is exact: per-call seeds match the
+original log, and every cell's completion tokens equal F838's and A3's (`edit_06` 292 + 72 +
+16,384 = 16,748; the K `said_nothing` endings again 1,163 and 27). Runs `w8-1790247318166` (R),
+`w8-1790248615651` (K); the 64 captured chat calls are in `harness/runs/tap/calls/` (gitignored — they
+hold `sec_04` secret-pattern text).
+
+**Two different things, both inside the reasoning channel.** No failing call ever closed its
+reasoning block: every character of the 24 cells' final calls is `reasoning_content`, `content`
+is empty.
+
+1. **The capped calls work the fix instead of locating it** (`edit_06` `edit_09` `sec_04`
+   `shell_04` R, `trace_dropped_samples` K). After two reads the model writes "Now I have the full
+   picture" (`edit_06`, `edit_09`) and then designs and drafts the implementation — 9 to 41 fenced code blocks per R
+   trace, 34–54 "Actually", edge cases of `split_inclusive` tested by hand, "I'll replace lines
+   290-354 with my new implementation" — in a phase whose tools are `read_file list_files search`
+   and whose brief says *"Find the place … When you know where the work goes, say so and stop
+   asking for tools."* The brief also carries the card's full THE FIX recipe. It is not a loop:
+   61–90% of the lines are distinct. On the K task, with no way to run code, it executes the
+   pipeline by hand, sample by sample, until the cap.
+2. **The `said_nothing` endings are tool calls written inside the reasoning.** 11 calls in the
+   replay finished `stop` with an empty reply; **10 of them end in a `<tool_call><function=read_file>`
+   block (Qwen's XML form) that never left the reasoning**, so the server returned no call and no
+   text. The 11th (K `finish_the_cancelled_status`, the 1,163-token one) holds a complete Recon
+   answer — files, lines, the change, what proves it — also as reasoning. abcc then nudges
+   (ADR-0016): *"Your last turn produced no reply text at all … Say the answer now"* — to a model
+   that was asking to read a file. Three such turns end the attempt (`nudges: 2`): `shell_06`,
+   `finish_the_cancelled_status` and `round_at_the_line_not_the_total` each had exactly three.
+
+⚠ **What this does NOT show.** Whether either fix would turn these cells green is untested: (a)
+recovering a `<tool_call>` block from reasoning (and a reasoning-only answer), and (b) a Recon
+that can end without the model having to stop designing. claudette does NOT parse reasoning
+either (`api.rs:1165`, size only); in this harness it sends `temperature: 0.0` and no seed where
+abcc sends a seed and the server's default temperature — a real difference between the two
+subjects, NOT tested as the reason claudette gets through K.
