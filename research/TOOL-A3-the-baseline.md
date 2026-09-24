@@ -195,3 +195,42 @@ Why is NOT shown (fewer per phase, so the two nudges suffice? a cleaner call aft
 ⚠ n = 1, and temperature 0 is not deterministic on this stack (claudette sends it and varied
 pass to pass in A3). Repeat before quoting 3 / 3 or 9 / 14 as rates. What this run does support:
 the two F839 failures are different — one moved with sampling, one did not.
+
+### F840 at n = 3 — passes 2 and 3 (2026-09-24 18:28 → 20:59)
+
+David's order at the end of session 4: repeat the temperature-0 run twice more. Same subject, same
+tap (`temperature=0` on every forwarded body — checked on a captured request), one tap directory per
+suite and pass (`harness/runs/t0/calls-p{2,3}-{k,r}`, gitignored). Runs: pass 2 `w8-1790263700527`
+(K) `w8-1790264322583` (R); pass 3 `w8-1790268472391` (K) `w8-1790268949595` (R). All six runs'
+cells are in `research/a3/t0-cells.tsv`.
+
+| | A3, server default (3 passes) | temperature 0, passes 1 · 2 · 3 |
+|---|---|---|
+| K | 0, 0, 0 of 3 | **3, 2, 2 of 3** (7 / 9) |
+| R | 8, 8, 7 of 14 (23 / 42) | **9, 10, 8 of 14** (27 / 42) |
+
+Per card, temperature 0, passes 1 · 2 · 3 (`P` pass, `.` fail):
+
+* **Every pass, 3 of 3:** K `finish_the_cancelled_status`, `round_at_the_line_not_the_total`; R
+  `runtime_10 runtime_11 sched_02 sec_06 shell_06 shell_07 shell_10 ux_06`. **`shell_06` is the
+  one card of these eight that A3 failed (`...`, `said_nothing` in Recon).**
+* **Every pass, 0 of 3, identically:** `edit_06 edit_09 sec_04 shell_04` — Recon cut at the
+  50,000-character ceiling, no edit, `reasoning_runaway`, all twelve cells. **The fix-drafting
+  failure does not move with temperature.** A3 was the same 0 of 12.
+* **Varies pass to pass:** K `trace_dropped_samples` `P..` — passes 2 and 3 LEAVE Recon, make one
+  applied edit (`pipeline/stats.py` skips empty windows) and fail the verifier on the same line
+  (`expected 'windows: 12', got: windows: 10`): a wrong fix, not a Recon death. R `cargo_failures`
+  `PP.` (pass 3: behaviour and others pass, fmt and clippy fail — `write!()` ending in `\n` —
+  and the round budget ran out); R `edit_10` `.P.` (pass 1: fmt refused by abcc's own gate;
+  pass 3: the hidden test and two existing permission tests red — a wrong change).
+
+⚠ **The tool calls written inside the reasoning are still there at every pass.** Empty `stop`
+turns (no text, no wire call) in the tap, graded runs only: pass 1 K 8 · R 14, pass 2 K 4 · R 14,
+pass 3 K 3 · R 13 — **56, and all 56 end with a `<tool_call>` block inside the reasoning.**
+Temperature 0 lets the attempts survive them (abcc's two nudges); it does not stop them happening.
+
+What n = 3 supports: the K lift (0 / 9 → 7 / 9) and `shell_06` (0 / 3 → 3 / 3) are repeatable, and
+both are the `said_nothing` population; the R total moves by exactly those cells plus noise on
+`cargo_failures` / `edit_10`. The drafting four are 0 / 12 at both temperatures. Temperature 0 is
+still NOT deterministic here (three cards changed between passes) — say *repeatable*, not
+*reproducible*.

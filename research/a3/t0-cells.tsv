@@ -19,3 +19,43 @@ r	shell_06	pass	pass	pass	pass	pass	success	1	23	0	18	edit_file 5 (4 ok)	8	32153
 r	shell_07	pass	pass	pass	pass	pass	success	1	23	0	20	edit_file 3 (3 ok)	14	116567	28820	337981	12322	298	w8-1790254482991
 r	shell_10	pass	pass	pass	pass	pass	success	1	20	0	15	edit_file 3 (2 ok)	8	17802	10413	117603	6701	193	w8-1790254482991
 r	ux_06	pass	pass	pass	pass	pass	success	1	21	0	17	edit_file 2 (2 ok)	12	52159	14043	180988	7099	198	w8-1790254482991
+k	finish_the_cancelled_status	pass					uncertain/no_checker_for_artifact	1	17	0	28	edit_file 5 (5 ok)	16	32633	10410	105173	7639	275	w8-1790263700527
+k	finish_the_cancelled_status	not_supported					no abcc.json												w8-1790263700527
+k	round_at_the_line_not_the_total	pass					uncertain/no_checker_for_artifact	1	18	0	18	edit_file 1 (1 ok)	12	27319	9293	99008	12264	173	w8-1790263700527
+k	round_at_the_line_not_the_total	not_supported					no abcc.json												w8-1790263700527
+k	trace_dropped_samples	fail					uncertain/no_checker_for_artifact	1	19	0	20	edit_file 1 (1 ok)	12	29733	8344	89479	8253	163	w8-1790263700527
+k	trace_dropped_samples	not_supported					no abcc.json												w8-1790263700527
+r	cargo_failures	pass	pass	pass	pass	pass	success	1	25	0	20	edit_file 5 (5 ok)	8	31166	12382	181867	9769	303	w8-1790264322583
+r	edit_06	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	2	0	2	0	2	24938	6264	8355	467	194	w8-1790264322583
+r	edit_09	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	3	0	3	0	3	31409	9086	17733	6119	271	w8-1790264322583
+r	edit_10	pass	pass	pass	pass	pass	success	1	28	0	23	edit_file 6 (6 ok)	10	63721	30110	424310	15541	381	w8-1790264322583
+r	runtime_10	pass	pass	pass	pass	pass	success	1	17	0	13	edit_file 6 (6 ok)	6	38376	15293	138117	13499	288	w8-1790264322583
+r	runtime_11	pass	pass	pass	pass	pass	success	1	12	0	9	edit_file 3 (3 ok)	3	6914	9770	65833	7706	197	w8-1790264322583
+r	sched_02	pass	pass	pass	pass	pass	success	1	24	0	21	edit_file 7 (7 ok)	9	93909	29985	386708	15489	351	w8-1790264322583
+r	sec_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	2	0	2	0	2	15388	5750	8127	4909	249	w8-1790264322583
+r	sec_06	pass	pass	pass	pass	pass	success	1	22	0	17	edit_file 4 (3 ok)	9	32166	13807	178674	10610	258	w8-1790264322583
+r	shell_04	fail	fail	flaky	pass	pass	uncertain/reasoning_runaway	1	1	0	1	0	1	7544	2173	2173	253	186	w8-1790264322583
+r	shell_06	pass	pass	pass	pass	pass	success	1	29	0	25	edit_file 5 (4 ok)	11	34218	17623	351786	20491	394	w8-1790264322583
+r	shell_07	pass	pass	pass	pass	pass	success	1	23	0	20	edit_file 3 (3 ok)	14	116567	28832	337993	11816	298	w8-1790264322583
+r	shell_10	pass	pass	pass	pass	pass	success	1	20	0	15	edit_file 3 (2 ok)	8	17802	10434	117652	6519	206	w8-1790264322583
+r	ux_06	pass	pass	flaky	pass	pass	success	1	21	0	17	edit_file 2 (2 ok)	12	52159	14045	180991	7224	208	w8-1790264322583
+k	finish_the_cancelled_status	pass					uncertain/no_checker_for_artifact	1	18	0	28	edit_file 5 (5 ok)	16	32633	10410	107631	12352	178	w8-1790268472391
+k	finish_the_cancelled_status	not_supported					no abcc.json												w8-1790268472391
+k	round_at_the_line_not_the_total	pass					uncertain/no_checker_for_artifact	1	18	0	18	edit_file 1 (1 ok)	12	27319	9293	99005	12097	167	w8-1790268472391
+k	round_at_the_line_not_the_total	not_supported					no abcc.json												w8-1790268472391
+k	trace_dropped_samples	fail					uncertain/no_checker_for_artifact	1	22	0	24	edit_file 1 (1 ok)	13	29318	8909	119881	7770	122	w8-1790268472391
+k	trace_dropped_samples	not_supported					no abcc.json												w8-1790268472391
+r	cargo_failures	fail	pass	pass	fail	fail	uncertain/budget_exhausted	1	32	0	29	edit_file 12 (10 ok)	11	31595	13341	279804	8986	218	w8-1790268949595
+r	edit_06	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	2	0	2	0	2	24938	6264	8355	467	192	w8-1790268949595
+r	edit_09	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	3	0	3	0	3	31409	9086	17733	6119	263	w8-1790268949595
+r	edit_10	fail	fail	fail	pass	pass	refused	1	18	0	14	edit_file 3 (3 ok)	9	62426	17063	184303	16213	328	w8-1790268949595
+r	runtime_10	pass	pass	pass	pass	pass	success	1	17	0	13	edit_file 6 (6 ok)	6	38376	15295	138120	12339	259	w8-1790268949595
+r	runtime_11	pass	pass	pass	pass	pass	success	1	12	0	9	edit_file 3 (3 ok)	3	6914	9760	65815	6047	177	w8-1790268949595
+r	sched_02	pass	pass	pass	pass	pass	success	1	18	0	15	edit_file 4 (4 ok)	9	93909	21980	243247	12612	285	w8-1790268949595
+r	sec_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	2	0	2	0	2	15388	5750	8127	4909	246	w8-1790268949595
+r	sec_06	pass	pass	pass	pass	pass	success	1	25	0	20	edit_file 4 (3 ok)	11	32876	20930	227542	10119	248	w8-1790268949595
+r	shell_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	0	1	7544	2173	2173	253	176	w8-1790268949595
+r	shell_06	pass	pass	pass	pass	pass	success	1	22	0	17	edit_file 5 (4 ok)	7	31042	22809	240947	17948	348	w8-1790268949595
+r	shell_07	pass	pass	pass	pass	pass	success	1	23	0	20	edit_file 3 (3 ok)	14	116567	28814	337973	12827	310	w8-1790268949595
+r	shell_10	pass	pass	pass	pass	pass	success	1	22	0	17	edit_file 3 (2 ok)	10	34972	14481	150008	7140	202	w8-1790268949595
+r	ux_06	pass	pass	pass	pass	pass	success	1	21	0	17	edit_file 2 (2 ok)	12	52159	14041	180985	7848	209	w8-1790268949595
