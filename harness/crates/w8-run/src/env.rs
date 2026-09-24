@@ -309,6 +309,7 @@ mod tests {
             commit: Some("fc1ea22".into()),
             bin: "claudette".into(),
             drive: "repl-pipe".into(),
+            args: Vec::new(),
             capabilities: vec!["tool_gate".into(), "redirect".into()],
             env: env.iter().map(|(k, v)| ((*k).to_string(), (*v).to_string())).collect(),
             markers: Default::default(),

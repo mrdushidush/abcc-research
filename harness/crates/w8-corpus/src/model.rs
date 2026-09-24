@@ -445,6 +445,9 @@ pub struct Subject {
     /// `repl-pipe`, never one-shot: one-shot passes `None` for its prompter (`run.rs:186`), so it
     /// cannot edit a file without `CLAUDETTE_AUTO_APPROVE` and can never show a gate (F1).
     pub drive: String,
+    /// Extra arguments. The `abcc` drive appends them to every `abcc run`, so one abcc build can
+    /// be measured under different engine limits as separate subjects. Other drives ignore them.
+    pub args: Vec<String>,
     pub capabilities: Vec<String>,
     pub env: BTreeMap<String, String>,
     pub markers: Markers,

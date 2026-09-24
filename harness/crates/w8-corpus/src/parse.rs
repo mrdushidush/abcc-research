@@ -817,6 +817,7 @@ pub(crate) fn parse_subject(path: &Path, rej: &mut Rejections) -> Option<Subject
         commit: opt_str(&t, "commit").map(str::to_owned),
         bin,
         drive,
+        args: str_list(&t, "args"),
         capabilities: str_list(&t, "capabilities"),
         env: table(&t, "env").map(|e| e.iter().map(|(k, v)| (k.clone(), scalar(v))).collect()).unwrap_or_default(),
         markers,

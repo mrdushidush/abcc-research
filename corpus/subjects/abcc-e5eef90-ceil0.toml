@@ -1,0 +1,16 @@
+schema  = 1
+id      = "abcc-e5eef90-ceil0"
+title   = "abcc-e5eef90 with the reasoning ceiling off (F837's control)"
+version = "0.1.0"
+commit  = "e5eef90"
+bin     = "abcc"
+drive   = "abcc"
+args    = ["--reasoning-ceiling", "0"]
+
+# The same build as `abcc-e5eef90`; the ONLY difference is `args`, which the abcc drive appends to
+# every `abcc run`. `--reasoning-ceiling 0` means no ceiling (abcc run.rs:364-365), so the F829
+# default of 50,000 characters never ends a turn. F837: 12 of abcc's A3 R cells ended at that
+# ceiling in Recon (edit_06, edit_09, sec_04, shell_04, 3 of 3 each). This subject asks whether
+# they finish without it. Everything else is the parent subject's; see abcc-e5eef90.toml.
+
+capabilities = []

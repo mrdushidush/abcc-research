@@ -31,6 +31,8 @@ pub struct Spec<'a> {
     pub bin: &'a str,
     /// The model id, handed to abcc as `ABCC_MODEL`.
     pub model: &'a str,
+    /// The subject's `args`, appended to `abcc run` (e.g. `--reasoning-ceiling 0`).
+    pub run_args: &'a [String],
     /// The subject's budget for the whole `abcc run`, from the task's `timeout_s`.
     pub timeout: Duration,
     pub verify_timeout: Duration,
@@ -279,6 +281,7 @@ fn run_bounded(
     let log = File::create(transcript)?;
     let mut child = Command::new(spec.bin)
         .args(["run", "--task", task, "--repo", repo])
+        .args(spec.run_args)
         .current_dir(wd)
         .env("ABCC_MODEL", spec.model)
         .stdin(Stdio::null())

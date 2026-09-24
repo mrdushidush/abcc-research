@@ -832,6 +832,7 @@ fn run_abcc_cell(
     let spec = w8_run::abcc::Spec {
         bin,
         model: &held.model,
+        run_args: &subject.args,
         timeout: Duration::from_secs(u64::from(task.timeout_s)),
         verify_timeout,
     };
