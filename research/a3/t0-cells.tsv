@@ -1,0 +1,21 @@
+suite	task	status	behaviour	others	fmt	clippy	abcc_ending	attempts	model_calls	length_finishes	tool_calls	editing_calls	read_file_calls	read_bytes	peak_prompt_tokens	prompt_tokens	completion_tokens	wall_s	run
+k	finish_the_cancelled_status	pass					uncertain/no_checker_for_artifact	1	19	0	29	edit_file 5 (5 ok)	16	32633	10410	116847	10661	157	w8-1790251346941
+k	finish_the_cancelled_status	not_supported					no abcc.json												w8-1790251346941
+k	round_at_the_line_not_the_total	pass					uncertain/no_checker_for_artifact	1	25	0	25	edit_file 1 (1 ok)	10	22219	10105	135987	7685	514	w8-1790251346941
+k	round_at_the_line_not_the_total	not_supported					no abcc.json												w8-1790251346941
+k	trace_dropped_samples	pass					uncertain/said_nothing	1	31	0	33	edit_file 2 (2 ok)	16	31922	12011	219532	33283	513	w8-1790251346941
+k	trace_dropped_samples	not_supported					no abcc.json												w8-1790251346941
+r	cargo_failures	pass	pass	pass	pass	pass	success	1	32	0	27	edit_file 7 (7 ok)	12	33232	13865	272435	11902	296	w8-1790254482991
+r	edit_06	fail	fail	flaky	pass	pass	uncertain/reasoning_runaway	1	2	0	2	0	2	24938	6264	8355	467	193	w8-1790254482991
+r	edit_09	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	3	0	3	0	3	31409	9086	17733	6119	269	w8-1790254482991
+r	edit_10	fail	pass	pass	fail	pass	refused	1	25	0	20	edit_file 5 (5 ok)	10	63062	29408	347409	17961	390	w8-1790254482991
+r	runtime_10	pass	pass	pass	pass	pass	success	1	17	0	13	edit_file 6 (6 ok)	6	38376	15293	138117	14888	301	w8-1790254482991
+r	runtime_11	pass	pass	pass	pass	pass	success	1	12	0	9	edit_file 3 (3 ok)	3	6914	9772	65842	5963	173	w8-1790254482991
+r	sched_02	pass	pass	pass	pass	pass	success	1	24	0	21	edit_file 7 (7 ok)	9	93909	30023	386746	15115	339	w8-1790254482991
+r	sec_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	2	0	2	0	2	15388	5750	8127	4909	248	w8-1790254482991
+r	sec_06	pass	pass	pass	pass	pass	success	1	22	0	17	edit_file 4 (3 ok)	9	32166	13787	178629	10071	242	w8-1790254482991
+r	shell_04	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	0	1	7544	2173	2173	253	177	w8-1790254482991
+r	shell_06	pass	pass	pass	pass	pass	success	1	23	0	18	edit_file 5 (4 ok)	8	32153	23187	257798	18202	355	w8-1790254482991
+r	shell_07	pass	pass	pass	pass	pass	success	1	23	0	20	edit_file 3 (3 ok)	14	116567	28820	337981	12322	298	w8-1790254482991
+r	shell_10	pass	pass	pass	pass	pass	success	1	20	0	15	edit_file 3 (2 ok)	8	17802	10413	117603	6701	193	w8-1790254482991
+r	ux_06	pass	pass	pass	pass	pass	success	1	21	0	17	edit_file 2 (2 ok)	12	52159	14043	180988	7099	198	w8-1790254482991

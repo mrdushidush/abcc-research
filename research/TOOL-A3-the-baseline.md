@@ -164,3 +164,34 @@ that can end without the model having to stop designing. claudette does NOT pars
 either (`api.rs:1165`, size only); in this harness it sends `temperature: 0.0` and no seed where
 abcc sends a seed and the server's default temperature — a real difference between the two
 subjects, NOT tested as the reason claudette gets through K.
+
+## F840 — at temperature 0, K goes 0 / 9 → 3 / 3 and R 9 / 14; the fix-drafting Recon does not move
+
+**2026-09-24 14:4x → 17:02.** F839's option (c), David's pick. Subject `abcc-e5eef90-t0`
+(research `97982a4`): the same build, `abcc run --url` pointed at `llm_tap.py … temperature=0`,
+which sets `temperature: 0` on every chat body (abcc keeps its seed; the engine is unchanged — the
+2026-09-12 ruling that abcc sends no temperature stands). Every forwarded body carries it. n = 1.
+Runs `w8-1790251346941` (K), `w8-1790254482991` (R); an earlier R attempt was stopped by Claude
+Code's low-memory reaper after three cells and is not counted. Per-cell metrics
+`research/a3/t0-cells.tsv`.
+
+| | A3, server-default temperature (3 passes) | temperature 0 (1 pass) |
+|---|---|---|
+| K | 0, 0, 0 of 3 | **3 of 3** — all three leave Recon; `finish` and `round` run all three phases |
+| R | 8, 8, 7 of 14 | **9 of 14** |
+
+Per R card, the only changes: **`shell_06` `...` → pass** (A3: `said_nothing` in Recon ×3),
+**`cargo_failures` `bP.` → pass**, **`edit_10` `P..` → fail** (hidden test passes; abcc's own
+gate refused on `cargo fmt`). All seven A3 `PPP` cards pass again. **`edit_06` `edit_09` `sec_04`
+`shell_04` are unchanged: Recon cut at the 50,000-character ceiling, no edit** — F839's
+fix-drafting failure does not respond to temperature.
+
+⚠ **Temperature 0 does NOT stop the tool calls from landing in the reasoning.** The tap shows 22
+empty `stop` turns across the two graded runs (K 8, R 14), **every one of them with a
+`<tool_call>` block inside the reasoning** — on passing cards too (`runtime_10`, `sec_06`,
+`shell_10`, `ux_06` …). At temperature 0 the attempts survive it; at the default they did not.
+Why is NOT shown (fewer per phase, so the two nudges suffice? a cleaner call after the nudge?).
+
+⚠ n = 1, and temperature 0 is not deterministic on this stack (claudette sends it and varied
+pass to pass in A3). Repeat before quoting 3 / 3 or 9 / 14 as rates. What this run does support:
+the two F839 failures are different — one moved with sampling, one did not.
