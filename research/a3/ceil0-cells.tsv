@@ -1,0 +1,13 @@
+suite	task	status	behaviour	others	fmt	clippy	abcc_ending	attempts	model_calls	length_finishes	tool_calls	editing_calls	read_file_calls	read_bytes	peak_prompt_tokens	prompt_tokens	completion_tokens	wall_s	run
+r	edit_06	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	3	1	2	0	2	24938	8925	17280	16748	257	w8-1790241837779
+r	edit_09	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	3	1	2	0	2	24938	9086	17733	16708	262	w8-1790241837779
+r	sec_04	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	2	1	1	0	1	11063	5750	8127	16483	255	w8-1790241837779
+r	shell_04	fail	fail	flaky	pass	pass	uncertain/truncated_at_cap	1	4	1	4	0	2	13727	7684	18188	16875	264	w8-1790241837779
+r	edit_06	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	3	1	2	0	2	24938	8925	17280	16748	264	w8-1790243040950
+r	edit_09	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	3	1	2	0	2	24938	9086	17733	16708	275	w8-1790243040950
+r	sec_04	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	2	1	1	0	1	11063	5750	8127	16483	259	w8-1790243040950
+r	shell_04	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	4	1	4	0	2	13727	7684	18188	16875	277	w8-1790243040950
+r	edit_06	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	3	1	2	0	2	24938	8925	17280	16748	257	w8-1790244261798
+r	edit_09	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	3	1	2	0	2	24938	9086	17733	16708	270	w8-1790244261798
+r	sec_04	fail	fail	pass	pass	pass	uncertain/truncated_at_cap	1	2	1	1	0	1	11063	5750	8127	16483	257	w8-1790244261798
+r	shell_04	fail	fail	flaky	pass	pass	uncertain/truncated_at_cap	1	4	1	4	0	2	13727	7684	18188	16875	272	w8-1790244261798

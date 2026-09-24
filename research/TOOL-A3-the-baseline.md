@@ -88,10 +88,39 @@ The runaway cells die early — `edit_06`'s pass-1 attempt read two files (24,93
 3 min 38 s and was cut on its third call — so this is not the re-read spiral of PLAN-TOOL's H1
 either (R failures median 2 `read_file` calls; R passes median 8).
 
-⚠ **Observed, not explained.** Whether the 12 runaway cells would finish without the ceiling is
-**untested**. F829 derived the ceiling from 3,048 logged turns where it "catches 5 and costs 0";
-A3 does not show it costs anything, only that it is where these four tasks end. The cheap
-control: the four runaway tasks with `abcc run --reasoning-ceiling 0`, n = 3 (~1 GPU h).
+⚠ **Observed, not explained.** Whether the 12 runaway cells would finish without the ceiling was
+untested when this was written — F838 below ran the control.
 
 ⚠ abcc's `completion_tokens` undercount failed cells — a call cut by the ceiling is never billed.
 Do not read R failures' median of 491 completion tokens as "the model barely spoke".
+
+## F838 — with the ceiling off, the same four tasks hit the token cap instead: 12 of 12, byte-identical
+
+**2026-09-24 12:24 → 13:25.** F837's control. Subject `abcc-e5eef90-ceil0` = the same build plus
+`--reasoning-ceiling 0` (research `d8cbdfc`: a subject's `args` now reach `abcc run`; the flag was
+seen on the live process's command line). `edit_06 edit_09 sec_04 shell_04`, n = 3, same model,
+window and corpus as A3. Runs `w8-1790241837779`, `w8-1790243040950`, `w8-1790244261798`; per-cell
+metrics `research/a3/ceil0-cells.tsv`.
+
+| task | A3 (ceiling 50,000) | ceiling off, × 3 | model calls | read_file | read bytes | completion tokens | wall |
+|---|---|---|---:|---:|---:|---:|---:|
+| `edit_06` | runaway ×3 | `truncated_at_cap` ×3 | 3 | 2 | 24,938 | 16,748 | 257–264 s |
+| `edit_09` | runaway ×3 | `truncated_at_cap` ×3 | 3 | 2 | 24,938 | 16,708 | 262–275 s |
+| `sec_04` | runaway ×3 | `truncated_at_cap` ×3 | 2 | 1 | 11,063 | 16,483 | 255–259 s |
+| `shell_04` | runaway ×3 | `truncated_at_cap` ×3 | 4 | 2 | 13,727 | 16,875 | 264–277 s |
+
+All 12 fail the hidden test in Recon with **no editing call**, and every count except wall clock is
+identical across the three passes. So **the ceiling costs these cells nothing**: without it the
+model reasons on until the 16,384-token cap and still returns an empty payload; the ceiling only
+ends the same dead attempt ~40 s sooner (A3's `edit_06` was cut at 3 min 38 s, here 4 min 15 s).
+This agrees with F829's "costs 0" on a sample F829 never saw.
+
+It moves F837's question. All 24 of abcc's Recon failures in A3 share one observable outcome —
+**Recon never returns an answer** — reached three ways: cut at the ceiling (12), capped at 16,384
+tokens (3; and these 12 once the ceiling is off), or finishing with nothing (9). Whether those are
+one mechanism is NOT shown. claudette, on the same model and window, has no Recon phase: of these
+four R tasks it passes the hidden test only on `edit_06`, in 2 of 3 passes (`bTP`; the others are
+`.TT`, `TT.`, `TTT` — mostly timeouts), but it passes every K task in at least one pass (7 / 9).
+
+⚠ The runs are deterministic per task (abcc seeds every call, F715), so n = 3 here is one
+observation three times, not three samples. A different seed or prompt is what would vary it.
