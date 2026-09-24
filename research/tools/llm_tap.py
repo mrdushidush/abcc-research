@@ -1,23 +1,27 @@
 """A logging pass-through in front of LM Studio: every request body and every streamed response
-is saved whole, then forwarded unchanged. abcc stores reasoning LENGTHS only; this keeps the text.
+is saved whole, then forwarded. abcc stores reasoning LENGTHS only; this keeps the text.
 
-    python research/tools/llm_tap.py <listen-port> <upstream host:port> <out-dir>
+    python research/tools/llm_tap.py <listen-port> <upstream host:port> <out-dir> [key=json ...]
 
-Point abcc at it with ABCC_MODEL_BASE_URL=http://127.0.0.1:<listen-port>. abcc seeds every call,
-so a replay of a logged cell reproduces its calls; check the token counts match before reading.
+Point abcc at it with ABCC_MODEL_BASE_URL=http://127.0.0.1:<listen-port>, or `--url` in a
+subject's `args`. abcc seeds every call, so a replay of a logged cell reproduces its calls; check
+the token counts match before reading.
+
+Each `key=json` is SET on every chat-completions body before it is forwarded (e.g.
+`temperature=0`), so a sampling control needs no engine change. The saved `.req.json` is the body
+AS FORWARDED, so the override is on the record next to every call.
 """
 import http.client
 import itertools
 import json
 import os
 import sys
-import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PORT, UP, OUT = int(sys.argv[1]), sys.argv[2], sys.argv[3]
+SET = {k: json.loads(v) for k, v in (a.split("=", 1) for a in sys.argv[4:])}
 os.makedirs(OUT, exist_ok=True)
 SEQ = itertools.count(1)
-LOCK = threading.Lock()
 
 
 class Tap(BaseHTTPRequestHandler):
@@ -29,11 +33,16 @@ class Tap(BaseHTTPRequestHandler):
     def _do(self):
         n = next(SEQ)
         body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        if SET and body and "chat/completions" in self.path:
+            payload = json.loads(body)
+            payload.update(SET)
+            body = json.dumps(payload).encode()
         stem = os.path.join(OUT, f"{n:04d}")
         with open(stem + ".req.json", "wb") as f:
             f.write(json.dumps({"method": self.command, "path": self.path}).encode() + b"\n" + body)
         conn = http.client.HTTPConnection(UP, timeout=3600)
-        hdrs = {k: v for k, v in self.headers.items() if k.lower() not in ("host", "connection")}
+        hdrs = {k: v for k, v in self.headers.items()
+                if k.lower() not in ("host", "connection", "content-length")}
         conn.request(self.command, self.path, body=body or None, headers=hdrs)
         resp = conn.getresponse()
         self.send_response(resp.status)

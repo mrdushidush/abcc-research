@@ -1,0 +1,24 @@
+schema  = 1
+id      = "abcc-e5eef90-t0"
+title   = "abcc-e5eef90 sampled at temperature 0 (F839 option c, a control)"
+version = "0.1.0"
+commit  = "e5eef90"
+bin     = "abcc"
+drive   = "abcc"
+args    = ["--url", "http://127.0.0.1:1236"]
+
+# The same build as `abcc-e5eef90`. abcc sends a seed and NO temperature (the operator's ruling of
+# 2026-09-12, abcc-core event.rs: do not move the distribution past numbers were taken at), so it
+# samples at LM Studio's default. claudette, in this harness, sends `temperature: 0.0`
+# (api.rs build_chat_body, compat path). This subject asks whether that difference is why
+# claudette gets through K and abcc's Recon does not (F839).
+#
+# The temperature is NOT set by abcc: `--url` points `abcc run` at the logging tap, started as
+#
+#     python research/tools/llm_tap.py 1236 127.0.0.1:1234 <out-dir> temperature=0
+#
+# which sets `temperature: 0` on every chat body and saves each request as forwarded. If the tap
+# is not running, every cell fails to connect — loudly, never silently at the default temperature.
+# abcc's seed is still sent; at temperature 0 it is inert.
+
+capabilities = []
