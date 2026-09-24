@@ -357,3 +357,30 @@ reaches it. ▶ Not fixed (an engine change is David's). The smallest repair is 
 on that one `git add` for Windows device names (`nul con prn aux com1-9 lpt1-9`, any depth), or
 deleting such a file before the snapshot; either way the checkpoint must not be able to crash the
 attempt it is recording.
+
+## F845 — what Builders reasons about when it runs away on the drafting cards: re-verifying one whole-function edit, or designing the test
+
+**2026-09-25 00:20 → 00:44.** F843 left open what probe (d)'s Builders reasons about on the cards
+where it also hits the ceiling. Replayed behind a plain logging tap (no key set, server default,
+abcc's seed): subject `abcc-132edd3-probe-d-tap`, run `w8-1790284855063`, captures
+`harness/runs/probes/tap-d/` (gitignored). Both cells fail again at the ceiling, as in F843.
+**Neither contains a `<tool_call>` inside the reasoning** — this is not F839's second failure.
+
+* **`edit_06` — re-verifying one exact-match edit.** Builders' first long turn already states the
+  right design (the four steps of the card's recipe). It then decides to replace the whole of
+  `apply_hunks` (lines 289–356) with ONE `edit_file`, whose schema is `old_text` / `new_text`,
+  exact match. Four turns in a row it re-drafts the full implementation in the reasoning (22, 14,
+  46, 28 fenced blocks; 20 / 6 / 39 / 43 "actually"), says *"Let me now write the complete
+  edit_file call … Let me re-read to get the exact boundaries"*, and asks for another windowed read
+  of the same function (`275–365`, `289–356`, `340–360`, `280–360`) instead of the edit. The fifth
+  turn reaches the ceiling. **It never sends the edit it keeps writing.**
+* **`shell_04` — designing the test.** After one read, a single Builders turn of 51,167 characters
+  (84 fenced blocks, 61 "actually", 23 "Wait"; 564 distinct of 1,151 lines) works out how a
+  grandchild inherits pipes on Windows and Unix and what script the test should spawn. No edit is
+  ever named.
+
+Common to both: the model tries to finish the whole change — design, code, and on `shell_04` the
+test's semantics — inside one reasoning turn before acting, and the reasoning ceiling (or the cap
+without it, F838) arrives first. The phase is not the lever (F843), nor the recipe (F842).
+Untested directions: an edit that does not need the exact old text of a 70-line function (a
+line-range replace), or a brief that asks for the change in small edits.
