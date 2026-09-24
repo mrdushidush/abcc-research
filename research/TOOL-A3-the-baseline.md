@@ -167,7 +167,7 @@ subjects, NOT tested as the reason claudette gets through K.
 
 ## F840 — at temperature 0, K goes 0 / 9 → 3 / 3 and R 9 / 14; the fix-drafting Recon does not move
 
-**2026-09-24 14:4x → 17:02.** F839's option (c), David's pick. Subject `abcc-e5eef90-t0`
+**2026-09-24 15:02 → 17:02.** F839's option (c), David's pick. Subject `abcc-e5eef90-t0`
 (research `97982a4`): the same build, `abcc run --url` pointed at `llm_tap.py … temperature=0`,
 which sets `temperature: 0` on every chat body (abcc keeps its seed; the engine is unchanged — the
 2026-09-12 ruling that abcc sends no temperature stands). Every forwarded body carries it. n = 1.
