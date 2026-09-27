@@ -1,0 +1,22 @@
+schema  = 1
+id      = "abcc-dc57bde-chat"
+title   = "abcc chat at dc57bde (PLAN-TOOL C1): one conversation, /done after the first answer"
+version = "0.1.0+dc57bde"
+commit  = "dc57bde"
+bin     = "D:/dev/abcc-bins/abcc-dc57bde.exe"
+drive   = "abcc-chat"
+args    = []
+
+# `abcc chat --task` with two lines on stdin, `/done` then `n` (w8-run abcc.rs CHAT_SCRIPT): one
+# conversation under Builders (no Recon hand-off), eviction always on (with the emergency tier
+# since dc57bde), no operator words. Graded like the abcc drive, off the closing checkpoint.
+# Compaction is checked before each operator turn, and with one ask the body is then only the
+# brief, so it never fires here.
+
+# Ship plan S6, re-pinned 2026-09-27 evening. abcc main at dc57bde = c9f9e15 + CI fixes (test
+# only) + compaction between chat turns (52f7bd0) + the version naming the commit (62adf13) + the
+# chat end report (2902694) + docs + the emergency eviction tier and the PromptCut floor after an
+# eviction (dc57bde). The binary is a pinned copy, so later builds of D:/dev/abcc cannot change
+# what this subject ran.
+
+capabilities = []

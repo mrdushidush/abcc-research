@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Ship plan, overnight bench (S6 night). One binary, abcc c9f9e15, three arms:
-#   main  = abcc-c9f9e15        (batch, temperature 0, (a') merged, eviction off)
-#   evict = abcc-c9f9e15-evict  (the same with --evict)
-#   chat  = abcc-c9f9e15-chat   (abcc chat --task, one conversation, /done after the first answer)
+# Ship plan, overnight bench (S6 night). One binary, abcc dc57bde, three arms:
+#   main  = abcc-dc57bde        (batch, temperature 0, (a') merged, eviction off)
+#   evict = abcc-dc57bde-evict  (the same with --evict, which has the emergency tier since dc57bde)
+#   chat  = abcc-dc57bde-chat   (abcc chat --task, one conversation, /done after the first answer)
+# Re-pinned from c9f9e15 on 2026-09-27 evening: the eviction tier changed chat and --evict, and an
+# eviction is no longer logged as a PromptCut. The main arm's engine path is unchanged.
 # Ordered by importance: pass 1 of every arm first, K before R, Q56 last. ~11 h if it all runs;
 # whatever finishes by morning is usable. `touch runs/s6/STOP` ends it between cells.
 cd /d/dev/ABCC_20_powerd_by_claudette/harness || exit 1
@@ -18,7 +20,7 @@ one() {  # name subject suite
   local rc=$?
   log "end $1 exit=$rc run=$(grep -o 'runs.w8-[0-9]*' "$OUT/$1.log" | tail -1)"
 }
-M=abcc-c9f9e15; E=abcc-c9f9e15-evict; C=abcc-c9f9e15-chat
+M=abcc-dc57bde; E=abcc-dc57bde-evict; C=abcc-dc57bde-chat
 one main-k-p1  $M k
 one chat-k-p1  $C k
 one evict-k-p1 $E k
