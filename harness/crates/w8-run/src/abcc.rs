@@ -25,12 +25,20 @@ use w8_corpus::RunVerdict;
 /// How often a running `abcc run` is polled for exit.
 const POLL: Duration = Duration::from_millis(500);
 
+/// What the `abcc-chat` drive types. `/done` once the model has answered the brief; then `n`,
+/// which declines whichever question comes next — *land this?* on a green tree, *keep going?* on
+/// a refused one — because the bench grades the closing checkpoint and never lands anything.
+pub const CHAT_SCRIPT: &str = "/done\nn\n";
+
 /// What a cell needs that the corpus does not supply.
 pub struct Spec<'a> {
     /// The `abcc` binary.
     pub bin: &'a str,
     /// The model id, handed to abcc as `ABCC_MODEL`.
     pub model: &'a str,
+    /// `drive = "abcc-chat"`: `abcc chat --task` in place of `abcc run`, with [`CHAT_SCRIPT`]
+    /// on stdin — one conversation, no operator words, `/done` after the model's first answer.
+    pub chat: bool,
     /// The subject's `args`, appended to `abcc run` (e.g. `--reasoning-ceiling 0`).
     pub run_args: &'a [String],
     /// The subject's budget for the whole `abcc run`, from the task's `timeout_s`.
@@ -279,15 +287,24 @@ fn run_bounded(
     transcript: &Path,
 ) -> std::io::Result<(Option<i32>, bool)> {
     let log = File::create(transcript)?;
+    let verb = if spec.chat { "chat" } else { "run" };
     let mut child = Command::new(spec.bin)
-        .args(["run", "--task", task, "--repo", repo])
+        .args([verb, "--task", task, "--repo", repo])
         .args(spec.run_args)
         .current_dir(wd)
         .env("ABCC_MODEL", spec.model)
-        .stdin(Stdio::null())
+        .stdin(if spec.chat { Stdio::piped() } else { Stdio::null() })
         .stdout(log.try_clone()?)
         .stderr(log)
         .spawn()?;
+    if spec.chat {
+        // Written whole and closed: abcc reads a line when it wants one, and end of input after
+        // the script is `/quit`, so nothing here can wait on the child.
+        if let Some(mut stdin) = child.stdin.take() {
+            use std::io::Write as _;
+            let _ = stdin.write_all(CHAT_SCRIPT.as_bytes());
+        }
+    }
     let deadline = Instant::now() + spec.timeout;
     loop {
         if let Some(status) = child.try_wait()? {

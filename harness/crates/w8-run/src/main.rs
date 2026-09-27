@@ -184,10 +184,12 @@ fn run(args: Args) -> Result<ExitCode, String> {
         .ok_or_else(|| format!("no subject {subject_id:?} in {}", args.root.display()))?;
     // `abcc` is PLAN-TOOL Phase A1: `abcc task` + `abcc run` per cell, graded by the same
     // verifier (`w8_run::abcc`). It has no REPL, so no warmup, no gate marker and no turn marker.
-    let is_abcc = subject.drive == "abcc";
+    // `abcc-chat` is the same drive with `abcc chat` in place of `abcc run` (PLAN-TOOL C1).
+    let is_abcc = subject.drive == "abcc" || subject.drive == "abcc-chat";
     if subject.drive != "repl-pipe" && !is_abcc {
         return Err(format!(
-            "subject {subject_id} declares drive = {:?}; this runner implements repl-pipe and abcc, \
+            "subject {subject_id} declares drive = {:?}; this runner implements repl-pipe, abcc \
+             and abcc-chat, \
              because one-shot passes None for its prompter (run.rs:186) and can never show a gate",
             subject.drive
         ));
@@ -832,6 +834,7 @@ fn run_abcc_cell(
     let spec = w8_run::abcc::Spec {
         bin,
         model: &held.model,
+        chat: subject.drive == "abcc-chat",
         run_args: &subject.args,
         timeout: Duration::from_secs(u64::from(task.timeout_s)),
         verify_timeout,

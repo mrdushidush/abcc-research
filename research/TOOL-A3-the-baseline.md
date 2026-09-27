@@ -418,3 +418,20 @@ What n = 1 supports: (a') keeps (a)'s K and `shell_06` gains and gives back `edi
 regression on the cards that ran. It does NOT support a rate — the stack is nondeterministic under
 a fixed seed (F841 addendum, `shell_06`), and `shell_07 shell_10 ux_06` are unmeasured. ▶ A second
 pass (K + R, ~90 min) is the next step before a merge is argued; the merge itself is David's.
+
+### F846 addendum — the second pass, and the merge (2026-09-27)
+
+David ruled on 2026-09-27 (the 3-session ship plan): merge (a') after a second pass that does not
+regress. Pass 2, same subject `abcc-97ac45d-probe-a2`, server default temperature:
+
+* **K 3 / 3 again** (run `w8-1790483222100`), so (a') is 6 of 6 on K across two passes (A3 0 / 9).
+* **R: 3 valid cells of 14** (run `w8-1790484339994`): `cargo_failures` pass, `edit_06` and
+  `edit_09` fail (two of the four drafting cards, as in every pass). The other 11 did not run:
+  Claude Code's low-memory reaper killed the driver shell at ~08:05, and the orphaned run's
+  children could not start — `edit_10` invalid (verifier printed nothing), ten fixtures failed to
+  materialize with `0xC0000142`, the same class as pass 1's three invalid cells.
+
+No valid cell regressed across the two passes, but pass 2's R is 3 of 14, so it is not the
+regression check the rule asked for. **Merged anyway, as abcc `f21cecc`**, so that the overnight
+bench binary carries it; that bench's main R × 3 (subject `abcc-9e0afcd`) is the regression check,
+and if main loses a card A3 always passed, this merge is the first suspect.

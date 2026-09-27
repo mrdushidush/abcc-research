@@ -1,0 +1,17 @@
+schema  = 1
+id      = "abcc-9e0afcd"
+title   = "abcc main 9e0afcd: F844, temperature 0, (a') merged; eviction off"
+version = "0.1.0"
+commit  = "9e0afcd"
+bin     = "D:/dev/abcc-bins/abcc-9e0afcd.exe"
+drive   = "abcc"
+args    = []
+
+# The shipped batch config. Temperature 0 is the engine default now (sent on the wire, recorded
+# on ModelCallStarted).
+
+# Ship plan S6 (2026-09-27). abcc main at 9e0afcd = e5eef90 (B1) + F844 (the `nul` checkpoint fix)
+# + temperature 0 by default + B3 eviction behind --evict + probe (a') merged + `abcc chat` (+ its first polish).
+# The binary is a pinned copy, so later builds of D:/dev/abcc cannot change what this subject ran.
+
+capabilities = []
