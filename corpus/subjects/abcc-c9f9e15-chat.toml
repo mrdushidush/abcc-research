@@ -1,0 +1,18 @@
+schema  = 1
+id      = "abcc-c9f9e15-chat"
+title   = "abcc chat at c9f9e15 (PLAN-TOOL C1): one conversation, /done after the first answer"
+version = "0.1.0"
+commit  = "c9f9e15"
+bin     = "D:/dev/abcc-bins/abcc-c9f9e15.exe"
+drive   = "abcc-chat"
+args    = []
+
+# `abcc chat --task` with two lines on stdin, `/done` then `n` (w8-run abcc.rs CHAT_SCRIPT): one
+# conversation under Builders (no Recon hand-off), eviction always on, no operator words. Graded
+# like the abcc drive, off the closing checkpoint.
+
+# Ship plan S6 (2026-09-27). abcc main at c9f9e15 = e5eef90 (B1) + F844 (the `nul` checkpoint fix)
+# + temperature 0 by default + B3 eviction behind --evict + probe (a') merged + `abcc chat` (+ its first fixes: tool lines, the re-read after a failed edit, 40 chat rounds).
+# The binary is a pinned copy, so later builds of D:/dev/abcc cannot change what this subject ran.
+
+capabilities = []
