@@ -1,0 +1,148 @@
+arm	pass	suite	task	subject	status	behaviour	others	fmt	clippy	abcc_ending	model_calls	tool_calls	editing_calls	read_file_calls	peak_prompt_tokens	prompt_tokens	completion_tokens	wall_s	prompt_cuts	evict_notes	evict_recent	run
+main	1	k	finish_the_cancelled_status	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	20	33	edit_file 6 (6 ok)	21	11201	140384	13880	192	0	0	0	w8-1790539560433
+main	1	k	round_at_the_line_not_the_total	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	18	19	edit_file 1 (1 ok)	12	9293	99017	12475	170	0	0	0	w8-1790539560433
+main	1	k	trace_dropped_samples	abcc-dc57bde	fail					uncertain/no_checker_for_artifact	16	18	edit_file 1 (1 ok)	11	8344	72009	7576	118	0	0	0	w8-1790539560433
+chat	1	k	finish_the_cancelled_status	abcc-dc57bde-chat	fail					uncertain/no_checker_for_artifact	19	26	edit_file 4 (4 ok)	12	16296	203750	8789	132	0	0	0	w8-1790540050902
+chat	1	k	round_at_the_line_not_the_total	abcc-dc57bde-chat	pass					uncertain/no_checker_for_artifact	16	19	edit_file 2 (2 ok)	8	13196	120854	4879	83	0	0	0	w8-1790540050902
+chat	1	k	trace_dropped_samples	abcc-dc57bde-chat	fail					uncertain/reasoning_runaway	8	15	0	14	11195	60214	24404	509	0	0	0	w8-1790540050902
+evict	1	k	finish_the_cancelled_status	abcc-dc57bde-evict	pass					uncertain/no_checker_for_artifact	20	33	edit_file 6 (6 ok)	21	11201	140498	13197	186	0	0	0	w8-1790540783385
+evict	1	k	round_at_the_line_not_the_total	abcc-dc57bde-evict	pass					uncertain/no_checker_for_artifact	17	18	edit_file 1 (1 ok)	12	9293	93276	12739	168	0	0	0	w8-1790540783385
+evict	1	k	trace_dropped_samples	abcc-dc57bde-evict	fail					uncertain/no_checker_for_artifact	16	18	edit_file 1 (1 ok)	11	8344	72015	7146	111	0	0	0	w8-1790540783385
+chat	1	r	cargo_failures	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	22	20	edit_file 5 (5 ok)	9	20065	306443	6472	227	0	0	0	w8-1790541444580
+chat	1	r	edit_06	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	3	3	0	3	9944	20337	13244	352	0	0	0	w8-1790541444580
+chat	1	r	edit_09	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	7429	10685	347	176	0	0	0	w8-1790541444580
+chat	1	r	edit_10	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	14	12	edit_file 2 (2 ok)	5	23193	183896	7963	215	0	0	0	w8-1790541444580
+chat	1	r	runtime_10	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	15	13	edit_file 6 (6 ok)	5	19511	125771	6693	201	0	0	0	w8-1790541444580
+chat	1	r	runtime_11	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	11	9	edit_file 3 (3 ok)	3	11063	70232	4015	147	0	0	0	w8-1790541444580
+chat	1	r	sched_02	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	33	31	edit_file 8 (8 ok)	17	17643	341246	7635	221	0	0	0	w8-1790541444580
+chat	1	r	sec_04	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	6769	10165	10450	311	0	0	0	w8-1790541444580
+chat	1	r	sec_06	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	10	8	edit_file 3 (3 ok)	2	15030	87754	2984	143	0	0	0	w8-1790541444580
+chat	1	r	shell_04	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	3192	3192	328	174	0	0	0	w8-1790541444580
+chat	1	r	shell_06	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	16	16	edit_file 4 (3 ok)	8	22766	189956	8353	222	0	0	0	w8-1790541444580
+chat	1	r	shell_07	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	25	23	edit_file 7 (7 ok)	10	26980	379308	8808	301	0	1	0	w8-1790541444580
+chat	1	r	shell_10	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	9	7	edit_file 4 (4 ok)	1	9552	58220	3716	150	0	0	0	w8-1790541444580
+chat	1	r	ux_06	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	9	7	edit_file 2 (2 ok)	4	17860	96321	4320	153	0	0	0	w8-1790541444580
+main	1	r	cargo_failures	abcc-dc57bde	pass	pass	pass	pass	pass	success	18	14	edit_file 2 (2 ok)	9	14405	123433	9787	236	0	0	0	w8-1790626734619
+main	1	r	edit_06	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	6264	8355	467	192	0	0	0	w8-1790626734619
+main	1	r	edit_09	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	3	3	0	3	9086	17733	6119	264	0	0	0	w8-1790626734619
+main	1	r	edit_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	15	12	edit_file 2 (2 ok)	8	21969	144474	16095	331	0	0	0	w8-1790626734619
+main	1	r	runtime_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	16	14	edit_file 6 (6 ok)	7	15155	125242	14350	287	0	0	0	w8-1790626734619
+main	1	r	runtime_11	abcc-dc57bde	pass	pass	pass	pass	pass	success	12	9	edit_file 3 (3 ok)	3	9770	65828	7363	183	0	0	0	w8-1790626734619
+main	1	r	sched_02	abcc-dc57bde	pass	pass	pass	pass	pass	success	20	18	edit_file 5 (5 ok)	9	29265	295710	11839	275	0	0	0	w8-1790626734619
+main	1	r	sec_04	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	5750	8127	4909	245	0	0	0	w8-1790626734619
+main	1	r	sec_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	20	17	edit_file 4 (4 ok)	8	20875	188201	11133	266	0	0	0	w8-1790626734619
+main	1	r	shell_04	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	2173	2173	253	178	0	0	0	w8-1790626734619
+main	1	r	shell_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	28	25	edit_file 4 (3 ok)	13	24404	333880	18325	357	0	0	0	w8-1790626734619
+main	1	r	shell_07	abcc-dc57bde	pass	pass	pass	pass	pass	success	23	20	edit_file 3 (3 ok)	14	28836	338001	12806	303	0	0	0	w8-1790626734619
+main	1	r	shell_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	15	12	edit_file 2 (2 ok)	6	13667	102776	4839	170	0	0	0	w8-1790626734619
+main	1	r	ux_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	20	17	edit_file 2 (2 ok)	11	20596	179995	7155	200	0	0	0	w8-1790626734619
+main	2	r	cargo_failures	abcc-dc57bde	pass	pass	pass	pass	pass	success	18	15	edit_file 2 (2 ok)	9	21122	130127	9130	221	0	0	0	w8-1790630581974
+main	2	r	edit_06	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	6264	8355	467	190	0	0	0	w8-1790630581974
+main	2	r	edit_09	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	3	3	0	3	9086	17733	6119	265	0	0	0	w8-1790630581974
+main	2	r	edit_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	15	12	edit_file 2 (2 ok)	8	21971	144478	14892	312	0	0	0	w8-1790630581974
+main	2	r	runtime_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	16	14	edit_file 6 (6 ok)	7	15153	125239	11650	247	0	0	0	w8-1790630581974
+main	2	r	runtime_11	abcc-dc57bde	pass	pass	pass	pass	pass	success	12	9	edit_file 3 (3 ok)	3	9793	65846	5859	169	0	0	0	w8-1790630581974
+main	2	r	sched_02	abcc-dc57bde	pass	pass	pass	pass	pass	success	19	17	edit_file 5 (5 ok)	9	22533	266628	12948	294	0	0	0	w8-1790630581974
+main	2	r	sec_04	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	5750	8127	4909	245	0	0	0	w8-1790630581974
+main	2	r	sec_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	21	18	edit_file 4 (4 ok)	7	21535	216460	10856	267	0	0	0	w8-1790630581974
+main	2	r	shell_04	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	2173	2173	253	176	0	0	0	w8-1790630581974
+main	2	r	shell_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	21	18	edit_file 4 (3 ok)	9	22403	211789	18200	352	0	0	0	w8-1790630581974
+main	2	r	shell_07	abcc-dc57bde	pass	pass	pass	pass	pass	success	23	20	edit_file 3 (3 ok)	14	28832	337993	12008	300	0	0	0	w8-1790630581974
+main	2	r	shell_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	15	12	edit_file 4 (4 ok)	5	12131	99913	4620	165	0	0	0	w8-1790630581974
+main	2	r	ux_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	20	17	edit_file 2 (2 ok)	11	20587	179980	9132	223	0	0	0	w8-1790630581974
+main	3	r	cargo_failures	abcc-dc57bde	pass	pass	pass	pass	pass	success	17	14	edit_file 2 (2 ok)	9	14366	109031	9670	217	0	0	0	w8-1790634355279
+main	3	r	edit_06	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	6264	8355	467	191	0	0	0	w8-1790634355279
+main	3	r	edit_09	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	3	3	0	3	9086	17733	6119	264	0	0	0	w8-1790634355279
+main	3	r	edit_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	15	12	edit_file 2 (2 ok)	8	21972	144479	15500	325	0	0	0	w8-1790634355279
+main	3	r	runtime_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	16	14	edit_file 6 (6 ok)	7	15153	125239	12213	255	0	0	0	w8-1790634355279
+main	3	r	runtime_11	abcc-dc57bde	pass	pass	pass	pass	pass	success	13	10	edit_file 3 (3 ok)	4	11012	77809	7323	189	0	0	0	w8-1790634355279
+main	3	r	sched_02	abcc-dc57bde	pass	pass	pass	pass	pass	success	21	19	edit_file 4 (4 ok)	9	29601	324935	12706	289	0	0	0	w8-1790634355279
+main	3	r	sec_04	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	5750	8127	4909	248	0	0	0	w8-1790634355279
+main	3	r	sec_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	23	20	edit_file 5 (5 ok)	8	22417	241016	12413	296	0	0	0	w8-1790634355279
+main	3	r	shell_04	abcc-dc57bde	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	2173	2173	253	176	0	0	0	w8-1790634355279
+main	3	r	shell_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	24	21	edit_file 4 (3 ok)	11	23093	257995	18557	362	0	0	0	w8-1790634355279
+main	3	r	shell_07	abcc-dc57bde	pass	pass	pass	pass	pass	success	23	20	edit_file 3 (3 ok)	14	28827	337986	12306	297	0	0	0	w8-1790634355279
+main	3	r	shell_10	abcc-dc57bde	pass	pass	pass	pass	pass	success	16	13	edit_file 2 (2 ok)	6	20428	123188	5687	190	0	0	0	w8-1790634355279
+main	3	r	ux_06	abcc-dc57bde	pass	pass	pass	pass	pass	success	19	16	edit_file 2 (2 ok)	11	13830	159418	6345	188	0	0	0	w8-1790634355279
+chat	2	k	finish_the_cancelled_status	abcc-dc57bde-chat	fail					uncertain/no_checker_for_artifact	24	31	edit_file 4 (4 ok)	16	18322	295333	15177	233	0	0	0	w8-1790638208297
+chat	2	k	round_at_the_line_not_the_total	abcc-dc57bde-chat	pass					uncertain/no_checker_for_artifact	15	18	edit_file 1 (1 ok)	8	12145	111848	5556	87	0	0	0	w8-1790638208297
+chat	2	k	trace_dropped_samples	abcc-dc57bde-chat	fail					uncertain/reasoning_runaway	8	15	0	14	11195	60214	24404	506	0	0	0	w8-1790638208297
+chat	2	r	cargo_failures	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	27	25	edit_file 6 (5 ok)	11	28859	426490	8956	261	0	0	0	w8-1790639043815
+chat	2	r	edit_06	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	3	3	0	3	9944	20337	13244	349	0	0	0	w8-1790639043815
+chat	2	r	edit_09	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	7429	10685	347	175	0	0	0	w8-1790639043815
+chat	2	r	edit_10	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	10	8	edit_file 2 (2 ok)	5	14976	93822	7499	199	0	0	0	w8-1790639043815
+chat	2	r	runtime_10	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	15	13	edit_file 6 (6 ok)	5	19511	125769	8703	231	0	0	0	w8-1790639043815
+chat	2	r	runtime_11	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	11	9	edit_file 3 (3 ok)	3	11070	71180	4325	152	0	0	0	w8-1790639043815
+chat	2	r	sched_02	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	41	40	edit_file 13 (12 ok)	19	19084	485962	9435	249	0	0	0	w8-1790639043815
+chat	2	r	sec_04	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	2	2	0	2	6769	10165	10450	311	0	0	0	w8-1790639043815
+chat	2	r	sec_06	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	10	8	edit_file 3 (3 ok)	2	18937	91639	3897	164	0	0	0	w8-1790639043815
+chat	2	r	shell_04	abcc-dc57bde-chat	fail	fail	pass	pass	pass	uncertain/reasoning_runaway	1	1	0	1	3192	3192	328	175	0	0	0	w8-1790639043815
+chat	2	r	shell_06	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	16	16	edit_file 4 (3 ok)	7	23584	197465	7038	201	0	0	0	w8-1790639043815
+chat	2	r	shell_07	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	24	22	edit_file 6 (6 ok)	8	25937	373654	8813	292	0	1	0	w8-1790639043815
+chat	2	r	shell_10	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	11	9	edit_file 4 (4 ok)	2	18409	89910	4416	172	0	0	0	w8-1790639043815
+chat	2	r	ux_06	abcc-dc57bde-chat	pass	pass	pass	pass	pass	success	9	7	edit_file 2 (2 ok)	4	17858	96318	3858	151	0	0	0	w8-1790639043815
+chat	3	k	finish_the_cancelled_status	abcc-dc57bde-chat	fail					uncertain/no_checker_for_artifact	22	30	edit_file 4 (4 ok)	14	18070	263223	9649	374	0	0	0	w8-1790642476719
+chat	3	k	round_at_the_line_not_the_total	abcc-dc57bde-chat	pass					uncertain/no_checker_for_artifact	14	17	edit_file 1 (1 ok)	8	12451	96972	4762	77	0	0	0	w8-1790642476719
+chat	3	k	trace_dropped_samples	abcc-dc57bde-chat	fail					uncertain/reasoning_runaway	8	15	0	14	11195	60214	24404	513	0	0	0	w8-1790642476719
+main	2	k	finish_the_cancelled_status	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	20	33	edit_file 6 (6 ok)	21	11201	140532	14888	191	0	0	0	w8-1790643448770
+main	2	k	round_at_the_line_not_the_total	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	17	18	edit_file 1 (1 ok)	12	9293	93275	12255	164	0	0	0	w8-1790643448770
+main	2	k	trace_dropped_samples	abcc-dc57bde	fail					uncertain/no_checker_for_artifact	15	17	edit_file 1 (1 ok)	11	8344	66767	7133	109	0	0	0	w8-1790643448770
+main	3	k	finish_the_cancelled_status	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	20	33	edit_file 6 (6 ok)	21	11201	140507	10958	148	0	0	0	w8-1790643922394
+main	3	k	round_at_the_line_not_the_total	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	17	18	edit_file 1 (1 ok)	12	9293	93275	12088	161	0	0	0	w8-1790643922394
+main	3	k	trace_dropped_samples	abcc-dc57bde	fail					uncertain/no_checker_for_artifact	17	19	edit_file 1 (1 ok)	12	8344	79811	7330	115	0	0	0	w8-1790643922394
+main	1	q56	Q01	abcc-dc57bde	pass					success	7	5	edit_file 1 (1 ok)	2	3678	19370	1282	22	0	0	0	w8-1790644354651
+main	1	q56	Q02	abcc-dc57bde	pass					success	8	5	edit_file 1 (1 ok)	2	15511	33130	2229	41	0	0	0	w8-1790644354651
+main	1	q56	Q03	abcc-dc57bde	fail					success	7	5	edit_file 1 (1 ok)	2	3549	16871	1277	21	0	0	0	w8-1790644354651
+main	1	q56	Q04	abcc-dc57bde	pass					success	7	5	edit_file 1 (1 ok)	2	3609	17052	1139	19	0	0	0	w8-1790644354651
+main	1	q56	Q05	abcc-dc57bde	fail					uncertain/nothing_to_run	10	7	edit_file 1 (1 ok)	2	4761	29173	4435	69	0	0	0	w8-1790644354651
+main	1	q56	Q06	abcc-dc57bde	pass					success	12	10	edit_file 4 (4 ok)	3	6443	44907	3351	43	0	0	0	w8-1790644354651
+main	1	q56	Q07	abcc-dc57bde	pass					success	12	11	edit_file 3 (3 ok)	4	5473	43217	2200	34	0	0	0	w8-1790644354651
+main	1	q56	Q08	abcc-dc57bde	pass					success	7	7	edit_file 1 (1 ok)	4	4238	20294	2356	32	0	0	0	w8-1790644354651
+main	1	q56	Q09	abcc-dc57bde	pass					success	8	5	edit_file 1 (1 ok)	2	3945	21841	1833	29	0	0	0	w8-1790644354651
+main	1	q56	Q10	abcc-dc57bde	pass					success	7	5	edit_file 1 (1 ok)	2	4405	19611	3151	44	0	0	0	w8-1790644354651
+main	1	q56	Q11	abcc-dc57bde	pass					uncertain/nothing_to_run	8	4	edit_file 1 (1 ok)	3	3522	20205	3402	51	0	0	0	w8-1790644354651
+main	1	q56	Q12	abcc-dc57bde	pass					success	8	5	edit_file 1 (1 ok)	2	4069	22480	1809	28	0	0	0	w8-1790644354651
+main	1	q56	Q13	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	14	12	edit_file 1 (1 ok)	5	4364	43065	11031	148	0	0	0	w8-1790644354651
+main	1	q56	Q14	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	13	12	edit_file 1 (1 ok)	5	4486	37908	6625	94	0	0	0	w8-1790644354651
+main	1	q56	Q15	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	16	13	edit_file 1 (1 ok)	5	4313	45841	4737	73	0	0	0	w8-1790644354651
+main	1	q56	Q16	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	13	12	edit_file 2 (1 ok)	5	4042	36124	3426	53	0	0	0	w8-1790644354651
+main	1	q56	Q17	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	8	6	edit_file 1 (1 ok)	3	3535	18368	3257	47	0	0	0	w8-1790644354651
+main	1	q56	Q18	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	13	10	edit_file 1 (1 ok)	4	3754	34937	2813	51	0	0	0	w8-1790644354651
+main	1	q56	Q19	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	16	14	edit_file 2 (2 ok)	5	5769	57310	13752	165	0	0	0	w8-1790644354651
+main	1	q56	Q20	abcc-dc57bde	fail					uncertain/no_checker_for_artifact	10	7	edit_file 1 (1 ok)	3	3245	20379	2504	40	0	0	0	w8-1790644354651
+main	1	q56	Q21	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	10	edit_file 1 (1 ok)	5	3526	24591	2582	39	0	0	0	w8-1790644354651
+main	1	q56	Q22	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	15	13	edit_file 2 (2 ok)	6	4512	44315	2996	50	0	0	0	w8-1790644354651
+main	1	q56	Q23	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	13	10	edit_file 1 (1 ok)	4	4500	40208	5352	73	0	0	0	w8-1790644354651
+main	1	q56	Q24	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	12	9	edit_file 1 (1 ok)	5	3945	33474	5742	82	0	0	0	w8-1790644354651
+main	1	q56	Q25	abcc-dc57bde	fail					uncertain/no_checker_for_artifact	9	7	edit_file 1 (1 ok)	3	3773	22291	3685	58	0	0	0	w8-1790644354651
+main	1	q56	Q26	abcc-dc57bde	fail					uncertain/no_checker_for_artifact	10	8	edit_file 1 (1 ok)	4	4026	26757	7858	112	0	0	0	w8-1790644354651
+main	1	q56	Q27	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	7	edit_file 1 (1 ok)	4	3308	24042	9130	129	0	0	0	w8-1790644354651
+main	1	q56	Q28	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	7	edit_file 1 (1 ok)	4	3334	22322	2838	44	0	0	0	w8-1790644354651
+main	1	q56	Q29	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	13	12	edit_file 4 (4 ok)	4	4829	37735	10280	141	0	0	0	w8-1790644354651
+main	1	q56	Q30	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	8	edit_file 1 (1 ok)	3	2926	20217	2538	40	0	0	0	w8-1790644354651
+main	1	q56	Q31	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	8	7	edit_file 1 (1 ok)	4	3266	17805	3365	51	0	0	0	w8-1790644354651
+main	1	q56	Q32	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	8	7	edit_file 1 (1 ok)	4	3510	18581	9009	125	0	0	0	w8-1790644354651
+main	1	q56	Q33	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	8	7	edit_file 1 (1 ok)	4	3418	19815	1724	156	0	0	0	w8-1790644354651
+main	1	q56	Q34	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	11	11	edit_file 2 (2 ok)	6	4140	30875	5909	85	0	0	0	w8-1790644354651
+main	1	q56	Q35	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	11	10	edit_file 1 (1 ok)	4	4854	33616	8190	116	0	0	0	w8-1790644354651
+main	1	q56	Q36	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	8	edit_file 1 (1 ok)	4	3791	25559	9193	134	0	0	0	w8-1790644354651
+main	1	q56	Q37	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	12	10	edit_file 1 (1 ok)	4	4115	33092	3308	49	0	0	0	w8-1790644354651
+main	1	q56	Q38	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	8	edit_file 1 (1 ok)	4	3909	24608	4233	61	0	0	0	w8-1790644354651
+main	1	q56	Q39	abcc-dc57bde	fail					refused	4	3	0	2	2666	7043	721	12	0	0	0	w8-1790644354651
+main	1	q56	Q40	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	7	edit_file 1 (1 ok)	4	3826	24711	5545	73	0	0	0	w8-1790644354651
+main	1	q56	Q41	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	8	edit_file 1 (1 ok)	4	3493	24217	2895	43	0	0	0	w8-1790644354651
+main	1	q56	Q42	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	12	9	edit_file 1 (1 ok)	5	3789	31123	3310	48	0	0	0	w8-1790644354651
+main	1	q56	Q43	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	8	5	edit_file 1 (1 ok)	2	3059	16836	3638	52	0	0	0	w8-1790644354651
+main	1	q56	Q44	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	9	6	edit_file 1 (1 ok)	2	3359	21099	4911	70	0	0	0	w8-1790644354651
+main	1	q56	Q45	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	14	11	edit_file 2 (2 ok)	2	3945	40180	5365	82	0	0	0	w8-1790644354651
+main	1	q56	Q46	abcc-dc57bde	fail					uncertain/reasoning_runaway	7	6	edit_file 1 (1 ok)	2	3079	15965	1847	135	0	0	0	w8-1790644354651
+main	1	q56	Q47	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	7	edit_file 1 (1 ok)	3	3272	23308	2113	32	0	0	0	w8-1790644354651
+main	1	q56	Q48	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	8	5	edit_file 1 (1 ok)	2	2963	17869	2409	36	0	0	0	w8-1790644354651
+main	1	q56	Q49	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	9	8	edit_file 1 (1 ok)	4	3189	20297	3459	52	0	0	0	w8-1790644354651
+main	1	q56	Q50	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	11	8	edit_file 1 (1 ok)	2	3180	25538	2340	37	0	0	0	w8-1790644354651
+main	1	q56	Q51	abcc-dc57bde	fail					uncertain/no_checker_for_artifact	13	11	edit_file 1 (1 ok)	5	4373	39557	5076	75	0	0	0	w8-1790644354651
+main	1	q56	Q52	abcc-dc57bde	pass					uncertain/nothing_to_run	11	8	edit_file 1 (1 ok), write_file 1 (1 ok)	2	14190	49363	10544	146	0	0	0	w8-1790644354651
+main	1	q56	Q53	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	9	8	edit_file 1 (1 ok)	4	4217	23605	8279	110	0	0	0	w8-1790644354651
+main	1	q56	Q54	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	13	11	edit_file 1 (1 ok)	5	4988	40788	6448	90	0	0	0	w8-1790644354651
+main	1	q56	Q55	abcc-dc57bde	pass					uncertain/no_checker_for_artifact	10	7	edit_file 1 (1 ok)	4	3604	25251	4461	64	0	0	0	w8-1790644354651
+main	1	q56	Q56	abcc-dc57bde	pass					success	8	5	edit_file 1 (1 ok)	2	3947	22032	1528	25	0	0	0	w8-1790644354651

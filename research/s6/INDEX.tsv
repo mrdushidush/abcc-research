@@ -1,0 +1,15 @@
+seq	cell	arm	pass	suite	subject	start	end	exit	run_dir	log	valid
+1	main-k-p1	main	1	k	abcc-dc57bde	2026-09-27T23:05:58+03:00	2026-09-27T23:14:10+03:00	0	runs\w8-1790539560433	runs/s6/main-k-p1.log	yes
+2	chat-k-p1	chat	1	k	abcc-dc57bde-chat	2026-09-27T23:14:10+03:00	2026-09-27T23:26:23+03:00	0	runs\w8-1790540050902	runs/s6/chat-k-p1.log	yes
+3	evict-k-p1	evict	1	k	abcc-dc57bde-evict	2026-09-27T23:26:23+03:00	2026-09-27T23:34:17+03:00	0	runs\w8-1790540783385	runs/s6/evict-k-p1.log	yes
+4	main-r-p1	main	1	r	abcc-dc57bde	2026-09-27T23:34:17+03:00	2026-09-27T23:37:24+03:00	1	runs\w8-1790541257686	runs/s6/main-r-p1.log	JUNK: 13 error cells, git read-tree exited 0xC0000142 under a memory crunch; re-run as main-r-p1r
+5	chat-r-p1	chat	1	r	abcc-dc57bde-chat	2026-09-27T23:37:24+03:00	2026-09-28T00:33:26+03:00	0	runs\w8-1790541444580	runs/s6/chat-r-p1.log	yes
+6	main-r-p1r	main	1	r	abcc-dc57bde	2026-09-28T23:18:52+03:00	2026-09-29T00:23:01+03:00	0	runs\w8-1790626734619	runs/s6/main-r-p1r.log	yes
+7	main-r-p2	main	2	r	abcc-dc57bde	2026-09-29T00:23:01+03:00	2026-09-29T01:25:54+03:00	0	runs\w8-1790630581974	runs/s6/main-r-p2.log	yes
+8	main-r-p3	main	3	r	abcc-dc57bde	2026-09-29T01:25:54+03:00	2026-09-29T02:30:06+03:00	0	runs\w8-1790634355279	runs/s6/main-r-p3.log	yes
+9	chat-k-p2	chat	2	k	abcc-dc57bde-chat	2026-09-29T02:30:06+03:00	2026-09-29T02:44:03+03:00	0	runs\w8-1790638208297	runs/s6/chat-k-p2.log	yes
+10	chat-r-p2	chat	2	r	abcc-dc57bde-chat	2026-09-29T02:44:03+03:00	2026-09-29T03:41:16+03:00	0	runs\w8-1790639043815	runs/s6/chat-r-p2.log	yes
+11	chat-k-p3	chat	3	k	abcc-dc57bde-chat	2026-09-29T03:41:16+03:00	2026-09-29T03:57:28+03:00	0	runs\w8-1790642476719	runs/s6/chat-k-p3.log	yes
+12	main-k-p2	main	2	k	abcc-dc57bde	2026-09-29T03:57:28+03:00	2026-09-29T04:05:22+03:00	0	runs\w8-1790643448770	runs/s6/main-k-p2.log	yes
+13	main-k-p3	main	3	k	abcc-dc57bde	2026-09-29T04:05:22+03:00	2026-09-29T04:12:34+03:00	0	runs\w8-1790643922394	runs/s6/main-k-p3.log	yes
+14	main-q56	main	1	q56	abcc-dc57bde	2026-09-29T04:12:34+03:00	2026-09-29T05:17:06+03:00	0	runs\w8-1790644354651	runs/s6/main-q56.log	yes
