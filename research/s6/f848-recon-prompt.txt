@@ -1,0 +1,169 @@
+Support ticket from operations:
+
+  "Since 4.2 the SLA report is full of jobs we cancelled ourselves. J-017 was
+  cancelled two minutes after it started and the report says it's over its SLA
+  by twenty-four hours. We can't use this report to find real problems any more."
+
+They are right. Reproduce it with:
+
+    python3 run.py data/jobs.json
+
+`cancelled` was added as a status in 4.2. Finish the job properly: make the
+service treat a cancelled job correctly everywhere it makes a decision based on
+status, not only in the report operations complained about.
+
+`docs/status_lifecycle.md` is the specification for what each status means.
+
+Do not change `data/jobs.json`.
+
+## What Recon reported
+
+Here is the brief.
+
+---
+
+## Brief: Fix `cancelled` status in four consumer modules
+
+### The problem
+
+Since 4.2, `CANCELLED` was added as a terminal status in `status.py`, but four downstream consumers still only check for `DONE` and/or `FAILED`. Per `docs/status_lifecycle.md`, cancelled jobs are **terminal**, **not an SLA breach**, **not chargeable**, and **must not be retried**. The spec also says they get their own bucket.
+
+The ticket's complaint — J-017 showing as 24h over SLA — comes from `sla.py` measuring a cancelled job against "now" instead of its `ended_at`.
+
+### Files and lines to change
+
+#### 1. `jobs/sla.py`, line 25 — `finished_at()`
+
+**Current code:**
+```python
+def finished_at(job, now):
+    if job.status in (st.DONE, st.FAILED):
+        return job.ended_at if job.ended_at is not None else now
+    return now
+```
+
+**Problem:** A cancelled job falls through to `return now`, so its SLA clock never stops at the cancellation time. J-017 has `ended_at=11000` but gets measured against `now=100000`.
+
+**Fix:** Add `st.CANCELLED` to the tuple:
+```python
+if job.status in (st.DONE, st.FAILED, st.CANCELLED):
+```
+
+#### 2. `jobs/charges.py`, lines 30–32 — `is_chargeable()`
+
+**Current code:**
+```python
+def is_chargeable(job):
+    if job.status == st.FAILED:
+        return False
+    return job.cpu_seconds > 0
+```
+
+**Problem:** Cancelled jobs with cpu_seconds > 0 are charged. The spec says "It is NOT chargeable."
+
+**Fix:** Add a check for `st.CANCELLED` before the return:
+```python
+def is_chargeable(job):
+    if job.status == st.FAILED:
+        return False
+    if job.status == st.CANCELLED:
+        return False
+    return job.cpu_seconds > 0
+```
+
+#### 3. `jobs/retry.py`, lines 21–27 — `should_retry()`
+
+**Current code:**
+```python
+def should_retry(job):
+    if job.status == st.DONE:
+        return False
+    if job.attempts >= MAX_ATTEMPTS:
+        return False
+    if job.kind not in RETRYABLE_KINDS:
+        return False
+    return True
+```
+
+**Problem:** A cancelled job is not `DONE`, so it passes the first check and may reach `return True`. The spec says "It MUST NOT be retried."
+
+**Fix:** Add a guard at the top of the function, right after the DONE check:
+```python
+def should_retry(job):
+    if job.status == st.DONE:
+        return False
+    if job.status == st.CANCELLED:
+        return False
+    ...
+```
+
+#### 4. `jobs/summary.py`, lines 8–36 — `counts()`, `failure_rate()`, `completion_rate()`
+
+**Current code:**
+```python
+BUCKETS = ("queued", "running", "done", "failed", "other")
+
+def counts(jobs):
+    out = {b: 0 for b in BUCKETS}
+    for job in jobs:
+        if job.status == st.QUEUED:
+            out["queued"] += 1
+        elif job.status == st.RUNNING:
+            out["running"] += 1
+        elif job.status == st.DONE:
+            out["done"] += 1
+        elif job.status == st.FAILED:
+            out["failed"] += 1
+        else:
+            out["other"] += 1
+
+def failure_rate(jobs):
+    c = counts(jobs)
+    finished = c["done"] + c["failed"]
+    ...
+
+def completion_rate(jobs):
+    c = counts(jobs)
+    finished = c["done"] + c["failed"]
+    ...
+```
+
+**Problem:** Cancelled jobs land in `"other"`. The spec says "It gets its OWN bucket." Also, `failure_rate` and `completion_rate` don't include cancelled in the denominator even though it's terminal.
+
+**Fixes (three changes):**
+
+a) Add `"cancelled"` to BUCKETS on line 8:
+```python
+BUCKETS = ("queued", "running", "done", "failed", "cancelled", "other")
+```
+
+b) Add an explicit `elif` for cancelled in `counts()` before the `else`:
+```python
+        elif job.status == st.FAILED:
+            out["failed"] += 1
+        elif job.status == st.CANCELLED:
+            out["cancelled"] += 1
+        else:
+            out["other"] += 1
+```
+
+c) Include `c["cancelled"]` in the denominator of both rates (lines 27 and 33):
+```python
+    finished = c["done"] + c["failed"] + c["cancelled"]
+```
+
+### What proves it worked
+
+Run:
+```
+python3 run.py data/jobs.json
+```
+
+Before fix, `sla.report()` lists J-017 (and other cancelled jobs) as breached. After the fix in `sla.py`, none of the four cancelled jobs (J-017 through J-20) appear in SLA breaches — their `finished_at` is their `ended_at`, not `now`.
+
+Additionally:
+- `charges.report()` should show zero total for any cancelled job's cpu_seconds.
+- `retry.report()` should list no cancelled jobs as candidates.
+- `summary.report()` should show a `"cancelled=N"` bucket instead of them being hidden in "other".
+
+The existing test suite (`python3 -m unittest discover -s tests`) should remain green — none of the four changed functions are tested with `CANCELLED` status, so no assertions will break.

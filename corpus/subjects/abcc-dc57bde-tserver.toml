@@ -1,0 +1,13 @@
+# The Q56 control of 2026-09-29 (TOOL-S6, F847): the same pin as abcc-dc57bde, but the sampling
+# temperature is left to the server, as it was for every abcc run before dc57bde made 0 the
+# default. A3 (e5eef90) ran that way and scored Q56 50; S6 (dc57bde, T = 0) scored 48. Running
+# dc57bde both ways separates the temperature from the code.
+schema  = 1
+id      = "abcc-dc57bde-tserver"
+title   = "abcc main dc57bde at the server's temperature (--temperature server): the Q56 control"
+version = "0.1.0+dc57bde"
+commit  = "dc57bde"
+bin     = "D:/dev/abcc-bins/abcc-dc57bde.exe"
+drive   = "abcc"
+args    = ["--temperature", "server"]
+capabilities = []
