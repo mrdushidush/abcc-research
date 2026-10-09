@@ -21,13 +21,14 @@ who made the rulings; a ruling is dated where it was made.
 | the current plan, and the verdict on the agent loop | [`PLAN-TOOL.md`](PLAN-TOOL.md) |
 | the newest measurement | [`research/TOOL-S6-the-ship-bench.md`](research/TOOL-S6-the-ship-bench.md) |
 | the brief that started it | [`RESEARCH_BRIEF.md`](RESEARCH_BRIEF.md) |
-| one finding, by number | `python research/tools/fledger.py show F847` |
+| one finding, by number | `python research/tools/fledger.py build` once, then `python research/tools/fledger.py show F847` |
 
 ## How a finding works
 
 A finding is defined once, in the prose of the document that measured it.
 `research/findings.sqlite` is an index **derived** from the Markdown by
-`research/tools/fparse.py` and `fledger.py`; do not edit it.
+`research/tools/fledger.py build` (with `fparse.py`). It is not committed;
+build it once after cloning, with Python 3 and nothing else.
 
 Nothing here is rewritten after the fact. When a later measurement corrects an
 earlier one, the correction is itself a new finding, and the relation between

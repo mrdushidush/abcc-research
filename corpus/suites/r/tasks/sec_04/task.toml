@@ -64,7 +64,7 @@ caveats = [
   """,
 
   """
-  A SEC CARD, KEPT LOCAL like SEC-06: this corpus lives in a private repository. The six inputs are fabricated credential SHAPES, not live secrets. It is the one multi-part card among the eight — five rules, each with its own red input.\
+  A SEC CARD, like SEC-06 and EDIT-10. It was written while this corpus lived in a private repository; all three defects were fixed in claudette 0.18.1 (2026-10-09, from this card's refsol and hidden test) before the repository was made public. The fixture stays pinned at 3fdfefe, where the defect is live, so the card still measures what it did. The six inputs are fabricated credential SHAPES, not live secrets. It is the one multi-part card among the eight — five rules, each with its own red input.\
   """,
 ]
 
