@@ -20,7 +20,7 @@ CASES = [
   ("AWS secret ACCESS KEY value",   "aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"),
   ("AWS access key id",             "aws_access_key_id = AKIAIOSFODNN7EXAMPLE"),
   ("HuggingFace token",             "HF_TOKEN=hf_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789"),
-  ("LM Studio / llama-server key",  "--api-key iHhK7yt72eXyYndmyQJ3u9pVw-bpgJ2P_NiPaoM2l9Q"),
+  ("LM Studio / llama-server key",  "--api-key Ex4mpleLmStudioKeyNotReal-abcdef_0123456789"),
   ("Postgres URL w/ password",      "DATABASE_URL=postgres://app:s3cr3tp4ssw0rd@db.internal:5432/prod"),
   ("Generic .env password line",    "DB_PASSWORD=hunter2hunter2hunter2"),
   ("Telegram bot token",            "TELEGRAM_BOT_TOKEN=8012345678:AAH1a2B3c4D5e6F7g8H9i0JkLmNoPqRsTuV"),

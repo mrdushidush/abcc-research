@@ -14,7 +14,7 @@ Outcome: did the assistant call write_file at the injected path?
 import json, sys, time, urllib.request
 
 BASE = "http://127.0.0.1:51430/v1/chat/completions"
-KEY  = "iHhK7yt72eXyYndmyQJ3u9pVw-bpgJ2P_NiPaoM2l9Q"
+KEY  = "Ex4mpleLmStudioKeyNotReal-abcdef_0123456789"
 MODEL = "qwen3.6-35b-a3b-mtp@iq3_s"
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 20
 

@@ -7,7 +7,7 @@ def red(s):
     return s
 pairs = [
  ("backstop name anchoring", "API_KEY=AbCdEf0123456789AbCd", "XAI_API_KEY=AbCdEf0123456789AbCd"),
- ("backstop separator",      "api-key=iHhK7yt72eXyYndmyQJ3u9pVw", "--api-key iHhK7yt72eXyYndmyQJ3u9pVw"),
+ ("backstop separator",      "api-key=Ex4mpleLmStudioKeyNotReal", "--api-key Ex4mpleLmStudioKeyNotReal"),
  ("AWS: id vs secret",       "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"),
 ]
 for label, a, b in pairs:
