@@ -1,7 +1,25 @@
 # ABCC 2.0 — the research record
 
-This is the research behind [**abcc**](https://github.com/mrdushidush/abcc), a Rust
-command center for running local model workers against real repository tasks.
+**849 numbered measurements of coding agents on one local GPU**, taken while
+building [**abcc**](https://github.com/mrdushidush/abcc), a Rust command center
+for local model workers. When a later measurement corrects an earlier one, the
+correction is a finding too, so you can see which claims still stand.
+
+## Six findings worth your time
+
+| Finding | What was measured |
+|---|---|
+| [F753](research/LINEAGE-P9-what-the-server-threw-away.md) | **LM Studio silently drops the middle of an over-long conversation and still answers `200 OK`.** No header, no field, no warning, and a `contextOverflowPolicy` in the request changes nothing. The system prompt and the first user message survive; in an agent loop, the middle is the tool results. |
+| [F758](research/LINEAGE-P9-what-the-server-threw-away.md) | **What that cut costs: the middle, and a 2–8× longer reasoning trace.** It does not reliably silence the model — this finding corrected an earlier one (F755) that said it did. |
+| [F387](research/W4-routing.md) | **Under MTP speculative decoding, the returned logprobs are complete, well-formed, in range — and fabricated.** On this model they report the draft head's acceptances: an exact `0.0`, "100% certain", on 91.6% of tokens. |
+| [F338](research/W6-verification.md) | **A model judge shown a green test run approves 19 of 22 wrong answers** (57 trees, temperature 0). Hence the rule abcc is built on: a model's verdict is a report, never a gate. |
+| [F263](research/W11-stages.md) | **The order of a schema's fields decides the answer:** 0 of 14 with the verdict field first, 17 of 17 with it last, at temperature 0. |
+| [F81](research/W2-serving.md) | **Prefix caching saves 79.7% of time-to-first-token, and one changed token at the front destroys all of it** (an 18,470-token prefix). |
+
+All of it was measured on one machine; see [Read it with these in mind](#read-it-with-these-in-mind).
+`python research/tools/fledger.py show F753` prints any finding and says whether
+a later one corrected it.
+
 abcc's source comments cite this repository by finding id (`F146`), by
 workstream (`W3`) and by decision record (`ADR-0004`); this is where those
 citations resolve.
@@ -70,13 +88,21 @@ corrected it** (`fledger.py show` and `fledger.py chain`).
   security cards (`edit_10`, `sec_04`, `sec_06`) describe defects in claudette
   that were fixed in claudette 0.18.1 before this repository was published.
 
-## Related repositories
+## Contributing
 
-- [`abcc`](https://github.com/mrdushidush/abcc) — the tool this research built.
-- [`claudette`](https://github.com/mrdushidush/claudette) — the predecessor
-  agent, the source of Q56 and the R suite's subject.
-- [`agent-battle-command-center`](https://github.com/mrdushidush/agent-battle-command-center)
-  — ABCC v1, the source of the `u40` and `u100` suites.
+The most useful contribution here is a check: a finding that does not reproduce
+on your hardware, or a number that does not match its source. Open an issue with
+the **"A finding doesn't reproduce"** template; [`CONTRIBUTING.md`](CONTRIBUTING.md)
+says what helps.
+
+## The family
+
+| Repo | What it is |
+|---|---|
+| [claudette](https://github.com/mrdushidush/claudette) | **Use it today:** an air-gapped coding agent in one Rust binary, the source of Q56 and the R suite's subject |
+| [abcc](https://github.com/mrdushidush/abcc) | **What's next:** the tool this research built. Pre-alpha |
+| **abcc-research** (this repo) | **The evidence:** every measurement behind both |
+| [agent-battle-command-center](https://github.com/mrdushidush/agent-battle-command-center) | Where it started: ABCC v1, the source of the `u40` and `u100` suites |
 
 ## Licence
 
